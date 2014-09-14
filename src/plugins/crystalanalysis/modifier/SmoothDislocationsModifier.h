@@ -47,6 +47,30 @@ public:
 	/// This modifies the input object.
 	virtual PipelineStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
+	/// Returns whether smoothing is enabled.
+	bool smoothingEnabled() const { return _smoothingEnabled; }
+
+	/// Enables/disables smoothing.
+	void setSmoothingEnabled(bool enable) { _smoothingEnabled = enable; }
+
+	/// Returns the smoothing strength.
+	int smoothingLevel() const { return _smoothingLevel; }
+
+	/// Sets the smoothing strength.
+	void setSmoothingLevel(int level) { _smoothingLevel = level; }
+
+	/// Returns whether coarsening of dislocation line points is enabled.
+	bool coarseningEnabled() const { return _coarseningEnabled; }
+
+	/// Enables/disables coarsening of dislocation line points.
+	void setCoarseningEnabled(bool enable) { _coarseningEnabled = enable; }
+
+	/// Returns the target distance between successive line points after coarsening.
+	FloatType linePointInterval() const { return _linePointInterval; }
+
+	/// Sets the target distance between successive line points after coarsening.
+	void setLinePointInterval(FloatType d) { _linePointInterval = d; }
+
 protected:
 
 	/// Removes some of the sampling points from a dislocation line.

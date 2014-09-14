@@ -30,6 +30,10 @@
 #include <core/plugins/autostart/AutoStartObject.h>
 #include <core/utilities/io/FileManager.h>
 
+#ifdef Q_OS_MACX
+	#include <Carbon/Carbon.h>
+#endif
+
 namespace Ovito {
 
 /// The one and only instance of this class.
@@ -52,7 +56,7 @@ void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& cont
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-Application::Application() : _exitCode(0), _consoleMode(false)
+Application::Application() : _exitCode(0), _consoleMode(false), _headlessMode(false)
 {
 }
 
@@ -101,6 +105,8 @@ bool Application::initialize(int& argc, char** argv)
 	qRegisterMetaTypeStreamOperators<ColorA>("Ovito::ColorA");
 
 	// Register command line arguments.
+	_cmdLineParser.setApplicationDescription(tr("OVITO - Open Visualization Tool"));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"h", "help"}}, tr("Shows this list of program options and exits.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
@@ -109,10 +115,19 @@ bool Application::initialize(int& argc, char** argv)
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.
 	QStringList arguments;
-	arguments.reserve(argc);
 	for(int i = 0; i < argc; i++)
 		arguments << QString::fromLocal8Bit(argv[i]);
-	_cmdLineParser.parse(arguments);
+	
+	// Because they may collide with our own options, we should ignore script arguments though. 
+	QStringList filteredArguments;
+	for(int i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "--scriptarg") == 0) {
+			i += 1;
+			continue;
+		}
+		filteredArguments.push_back(arguments[i]);
+	}
+	_cmdLineParser.parse(filteredArguments);
 
 	// Output program version if requested.
 	if(_cmdLineParser.isSet("version")) {
@@ -121,15 +136,25 @@ bool Application::initialize(int& argc, char** argv)
 		return true;
 	}
 
-	// Check if started in console mode.
-	if(_cmdLineParser.isSet("nogui"))
+	// Check if program was started in console mode.
+	if(_cmdLineParser.isSet("nogui")) {
 		_consoleMode = true;
+#if defined(Q_OS_LINUX)
+		// On Unix/Linux, console mode means headless mode if no X server is available.
+		if(qEnvironmentVariableIsEmpty("DISPLAY")) {
+			_headlessMode = true;
+		}
+#elif defined(Q_OS_OSX)
+		// Don't let Qt move the app to the foreground when running in console mode.
+		::setenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1", 1);
+#endif
+	}
 
 	// Create Qt application object.
-	if(guiMode())
-		_app.reset(new QApplication(argc, argv));
-	else
+	if(headlessMode())
 		_app.reset(new QCoreApplication(argc, argv));
+	else
+		_app.reset(new QApplication(argc, argv));
 
 	// Reactivate default "C" locale, which, in the meantime, might have been changed by QCoreApplication.
 	std::setlocale(LC_NUMERIC, "C");
@@ -158,12 +183,16 @@ bool Application::initialize(int& argc, char** argv)
 		}
 
 		// Parse the command line parameters again after the plugins have registered their options.
-		if(!_cmdLineParser.parse(QCoreApplication::arguments())) {
+		if(!_cmdLineParser.parse(arguments)) {
 	        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
 			_consoleMode = true;
 			shutdown();
 			return false;
 		}
+
+		// Help command line option implicitly activates console mode.
+		if(_cmdLineParser.isSet("help"))
+			_consoleMode = true;
 
 		if(guiMode()) {
 			// Set up graphical user interface.
@@ -173,6 +202,12 @@ bool Application::initialize(int& argc, char** argv)
 			// Create a dataset container.
 			_datasetContainer = new DataSetContainer();
 			_datasetContainer->setParent(this);
+		}
+
+		// Handle --help command line option. Print list of command line options and quit.
+		if(_cmdLineParser.isSet("help")) {
+			std::cout << qPrintable(_cmdLineParser.helpText()) << std::endl;
+			return true;
 		}
 
 		// Load scene file specified at the command line.
@@ -199,7 +234,6 @@ bool Application::initialize(int& argc, char** argv)
 		// Invoke auto-start objects.
 		for(const auto& obj : _autostartObjects)
 			obj->applicationStarted();
-
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -219,8 +253,10 @@ int Application::runApplication()
 		return QApplication::exec();
 	}
 	else {
-		// No event processing needed in console mode.
-		// Just quit the application.
+		// Deliver all events that have been posted during the initialization.
+		QCoreApplication::processEvents();
+		// Just quit the application after all background tasks have finished.
+		datasetContainer()->taskManager().waitForAll();
 		return _exitCode;
 	}
 }

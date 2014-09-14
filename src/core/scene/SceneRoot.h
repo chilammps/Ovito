@@ -40,25 +40,17 @@ class OVITO_CORE_EXPORT SceneRoot : public SceneNode
 {
 public:
 
-	/// \brief Creates a root node without children.
+	/// \brief Creates a root node.
 	Q_INVOKABLE SceneRoot(DataSet* dataset);
 
-	/// \brief Finds a scene with the given name.
+	/// \brief Searches the scene for a node with the given name.
 	/// \param nodeName The name to look for. 
-	/// \return The scene node with the given display name or \c NULL, if
-	///         there is no such node in the scene.
-	SceneNode* getNodeByName(const QString& nodeName) const {
-		return getNodeByNameImpl(nodeName, this);
-	}
+	/// \return The scene node or \c NULL, if there is no node with the given name.
+	SceneNode* getNodeByName(const QString& nodeName) const;
 
-	/// \brief Finds a name for a node that is unique throughout the scene.
-	/// \param baseName A base name that is made unique by appending a number.  
+	/// \brief Generates a name for a node that is unique throughout the scene.
+	/// \param baseName A base name that will be made unique by appending a number.
 	/// \return The generated unique name.
-	/// 
-	/// This method alters the given base name of a scene node so that it
-	/// becomes unique in the whole scene.
-	///
-	/// The returned name can be assigned to a node using SceneNode::setName().
 	QString makeNameUnique(QString baseName) const;
 
 	/// \brief Returns the bounding box of the scene.
@@ -67,9 +59,6 @@ public:
 	virtual Box3 localBoundingBox(TimePoint time) override;
 
 private:
-
-	/// Searches recursively for the scene node with the given display name.
-	SceneNode* getNodeByNameImpl(const QString& nodeName, const SceneNode* node) const;
 
 	Q_OBJECT
 	OVITO_OBJECT

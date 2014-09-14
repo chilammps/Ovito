@@ -40,52 +40,46 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE SelectParticleTypeModifier(DataSet* dataset) : ParticleModifier(dataset),
-		_inputPropertyRef(ParticleProperty::ParticleTypeProperty) {}
+		_sourceProperty(ParticleProperty::ParticleTypeProperty) {
+		INIT_PROPERTY_FIELD(SelectParticleTypeModifier::_sourceProperty);
+		INIT_PROPERTY_FIELD(SelectParticleTypeModifier::_selectedParticleTypes);
+	}
 
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Returns the particle type property that is used as source for the selection.
-	const ParticlePropertyReference& sourceProperty() const { return _inputPropertyRef; }
+	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 
 	/// Sets the particle type property that is used as source for the selection.
-	void setSourceProperty(const ParticlePropertyReference& prop);
+	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
 
 	/// Returns the list of particle type identifiers that are selected.
 	const QSet<int>& selectedParticleTypes() const { return _selectedParticleTypes; }
 
 	/// Sets the list of particle type identifiers to select.
-	void setSelectedParticleTypes(const QSet<int>& types);
+	void setSelectedParticleTypes(const QSet<int>& types) { _selectedParticleTypes = types; }
 
 	/// Sets a single particle type identifier to be selected.
-	void setSelectedParticleType(int type) { QSet<int> list; list.insert(type); setSelectedParticleTypes(list); }
-
-	/// Retrieves the selected input type property from the given modifier input state.
-	ParticleTypeProperty* lookupInputProperty(const PipelineFlowState& inputState) const;
+	void setSelectedParticleType(int type) { setSelectedParticleTypes(QSet<int>{type}); }
 
 public:
 
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
+	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
 
 protected:
 
-	/// Saves the class' contents to the given stream.
-	virtual void saveToStream(ObjectSaveStream& stream) override;
-
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
-
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The particle type property that is used as source for the selection.
-	ParticlePropertyReference _inputPropertyRef;
+	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// The identifiers of the particle types to select.
-	QSet<int> _selectedParticleTypes;
+	PropertyField<QSet<int>> _selectedParticleTypes;
 
 private:
 
@@ -94,6 +88,9 @@ private:
 
 	Q_CLASSINFO("DisplayName", "Select particle type");
 	Q_CLASSINFO("ModifierCategory", "Selection");
+
+	DECLARE_PROPERTY_FIELD(_sourceProperty);
+	DECLARE_PROPERTY_FIELD(_selectedParticleTypes);
 };
 
 /******************************************************************************

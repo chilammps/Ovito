@@ -15,7 +15,8 @@
        <imagedata fileref="images/rendering/tachyon_renderer_panel.png" format="PNG" />
      </imageobject></mediaobject></screenshot></informalfigure>  
      
-    One of the advanced features provided by the Tachyon ray tracer is the ability to render scenes with ambient occlusion lighting and semi-transparent objects.
+    This is a software-based raytracing renderer. One feature is its ability to render scenes with 
+    ambient occlusion lighting and semi-transparent objects.
     </para>
     
   <simplesect>
@@ -49,7 +50,7 @@
       <varlistentry>
         <term>Ambient occlusion</term>
         <listitem>
-          <para>Enabling this lighting technique mimicks some of the effects that occur under conditions of omnidirectional diffuse illumination, 
+          <para>Enabling this lighting technique mimics some of the effects that occur under conditions of omnidirectional diffuse illumination, 
           e.g. outdoors on an overcast day.</para>
         </listitem>
       </varlistentry>

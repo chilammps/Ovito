@@ -92,13 +92,13 @@ public:
 	//////////////////////////// Component access //////////////////////////
 
 	/// \brief Returns the value of the red component of this color.
-	Q_DECL_CONSTEXPR const T& r() const { return (*this)[0]; }
+	Q_DECL_CONSTEXPR T r() const { return (*this)[0]; }
 
 	/// \brief Returns the value of the green component of this color.
-	Q_DECL_CONSTEXPR const T& g() const { return (*this)[1]; }
+	Q_DECL_CONSTEXPR T g() const { return (*this)[1]; }
 
 	/// \brief Returns the value of the blue component of this color.
-	Q_DECL_CONSTEXPR const T& b() const { return (*this)[2]; }
+	Q_DECL_CONSTEXPR T b() const { return (*this)[2]; }
 
 	/// \brief Returns a reference to the red component of this color.
 	T& r() { return (*this)[0]; }
@@ -329,16 +329,16 @@ public:
 	//////////////////////////// Component access //////////////////////////
 
 	/// \brief Returns the value of the red component of this color.
-	Q_DECL_CONSTEXPR const T& r() const { return (*this)[0]; }
+	Q_DECL_CONSTEXPR T r() const { return (*this)[0]; }
 
 	/// \brief Returns the value of the green component of this color.
-	Q_DECL_CONSTEXPR const T& g() const { return (*this)[1]; }
+	Q_DECL_CONSTEXPR T g() const { return (*this)[1]; }
 
 	/// \brief Returns the value of the blue component of this color.
-	Q_DECL_CONSTEXPR const T& b() const { return (*this)[2]; }
+	Q_DECL_CONSTEXPR T b() const { return (*this)[2]; }
 
 	/// \brief Returns the value of the alpha component of this color.
-	Q_DECL_CONSTEXPR const T& a() const { return (*this)[3]; }
+	Q_DECL_CONSTEXPR T a() const { return (*this)[3]; }
 
 	/// \brief Returns a reference to the red component of this color.
 	T& r() { return (*this)[0]; }

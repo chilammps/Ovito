@@ -155,7 +155,7 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 			propertyObj->setStorage(QSharedDataPointer<ParticleProperty>(property.release()));
 		}
 		else {
-			propertyObj = ParticlePropertyObject::create(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
+			propertyObj = ParticlePropertyObject::createFromStorage(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
 			destination->addSceneObject(propertyObj);
 		}
 

@@ -24,6 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/VectorDisplay.h>
+#include <core/dataset/importexport/FileImporter.h>
 #include "../../ParticleModifier.h"
 
 namespace Particles {

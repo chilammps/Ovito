@@ -57,7 +57,7 @@ SceneNode* DataSetBinding::selectedNode() const
 {
 	DataSet* dataset = ScriptEngine::getThisObject<DataSet>(context());
 	if(dataset)
-		return dataset->selection()->firstNode();
+		return dataset->selection()->front();
 	else {
 		context()->throwError(QScriptContext::TypeError, tr("DataSet.prototype.selectedNode: this is not a DataSet."));
 		return nullptr;

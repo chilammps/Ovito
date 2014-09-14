@@ -128,11 +128,11 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 	future.result();
 
 	InputColumnMapping mapping(_columnMapping);
-	mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+	mapping.resize(inspectionTask->columnMapping().size());
 	mapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
-	if(_columnMapping.columnCount() != mapping.columnCount()) {
-		if(_columnMapping.columnCount() == 0) {
-			int oldCount = 0;
+	if(_columnMapping.size() != mapping.size()) {
+		if(_columnMapping.empty()) {
+			size_t oldCount = 0;
 
 			// Load last mapping from settings store.
 			QSettings settings;
@@ -140,7 +140,7 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 			if(settings.contains("columnmapping")) {
 				try {
 					mapping.fromByteArray(settings.value("columnmapping").toByteArray());
-					oldCount = mapping.columnCount();
+					oldCount = mapping.size();
 				}
 				catch(Exception& ex) {
 					ex.prependGeneralMessage(tr("Failed to load last used column-to-property mapping from application settings store."));
@@ -148,7 +148,7 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 				}
 			}
 
-			mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+			mapping.resize(inspectionTask->columnMapping().size());
 		}
 
 		InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
@@ -324,7 +324,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 	setTimestep(header.ntimestep);
 
 	if(_parseFileHeaderOnly) {
-		_columnMapping.setColumnCount(header.size_one);
+		_columnMapping.resize(header.size_one);
 		return;
 	}
 

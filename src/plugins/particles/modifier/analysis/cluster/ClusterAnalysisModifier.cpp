@@ -46,9 +46,6 @@ ClusterAnalysisModifier::ClusterAnalysisModifier(DataSet* dataset) : Asynchronou
 ******************************************************************************/
 std::shared_ptr<AsynchronousParticleModifier::Engine> ClusterAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() == 0)
-		throw Exception(tr("There are no input particles"));
-
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 

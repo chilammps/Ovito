@@ -63,7 +63,7 @@ public:
 	AsynchronousParticleModifier(DataSet* dataset);
 
 	/// This method is called by the system when an item in the modification pipeline located before this modifier has changed.
-	virtual void modifierInputChanged(ModifierApplication* modApp) override;
+	virtual void inputDataChanged(ModifierApplication* modApp) override;
 
 	/// Returns whether the recalculation of the modifier results is performed every time the input data changes.
 	bool autoUpdateEnabled() const { return _autoUpdate; }
@@ -82,8 +82,8 @@ public:
 
 public:
 
-	Q_PROPERTY(bool autoUpdateEnabled READ autoUpdateEnabled WRITE setAutoUpdateEnabled)
-	Q_PROPERTY(bool storeResultsWithScene READ storeResultsWithScene WRITE setStoreResultsWithScene)
+	Q_PROPERTY(bool autoUpdateEnabled READ autoUpdateEnabled WRITE setAutoUpdateEnabled);
+	Q_PROPERTY(bool storeResultsWithScene READ storeResultsWithScene WRITE setStoreResultsWithScene);
 
 protected Q_SLOTS:
 

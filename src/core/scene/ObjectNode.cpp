@@ -24,24 +24,22 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/viewport/Viewport.h>
-#include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode)
-DEFINE_REFERENCE_FIELD(ObjectNode, _sceneObject, "SceneObject", SceneObject)
-DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject)
-SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode);
+DEFINE_REFERENCE_FIELD(ObjectNode, _dataProvider, "SceneObject", SceneObject);
+DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject);
+SET_PROPERTY_FIELD_LABEL(ObjectNode, _dataProvider, "Object");
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ObjectNode::ObjectNode(DataSet* dataset, SceneObject* object) : SceneNode(dataset)
+ObjectNode::ObjectNode(DataSet* dataset) : SceneNode(dataset)
 {
-	OVITO_ASSERT(object == nullptr || object->dataset() == dataset);
-	INIT_PROPERTY_FIELD(ObjectNode::_sceneObject);
+	INIT_PROPERTY_FIELD(ObjectNode::_dataProvider);
 	INIT_PROPERTY_FIELD(ObjectNode::_displayObjects);
-	setSceneObject(object);
 }
 
 /******************************************************************************
@@ -51,33 +49,29 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 {
 	// Check if the cache needs to be updated.
 	if(_pipelineCache.stateValidity().contains(time) == false) {
-		if(sceneObject()) {
+		if(dataProvider()) {
 
-			// Do not record any object creation operations while evaluating the pipeline.
-			UndoSuspender noUndo(dataset()->undoStack());
+			// Avoid recording the creation of transient objects on the undo stack
+			// while evaluating the pipeline.
+			UndoSuspender suspendUndo(dataset()->undoStack());
 
-			// Evaluate object and save result in local cache.
-			_pipelineCache = sceneObject()->evaluate(time);
+			// Evaluate data flow pipeline and store result in local cache.
+			_pipelineCache = dataProvider()->evaluate(time);
 
 			// Update list of display objects.
 
-			// First unlink those display objects from the node which are no longer needed.
+			// First discard those display objects which are no longer needed.
 			for(int i = displayObjects().size() - 1; i >= 0; i--) {
 				DisplayObject* displayObj = displayObjects()[i];
-				// Check if display object is still being used by any of the scene objects that came out of the pipeline.
-				bool isAlive = false;
-				for(const auto& sceneObj : _pipelineCache.objects()) {
-					if(sceneObj->displayObjects().contains(displayObj)) {
-						isAlive = true;
-						break;
-					}
-				}
-				// Discard display object if no longer needed.
-				if(!isAlive)
+				// Check if the display object is still being referenced by any of the objects
+				// that left the pipeline.
+				if(std::none_of(_pipelineCache.objects().begin(), _pipelineCache.objects().end(),
+						[displayObj](SceneObject* obj) { return obj->displayObjects().contains(displayObj); })) {
 					_displayObjects.remove(i);
+				}
 			}
 
-			// Now add new display objects to this node.
+			// Now add any new display objects to this node.
 			for(const auto& sceneObj : _pipelineCache.objects()) {
 				for(DisplayObject* displayObj : sceneObj->displayObjects()) {
 					OVITO_CHECK_OBJECT_POINTER(displayObj);
@@ -87,21 +81,13 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			}
 		}
 		else {
-			// Clear cache if this node is empty.
+			// Reset cache if this node doesn't have a data source.
 			invalidatePipelineCache();
-			// Discard display objects as well.
+			// Discard any display objects as well.
 			_displayObjects.clear();
 		}
 	}
 	return _pipelineCache;
-}
-
-/******************************************************************************
-* This method invalidates the geometry pipeline cache of the object node.
-******************************************************************************/
-void ObjectNode::invalidatePipelineCache()
-{
-	_pipelineCache.clear();
 }
 
 /******************************************************************************
@@ -124,13 +110,12 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 ******************************************************************************/
 bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(source == sceneObject()) {
+	if(source == dataProvider()) {
 		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
 			invalidatePipelineCache();
-			invalidateBoundingBox();
 		}
 		else if(event->type() == ReferenceEvent::TargetDeleted) {
-			// Object has been deleted -> delete node too.
+			// Data provider has been deleted -> delete node as well.
 			if(!dataset()->undoStack().isUndoingOrRedoing())
 				deleteNode();
 		}
@@ -146,9 +131,8 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 ******************************************************************************/
 void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject)) {
+	if(field == PROPERTY_FIELD(ObjectNode::_dataProvider)) {
 		invalidatePipelineCache();
-		invalidateBoundingBox();
 
 		// When the scene object is being replaced, the pending state of the node might change.
 		// Even though we don't know for sure if the state has really changed, we send a notification event here.
@@ -204,40 +188,63 @@ void ObjectNode::loadFromStream(ObjectLoadStream& stream)
 ******************************************************************************/
 QString ObjectNode::objectTitle()
 {
-	// If a name has been assigned to this node, return it as display title.
-	if(name().isEmpty() == false)
+	// If a name has been assigned to this node, return it as the node's display title.
+	if(!name().isEmpty())
 		return name();
 
-	// Otherwise, use the display title of the node's source scene object.
-	SceneObject* sceneObj = sceneObject();
-	while(sceneObj) {
-		if(sceneObj->inputObjectCount() == 0)
-			return sceneObj->objectTitle();
-		sceneObj = sceneObj->inputObject(0);
-	}
+	// Otherwise, use the title of the node's data source object.
+	if(SceneObject* sourceObj = sourceObject())
+		return sourceObj->objectTitle();
 
+	// Fall back to default behavior.
 	return SceneNode::objectTitle();
 }
 
 
 /******************************************************************************
-* Applies the given modifier to the object node.
-* The modifier is put on top of the modifier stack.
+* Applies a modifier by appending it to the end of the node's modification
+* pipeline.
 ******************************************************************************/
 void ObjectNode::applyModifier(Modifier* modifier)
 {
-	OVITO_CHECK_OBJECT_POINTER(sceneObject());
-	if(!sceneObject())
-		throw Exception("Cannot apply modifier to an empty object node.");
+	if(!dataProvider())
+		throw Exception("Cannot insert modifier into a modification pipeline without a data source.");
 
-	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(sceneObject());
+	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(dataProvider());
 	if(!pipelineObj) {
 		OORef<PipelineObject> p = new PipelineObject(dataset());
-		p->setInputObject(sceneObject());
-		setSceneObject(p);
+		p->setSourceObject(dataProvider());
+		setDataProvider(p);
 		pipelineObj = p;
 	}
 	pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().size());
+}
+
+/******************************************************************************
+* Returns the modification pipeline source object, i.e., the input of this
+* node's modification pipeline.
+******************************************************************************/
+SceneObject* ObjectNode::sourceObject() const
+{
+	SceneObject* obj = dataProvider();
+	while(obj) {
+		if(PipelineObject* pipeline = dynamic_object_cast<PipelineObject>(obj))
+			obj = pipeline->sourceObject();
+		else
+			break;
+	}
+	return obj;
+}
+
+/******************************************************************************
+* This function blocks execution until the node's modification
+* pipeline has been fully evaluated.
+******************************************************************************/
+bool ObjectNode::waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog)
+{
+	return dataset()->container()->waitUntil([this, time]() {
+		return evalPipeline(time).status().type() != PipelineStatus::Pending;
+	}, message, progressDialog);
 }
 
 };

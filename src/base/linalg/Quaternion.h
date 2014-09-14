@@ -87,16 +87,16 @@ public:
     ///////////////////////////// Component access ///////////////////////////////
 
 	/// \brief Returns the value of the X component of this quaternion.
-	Q_DECL_CONSTEXPR const T& x() const { return (*this)[0]; }
+	Q_DECL_CONSTEXPR T x() const { return (*this)[0]; }
 
 	/// \brief Returns the value of the Y component of this quaternion.
-	Q_DECL_CONSTEXPR const T& y() const { return (*this)[1]; }
+	Q_DECL_CONSTEXPR T y() const { return (*this)[1]; }
 
 	/// \brief Returns the value of the Z component of this quaternion.
-	Q_DECL_CONSTEXPR const T& z() const { return (*this)[2]; }
+	Q_DECL_CONSTEXPR T z() const { return (*this)[2]; }
 
 	/// \brief Returns the value of the W component of this quaternion.
-	Q_DECL_CONSTEXPR const T& w() const { return (*this)[3]; }
+	Q_DECL_CONSTEXPR T w() const { return (*this)[3]; }
 
 	/// \brief Returns a reference to the X component of this quaternion.
 	T& x() { return (*this)[0]; }

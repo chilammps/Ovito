@@ -22,73 +22,11 @@
 #include <plugins/particles/Particles.h>
 #include "InputColumnMapping.h"
 
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+
 namespace Particles {
-
-/******************************************************************************
- * Resizes the mapping array to include the specified number of file columns.
- *****************************************************************************/
-void InputColumnMapping::setColumnCount(int numberOfColumns, const QStringList& columnNames)
-{
-	// Expand column array if necessary and initialize all new columns to their default values.
-	while(numberOfColumns >= columnCount()) {
-		Column col;
-		col.propertyType = ParticleProperty::UserProperty;
-		col.dataType = QMetaType::Void;
-		col.vectorComponent = 0;
-		_columns.append(col);
-	}
-	_columns.resize(numberOfColumns);
-
-	for(int i = 0; i < columnNames.size() && i < numberOfColumns; i++)
-		_columns[i].columnName = columnNames[i];
-}
-
-/******************************************************************************
- * Map a column in the data file to a custom ParticleProperty.
- *****************************************************************************/
-void InputColumnMapping::mapCustomColumn(int columnIndex, const QString& propertyName, int dataType, int vectorComponent, ParticleProperty::Type property, const QString& columnName)
-{
-	OVITO_ASSERT(columnIndex >= 0);
-
-	// Expand column array if necessary and initialize all new columns to their default values.
-	if(columnIndex >= columnCount())
-		setColumnCount(columnIndex + 1);
-
-	_columns[columnIndex].propertyType = property;
-	_columns[columnIndex].propertyName = propertyName;
-	_columns[columnIndex].columnName = columnName;
-	_columns[columnIndex].dataType = dataType;
-	_columns[columnIndex].vectorComponent = std::max(0, vectorComponent);
-}
-
-/******************************************************************************
- * Map a column in the data file to a standard ParticleProperty.
- *****************************************************************************/
-void InputColumnMapping::mapStandardColumn(int columnIndex, ParticleProperty::Type property, int vectorComponent, const QString& columnName)
-{
-	mapCustomColumn(columnIndex, ParticleProperty::standardPropertyName(property), ParticleProperty::standardPropertyDataType(property), vectorComponent, property, columnName);
-}
-
-/******************************************************************************
- * Ignores a column in the data file and removes any mapping to a particle property.
- *****************************************************************************/
-void InputColumnMapping::unmapColumn(int columnIndex, const QString& columnName)
-{
-	OVITO_ASSERT(columnIndex >= 0);
-
-	if(columnIndex < columnCount()) {
-		_columns[columnIndex].propertyType = ParticleProperty::UserProperty;
-		_columns[columnIndex].propertyName.clear();
-		_columns[columnIndex].columnName = columnName;
-		_columns[columnIndex].dataType = QMetaType::Void;
-		_columns[columnIndex].vectorComponent = 0;
-	}
-	else {
-		// Expand column array if necessary and initialize all new columns to their default values.
-		setColumnCount(columnIndex + 1);
-		_columns[columnIndex].columnName = columnName;
-	}
-}
 
 /******************************************************************************
  * Saves the mapping to the given stream.
@@ -96,13 +34,13 @@ void InputColumnMapping::unmapColumn(int columnIndex, const QString& columnName)
 void InputColumnMapping::saveToStream(SaveStream& stream) const
 {
 	stream.beginChunk(0x01);
-	stream << (int)_columns.size();
-	for(const Column& col : _columns) {
+	stream << (int)size();
+	for(const InputColumnInfo& col : *this) {
 		stream << col.columnName;
-		stream.writeEnum(col.propertyType);
-		stream << col.propertyName;
+		stream.writeEnum(col.property.type());
+		stream << col.property.name();
 		stream.writeEnum(col.dataType);
-		stream << col.vectorComponent;
+		stream << col.property.vectorComponent();
 	}
 	stream.endChunk();
 }
@@ -115,15 +53,19 @@ void InputColumnMapping::loadFromStream(LoadStream& stream)
 	stream.expectChunk(0x01);
 	int numColumns;
 	stream >> numColumns;
-	_columns.resize(numColumns);
-	for(Column& col : _columns) {
+	resize(numColumns);
+	for(InputColumnInfo& col : *this) {
 		stream >> col.columnName;
-		stream.readEnum(col.propertyType);
-		stream >> col.propertyName;
+		ParticleProperty::Type propertyType;
+		stream.readEnum(propertyType);
+		QString propertyName;
+		stream >> propertyName;
 		stream.readEnum(col.dataType);
 		if(col.dataType == qMetaTypeId<float>() || col.dataType == qMetaTypeId<double>())
 			col.dataType = qMetaTypeId<FloatType>();
-		stream >> col.vectorComponent;
+		int vectorComponent;
+		stream >> vectorComponent;
+		col.property = ParticlePropertyReference(propertyType, propertyName, vectorComponent);
 	}
 	stream.closeChunk();
 }
@@ -158,14 +100,7 @@ void InputColumnMapping::fromByteArray(const QByteArray& array)
 void InputColumnMapping::validate() const
 {
 	// Make sure that at least the particle positions are read from the input file.
-	bool posPropertyPresent = false;
-	for(int i = 0; i < columnCount(); i++) {
-		if(propertyType(i) == ParticleProperty::PositionProperty) {
-			posPropertyPresent = true;
-			break;
-		}
-	}
-	if(!posPropertyPresent)
+	if(std::none_of(begin(), end(), [](const InputColumnInfo& column) { return column.property.type() == ParticleProperty::PositionProperty; }))
 		throw Exception(InputColumnReader::tr("No file column has been mapped to the particle position property."));
 }
 
@@ -180,18 +115,17 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 	mapping.validate();
 
 	// Create particle properties as defined by the mapping.
-	for(int i = 0; i < mapping.columnCount(); i++) {
+	for(int i = 0; i < mapping.size(); i++) {
 
 		ParticleProperty* property = nullptr;
+		const ParticlePropertyReference& pref = mapping[i].property;
 
-		int vectorComponent = mapping.vectorComponent(i);
-		int dataType = mapping.dataType(i);
-		if(vectorComponent < 0) vectorComponent = 0;
+		int vectorComponent = std::max(0, pref.vectorComponent());
+		int dataType = mapping[i].dataType;
+
+		TargetPropertyRecord rec;
 
 		if(dataType != QMetaType::Void) {
-			ParticleProperty::Type propertyType = mapping.propertyType(i);
-			QString propertyName = mapping.propertyName(i);
-
 			size_t dataTypeSize;
 			if(dataType == qMetaTypeId<int>())
 				dataTypeSize = sizeof(int);
@@ -200,17 +134,17 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 			else
 				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2").arg(dataType).arg(i+1));
 
-			if(propertyType != ParticleProperty::UserProperty) {
+			if(pref.type() != ParticleProperty::UserProperty) {
 				// Look for existing standard property.
 				for(const auto& p : destination.particleProperties()) {
-					if(p->type() == propertyType) {
+					if(p->type() == pref.type()) {
 						property = p.get();
 						break;
 					}
 				}
 				if(!property) {
 					// Create standard property.
-					property = new ParticleProperty(particleCount, propertyType);
+					property = new ParticleProperty(particleCount, pref.type());
 					destination.addParticleProperty(property);
 				}
 			}
@@ -220,7 +154,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
                 int oldPropertyIndex = -1;
 				for(int j = 0; j < destination.particleProperties().size(); j++) {
 					const auto& p = destination.particleProperties()[j];
-					if(p->name() == propertyName) {
+					if(p->name() == pref.name()) {
 						if(p->dataType() == dataType && (int)p->componentCount() > vectorComponent) {
 							property = p.get();
                         }
@@ -233,69 +167,53 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				}
 				if(!property) {
 					// Create a new user-defined property for the column.
-					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, propertyName);
+					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, pref.name());
 					destination.addParticleProperty(property);
-                    if (oldProperty) {
-                        // We need to replace all old properties with (lower vector component count) with this one.
-                        int indexOfOldProperty = _properties.indexOf(oldProperty);
-                        while (indexOfOldProperty != -1) {
-                            _properties.replace(indexOfOldProperty, property);
-                            indexOfOldProperty = _properties.indexOf(oldProperty);
-                        }
-                        // Remove here and not above because it is auto-released.
-                        destination.removeParticleProperty(oldPropertyIndex);
-                    }
+					if(oldProperty) {
+						// We need to replace all old properties (with lower vector component count) with this one.
+						for(TargetPropertyRecord& rec2 : _properties) {
+							if(rec2.property == oldProperty)
+								rec2.property = property;
+						}
+						// Remove old property.
+						destination.removeParticleProperty(oldPropertyIndex);
+					}
 				}
 			}
 			if(property)
-				property->setName(propertyName);
+				property->setName(pref.name());
 
 			OVITO_ASSERT(vectorComponent < (int)property->componentCount());
+			rec.vectorComponent = vectorComponent;
 		}
 
-		// Build list of property objects for fast look up during parsing.
-		_properties.push_back(property);
-	}
-}
-
-/******************************************************************************
- * Parses the string tokens from one line of the input file and stores the values
- * in the data channels of the destination AtomsObject.
- *****************************************************************************/
-void InputColumnReader::readParticle(size_t particleIndex, char* dataLine)
-{
-	if(!_tokens)
-		_tokens.reset(new const char*[_properties.size()]);
-
-	// Divide string into tokens.
-	int ntokens = 0;
-	while(ntokens < _properties.size()) {
-		while(*dataLine == ' ' || *dataLine == '\t')
-			++dataLine;
-		_tokens[ntokens] = dataLine;
-		while(*dataLine > ' ')
-			++dataLine;
-		if(*dataLine == '\n' || *dataLine == '\r') *dataLine = '\0';
-		if(dataLine != _tokens[ntokens]) ntokens++;
-		if(*dataLine == '\0') break;
-		*dataLine = '\0';
-		dataLine++;
+		// Build list of target properties for fast look up during parsing.
+		rec.property = property;
+		_properties.push_back(rec);
 	}
 
-	readParticle(particleIndex, ntokens, _tokens.get());
+	// Finalize the target property records.
+	for(TargetPropertyRecord& rec : _properties) {
+		if(rec.property) {
+			rec.stride = rec.property->componentCount();
+			rec.count = rec.property->size();
+			rec.isTypeProperty = (rec.property->type() == ParticleProperty::ParticleTypeProperty);
+			rec.floatData = (rec.property->dataType() == qMetaTypeId<FloatType>()) ? (rec.property->dataFloat() + rec.vectorComponent) : nullptr;
+			rec.intData = (rec.property->dataType() == qMetaTypeId<int>()) ? (rec.property->dataInt() + rec.vectorComponent) : nullptr;
+		}
+	}
 }
-
 
 /******************************************************************************
  * Helper function that converts a string to a floating-point number.
  *****************************************************************************/
-inline bool parseFloatType(const char* s, float& f)
+inline bool parseFloatType(const char* s, const char* s_end, float& f)
 {
+#if 0
 	// First use the atof() function to parse the number because it's fast.
 	// However, atof() returns 0.0 to report a parsing error. Thus, if
 	// we get 0.0, we need to use the slower strtof() function as a means to
 	// discriminate invalid strings from an actual zero value.
-
 	f = (float)std::atof(s);
 	if(f != 0.0f)
 		return true;
@@ -304,18 +222,21 @@ inline bool parseFloatType(const char* s, float& f)
 		f = std::strtof(s, &endptr);
 		return !*endptr;
 	}
+#else
+	return boost::spirit::qi::parse(s, s_end, boost::spirit::qi::float_, f);
+#endif
 }
 
 /******************************************************************************
  * Helper function that converts a string to a floating-point number.
  *****************************************************************************/
-inline bool parseFloatType(const char* s, double& f)
+inline bool parseFloatType(const char* s, const char* s_end, double& f)
 {
+#if 0
 	// First use the atof() function to parse the number because it's fast.
 	// However, atof() returns 0.0 to report a parsing error. Thus, if
 	// we get 0.0, we need to use the slower strtod() function as a means to
 	// discriminate invalid strings from an actual zero value.
-
 	f = std::atof(s);
 	if(f != 0.0)
 		return true;
@@ -324,24 +245,31 @@ inline bool parseFloatType(const char* s, double& f)
 		f = std::strtod(s, &endptr);
 		return !*endptr;
 	}
+#else
+	return boost::spirit::qi::parse(s, s_end, boost::spirit::qi::double_, f);
+#endif
 }
 
 /******************************************************************************
  * Helper function that converts a string to an integer number.
  *****************************************************************************/
-inline bool parseInt(const char* s, int& i)
+inline bool parseInt(const char* s, const char* s_end, int& i)
 {
+#if 0
 	char* endptr;
 	i = std::strtol(s, &endptr, 10);
 	return !*endptr;
+#else
+	return boost::spirit::qi::parse(s, s_end, boost::spirit::qi::int_, i);
+#endif
 }
 
 /******************************************************************************
  * Helper function that converts a string repr. of a bool ('T' or 'F') to an int
  *****************************************************************************/
-inline bool parseBool(const char* s, int& d)
+inline bool parseBool(const char* s, const char* s_end, int& d)
 {
-	if(s[1] != '\0') return false;
+	if(s_end != s + 1) return false;
 	if(s[0] == 'T') {
 		d = 1;
 		return true;
@@ -355,53 +283,98 @@ inline bool parseBool(const char* s, int& d)
 
 /******************************************************************************
  * Parses the string tokens from one line of the input file and stores the values
- * in the particle properties.
+ * in the data channels of the destination AtomsObject.
  *****************************************************************************/
-void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const char* tokens[])
+const char* InputColumnReader::readParticle(size_t particleIndex, const char* s, const char* s_end)
 {
-	OVITO_ASSERT(_properties.size() == _mapping.columnCount());
-	if(ntokens < _properties.size())
-		throw Exception(tr("Data line in input file does not contain enough columns. Expected %1 file columns, but found only %2.").arg(_properties.size()).arg(ntokens));
+	OVITO_ASSERT(_properties.size() == _mapping.size());
 
-	auto propertyIterator = _properties.cbegin();
-	const char** token = tokens;
-
-	int d;
-	char* endptr;
-	for(int columnIndex = 0; propertyIterator != _properties.cend(); ++columnIndex, ++token, ++propertyIterator) {
-		ParticleProperty* property = *propertyIterator;
-		if(!property) continue;
-
-		if(particleIndex >= property->size())
-			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(property->size()));
-		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < (int)property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
-
-		if(property->dataType() == _floatMetaTypeId) {
-			FloatType f;
-			if(!parseFloatType(*token, f))
-				throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
-			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), f);
+	int columnIndex = 0;
+	while(columnIndex < _properties.size()) {
+		// Skip initial whitespace.
+		while(s != s_end && (*s == ' ' || *s == '\t' || *s == '\r'))
+			++s;
+		if(s == s_end || *s == '\n') break;
+		const char* token = s;
+		// Go to end of token.
+		while(s != s_end && *s > ' ')
+			++s;
+		if(s != token) {
+			parseField(particleIndex, columnIndex, token, s);
+			columnIndex++;
 		}
-		else if(property->dataType() == _intMetaTypeId) {
-			bool ok = parseInt(*token, d);
-			if(property->type() != ParticleProperty::ParticleTypeProperty) {
-				if(!ok) {
-					ok = parseBool(*token, d);
-					if(!ok)
-						throw Exception(tr("Invalid integer/bool value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
-				}
+		if(s == s_end) break;
+	}
+	if(columnIndex < _properties.size())
+		throw Exception(tr("Data line in input file does not contain enough columns. Expected %1 file columns, but found only %2.").arg(_properties.size()).arg(columnIndex));
+
+	// Skip to end of line.
+	while(s != s_end && *s != '\n')
+		++s;
+	if(s != s_end) ++s;
+	return s;
+}
+
+/******************************************************************************
+ * Parses the string tokens from one line of the input file and stores the values
+ * in the data channels of the destination AtomsObject.
+ *****************************************************************************/
+void InputColumnReader::readParticle(size_t particleIndex, const char* s)
+{
+	OVITO_ASSERT(_properties.size() == _mapping.size());
+
+	int columnIndex = 0;
+	while(columnIndex < _properties.size()) {
+		while(*s == ' ' || *s == '\t')
+			++s;
+		const char* token = s;
+		while(*s > ' ')
+			++s;
+		if(s != token) {
+			parseField(particleIndex, columnIndex, token, s);
+			columnIndex++;
+		}
+		if(*s == '\0') break;
+		s++;
+	}
+	if(columnIndex < _properties.size())
+		throw Exception(tr("Data line in input file does not contain enough columns. Expected %1 file columns, but found only %2.").arg(_properties.size()).arg(columnIndex));
+}
+
+/******************************************************************************
+ * Parse a single field from a text line.
+ *****************************************************************************/
+void InputColumnReader::parseField(size_t particleIndex, int columnIndex, const char* token, const char* token_end)
+{
+	const TargetPropertyRecord& prec = _properties[columnIndex];
+	if(!prec.property) return;
+
+	if(particleIndex >= prec.count)
+		throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(prec.count));
+
+	if(prec.floatData) {
+		if(!parseFloatType(token, token_end, prec.floatData[particleIndex * prec.stride]))
+			throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(prec.property->name()).arg(QString::fromLocal8Bit(token, token_end - token)));
+	}
+	else if(prec.intData) {
+		int& d = prec.intData[particleIndex * prec.stride];
+		bool ok = parseInt(token, token_end, d);
+		if(!prec.isTypeProperty) {
+			if(!ok) {
+				ok = parseBool(token, token_end, d);
+				if(!ok)
+					throw Exception(tr("Invalid integer/bool value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(prec.property->name()).arg(QString::fromLocal8Bit(token, token_end - token)));
+			}
+		}
+		else {
+			// Automatically register a new particle type if a new type identifier is encountered.
+			if(ok) {
+				_destination.addParticleTypeId(d);
 			}
 			else {
-				// Automatically register a new particle type if a new type identifier is encountered.
-				if(ok) {
-					_destination.addParticleTypeId(d);
-				}
-				else {
-					d = _destination.addParticleTypeName(*token);
-					_usingNamedParticleTypes = true;
-				}
+				d = _destination.addParticleTypeName(token, token_end);
+				_usingNamedParticleTypes = true;
 			}
-			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), d);
 		}
 	}
 }
@@ -412,32 +385,30 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
  *****************************************************************************/
 void InputColumnReader::readParticle(size_t particleIndex, const double* values, int nvalues)
 {
-	OVITO_ASSERT(_properties.size() == _mapping.columnCount());
+	OVITO_ASSERT(_properties.size() == _mapping.size());
 	if(nvalues < _properties.size())
 		throw Exception(tr("Data record in input file does not contain enough columns. Expected %1 file columns, but found only %2.").arg(_properties.size()).arg(nvalues));
 
-	auto propertyIterator = _properties.cbegin();
+	auto prec = _properties.cbegin();
 	const double* token = values;
 
 	int d;
-	for(int columnIndex = 0; propertyIterator != _properties.cend(); ++columnIndex, ++token, ++propertyIterator) {
-		ParticleProperty* property = *propertyIterator;
-		if(!property) continue;
+	for(int columnIndex = 0; prec != _properties.cend(); ++columnIndex, ++token, ++prec) {
+		if(!prec->property) continue;
 
-		if(particleIndex >= property->size())
-			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(property->size()));
-		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < (int)property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
+		if(particleIndex >= prec->count)
+			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(prec->count));
 
-		if(property->dataType() == _floatMetaTypeId) {
-			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), *token);
+		if(prec->floatData) {
+			prec->floatData[particleIndex * prec->stride] = (FloatType)*token;
 		}
-		else if(property->dataType() == _intMetaTypeId) {
+		else if(prec->intData) {
 			int ival = (int)*token;
-			if(property->type() == ParticleProperty::ParticleTypeProperty) {
+			if(prec->isTypeProperty) {
 				// Automatically register a new particle type if a new type identifier is encountered.
 				_destination.addParticleTypeId(ival);
 			}
-			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), ival);
+			prec->intData[particleIndex * prec->stride] = ival;
 		}
 	}
 }

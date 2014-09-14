@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/LinePrimitive.h>
 
@@ -81,8 +82,8 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Scene object + revision number
-		Color										// Display color
+		WeakVersionedOORef<SceneObject>,		// Scene object + revision number
+		Color									// Display color
 		> _geometryCacheHelper;
 
 private:

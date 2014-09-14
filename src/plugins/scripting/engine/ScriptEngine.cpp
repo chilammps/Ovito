@@ -28,7 +28,6 @@
 #include <core/scene/SceneNode.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SceneRoot.h>
-#include <core/scene/GroupNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/pipeline/ModifierApplication.h>
@@ -71,7 +70,6 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
 	registerOvitoObjectType<SceneRenderer>();
 	registerOvitoObjectType<SceneNode>();
 	registerOvitoObjectType<ObjectNode>();
-	registerOvitoObjectType<GroupNode>();
 	registerOvitoObjectType<SceneRoot>();
 	registerOvitoObjectType<SceneObject>();
 	registerOvitoObjectType<PipelineObject>();

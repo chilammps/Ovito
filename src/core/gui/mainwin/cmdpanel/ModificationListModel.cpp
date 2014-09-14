@@ -111,12 +111,11 @@ void ModificationListModel::refreshList()
 
     if(_datasetContainer.currentSet()) {
 		for(SceneNode* node : _datasetContainer.currentSet()->selection()->nodes()) {
-			if(node->isObjectNode()) {
-				ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+			if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
 				_selectedNodes.push_back(objNode);
 
-				if(cmnObject == nullptr) cmnObject = objNode->sceneObject();
-				else if(cmnObject != objNode->sceneObject()) {
+				if(cmnObject == nullptr) cmnObject = objNode->dataProvider();
+				else if(cmnObject != objNode->dataProvider()) {
 					cmnObject = nullptr;
 					break;	// The scene nodes are not compatible.
 				}
@@ -163,6 +162,8 @@ void ModificationListModel::refreshList()
 						}
 					}
 				}
+
+				cmnObject = modObj->sourceObject();
 			}
 			else {
 				items.push_back(new ModificationListItem(nullptr, false, tr("Input")));
@@ -179,19 +180,9 @@ void ModificationListModel::refreshList()
 						items.push_back(new ModificationListItem(subobject, true));
 					}
 				}
-			}
 
-			// In case the current object has multiple input slots, determine if they all point to the same input object.
-			SceneObject* nextObj = nullptr;
-			for(int i = 0; i < cmnObject->inputObjectCount(); i++) {
-				if(!nextObj)
-					nextObj = cmnObject->inputObject(i);
-				else if(nextObj != cmnObject->inputObject(i)) {
-					nextObj = nullptr;  // The input objects do not match.
-					break;
-				}
+				break;
 			}
-			cmnObject = nextObj;
 		}
 		while(cmnObject != nullptr);
 	}

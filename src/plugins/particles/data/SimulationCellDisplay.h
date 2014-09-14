@@ -29,6 +29,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/LinePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/rendering/ParticlePrimitive.h>
@@ -92,9 +93,9 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType simulationCellLineWidth READ simulationCellLineWidth WRITE setSimulationCellLineWidth)
-	Q_PROPERTY(Color simulationCellRenderingColor READ simulationCellRenderingColor WRITE setSimulationCellRenderingColor)
-	Q_PROPERTY(bool renderSimulationCell READ renderSimulationCell WRITE setRenderSimulationCell)
+	Q_PROPERTY(FloatType simulationCellLineWidth READ simulationCellLineWidth WRITE setSimulationCellLineWidth);
+	Q_PROPERTY(Color simulationCellRenderingColor READ simulationCellRenderingColor WRITE setSimulationCellRenderingColor);
+	Q_PROPERTY(bool renderSimulationCell READ renderSimulationCell WRITE setRenderSimulationCell);
 
 protected:
 
@@ -123,7 +124,10 @@ protected:
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for wireframe rendering.
-	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int, ColorA> _wireframeGeometryCacheHelper;
+	SceneObjectCacheHelper<
+		WeakVersionedOORef<SimulationCell>,
+		ColorA
+		> _wireframeGeometryCacheHelper;
 
 	/// The geometry buffer used to render the edges of the cell.
 	std::unique_ptr<ArrowPrimitive> _edgeGeometry;
@@ -134,8 +138,8 @@ protected:
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for solid rendering mode.
 	SceneObjectCacheHelper<
-		QPointer<SimulationCell>, unsigned int,			// The simulation cell + revision number
-		FloatType, Color								// Line width + color
+		WeakVersionedOORef<SimulationCell>,			// The simulation cell + revision number
+		FloatType, Color							// Line width + color
 		> _solidGeometryCacheHelper;
 
 private:

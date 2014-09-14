@@ -31,21 +31,21 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleExporter, FileExporter)
-DEFINE_PROPERTY_FIELD(ParticleExporter, _outputFilename, "OutputFile")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _exportAnimation, "ExportAnimation")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _useWildcardFilename, "UseWildcardFilename")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _wildcardFilename, "WildcardFilename")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _startFrame, "StartFrame")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _endFrame, "EndFrame")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _everyNthFrame, "EveryNthFrame")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _outputFilename, "Output filename")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _exportAnimation, "Export animation")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _useWildcardFilename, "Use wildcard filename")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _wildcardFilename, "Wildcard filename")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _startFrame, "Start frame")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _endFrame, "End frame")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _everyNthFrame, "Every Nth frame")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleExporter, FileExporter);
+DEFINE_PROPERTY_FIELD(ParticleExporter, _outputFilename, "OutputFile");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _exportAnimation, "ExportAnimation");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _useWildcardFilename, "UseWildcardFilename");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _wildcardFilename, "WildcardFilename");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _startFrame, "StartFrame");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _endFrame, "EndFrame");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _everyNthFrame, "EveryNthFrame");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _outputFilename, "Output filename");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _exportAnimation, "Export animation");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _useWildcardFilename, "Use wildcard filename");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _wildcardFilename, "Wildcard filename");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _startFrame, "Start frame");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _endFrame, "End frame");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _everyNthFrame, "Every Nth frame");
 
 /******************************************************************************
 * Constructs a new instance of the class.
@@ -53,7 +53,7 @@ SET_PROPERTY_FIELD_LABEL(ParticleExporter, _everyNthFrame, "Every Nth frame")
 ParticleExporter::ParticleExporter(DataSet* dataset) : FileExporter(dataset),
 	_exportAnimation(false),
 	_useWildcardFilename(false), _startFrame(0), _endFrame(-1),
-	_everyNthFrame(1), _compressor(&_outputFile)
+	_everyNthFrame(1)
 {
 	INIT_PROPERTY_FIELD(ParticleExporter::_outputFilename);
 	INIT_PROPERTY_FIELD(ParticleExporter::_exportAnimation);
@@ -243,26 +243,10 @@ bool ParticleExporter::writeOutputFiles(const QVector<SceneNode*>& nodes)
 bool ParticleExporter::openOutputFile(const QString& filePath, int numberOfFrames)
 {
 	OVITO_ASSERT(!_outputFile.isOpen());
+	OVITO_ASSERT(!_outputStream);
 
 	_outputFile.setFileName(filePath);
-
-	// Automatically write a gzipped file if filename ends with .gz suffix.
-	if(filePath.endsWith(".gz", Qt::CaseInsensitive)) {
-
-		// Open compressed file for writing.
-		_compressor.setStreamFormat(QtIOCompressor::GzipFormat);
-		if(!_compressor.open(QIODevice::WriteOnly))
-			throw Exception(tr("Failed to open file '%1' for writing: %2").arg(filePath).arg(_compressor.errorString()));
-
-		_textStream.setDevice(&_compressor);
-	}
-	else {
-		if(!_outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
-			throw Exception(tr("Failed to open file '%1' for writing: %2").arg(filePath).arg(_outputFile.errorString()));
-
-		_textStream.setDevice(&_outputFile);
-	}
-	_textStream.setRealNumberPrecision(10);
+	_outputStream.reset(new CompressedTextWriterStream(_outputFile));
 
 	return true;
 }
@@ -272,8 +256,7 @@ bool ParticleExporter::openOutputFile(const QString& filePath, int numberOfFrame
  *****************************************************************************/
 void ParticleExporter::closeOutputFile(bool exportCompleted)
 {
-	if(_compressor.isOpen())
-		_compressor.close();
+	_outputStream.reset();
 	if(_outputFile.isOpen())
 		_outputFile.close();
 

@@ -32,55 +32,10 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier);
 IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor);
 SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor);
-
-/******************************************************************************
-* Sets the identifier of the data channel that contains the type for each atom.
-******************************************************************************/
-void SelectParticleTypeModifier::setSourceProperty(const ParticlePropertyReference& prop)
-{
-	if(_inputPropertyRef == prop) return;
-
-	// Make this change undoable.
-	qRegisterMetaType<ParticlePropertyReference>();
-	if(dataset()->undoStack().isRecording())
-		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
-
-	_inputPropertyRef = prop;
-	notifyDependents(ReferenceEvent::TargetChanged);
-}
-
-/******************************************************************************
-* Sets the list of atom type identifiers to select.
-******************************************************************************/
-void SelectParticleTypeModifier::setSelectedParticleTypes(const QSet<int>& types)
-{
-	if(_selectedParticleTypes == types)
-		return;		// Nothing has changed
-
-	// Make the property change undoable.
-	dataset()->undoStack().undoablePropertyChange<QSet<int>>(this,
-			&SelectParticleTypeModifier::selectedParticleTypes, &SelectParticleTypeModifier::setSelectedParticleTypes);
-
-	_selectedParticleTypes = types;
-	notifyDependents(ReferenceEvent::TargetChanged);
-}
-
-/******************************************************************************
-* Retrieves the input type property from the given modifier input state.
-******************************************************************************/
-ParticleTypeProperty* SelectParticleTypeModifier::lookupInputProperty(const PipelineFlowState& inputState) const
-{
-	for(SceneObject* o : inputState.objects()) {
-		ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o);
-		if(ptypeProp) {
-			if((sourceProperty().type() == ParticleProperty::UserProperty && ptypeProp->name() == sourceProperty().name()) ||
-					(sourceProperty().type() != ParticleProperty::UserProperty && ptypeProp->type() == sourceProperty().type())) {
-				return ptypeProp;
-			}
-		}
-	}
-	return nullptr;
-}
+DEFINE_PROPERTY_FIELD(SelectParticleTypeModifier, _sourceProperty, "SourceProperty");
+DEFINE_PROPERTY_FIELD(SelectParticleTypeModifier, _selectedParticleTypes, "SelectedParticleTypes");
+SET_PROPERTY_FIELD_LABEL(SelectParticleTypeModifier, _sourceProperty, "Property");
+SET_PROPERTY_FIELD_LABEL(SelectParticleTypeModifier, _selectedParticleTypes, "Selected types");
 
 /******************************************************************************
 * This modifies the input object.
@@ -88,7 +43,7 @@ ParticleTypeProperty* SelectParticleTypeModifier::lookupInputProperty(const Pipe
 PipelineStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the input type property.
-	ParticleTypeProperty* typeProperty = lookupInputProperty(input());
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(sourceProperty().findInState(input()));
 	if(!typeProperty)
 		throw Exception(tr("The source property for this modifier is not present in the input."));
 	OVITO_ASSERT(typeProperty->componentCount() == 1);
@@ -137,43 +92,24 @@ void SelectParticleTypeModifier::initializeModifier(PipelineObject* pipeline, Mo
 }
 
 /******************************************************************************
-* Saves the class' contents to the given stream.
-******************************************************************************/
-void SelectParticleTypeModifier::saveToStream(ObjectSaveStream& stream)
-{
-	ParticleModifier::saveToStream(stream);
-
-	stream.beginChunk(0x01);
-	stream << _inputPropertyRef;
-	stream << _selectedParticleTypes;
-	stream.endChunk();
-}
-
-/******************************************************************************
 * Loads the class' contents from the given stream.
 ******************************************************************************/
 void SelectParticleTypeModifier::loadFromStream(ObjectLoadStream& stream)
 {
 	ParticleModifier::loadFromStream(stream);
 
-	stream.expectChunk(0x01);
-	stream >> _inputPropertyRef;
-	stream >> _selectedParticleTypes;
-	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> SelectParticleTypeModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<SelectParticleTypeModifier> clone = static_object_cast<SelectParticleTypeModifier>(ParticleModifier::clone(deepCopy, cloneHelper));
-
-	clone->_inputPropertyRef = this->_inputPropertyRef;
-	clone->_selectedParticleTypes = this->_selectedParticleTypes;
-
-	return clone;
+	// This is to maintain backward compatibility with old program versions.
+	// Can be removed in the future.
+	if(stream.applicationMajorVersion() == 2 && stream.applicationMinorVersion() <= 3) {
+		stream.expectChunk(0x01);
+		ParticlePropertyReference pref;
+		stream >> pref;
+		setSourceProperty(pref);
+		QSet<int> types;
+		stream >> types;
+		setSelectedParticleTypes(types);
+		stream.closeChunk();
+	}
 }
 
 /******************************************************************************
@@ -258,7 +194,7 @@ void SelectParticleTypeModifierEditor::updateParticleTypeList()
 		particleTypesBox->setEnabled(true);
 
 		// Populate atom types list based on the input type property.
-		ParticleTypeProperty* inputProperty = mod->lookupInputProperty(mod->getModifierInput());
+		ParticleTypeProperty* inputProperty = dynamic_object_cast<ParticleTypeProperty>(mod->sourceProperty().findInState(mod->getModifierInput()));
 		if(inputProperty) {
 			for(ParticleType* ptype : inputProperty->particleTypes()) {
 				if(!ptype) continue;

@@ -29,6 +29,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "BondsObject.h"
@@ -119,14 +120,14 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<BondsObject>, unsigned int,				// The bonds scene object + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Particle position property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Particle color property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Particle type property + revision number
-		QPointer<SimulationCell>, unsigned int,				// Simulation cell + revision number
-		FloatType,											// Bond width
-		Color,												// Bond color
-		bool												// Use particle colors
+		WeakVersionedOORef<BondsObject>,				// The bonds scene object + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Particle color property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Particle type property + revision number
+		WeakVersionedOORef<SimulationCell>,				// Simulation cell + revision number
+		FloatType,										// Bond width
+		Color,											// Bond color
+		bool											// Use particle colors
 	> _geometryCacheHelper;
 
 	/// The bounding box that includes all bonds.
@@ -135,10 +136,10 @@ protected:
 	/// This helper structure is used to detect changes in the input data
 	/// that require recomputing the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<BondsObject>, unsigned int,				// The bonds scene object + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Particle position property + revision number
-		QPointer<SimulationCell>, unsigned int,				// Simulation cell + revision number
-		FloatType											// Bond width
+		WeakVersionedOORef<BondsObject>,				// The bonds scene object + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
+		WeakVersionedOORef<SimulationCell>,				// Simulation cell + revision number
+		FloatType										// Bond width
 	> _boundingBoxCacheHelper;
 
 private:

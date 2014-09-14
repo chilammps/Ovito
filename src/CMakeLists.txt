@@ -28,6 +28,7 @@ ADD_SUBDIRECTORY(3rdparty/botan)
 ADD_SUBDIRECTORY(3rdparty/qssh)
 ADD_SUBDIRECTORY(3rdparty/muparser)
 ADD_SUBDIRECTORY(3rdparty/qcustomplot)
+ADD_SUBDIRECTORY(3rdparty/voro++)
 
 ################# Core libraries  ####################
 
@@ -93,3 +94,6 @@ ENDIF()
 SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 
 ADD_SUBDIRECTORY(main)
+
+# Propagate the plugin list to the parent scope.
+SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)

@@ -29,6 +29,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include "ParticlePropertyObject.h"
@@ -142,8 +143,8 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<ParticlePropertyObject>, unsigned int,		// Vector property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Particle position property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,			// Vector property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,			// Particle position property + revision number
 		FloatType,											// Scaling factor
 		FloatType,											// Arrow width
 		Color,												// Arrow color
@@ -157,8 +158,8 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<ParticlePropertyObject>, unsigned int,	// Vector property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,	// Particle position property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Vector property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
 		FloatType,										// Scaling factor
 		FloatType										// Arrow width
 		> _boundingBoxCacheHelper;

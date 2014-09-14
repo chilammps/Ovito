@@ -107,6 +107,17 @@ public:
 	/// If yes, then the dataset is saved by calling fileSave().
 	bool askForSaveChanges();
 
+	/// \brief This function blocks execution until some operation has been completed.
+	///        The function displays a progress dialog to block access to the application main window.
+	///        The dialog allows the user to cancel the operation.
+	/// \param callback This callback function will be polled to check whether the operation has finished.
+	///                 The callback function should return true to indicate that the operation has finished.
+	/// \param message The text to be shown to the user while waiting.
+	/// \param progressDialog An existing progress dialog to use to show the message.
+	///                       If NULL, the function will show its own dialog box.
+	/// \return true on success; false if the operation has been canceled by the user.
+	bool waitUntil(const std::function<bool()>& callback, const QString& message, QProgressDialog* progressDialog = nullptr);
+
 Q_SIGNALS:
 
 	/// Is emitted when a another dataset has become the active dataset.

@@ -50,12 +50,14 @@ QT5_USE_MODULES(${PROJECT_NAME} ${OVITO_REQUIRED_QT_MODULES})
 # This executable will be part of the installation package.
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
+OVITO_FIXUP_BUILD_OBJECT(${PROJECT_NAME})
+
 IF(OVITO_MONOLITHIC_BUILD)
 
 	# Build a monolithic executable that includes everything.
 	# When statically linking, the linker will typically eliminate
 	# unreferenced static objects in the final executable. To prevent this from
-	# happening, we have to use the -whole-archive linker option. 
+	# happening we have to use the -whole-archive linker option. 
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
 	FOREACH(plugin ${OVITO_PLUGINS_LIST})
 		LINK_WHOLE_LIBRARY(${PROJECT_NAME} ${plugin})
@@ -70,22 +72,17 @@ IF(OVITO_MONOLITHIC_BUILD)
 
 		# Some additional system libraries are required.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
-				"freetype" "libfontconfig.a" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a")
+				"freetype" "libfontconfig.a" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a" "util")
 
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH "1")
 		FIND_LIBRARY(OVITO_LIBSTDCXX NAMES libstdc++.so.6 PATHS /usr/lib NO_DEFAULT_PATH)
+		IF(NOT OVITO_LIBSTDCXX)
+			MESSAGE(FATAL_ERROR "Please specify the location of the C++ standard library with the OVITO_LIBSTDCXX option.") 
+		ENDIF()
 		GET_FILENAME_COMPONENT(OVITO_LIBSTDCXX_REAL ${OVITO_LIBSTDCXX} REALPATH)
 		INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 		
-		# Install a qt.conf file.
-		# INSTALL(CODE "
-		#	file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nLibraries = ../${OVITO_RELATIVE_LIBRARY_DIRECTORY}/\")
-		#	" COMPONENT Runtime)
-
-		# Install Qt fonts.
-		# INSTALL(DIRECTORY "${_qt5Core_install_prefix}/lib/fonts" DESTINATION ${OVITO_RELATIVE_LIBRARY_DIRECTORY} COMPONENT Runtime)
-
 	ENDIF()
 
 ENDIF()
@@ -121,5 +118,5 @@ IF(APPLE)
 	
 	# To create a package, one can run "cpack -G DragNDrop CPackConfig.cmake" on Mac OS X
 	# where CPackConfig.cmake is created by including CPack.
-	SET(CPACK_BINARY_DRAGNDROP ON)		
+	SET(CPACK_BINARY_DRAGNDROP ON)	
 ENDIF()

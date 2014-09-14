@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/dataset/importexport/FileExporter.h>
-#include <base/io/gzdevice/qtiocompressor.h>
+#include <core/utilities/io/CompressedTextWriterStream.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
 namespace Particles {
@@ -164,11 +164,11 @@ protected:
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
 	virtual bool exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress) = 0;
 
-	/// Returns the current output file stream.
+	/// Returns the current file this exporter is writing to.
 	QFile& outputFile() { return _outputFile; }
 
-	/// Returns the text stream writing to the current output file.
-	QTextStream& textStream() { return _textStream; }
+	/// Returns the text stream used to write into the current output file.
+	CompressedTextWriterStream& textStream() { return *_outputStream; }
 
 private:
 
@@ -196,11 +196,8 @@ private:
 	/// The output file stream.
 	QFile _outputFile;
 
-	/// The optional compression filter.
-	QtIOCompressor _compressor;
-
-	/// The text stream writing to the current output file.
-	QTextStream _textStream;
+	/// The stream object used to write into the output file.
+	std::unique_ptr<CompressedTextWriterStream> _outputStream;
 
 private:
 

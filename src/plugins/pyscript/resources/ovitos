@@ -1,0 +1,95 @@
+#!/bin/bash
+#
+# This shell script launches OVITO in scripting mode and turns off
+# the graphical user interface. It also takes care of passing command
+# line parameters on to the Python script. 
+#
+# Usage:
+#
+#   ovitos [-o FILE] [-g] [-v] [script.py [arg...]] 
+#
+# The -i starts OVITO's Python interpreter in interactive mode.
+#
+# The -o option tells OVITO to load the given FILE before executing the script.
+# FILE can be a data file to import or an OVITO scene file to load.
+#
+
+# Get the directory this shell script is loacted in.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Assume console mode by default
+CONSOLE_MODE="--nogui"
+
+# Process options
+while [ $# -ge 1 ]
+do
+  # Process -o option.
+  if [ "$1" = "-o" ]
+  then
+    OPEN_FILE=$2
+    shift
+    shift
+  elif [ "$1" = "-h" -o "$1" = "--help" ]
+  then
+    echo "OVITO Script Interpreter"
+    echo ""
+    echo "Usage: `basename $0` [-o FILE] [-v] [-g] [script.py] [args...]"
+    exit 0
+  elif [ "$1" = "-g" -o "$1" = "--gui" ]
+  then
+    CONSOLE_MODE=
+    shift
+  elif [ "$1" = "-v" -o "$1" = "--version" ]
+  then
+    SHOW_VERSION="-v"
+    shift
+  else
+    break
+  fi
+done
+
+# Get the name of the script file to execute.
+if [ $# -ge 1 ]
+then
+  SCRIPT_FILE="--script \"$1\""
+else
+  INTERACTIVE="--exec \"import code; code.interact(banner='This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-D to exit.');\""
+fi
+
+shift
+
+# Cannot start interactive in GUI mode.
+if [ -z "${CONSOLE_MODE}" -a -n "${INTERACTIVE}" ]
+then
+  echo "ERROR: Interactive interpreter cannot be started in graphical mode."
+  exit 1
+fi
+
+# Read in the list of command line arguments that need to be passed to the script.
+ARGLIST=""
+for var in "$@"
+do
+  ARGLIST="${ARGLIST} --scriptarg \"${var}\""
+done
+
+# Pick the executable.
+OVITO_EXE="${DIR}/ovito"
+if [[ "$OSTYPE" == "darwin"* ]]
+then
+	if [ -n "${CONSOLE_MODE}" ]
+	then
+		OVITO_EXE="${DIR}/Ovito.app/Contents/MacOS/ovito"
+	fi
+fi
+
+# Check if OVITO executable is present.
+if [ ! -x "${OVITO_EXE}" ]
+then
+  echo "ERROR: OVITO executable does not exist: ${OVITO_EXE}"
+  exit 1
+fi
+
+# Invoke the main OVITO executable.
+# Escape all script arguments with the --scriptarg option.
+# The data file to be loaded must be specified last.
+eval ${OVITO_EXE} ${CONSOLE_MODE} ${SHOW_VERSION} ${SCRIPT_FILE} ${ARGLIST} ${INTERACTIVE} ${OPEN_FILE}

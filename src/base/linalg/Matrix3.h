@@ -171,6 +171,22 @@ public:
 		return setIdentity();
 	}
 
+	/// \brief Returns a pointer to the first element of the matrix.
+	/// \return A pointer to 9 matrix elements in column-major order.
+	/// \sa constData()
+	T* data() {
+        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
+		return reinterpret_cast<T*>(&_m);
+	}
+
+	/// \brief Returns a pointer to the first element of the matrix.
+	/// \return A pointer to 9 matrix elements in column-major order.
+	/// \sa data()
+	const T* constData() const {
+        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
+		return reinterpret_cast<const T*>(&_m);
+	}
+
 	////////////////////////////////// Comparison ///////////////////////////////////
 
 	/// \brief Compares two matrices for exact equality.

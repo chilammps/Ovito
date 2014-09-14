@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (2014) Alexander Stukowski
@@ -20,7 +21,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/pyscript/PyScript.h>
+#include <plugins/pyscript/binding/PythonBinding.h>
 #include <core/plugins/PluginManager.h>
+#include <core/gui/app/Application.h>
 #include "ScriptEngine.h"
 
 namespace PyScript {
@@ -35,6 +38,9 @@ dict ScriptEngine::_prototypeMainNamespace;
 
 /// The script engine that is currently active (i.e. which is executing a script).
 QAtomicPointer<ScriptEngine> ScriptEngine::_activeEngine;
+
+/// Head of linked list that contains all initXXX functions.
+PythonPluginRegistration* PythonPluginRegistration::linkedlist = nullptr;
 
 /******************************************************************************
 * Initializes the scripting engine and sets up the environment.
@@ -52,16 +58,14 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutpu
 		_mainNamespace = _prototypeMainNamespace.copy();
 
 		// Add a reference to the current dataset to the namespace.
-		object ovito_module = import("ovito");
-		object ovito_namespace = ovito_module.attr("__dict__");
-		ovito_namespace["dataset"] = ptr(dataset);
+		import("ovito").attr("dataset") = ptr(dataset);
 	}
 	catch(const error_already_set&) {
 		PyErr_Print();
-		throw Exception(tr("Could not initialize Python interpreter. See console output for error details."));
+		throw Exception(tr("Failed to initialize Python interpreter. See console output for error details."));
 	}
 
-	// Install default signal handlers for Python script output.
+	// Install default signal handlers for Python script output, which forward the script output to the host application's stdout/stderr.
 	if(redirectOutputToConsole) {
 		connect(this, &ScriptEngine::scriptOutput, [](const QString& str) { std::cout << str.toLocal8Bit().constData(); });
 		connect(this, &ScriptEngine::scriptError, [](const QString& str) { std::cerr << str.toLocal8Bit().constData(); });
@@ -75,17 +79,27 @@ void ScriptEngine::initializeInterpreter()
 {
 	if(_isInterpreterInitialized)
 		return;	// Interpreter is already initialized.
-
 	try {
+
+		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the 
+		// location of Python standard library, which gets shipped with the static build of OVITO.
+		static QByteArray programName = QCoreApplication::applicationFilePath().toLocal8Bit();
+		Py_SetProgramName(programName.data());
+
+		// Make our internal script modules available by registering their initXXX functions with the Python interpreter.
+		// This is always required for static builds where all Ovito plugins are linked into the main executable file.
+		// On Windows this pre-registration is also needed, because OVITO plugin dynamic libraries have an .dll extension and the Python interpreter 
+		// can only find modules that have a .pyd extension.
+		for(PythonPluginRegistration* r = PythonPluginRegistration::linkedlist; r != nullptr; r = r->_next) {
+			PyImport_AppendInittab(r->_moduleName, r->_initFunc);
+		}
+
 		// Initialize the Python interpreter.
 		Py_Initialize();
 
 		// Import the main module and get a reference to the main namespace.
 		object main_module = import("__main__");
 		_prototypeMainNamespace = extract<dict>(main_module.attr("__dict__"));
-
-		// Make Ovito program version number available to script.
-		_prototypeMainNamespace["version"] = make_tuple(OVITO_VERSION_MAJOR, OVITO_VERSION_MINOR, OVITO_VERSION_REVISION);
 
 		// Install automatic QString to Python string conversion.
 		struct QString_to_python_str {
@@ -97,27 +111,44 @@ void ScriptEngine::initializeInterpreter()
 
 		// Install automatic Python string to QString conversion.
 		auto convertible = [](PyObject* obj_ptr) -> void* {
-			if(!PyString_Check(obj_ptr)) return nullptr;
+			if(!PyString_Check(obj_ptr) && !PyUnicode_Check(obj_ptr)) return nullptr;
 			return obj_ptr;
 		};
 		auto construct = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-			const char* value = PyString_AsString(obj_ptr);
-			if(!value) throw_error_already_set();
 			void* storage = ((boost::python::converter::rvalue_from_python_storage<QString>*)data)->storage.bytes;
-			new (storage) QString(value);
-			data->convertible = storage;
+			if(PyString_Check(obj_ptr)) {
+				const char* value = PyString_AsString(obj_ptr);
+				if(!value) throw_error_already_set();
+				new (storage) QString(value);
+				data->convertible = storage;
+			}
+			else if(PyUnicode_Check(obj_ptr)) {
+				const Py_UNICODE* value = PyUnicode_AS_UNICODE(obj_ptr);
+				if(!value) throw_error_already_set();
+				if(sizeof(Py_UNICODE) == sizeof(wchar_t))
+					new (storage) QString(QString::fromWCharArray(reinterpret_cast<const wchar_t*>(value)));
+				else if(sizeof(Py_UNICODE) == sizeof(uint))
+					new (storage) QString(QString::fromUcs4(reinterpret_cast<const uint*>(value)));
+				else if(sizeof(Py_UNICODE) == sizeof(QChar))
+					new (storage) QString(reinterpret_cast<const QChar*>(value));
+				else
+					throw Exception(tr("The Unicode character size used by Python has an unsupported size: %1 bytes").arg(sizeof(Py_UNICODE)));
+				data->convertible = storage;
+			}
 		};
 		converter::registry::push_back(convertible, construct, boost::python::type_id<QString>());
 
-		// Register the output redirector class.
-		class_<InterpreterStdOutputRedirector, std::auto_ptr<InterpreterStdOutputRedirector>, boost::noncopyable>("__StdOutStreamRedirectorHelper", no_init).def("write", &InterpreterStdOutputRedirector::write);
-		class_<InterpreterStdErrorRedirector, std::auto_ptr<InterpreterStdErrorRedirector>, boost::noncopyable>("__StdErrStreamRedirectorHelper", no_init).def("write", &InterpreterStdErrorRedirector::write);
-
-		// Install output redirection.
 		object sys_module = import("sys");
-		object sys_namespace = sys_module.attr("__dict__");
-		sys_namespace["stdout"] = ptr(new InterpreterStdOutputRedirector());
-		sys_namespace["stderr"] = ptr(new InterpreterStdErrorRedirector());
+
+		// Install output redirection (don't do this in console mode as it interferes with the interactive interpreter).
+		if(Application::instance().guiMode()) {
+			// Register the output redirector class.
+			class_<InterpreterStdOutputRedirector, std::auto_ptr<InterpreterStdOutputRedirector>, boost::noncopyable>("__StdOutStreamRedirectorHelper", no_init).def("write", &InterpreterStdOutputRedirector::write);
+			class_<InterpreterStdErrorRedirector, std::auto_ptr<InterpreterStdErrorRedirector>, boost::noncopyable>("__StdErrStreamRedirectorHelper", no_init).def("write", &InterpreterStdErrorRedirector::write);
+			// Replace stdout and stderr streams.
+			sys_module.attr("stdout") = ptr(new InterpreterStdOutputRedirector());
+			sys_module.attr("stderr") = ptr(new InterpreterStdErrorRedirector());
+		}
 
 		// Install Ovito to Python exception translator.
 		auto toPythonExceptionTranslator = [](const Exception& ex) {
@@ -125,13 +156,15 @@ void ScriptEngine::initializeInterpreter()
 		};
 		register_exception_translator<Exception>(toPythonExceptionTranslator);
 
-		// Add plugin directories to sys.path.
-		list sys_path = extract<list>(sys_namespace["path"]);
+		// Add directories containing OVITO's Python modules to sys.path.
+		list sys_path = extract<list>(sys_module.attr("path"));
 		for(const QDir& pluginDir : PluginManager::instance().pluginDirs()) {
-			// Add the directory containing the native plugin libraries.
-			sys_path.insert(0, QDir::toNativeSeparators(pluginDir.absolutePath()));
-			// Also add the python/ subdirectory containing the Python-based part of the plugins.
+#ifndef Q_OS_WIN
 			sys_path.insert(0, QDir::toNativeSeparators(pluginDir.absolutePath() + "/python"));
+#else
+			object path2(QDir::toNativeSeparators(pluginDir.absolutePath() + "/python"));
+			PyList_Insert(sys_path.ptr(), 0, path2.ptr());
+#endif
 		}
 	}
 	catch(const Exception&) {
@@ -161,7 +194,7 @@ int ScriptEngine::execute(const QString& commands)
 		throw Exception("There is already another script engine being active.");
 
 	try {
-		exec(commands.toLatin1().constData(), _mainNamespace, _mainNamespace);
+		exec(commands.toLocal8Bit().constData(), _mainNamespace, _mainNamespace);
 	    _activeEngine.storeRelease(nullptr);
 		return 0;
 	}
@@ -201,6 +234,14 @@ int ScriptEngine::executeFile(const QString& file)
 		throw Exception("There is already another script engine being active.");
 
 	try {
+		// Pass command line parameters to the script.
+		list argList;
+		argList.append(file);
+		QStringList scriptArguments = Application::instance().cmdLineParser().values("scriptarg");
+		for(const QString& a : scriptArguments)
+			argList.append(a);
+		import("sys").attr("argv") = argList;
+
 	    exec_file(QDir::toNativeSeparators(file).toLatin1().constData(), _mainNamespace, _mainNamespace);
 	    _activeEngine.storeRelease(nullptr);
 	    return 0;
@@ -213,7 +254,10 @@ int ScriptEngine::executeFile(const QString& file)
 		}
 		PyErr_Print();
 	    _activeEngine.storeRelease(nullptr);
-		throw Exception(tr("Python interpreter has exited with an error. See interpreter output for details."));
+	    if(Application::instance().guiMode())
+	    	throw Exception(tr("The Python script '%1' has exited with an error. See console output for details.").arg(file));
+	    else
+	    	throw Exception(tr("The Python script '%1' has exited with an error.").arg(file));
 	}
 	catch(const Exception&) {
 	    _activeEngine.storeRelease(nullptr);

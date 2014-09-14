@@ -35,10 +35,10 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ScriptAutostarter, AutoStartObject);
 void ScriptAutostarter::registerCommandLineOptions(QCommandLineParser& cmdLineParser)
 {
 	// Register the --script command line option.
-	cmdLineParser.addOption(QCommandLineOption("script", tr("Runs a script file."), tr("FILE")));
+	cmdLineParser.addOption(QCommandLineOption("jsscript", tr("Runs a Javascript file."), tr("FILE")));
 
 	// Register the --exec command line option.
-	cmdLineParser.addOption(QCommandLineOption("exec", tr("Executes a script command."), tr("CMD")));
+	cmdLineParser.addOption(QCommandLineOption("jsexec", tr("Executes a Javascript command."), tr("CMD")));
 }
 
 /******************************************************************************
@@ -47,8 +47,8 @@ void ScriptAutostarter::registerCommandLineOptions(QCommandLineParser& cmdLinePa
 void ScriptAutostarter::applicationStarted()
 {
 	// Execute the script commands and files passed on the command line.
-	QStringList scriptCommands = Application::instance().cmdLineParser().values("exec");
-	QStringList scriptFiles = Application::instance().cmdLineParser().values("script");
+	QStringList scriptCommands = Application::instance().cmdLineParser().values("jsexec");
+	QStringList scriptFiles = Application::instance().cmdLineParser().values("jsscript");
 
 	if(!scriptCommands.empty() || !scriptFiles.empty()) {
 
@@ -70,7 +70,7 @@ void ScriptAutostarter::applicationStarted()
 
 			// Handle script errors by throwing a C++ exception, which will be handled by the main program.
 			if(engine.hasUncaughtException())
-				throw Exception(tr("Error in --exec script command: %1").arg(engine.uncaughtException().toString()));
+				throw Exception(tr("Error in --jsexec script command: %1").arg(engine.uncaughtException().toString()));
 		}
 
 		// Execute script files.

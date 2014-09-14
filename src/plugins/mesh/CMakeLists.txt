@@ -24,7 +24,17 @@ SET(OVITO_MESH_SOURCE_FILES
 	import/VTKFileImporter.cpp
 )
 
+IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
+	LIST(APPEND OVITO_MESH_SOURCE_FILES 
+		scripting/PythonInterface.cpp
+	)
+ENDIF()
+
 # Generate plugin module.
 OVITO_PLUGIN(Mesh
 	SOURCES ${OVITO_MESH_SOURCE_FILES}
+	OPTIONAL_PLUGIN_DEPENDENCIES PyScript	
 )
+
+# Install the Python source files that belong to the plugin and which provide the scripting interface.
+ADD_CUSTOM_COMMAND(TARGET Mesh POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

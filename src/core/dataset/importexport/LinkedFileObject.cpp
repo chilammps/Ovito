@@ -123,7 +123,7 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 /******************************************************************************
 * Sets the source location for importing data.
 ******************************************************************************/
-bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer, bool useExactURL)
+bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, bool useExactURL)
 {
 	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;

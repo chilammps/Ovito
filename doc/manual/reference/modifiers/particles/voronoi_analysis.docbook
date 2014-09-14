@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="particles.modifiers.voronoi_analysis"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Voronoi analysis</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/voronoi_analysis_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+    This analysis modifier calculates the Voronoi tessellation of the simulation box, taking the particle positions as Voronoi cell centers. 
+    By default two quantities are output by the analysis modifier for each particle:
+    The volume of the particle's Voronoi cell and the number of faces the Voronoi cell has. Since the face count
+    is equal to the number of nearest neighbors of the particle, this quantity is also called the coordination number.    
+  </para>
+  
+  <para>
+    In addition the modifier can compute the <emphasis>Voronoi index</emphasis> of each cell,
+    which is a vector of integers constituting a histogram of the number of edges on the faces of the Voronoi cell.
+    This index vector can be considered a characteristic signature of a particle's coordination structure.
+  </para>  
+  
+  <para>
+    Note that the modifier calculates the Voronoi tessellation of the volume enclosed by the simulation cell only (and not 
+    entire space). Thus, Voronoi cells will be truncated at the simulation box boundaries (unless periodic boundary conditions are used).
+    No computation will be performed for particles located outside the simulation box boundaries (but they will be considered in the 
+    calculation of Voronoi cells of particles inside the box). 
+  </para>
+        
+  <para>
+     The modifier supports two different ways of computing a particle's Voronoi cell. 
+     The first method, which is the default, is a general method that always yields the correct
+	 Voronoi cell shape even if the particle is located at the surface of a structure.
+	 The second method uses a distance-based cutoff scheme and is usually considerable faster than the general method.
+     However, this method will only yield correct results for particles that are located in the interior of a structure and whose Voronoi cell is therefore smaller than the
+     selected cutoff distance. The Voronoi cells of particles at the surface will be truncated at the selected cutoff distance. Accordingly, the computed  
+     numbers will be incorrect for these particles.
+  </para>
+  
+  <para>
+     That means you have to choose the calculation method with care and according to the system to be analyzed.
+     The good news is: When using the fast, cutoff-based method OVITO will warn you in cases where this method yields incorrect results. 
+     You can then switch back to the slower method. 
+  </para>
+  
+  <para>
+     OVITO checks the tessellation results in the following way: The sum of volumes of all Voronoi cells must exactly match the volume of the entire simulation box.
+     OVITO issues a warning in case of a deviation. There can be two reasons for this: When using the cutoff-based method to
+     construct the Voronoi cells, large cells may get truncated at the cutoff distance. You can fix this by increasing the cutoff distance parameter
+     (which slows down the calculation) or switch to the more general construction method, which can deal with arbitrary systems.
+     Another reason for a deviation in the calculated volume sum can be the fact that particles are located outside the simulation box (this applies only 
+     to non-periodic boundaries). 
+  </para>
+  
+  <simplesect> 
+    <title>Parameters</title>
+
+    <variablelist>
+
+      <varlistentry>
+        <term>Face area threshold</term>
+        <listitem>
+          <para>
+             Specifies a minimum area for faces of a Voronoi cell. The modifier will ignore any Voronoi cell faces with an area smaller than this
+             threshold when computing the coordination number and the Voronoi index of particles.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Use cutoff</term>
+        <listitem>
+          <para>
+             Activates the cutoff-based scheme to construct Voronoi cells (fast method). 
+          </para>
+        </listitem>
+      </varlistentry>
+    
+      <varlistentry>
+        <term>Cutoff distance</term>
+        <listitem>
+          <para>
+             Only neighbor particles that are within this cutoff distance are taken into account when computing the Voronoi cell of a particle using the cutoff-based method.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Compute Voronoi indices</term>
+        <listitem>
+          <para>
+             Lets the modifier calculate the Voronoi indices of particles. The modifier stores the computed indices in a vector particle property
+             named <code>Voronoi Index</code>. The <emphasis>i</emphasis>-th component of this property will contain the number of faces of the 
+             Voronoi cell that have <emphasis>i</emphasis> edges. Thus, the first two components of the per-particle vector will always be zero, because the minimum
+             number of edges a polygon can have is three.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Maximum edge count</term>
+        <listitem>
+          <para>
+             Controls the order up to which Voronoi indices are computed. Note that Voronoi faces with a more edges than this maximum will be ignored when calculating the index vector.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Edge length threshold</term>
+        <listitem>
+          <para>
+             Specifies the minimum length an edge must have to be considered in the Voronoi index calculation. Edges that are shorter
+             than this threshold will be ignored when counting the number of edges of a Voronoi face.
+          </para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term>Use particle radii</term>
+        <listitem>
+          <para>
+             Lets the modifier compute the poly-disperse Voronoi tessellation, which takes into account the radii of particles.
+             Otherwise a mono-disperse Voronoi tessellation is computed, which is independent of the particle sizes.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Use only selected particles</term>
+        <listitem>
+          <para>
+             Lets the modifier perform the analysis only for selected particles. Particles that are not selected will be treated as if they did not exist.
+          </para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </simplesect>
+  
+  <simplesect> 
+    <title>Acknowledgment</title>
+    <para>This modifier uses the <link xlink:href="http://math.lbl.gov/voro++/">Voro++ package</link> of Chris Rycroft to compute Voronoi polyhedra.</para>
+  </simplesect>
+  
+</section>

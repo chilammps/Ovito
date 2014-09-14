@@ -26,6 +26,7 @@
 #include <core/scene/display/DisplayObject.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/MeshPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/animation/controller/Controller.h>
@@ -66,10 +67,34 @@ public:
 	/// Sets the color of the defect surface cap.
 	void setCapColor(const Color& color) { _capColor = color; }
 
+	/// Returns whether the cap mesh is rendered.
+	bool showCap() const { return _showCap; }
+
+	/// Sets whether the cap mesh is rendered.
+	void setShowCap(bool show) { _showCap = show; }
+
+	/// Returns whether the surface mesh is rendered using smooth shading.
+	bool smoothShading() const { return _smoothShading; }
+
+	/// Sets whether the surface mesh is rendered using smooth shading.
+	void setSmoothShading(bool smoothShading) { _smoothShading = smoothShading; }
+
+	/// Returns the transparency of the surface mesh.
+	FloatType surfaceTransparency() const { return _surfaceTransparency ? _surfaceTransparency->currentFloatValue() : 0.0f; }
+
+	/// Sets the transparency of the surface mesh.
+	void setSurfaceTransparency(FloatType transparency) { if(_surfaceTransparency) _surfaceTransparency->setCurrentFloatValue(transparency); }
+
+	/// Returns the transparency of the surface cap mesh.
+	FloatType capTransparency() const { return _capTransparency ? _capTransparency->currentFloatValue() : 0.0f; }
+
+	/// Sets the transparency of the surface cap mesh.
+	void setCapTransparency(FloatType transparency) { if(_capTransparency) _capTransparency->setCurrentFloatValue(transparency); }
+
 public:
 
-	Q_PROPERTY(Ovito::Color surfacecColor READ surfaceColor WRITE setSurfaceColor)
-	Q_PROPERTY(Ovito::Color capColor READ capColor WRITE setCapColor)
+	Q_PROPERTY(Ovito::Color surfacecColor READ surfaceColor WRITE setSurfaceColor);
+	Q_PROPERTY(Ovito::Color capColor READ capColor WRITE setCapColor);
 
 protected:
 
@@ -124,11 +149,11 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Source object + revision number
-		SimulationCellData,							// Simulation cell geometry
-		ColorA,										// Surface color
-		ColorA,										// Cap color
-		bool										// Smooth shading
+		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		SimulationCellData,						// Simulation cell geometry
+		ColorA,									// Surface color
+		ColorA,									// Cap color
+		bool									// Smooth shading
 		> _geometryCacheHelper;
 
 	/// The cached bounding box.
@@ -137,8 +162,8 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Source object + revision number
-		SimulationCellData							// Simulation cell geometry
+		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		SimulationCellData						// Simulation cell geometry
 		> _boundingBoxCacheHelper;
 
 private:

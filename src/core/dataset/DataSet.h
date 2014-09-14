@@ -122,7 +122,7 @@ public:
 	///        The method will update the title and the size of the window while rendering the image.
 	/// \return true on success; false if operation has been canceled by the user.
 	/// \throw Exception on error.
-	bool renderScene(RenderSettings* settings, Viewport* viewport, QSharedPointer<FrameBuffer> frameBuffer, FrameBufferWindow* frameBufferWindow = nullptr);
+	bool renderScene(RenderSettings* settings, Viewport* viewport, QSharedPointer<FrameBuffer> frameBuffer = QSharedPointer<FrameBuffer>(), FrameBufferWindow* frameBufferWindow = nullptr);
 
 	/// \brief Checks all scene nodes if their geometry pipeline is fully evaluated at the given animation time.
 	bool isSceneReady(TimePoint time) const;
@@ -178,7 +178,7 @@ protected:
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
 	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
-	void renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
+	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
 			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
 
 	/// Returns a viewport configuration that is used as template for new scenes.

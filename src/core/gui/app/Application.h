@@ -79,15 +79,18 @@ public:
 	/// This can be used to set a debugger breakpoint for the OVITO_ASSERT macros.
 	static void qtMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-	/// \brief Return whether the application has been started in graphical mode.
+	/// \brief Returns whether the application has been started in graphical mode.
 	/// \return \c true if the application should use a graphical user interface;
 	///         \c false if the application has been started in the non-graphical console mode.
 	bool guiMode() const { return !_consoleMode; }
 
-	/// \brief Return whether the application has been started in console mode.
+	/// \brief Returns whether the application has been started in console mode.
 	/// \return \c true if the application has been started in the non-graphical console mode;
 	///         \c false if the application should use a graphical user interface.
 	bool consoleMode() const { return _consoleMode; }
+
+	/// \brief Returns whether the application runs in headless mode (without an X server on Linux and no OpenGL support).
+	bool headlessMode() const { return _headlessMode; }
 
 	/// \brief When in console mode, this specifies the exit code that will be returned by the application on shutdown.
 	void setExitCode(int code) { _exitCode = code; }
@@ -131,6 +134,9 @@ private:
 
 	/// Indicates that the application is running in console mode.
 	bool _consoleMode;
+
+	/// Indicates that the application is running in headless mode (without OpenGL support).
+	bool _headlessMode;
 
 	/// In console mode, this is the exit code returned by the application on shutdown.
 	int _exitCode;

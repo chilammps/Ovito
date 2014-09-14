@@ -25,13 +25,12 @@
 #include <plugins/particles/Particles.h>
 #include <core/viewport/input/ViewportInputMode.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
+#include <plugins/particles/data/ParticleSelectionSet.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
 
 using namespace Ovito;
-
-class ParticleSelectionSet;		// Defined in ParticleSelectionSet.h
 
 /**
  * Modifiers that allows the user to select individual particles by hand.

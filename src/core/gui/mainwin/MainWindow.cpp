@@ -232,6 +232,7 @@ void MainWindow::createMainMenu()
 
 	// Build the file menu.
 	QMenu* fileMenu = menuBar->addMenu(tr("&File"));
+	fileMenu->setObjectName(QStringLiteral("FileMenu"));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_NEW_WINDOW));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_IMPORT));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_REMOTE_IMPORT));
@@ -245,6 +246,7 @@ void MainWindow::createMainMenu()
 
 	// Build the edit menu.
 	QMenu* editMenu = menuBar->addMenu(tr("&Edit"));
+	editMenu->setObjectName(QStringLiteral("EditMenu"));
 	editMenu->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
 	editMenu->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 	editMenu->addSeparator();
@@ -252,11 +254,19 @@ void MainWindow::createMainMenu()
 
 	// Build the options menu.
 	QMenu* optionsMenu = menuBar->addMenu(tr("&Options"));
+	optionsMenu->setObjectName(QStringLiteral("OptionsMenu"));
 	optionsMenu->addAction(actionManager()->getAction(ACTION_SETTINGS_DIALOG));
 
 	// Build the help menu.
 	QMenu* helpMenu = menuBar->addMenu(tr("&Help"));
+	helpMenu->setObjectName(QStringLiteral("HelpMenu"));
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_SHOW_ONLINE_HELP));
+#ifndef  Q_OS_WIN64
+	// If it is installed, insert link to the scripting reference manual to the help menu.
+	connect(helpMenu->addAction(tr("Scripting Reference")), &QAction::triggered, [this]() {
+		openHelpTopic(QStringLiteral("python/index.html"));
+	});
+#endif
 	helpMenu->addSeparator();
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_ABOUT));
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_OPENGL_INFO));
@@ -285,11 +295,13 @@ void MainWindow::createMainToolbar()
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 
+#if 0
 	_mainToolbar->addSeparator();
 
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_SELECTION_MODE));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_XFORM_MOVE_MODE));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_XFORM_ROTATE_MODE));
+#endif
 
 	_mainToolbar->addSeparator();
 

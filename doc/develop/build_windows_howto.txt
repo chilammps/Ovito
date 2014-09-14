@@ -7,9 +7,36 @@ Build MPFR library (using MSYS enviroment):
 Build Boost libraries (release 1.55):
 **************************************************************************
 
+Run:
 bootstrap.bat
 
-b2 --prefix=C:\Users\stuko\ovito\boost32 toolset=gcc link=shared threading=multi --ignore-python --ignore-mpi --layout=tagged --with-system --with-thread install
+---- 32 bit ---
+
+Install official Python for x86 in c:\users\stuko\ovito\python32\
+
+Create file user-config.jam in HOME directory:
+
+using python 
+	: 2.7 
+	: c:\\users\\stuko\\ovito\\python32\\python.exe 
+	: c:\\users\\stuko\\ovito\\python32\\include
+	: c:\\users\\stuko\\ovito\\python32\\libs ;
+
+b2 --prefix=C:\Users\stuko\ovito\boost32 toolset=gcc link=shared threading=multi --ignore-mpi --layout=tagged --with-system --with-thread --with-python install
+
+---- 64 bit ---
+
+Create file user-config.jam in HOME directory:
+
+using python 
+	: 2.7 
+	: c:\\users\\stuko\\ovito\\mingw64\\opt\\bin\\python.exe 
+	: c:\\users\\stuko\\ovito\\Python-2.7.6\\Include
+	: c:\\users\\stuko\\ovito\\mingw64\\opt\\lib\\python2.7\\config ;
+  
+rename 'mingw64\opt\lib\python2.7\config\libpython2.7.dll.a' to 'libpython27.a'
+  
+b2 --prefix=C:\Users\stuko\ovito\boost64 toolset=gcc link=shared threading=multi --ignore-mpi --layout=tagged --with-system --with-thread --with-python define=MS_WIN64 install
 
 **************************************************************************
 Build CGAL library (release 4.3):
@@ -22,3 +49,9 @@ cmake -DBOOST_INCLUDE_DIR=c:/Users/stuko/ovito/boost64/include \
 	-DWITH_CGAL_Qt4=OFF \
 	-DWITH_CGAL_ImageIO=OFF \
 	.
+	
+**************************************************************************
+OVITO CMake settings:
+**************************************************************************
+
+SPHINX_PROCESSOR = C:/Users/stuko/ovito/python32/Scripts/sphinx-build-script.py

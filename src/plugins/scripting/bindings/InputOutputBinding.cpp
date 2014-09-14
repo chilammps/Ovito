@@ -93,7 +93,7 @@ QScriptValue InputOutputBinding::load(QScriptContext* context, ScriptEngine* eng
 		return context->throwError(tr("Operation has been canceled by the user."));
 
 	// Return the newly created ObjectNode.
-	ObjectNode* objNode = dynamic_object_cast<ObjectNode>(engine->dataset()->selection()->firstNode());
+	ObjectNode* objNode = dynamic_object_cast<ObjectNode>(engine->dataset()->selection()->front());
 	if(!objNode)
 		throw Exception(tr("File import was not successful."));
 

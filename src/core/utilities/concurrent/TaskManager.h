@@ -99,6 +99,9 @@ public Q_SLOTS:
 	/// \brief Cancels all running background tasks and waits for them to finish.
 	void cancelAllAndWait();
 
+	/// \brief Waits for all tasks to finish.
+	void waitForAll();
+
 private Q_SLOTS:
 
 	/// \brief Is called when a task has started to run.

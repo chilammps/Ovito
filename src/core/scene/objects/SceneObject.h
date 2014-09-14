@@ -111,6 +111,15 @@ public:
 		return PipelineFlowState(this, objectValidity(time));
 	}
 
+	/// \brief This function blocks execution until the object is able ready to
+	///        provide data via its evaluate() function.
+	/// \param time The animation time at which the object should be evaluated.
+	/// \param message The text to be shown to the user while waiting.
+	/// \param progressDialog An existing progress dialog to use to show the message.
+	///                       If NULL, the function will show its own dialog box.
+	/// \return true on success; false if the operation has been canceled by the user.
+	bool waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog = nullptr);
+
 	/// \brief Returns a structure that describes the current status of the object.
 	///
 	/// The default implementation of this method returns an empty status object
@@ -143,22 +152,8 @@ public:
 	/// \undoable
 	virtual void setSaveWithScene(bool on) { _saveWithScene = on; }
 
-	/// \brief Returns the number of input objects that are referenced by this scene object.
-	/// \return The number of input objects that this object relies on.
-	///
-	/// The default implementation of this method returns 0.
-	virtual int inputObjectCount() { return 0; }
-
-	/// \brief Returns an input object of this scene object.
-	/// \param index The index of the input object. This must be between 0 and inputObjectCount()-1.
-	/// \return The requested input object. Can be \c NULL.
-	virtual SceneObject* inputObject(int index) {
-		OVITO_ASSERT_MSG(false, "SceneObject::inputObject", "This type of scene object has no input objects.");
-		return nullptr;
-	}
-
-	/// \brief Generates a list of scene nodes that reference this scene object.
-	QSet<ObjectNode*> findSceneNodes() const;
+	/// \brief Returns a list of object nodes that have this object as a data source.
+	QSet<ObjectNode*> dependentNodes() const;
 
 	/// \brief Returns the current value of the revision counter of this scene object.
 	/// This counter is increment every time the object changes.

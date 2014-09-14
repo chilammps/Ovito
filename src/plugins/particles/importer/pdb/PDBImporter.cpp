@@ -140,8 +140,7 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				for(const char* c = stream.line() + 12; c <= stream.line() + std::min(15, lineLength); ++c)
 					if(*c != ' ') atomType[atomTypeLength++] = *c;
 			}
-			atomType[atomTypeLength] = '\0';
-			*a = addParticleTypeName(atomType);
+			*a = addParticleTypeName(atomType, atomType + atomTypeLength);
 #ifdef FLOATTYPE_FLOAT
 			if(lineLength <= 30 || sscanf(stream.line() + 30, "%8g%8g%8g", &p->x(), &p->y(), &p->z()) != 3)
 #else

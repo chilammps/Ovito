@@ -77,6 +77,10 @@
               <entry>Generates a scatter plot of two particle properties.</entry>
             </row>
             <row>
+              <entry><link linkend="particles.modifiers.voronoi_analysis">Voronoi analysis</link></entry>
+              <entry>Computes the coordination number, atomic volume, and Voronoi index of particles from their Voronoi polyhedra.</entry>
+            </row>
+            <row>
               <entry><link linkend="particles.modifiers.wigner_seitz_analysis">Wigner-Seitz defect analysis</link></entry>
               <entry>Identifies point defects (vacancies and interstitials) in a crystal lattice.</entry>
             </row>
@@ -221,6 +225,8 @@
   <xi:include href="particles/show_periodic_images.docbook"/>
 
   <xi:include href="particles/slice.docbook"/>
+
+  <xi:include href="particles/voronoi_analysis.docbook"/>
 
   <xi:include href="particles/wigner_seitz_analysis.docbook"/>
 

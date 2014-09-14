@@ -127,7 +127,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	if(sourceProperty().vectorComponent() >= (int)property->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty().name()).arg(property->componentCount()));
 
-	size_t vecComponent = sourceProperty().vectorComponent() >= 0 ? sourceProperty().vectorComponent() : 0;
+	size_t vecComponent = std::max(0, sourceProperty().vectorComponent());
 	size_t vecComponentCount = property->componentCount();
 
     // Get bottom-left and top-right corner of the simulation cell.

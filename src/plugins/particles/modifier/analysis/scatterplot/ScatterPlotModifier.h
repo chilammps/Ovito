@@ -59,9 +59,6 @@ public:
 	/// Returns the source particle property for which the scatter plot is computed.
 	const ParticlePropertyReference& yAxisProperty() const { return _yAxisProperty; }
 
-	/// Retrieves the selected input particle property from the given modifier input state.
-	ParticlePropertyObject* lookupInputProperty(const PipelineFlowState& inputState, const ParticlePropertyReference &refprop) const;
-
 	/// Returns the stored scatter plot data (x-axis).
 	const QVector<double>& xData() const { return _xData; }
 

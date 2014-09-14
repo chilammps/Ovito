@@ -31,6 +31,7 @@
 #include <base/utilities/Color.h>
 #include "OpenGLHelpers.h"
 
+#include <QOpenGLFunctions_1_4>
 #include <QOpenGLFunctions_2_0>
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
@@ -138,6 +139,7 @@ public:
 		if(_glFunctions32) _glFunctions32->glPointParameterf(pname, param);
 		else if(_glFunctions30) _glFunctions30->glPointParameterf(pname, param);
 		else if(_glFunctions20) _glFunctions20->glPointParameterf(pname, param);
+		else if(_glFunctions14) _glFunctions14->glPointParameterf(pname, param);
 	}
 
 	/// The OpenGL glPointParameterfv() function.
@@ -145,6 +147,7 @@ public:
 		if(_glFunctions32) _glFunctions32->glPointParameterfv(pname, params);
 		else if(_glFunctions30) _glFunctions30->glPointParameterfv(pname, params);
 		else if(_glFunctions20) _glFunctions20->glPointParameterfv(pname, params);
+		else if(_glFunctions14) _glFunctions14->glPointParameterfv(pname, params);
 	}
 
 	/// The OpenGL glMultiDrawArrays() function.
@@ -152,6 +155,7 @@ public:
 		if(_glFunctions32) _glFunctions32->glMultiDrawArrays(mode, first, count, drawcount);
 		else if(_glFunctions30) _glFunctions30->glMultiDrawArrays(mode, first, count, drawcount);
 		else if(_glFunctions20) _glFunctions20->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions14) _glFunctions14->glMultiDrawArrays(mode, first, count, drawcount);
 	}
 
 	/// Make sure vertex IDs are available to use by the OpenGL shader.
@@ -188,6 +192,9 @@ private:
 
 	/// The OpenGL functions object.
 	QOpenGLFunctions* _glFunctions;
+
+	/// The OpenGL 1.4 functions object.
+	QOpenGLFunctions_1_4* _glFunctions14;
 
 	/// The OpenGL 2.0 functions object.
 	QOpenGLFunctions_2_0* _glFunctions20;

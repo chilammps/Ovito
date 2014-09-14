@@ -22,14 +22,16 @@
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/ObjectNode.h>
+#include <core/scene/pipeline/PipelineObject.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget)
-DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene")
-DEFINE_VECTOR_REFERENCE_FIELD(SceneObject, _displayObjects, "DisplayObjects", DisplayObject)
-SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene")
-SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObjects, "Display objects")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget);
+DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene");
+DEFINE_VECTOR_REFERENCE_FIELD(SceneObject, _displayObjects, "DisplayObjects", DisplayObject);
+SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene");
+SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObjects, "Display objects");
 
 /******************************************************************************
 * Constructor.
@@ -98,23 +100,33 @@ void SceneObject::loadFromStream(ObjectLoadStream& stream)
 }
 
 /******************************************************************************
-* Generates a list of scene nodes that reference this scene object.
+* Returns a list of object nodes that have this object as a data source.
 ******************************************************************************/
-QSet<ObjectNode*> SceneObject::findSceneNodes() const
+QSet<ObjectNode*> SceneObject::dependentNodes() const
 {
 	QSet<ObjectNode*> nodeList;
 	for(RefMaker* dependent : this->dependents()) {
-		if(ObjectNode* node = dynamic_object_cast<ObjectNode>(dependent))
-			nodeList.insert(node);
-		else if(SceneObject* sceneObj = dynamic_object_cast<SceneObject>(dependent)) {
-			for(int i = 0; i < sceneObj->inputObjectCount(); i++) {
-				if(sceneObj->inputObject(i) == this) {
-					nodeList.unite(sceneObj->findSceneNodes());
-				}
-			}
+		if(ObjectNode* node = dynamic_object_cast<ObjectNode>(dependent)) {
+			if(node->dataProvider() == this)
+				nodeList.insert(node);
+		}
+		else if(PipelineObject* pipeline = dynamic_object_cast<PipelineObject>(dependent)) {
+			if(pipeline->sourceObject() == this)
+				nodeList.unite(pipeline->dependentNodes());
 		}
 	}
 	return nodeList;
+}
+
+/******************************************************************************
+* This function blocks execution until the object is able ready to
+* provide data via its evaluate() function.
+******************************************************************************/
+bool SceneObject::waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog)
+{
+	return dataset()->container()->waitUntil([this, time]() {
+		return evaluate(time).status().type() != PipelineStatus::Pending;
+	}, message, progressDialog);
 }
 
 };

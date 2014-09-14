@@ -42,7 +42,7 @@ LAMMPSDumpExporter::LAMMPSDumpExporter(DataSet* dataset) : ParticleExporter(data
 bool LAMMPSDumpExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
 	// Load last mapping if no new one has been set already.
-	if(_columnMapping.isEmpty()) {
+	if(_columnMapping.empty()) {
 		QSettings settings;
 		settings.beginGroup("viz/exporter/lammpsdump/");
 		if(settings.contains("columnmapping")) {
@@ -109,61 +109,62 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 	yhi += std::max((FloatType)0, yz);
 
 	textStream() << "ITEM: TIMESTEP\n";
-	textStream() << frameNumber << "\n";
+	textStream() << frameNumber << '\n';
 	textStream() << "ITEM: NUMBER OF ATOMS\n";
-	textStream() << atomsCount << "\n";
+	textStream() << atomsCount << '\n';
 	if(xy != 0 || xz != 0 || yz != 0) {
 		textStream() << "ITEM: BOX BOUNDS xy xz yz";
 		textStream() << (simulationCell->pbcX() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcY() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcZ() ? " pp" : " ff");
-		textStream() << "\n";
-		textStream() << xlo << " " << xhi << " " << xy << "\n";
-		textStream() << ylo << " " << yhi << " " << xz << "\n";
-		textStream() << zlo << " " << zhi << " " << yz << "\n";
+		textStream() << '\n';
+		textStream() << xlo << ' ' << xhi << ' ' << xy << '\n';
+		textStream() << ylo << ' ' << yhi << ' ' << xz << '\n';
+		textStream() << zlo << ' ' << zhi << ' ' << yz << '\n';
 	}
 	else {
 		textStream() << "ITEM: BOX BOUNDS";
 		textStream() << (simulationCell->pbcX() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcY() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcZ() ? " pp" : " ff");
-		textStream() << endl;
-		textStream() << xlo << " " << xhi << "\n";
-		textStream() << ylo << " " << yhi << "\n";
-		textStream() << zlo << " " << zhi << "\n";
+		textStream() << '\n';
+		textStream() << xlo << ' ' << xhi << '\n';
+		textStream() << ylo << ' ' << yhi << '\n';
+		textStream() << zlo << ' ' << zhi << '\n';
 	}
 	textStream() << "ITEM: ATOMS";
 
 	const OutputColumnMapping& mapping = columnMapping();
-	if(mapping.columnCount() <= 0)
+	if(mapping.empty())
 		throw Exception(tr("No particle properties have been selected for export to the LAMMPS dump file. Cannot write dump file with zero columns."));
 
 	// Write column names.
-	for(int i = 0; i < mapping.columnCount(); i++) {
+	for(int i = 0; i < mapping.size(); i++) {
+		const ParticlePropertyReference& pref = mapping[i];
 		QString columnName;
-		switch(mapping.propertyType(i)) {
+		switch(pref.type()) {
 		case ParticleProperty::PositionProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("x");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("y");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("z");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("x");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("y");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("z");
 			else columnName = QStringLiteral("position");
 			break;
 		case ParticleProperty::VelocityProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("vx");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("vy");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("vz");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("vx");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("vy");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("vz");
 			else columnName = QStringLiteral("velocity");
 			break;
 		case ParticleProperty::ForceProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("fx");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("fy");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("fz");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("fx");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("fy");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("fz");
 			else columnName = QStringLiteral("force");
 			break;
 		case ParticleProperty::PeriodicImageProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("ix");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("iy");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("iz");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("ix");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("iy");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("iz");
 			else columnName = QStringLiteral("pbcimage");
 			break;
 		case ParticleProperty::IdentifierProperty: columnName = QStringLiteral("id"); break;
@@ -171,27 +172,16 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 		case ParticleProperty::MassProperty: columnName = QStringLiteral("mass"); break;
 		case ParticleProperty::RadiusProperty: columnName = QStringLiteral("radius"); break;
 		default:
-			columnName = mapping.propertyName(i);
+			columnName = pref.nameWithComponent();
 			columnName.remove(QRegExp("[^A-Za-z\\d_]"));
-			if(mapping.propertyType(i) == ParticleProperty::UserProperty) {
-				if(mapping.vectorComponent(i) > 0)
-					columnName += "." + QString::number(mapping.vectorComponent(i));
-			}
-			else {
-				QStringList componentNames = ParticleProperty::standardPropertyComponentNames(mapping.propertyType(i));
-				if(mapping.vectorComponent(i) < componentNames.size()) {
-					columnName += "." + componentNames[mapping.vectorComponent(i)];
-				}
-			}
 		}
-		textStream() << " " << columnName;
+		textStream() << ' ' << columnName;
 	}
-	textStream() << "\n";
+	textStream() << '\n';
 
 	OutputColumnWriter columnWriter(mapping, state);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
-		textStream() << "\n";
 
 		if((i % 4096) == 0) {
 			progress.setPercentage((quint64)i * 100 / atomsCount);

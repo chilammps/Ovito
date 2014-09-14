@@ -79,7 +79,7 @@ Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, O
 		return Box3();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(sceneObject, sceneObject ? sceneObject->revisionNumber() : 0, cellObject->data()) || _cachedBoundingBox.isEmpty()) {
+	if(_boundingBoxCacheHelper.updateState(sceneObject, cellObject->data()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox = Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
 	}
@@ -111,7 +111,7 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Do we have to update contents of the geometry buffer?
 	bool updateContents = _geometryCacheHelper.updateState(
-			sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
+			sceneObject,
 			cellObject->data(), color_surface, color_cap, _smoothShading)
 					|| recreateSurfaceBuffer || recreateCapBuffer;
 
@@ -856,6 +856,11 @@ void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 	sublayout->addLayout(capTransparencyUI->createFieldLayout(), 1, 1);
 	capTransparencyUI->setMinValue(0);
 	capTransparencyUI->setMaxValue(1);
+
+	QLabel* note = new QLabel(tr("<p style=\"font-size: small;\"><b>Note:</b> With the current program version, all objects will appear fully opaque in the interactive "
+			"viewports. Use the Tachyon renderer to visualize semi-transparent surfaces.</p>"));
+	note->setWordWrap(true);
+	layout->addWidget(note);
 }
 
 };

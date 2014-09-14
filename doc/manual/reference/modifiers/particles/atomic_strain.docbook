@@ -16,8 +16,8 @@
        <imagedata fileref="images/modifiers/atomic_strain_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This modifier calculates he atomic-level strain tensors from two
-  configurations of the simulated system. See
+  This modifier calculates the atomic-level strain tensors based on two
+  configurations of the system. See
   <link xlink:href="http://dx.doi.org/10.1103/PhysRevE.57.7192">[Falk, Langer, Phys. Rev. E 57 (1998), 7192]</link>
   and <link
   xlink:href="http://li.mit.edu/Archive/Activities/Archive/Papers/07/Shimizu07a.pdf">[Shimizu, Ogata, Li, Mater.

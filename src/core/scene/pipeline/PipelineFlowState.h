@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/animation/TimeInterval.h>
 #include <core/reference/RefMaker.h>
+#include <core/scene/objects/VersionedObjectReference.h>
 #include "PipelineStatus.h"
 
 namespace Ovito {
@@ -60,7 +61,6 @@ public:
 		_status(status), _stateValidity(validityInterval), _attributes(attributes)
 	{
 		_objects.reserve(sceneObjects.size());
-		_revisionNumbers.reserve(sceneObjects.size());
 		for(const auto& obj : sceneObjects)
 			addObject(obj);
 	}
@@ -68,17 +68,20 @@ public:
 	/// \brief Discards the contents of this state object.
 	void clear() {
 		_objects.clear();
-		_revisionNumbers.clear();
 		_stateValidity.setEmpty();
 		_status = PipelineStatus();
 		_attributes.clear();
 	}
 
+	/// \brief Returns true if the given object is part of this pipeline flow state.
+	/// \note The method ignores the revision number of the object.
+	bool contains(SceneObject* obj) const;
+
 	/// \brief Adds an additional scene object to this state.
 	void addObject(SceneObject* obj);
 
 	/// \brief Replaces a scene object with a new one.
-	void replaceObject(SceneObject* oldObj, const OORef<SceneObject>& newObj);
+	void replaceObject(SceneObject* oldObj, SceneObject* newObj);
 
 	/// \brief Removes a scene object from this state.
 	void removeObject(SceneObject* sceneObj) {
@@ -86,10 +89,7 @@ public:
 	}
 
 	/// \brief Returns the list of scene objects stored in this flow state.
-	const QVector<OORef<SceneObject>>& objects() const { return _objects; }
-
-	/// \brief Returns the number of objects stored in this container.
-	int count() const { return _objects.size(); }
+	const QVector<VersionedOORef<SceneObject>>& objects() const { return _objects; }
 
 	/// \brief Finds an object of the given type in the list of scene objects stored in this flow state.
 	template<class ObjectType>
@@ -128,36 +128,27 @@ public:
 	/// \brief Returns true if this state object has no valid contents.
 	bool isEmpty() const { return _objects.empty(); }
 
-	/// \brief Updates the stored revision number for a scene object.
-	void updateRevisionNumber(SceneObject* obj);
-
 	/// \brief Updates the stored revision numbers for all scene objects.
 	void updateRevisionNumbers();
-
-	/// \brief Returns the revision of the scene object at the given index.
-	int revisionNumber(int index) const { return _revisionNumbers[index]; }
 
 	/// Returns the status of the pipeline evaluation.
 	const PipelineStatus& status() const { return _status; }
 
-	/// Changes the stored status record.
+	/// Sets the stored status.
 	void setStatus(const PipelineStatus& status) { _status = status; }
 
-	/// Returns the extra attributes associated with the pipeline flow state.
+	/// Returns the auxiliary attributes associated with the state.
 	const QVariantMap& attributes() const { return _attributes; }
 
-	/// Returns a reference to the extra attributes associated with the pipeline flow state.
+	/// Returns a modifiable reference to the auxiliary attributes associated with this state.
 	QVariantMap& attributes() { return _attributes; }
 
 private:
 
-	/// Contains the objects that flow up the geometry pipeline
-	/// and are modified by modifiers.
-	QVector<OORef<SceneObject>> _objects;
-
-	/// Each scene object is associated
-	/// with a revision number, which is used to detect changes to the object.
-	QVector<int> _revisionNumbers;
+	/// The data that has been output by the modification pipeline.
+	/// This is a list of data objects and associated revision numbers
+	/// to easily detect changes.
+	QVector<VersionedOORef<SceneObject>> _objects;
 
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;

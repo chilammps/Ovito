@@ -28,16 +28,18 @@
 namespace Ovito {
 
 /**
- * \brief A helper class that uncompresses gzipped text files on the fly.
+ * \brief A helper class that allows reading text-based files that may be compressed.
  *
- * When opening the input file, it is uncompressed if it has a .gz suffix.
- * Otherwise the data is directly read from the underlying I/O device.
+ * The input file is uncompressed on the fly if it has a .gz name suffix.
+ * Otherwise the text data is directly read from the underlying I/O device.
+ *
+ * The class provides functions to efficiently read one text line at a time.
  */
 class OVITO_CORE_EXPORT CompressedTextParserStream : public QObject
 {
 public:
 
-	/// Constructor that opens the input stream.
+	/// Constructor that opens the given input device for reading.
 	CompressedTextParserStream(QFileDevice& input, const QString& originalFilePath);
 
 	/// Returns the name of the input file (if known).
@@ -45,6 +47,9 @@ public:
 
 	/// Returns the underlying I/O device.
 	QFileDevice& device() { return _device; }
+
+	/// Returns whether data is being read from a compressed file.
+	bool isCompressed() const { return _stream != &_device; }
 
 	/// Reads in the next line.
 	const char* readLine(int maxSize = 0);
@@ -54,22 +59,19 @@ public:
 		return _stream->atEnd();
 	}
 
-	/// Returns the last line read from the data stream.
-	const char* line() const { return _line.get(); }
+	/// Returns the last line read from the stream.
+	const char* line() const { return _line.data(); }
 
 	/// Returns true if the current line starts with the given string.
 	bool lineStartsWith(const char* s) const {
-		const char* l = line();
-		while(*s) {
-			if(*l != *s)
-				return false;
-			++s; ++l;
+		for(const char* l = line(); *s; ++s, ++l) {
+			if(*l != *s) return false;
 		}
 		return true;
 	}
 
 	/// Returns the current line as a string.
-	QString lineString() const { return QString::fromLocal8Bit(_line.get()); }
+	QString lineString() const { return QString::fromLocal8Bit(_line.data()); }
 
 	/// Returns the number of the current line.
 	int lineNumber() const { return _lineNumber; }
@@ -96,16 +98,24 @@ public:
 		return _device.size();
 	}
 
+	/// Maps the input file to memory, starting at the current offset and to end of the file.
+	std::pair<const char*, const char*> mmap() {
+		return mmap(underlyingByteOffset(), underlyingSize() - underlyingByteOffset());
+	}
+
+	/// Maps a part of the input file to memory.
+	std::pair<const char*, const char*> mmap(qint64 offset, qint64 size);
+
+	/// Unmaps the file from memory.
+	void munmap();
+
 private:
 
 	/// The name of the input file (if known).
 	QString _filename;
 
-	/// Buffer that holds the current line.
-	std::unique_ptr<char[]> _line;
-
-	/// The capacity of the line buffer.
-	size_t _lineCapacity;
+	/// Buffer holding the current text line.
+	std::vector<char> _line;
 
 	/// The current line number.
 	int _lineNumber;
@@ -121,6 +131,9 @@ private:
 
 	/// The input stream from which uncompressed data is read.
 	QIODevice* _stream;
+
+	/// The pointer to the memory-mapped data.
+	uchar* _mmapPointer;
 
 	Q_OBJECT
 };

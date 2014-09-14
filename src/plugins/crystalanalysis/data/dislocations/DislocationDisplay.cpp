@@ -58,8 +58,7 @@ Box3 DislocationDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, O
 		return Box3();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
-			cellObject->data(), lineWidth()) || _cachedBoundingBox.isEmpty()) {
+	if(_boundingBoxCacheHelper.updateState(sceneObject, cellObject->data(), lineWidth()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox = Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
 	}
@@ -90,7 +89,7 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Do we have to update contents of the geometry buffers?
 	bool updateContents = _geometryCacheHelper.updateState(
-			sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
+			sceneObject,
 			cellObject->data(), lineWidth()) || recreateBuffers;
 
 	// Re-create the geometry buffers if necessary.

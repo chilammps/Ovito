@@ -81,9 +81,8 @@ private:
 public:
 
 	//// Constructor that builds the binary search tree.
-	TreeNeighborListBuilder(int _numNeighbors) : numNeighbors(_numNeighbors), numLeafNodes(0) {
+	TreeNeighborListBuilder(int _numNeighbors = 16) : numNeighbors(_numNeighbors), numLeafNodes(0), maxTreeDepth(1) {
 		bucketSize = std::max(numNeighbors * 2, 16);
-		maxTreeDepth = 17;
 	}
 
 	/// \brief Prepares the tree data structure.
@@ -101,13 +100,16 @@ public:
 	}
 
 	/// Returns the index of the particle closest to the given point.
-	int findClosestParticle(const Point3& query_point, FloatType& closestDistanceSq) const {
+	int findClosestParticle(const Point3& query_point, FloatType& closestDistanceSq, bool includeSelf = true) const {
 		int closestIndex = -1;
-		closestDistanceSq = std::numeric_limits<FloatType>::max();
-		Point3 qr = simCellInverse * query_point;
-		for(auto pbcImage = pbcImages.begin(); pbcImage != pbcImages.end(); ++pbcImage) {
-			findClosestParticleRecursive(root, pbcImage->first, pbcImage->second, query_point, qr, closestIndex, closestDistanceSq);
-		}
+		closestDistanceSq = FLOATTYPE_MAX;
+		auto visitor = [&closestIndex, &closestDistanceSq](const Neighbor& n, FloatType& mrs) {
+			if(n.distanceSq < closestDistanceSq) {
+				mrs = closestDistanceSq = n.distanceSq;
+				closestIndex = n.index();
+			}
+		};
+		visitNeighbors(query_point, visitor, includeSelf);
 		return closestIndex;
 	}
 
@@ -116,6 +118,9 @@ public:
 		NeighborListAtom* atom;
 		FloatType distanceSq;
 		Vector3 delta;
+
+		/// Returns the index of the neighbor atom.
+		size_t index() const { return atom->index; }
 
 		/// Used for ordering.
 		bool operator<(const Neighbor& other) const { return distanceSq < other.distanceSq; }
@@ -131,11 +136,12 @@ public:
 
 		/// Builds the sorted list of neighbors around the given point.
 		void findNeighbors(const Point3& query_point) {
-			q = query_point;
-			qr = t.simCellInverse * query_point;
 			queue.clear();
-			for(auto pbcImage = t.pbcImages.begin(); pbcImage != t.pbcImages.end(); ++pbcImage)
-				visitNode(t.root, pbcImage->first, pbcImage->second);
+			for(const Vector3& pbcShift : t.pbcImages) {
+				q = query_point - pbcShift;
+				qr = t.simCellInverse * q;
+				visitNode(t.root);
+			}
 			queue.sort();
 		}
 
@@ -145,12 +151,11 @@ public:
 	private:
 
 		/// Inserts all atoms of the given leaf node into the priority queue.
-		void visitNode(TreeNode* node, const Vector3& shift, const Vector3& rshift) {
+		void visitNode(TreeNode* node) {
 			if(node->isLeaf()) {
-				Point3 qs = q - shift;
 				for(NeighborListAtom* atom = node->atoms; atom != nullptr; atom = atom->nextInBin) {
 					Neighbor n;
-					n.delta = atom->pos - qs;
+					n.delta = atom->pos - q;
 					n.distanceSq = n.delta.squaredLength();
 					if(n.distanceSq != 0) {
 						n.atom = atom;
@@ -159,15 +164,15 @@ public:
 				}
 			}
 			else {
-				if(qr[node->splitDim] < node->splitPos + rshift[node->splitDim]) {
-					visitNode(node->children[0], shift, rshift);
-					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[1]->bounds, shift, q))
-						visitNode(node->children[1], shift, rshift);
+				if(qr[node->splitDim] < node->splitPos) {
+					visitNode(node->children[0]);
+					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[1]->bounds, q))
+						visitNode(node->children[1]);
 				}
 				else {
-					visitNode(node->children[1], shift, rshift);
-					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[0]->bounds, shift, q))
-						visitNode(node->children[0], shift, rshift);
+					visitNode(node->children[1]);
+					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[0]->bounds, q))
+						visitNode(node->children[0]);
 				}
 			}
 		}
@@ -177,6 +182,17 @@ public:
 		Point3 q, qr;
 		BoundedPriorityQueue<Neighbor, std::less<Neighbor>, MAX_NEIGHBORS_LIMIT> queue;
 	};
+
+	template<class Visitor>
+	void visitNeighbors(const Point3& query_point, Visitor& v, bool includeSelf = false) const {
+		FloatType mrs = FLOATTYPE_MAX;
+		for(const Vector3& pbcShift : pbcImages) {
+			Point3 q = query_point - pbcShift;
+			Point3 qr = simCellInverse * q;
+			if(mrs > minimumDistance(root->bounds, q))
+				visitNode(root, q, qr, v, mrs, includeSelf);
+		}
+	}
 
 private:
 
@@ -190,9 +206,9 @@ private:
 	int determineSplitDirection(TreeNode* node);
 
 	/// Computes the minimum distance from the query point to the given bounding box.
-	FloatType minimumDistance(const Box3& box, const Vector3& shift, const Point3& query_point) const {
-		Vector3 p1 = simCell * box.minc - query_point + shift;
-		Vector3 p2 = query_point - simCell * box.maxc - shift;
+	FloatType minimumDistance(const Box3& box, const Point3& query_point) const {
+		Vector3 p1 = simCell * box.minc - query_point;
+		Vector3 p2 = query_point - simCell * box.maxc;
 		FloatType minDistance = 0;
 		for(size_t dim = 0; dim < 3; dim++) {
 			FloatType t_min = planeNormals[dim].dot(p1);
@@ -203,8 +219,32 @@ private:
 		return minDistance * minDistance;
 	}
 
-	/// Recursive closest particle search function.
-	void findClosestParticleRecursive(TreeNode* node, const Vector3& shift, const Vector3& rshift, const Point3& q, const Point3& qr, int& closestIndex, FloatType& closestDistanceSq) const;
+	template<class Visitor>
+	void visitNode(TreeNode* node, const Point3& q, const Point3& qr, Visitor& v, FloatType& mrs, bool includeSelf) const {
+		if(node->isLeaf()) {
+			for(NeighborListAtom* atom = node->atoms; atom != nullptr; atom = atom->nextInBin) {
+				Neighbor n;
+				n.delta = atom->pos - q;
+				n.distanceSq = n.delta.squaredLength();
+				if(includeSelf || n.distanceSq != 0) {
+					n.atom = atom;
+					v(n, mrs);
+				}
+			}
+		}
+		else {
+			if(qr[node->splitDim] < node->splitPos) {
+				visitNode(node->children[0], q, qr, v, mrs, includeSelf);
+				if(mrs > minimumDistance(node->children[1]->bounds, q))
+					visitNode(node->children[1], q, qr, v, mrs, includeSelf);
+			}
+			else {
+				visitNode(node->children[1], q, qr, v, mrs, includeSelf);
+				if(mrs > minimumDistance(node->children[0]->bounds, q))
+					visitNode(node->children[0], q, qr, v, mrs, includeSelf);
+			}
+		}
+	}
 
 private:
 
@@ -228,19 +268,19 @@ private:
 	/// The number of neighbors to finds for each atom.
 	int numNeighbors;
 
-	/// The maximum number of atoms per leaf node.
+	/// The maximum number of particles per leaf node.
 	int bucketSize;
 
-	/// The maximum depth of the binary tree.
-	int maxTreeDepth;
-
 	/// List of pbc image shift vectors.
-	std::vector<std::pair<Vector3,Vector3>> pbcImages;
+	std::vector<Vector3> pbcImages;
 
 public:
 
 	/// The number of leaf nodes in the tree.
 	int numLeafNodes;
+
+	/// The maximum depth of this binary tree.
+	int maxTreeDepth;
 };
 
 }; // End of namespace

@@ -54,7 +54,7 @@ public:
 	Controller* colorController() const { return _colorCtrl; }
 
 	/// Sets the controller for the color that is assigned to the selected atoms.
-	void setColorController(const OORef<Controller>& ctrl) { _colorCtrl = ctrl; }
+	void setColorController(Controller* ctrl) { _colorCtrl = ctrl; }
 
 	/// Returns whether the input particle selection is preserved.
 	/// If false, the selection is cleared by the modifier.
@@ -66,8 +66,8 @@ public:
 
 public:
 
-	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection)
-	Q_PROPERTY(Ovito::Color color READ color WRITE setColor)
+	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection);
+	Q_PROPERTY(Ovito::Color color READ color WRITE setColor);
 
 protected:
 

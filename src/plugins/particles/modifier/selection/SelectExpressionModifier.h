@@ -63,7 +63,7 @@ public:
 
 public:
 
-	Q_PROPERTY(QString expression READ expression WRITE setExpression)
+	Q_PROPERTY(QString expression READ expression WRITE setExpression);
 
 protected:
 

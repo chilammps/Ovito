@@ -34,13 +34,14 @@
 namespace Ovito {
 
 /**
- * \brief This scene object type takes an input object and applies a list of modifiers to it.
+ * \brief This is a data flow pipeline. It has a source object, which provides the input data,
+ *        and a list of modifiers that act on the data.
  */
 class OVITO_CORE_EXPORT PipelineObject : public SceneObject
 {
 public:
 
-	/// \brief Constructor that creates an empty pipeline object without input.
+	/// \brief Constructor that creates an empty pipeline.
 	Q_INVOKABLE PipelineObject(DataSet* dataset);
 
 	/// \brief Asks the object for the result of the geometry pipeline at the given time
@@ -53,41 +54,40 @@ public:
 	/// \return The result object.
 	PipelineFlowState evaluatePipeline(TimePoint time, ModifierApplication* upToHere, bool including);
 
-	/// \brief Returns the input object of this modified object.
-	SceneObject* inputObject() const { return _inputObject; }
+	/// \brief Returns the object that provides the input data for this pipeline.
+	SceneObject* sourceObject() const { return _sourceObject; }
 
-	/// \brief Sets the input object for the geometry pipeline.
-	/// \param inputObject The new input object to which the modifiers will be applied.
+	/// \brief Replaces the object that provides the input data for this pipeline.
+	/// \param sourceObject The new source object.
 	/// \undoable
-	void setInputObject(SceneObject* inputObject) { _inputObject = inputObject; }
+	void setSourceObject(SceneObject* sourceObject) { _sourceObject = sourceObject; }
 
 	/// \brief Returns the list of modifier applications.
-	/// \return The list of applications of modifiers that make up the geometry pipeline.
+	/// \return The list of applications of modifiers that make up the data flow pipeline.
 	///         The modifiers in this list are applied to the input object in ascending order.
 	const QVector<ModifierApplication*>& modifierApplications() const { return _modApps; }
 
-	/// \brief Inserts a modifier into the geometry pipeline.
+	/// \brief Inserts a modifier into the data flow pipeline.
 	/// \param modifier The modifier to be inserted.
-	/// \param atIndex Specifies the position in the geometry pipeline where the modifier should be applied.
+	/// \param atIndex Specifies the position in the pipeline where the modifier should be inserted.
 	///                It must be between zero and the number of existing modifier applications as returned by
-	///                modifierApplications(). Modifiers are applied in ascending order, i.e. the modifier
-	///                at index 0 is applied first.
-	/// \return The application object that has been created for the usage of the modifier instance in this
-	///         geometry pipeline.
+	///                modifierApplications(). Modifiers are applied in ascending order, i.e., the modifier
+	///                at index 0 is applied first to the input data.
+	/// \return The ModifierApplication object that has been created for the usage of the modifier in this pipeline.
 	/// \undoable
 	ModifierApplication* insertModifier(Modifier* modifier, int atIndex);
 
-	/// \brief Inserts a modifier application into the internal list.
+	/// \brief Inserts a modifier application into the pipeline.
 	/// \param modApp The modifier application to be inserted.
-	/// \param atIndex Specifies the position in the geometry pipeline where the modifier should be applied.
+	/// \param atIndex Specifies the position in the pipeline where the modifier should be inserted.
 	///                It must be between zero and the number of existing modifier applications as returned by
-	///                modifierApplications(). Modifiers are applied in ascending order, i.e. the modifier
+	///                modifierApplications(). Modifiers are applied in ascending order, i.e., the modifier
 	///                at index 0 is applied first.
 	/// \undoable
 	void insertModifierApplication(ModifierApplication* modApp, int atIndex);
 
-	/// \brief Removes the given modifier application from the geometry pipeline.
-	/// \param app The application of a modifier instance that should be removed. This must be one from the
+	/// \brief Removes a modifier from the geometry pipeline.
+	/// \param app The ModifierApplication that should be removed. This must be one from the
 	///            list returned by modifierApplications().
 	/// \undoable
 	void removeModifier(ModifierApplication* app);
@@ -98,16 +98,6 @@ public:
 	virtual PipelineFlowState evaluate(TimePoint time) override {
 		return evaluatePipeline(time, nullptr, true);
 	}
-
-	/// Returns the number of input objects that are referenced by this scene object.
-	virtual int inputObjectCount() override { return 1; }
-
-	/// Returns the input object of this scene object.
-	virtual SceneObject* inputObject(int index) override { return _inputObject; }
-
-public:
-
-	Q_PROPERTY(SceneObject* inputObject READ inputObject WRITE setInputObject)
 
 protected:
 
@@ -125,13 +115,14 @@ protected:
 
 private:
 
-	/// Notifies all modifiers from the given index on that their input has changed.
+	/// This function is called when a part of the pipeline (or its source) have changed.
+	/// Notifies all modifiers starting at the given index that their input has changed.
 	void modifierChanged(int changedIndex);
 
 private:
 
-	/// The input object that is modified by the modifiers.
-	ReferenceField<SceneObject> _inputObject;
+	/// The object providing the input data that is processed by the modifiers.
+	ReferenceField<SceneObject> _sourceObject;
 
 	/// The ordered list of modifiers that are applied to the input object.
 	/// The modifiers are applied to the input object in the reverse order of this list.
@@ -140,18 +131,18 @@ private:
 	/// The state of the input object from the last evaluation of the pipeline.
 	PipelineFlowState _lastInput;
 
-	/// The cached result from the last geometry pipeline evaluation.
-	PipelineFlowState _cachedModifiedState;
+	/// The cached results from the last pipeline evaluation.
+	PipelineFlowState _cachedState;
 
-	/// The pipeline stage that is saved in the cache.
-	/// If the pipeline cache is empty, then this is -1.
-	int _cacheIndex;
+	/// Indicates which pipeline stage has been stored in the cache.
+	/// If the cache is empty, then this is -1.
+	int _cachedIndex;
 
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(_inputObject)
-	DECLARE_VECTOR_REFERENCE_FIELD(_modApps)
+	DECLARE_REFERENCE_FIELD(_sourceObject);
+	DECLARE_VECTOR_REFERENCE_FIELD(_modApps);
 };
 
 };

@@ -121,7 +121,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunction
 	if(sourceProperty1().vectorComponent() >= (int)property1->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty1().name()).arg(property1->componentCount()));
 
-	int vecComponent1 = sourceProperty1().vectorComponent() >= 0 ? sourceProperty1().vectorComponent() : 0;
+	int vecComponent1 = std::max(0, sourceProperty1().vectorComponent());
 	int vecComponentCount1 = property1->componentCount();
 
     // Get the second property.
@@ -131,7 +131,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunction
 	if(sourceProperty2().vectorComponent() >= (int)property2->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty2().name()).arg(property2->componentCount()));
 
-	int vecComponent2 = sourceProperty2().vectorComponent() >= 0 ? sourceProperty2().vectorComponent() : 0;
+	int vecComponent2 = std::max(0, sourceProperty2().vectorComponent());
 	int vecComponentCount2 = property2->componentCount();
 
     // Get bottom-left and top-right corner of the simulation cell.

@@ -179,7 +179,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, which);
+		outputProperty = ParticlePropertyObject::createStandardProperty(dataset(), _outputParticleCount, which);
 		_output.addObject(outputProperty);
 	}
 
@@ -228,7 +228,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name);
+		outputProperty = ParticlePropertyObject::createUserProperty(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name);
 		_output.addObject(outputProperty);
 	}
 
@@ -314,7 +314,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 
 	// Delete bonds for particles that have been deleted.
 	for(const auto& outobj : _output.objects()) {
-		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj);
+		BondsObject* originalBondsObject = dynamic_object_cast<BondsObject>(outobj);
 		if(!originalBondsObject)
 			continue;
 

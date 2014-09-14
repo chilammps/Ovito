@@ -38,13 +38,13 @@ IMPLEMENT_OVITO_OBJECT(Particles, ParticlesBinding, ScriptBinding);
 ******************************************************************************/
 void ParticlesBinding::setupBinding(ScriptEngine& engine)
 {
-	// Register marshaling functions for ParticlePropertyReference.
+	// Register marshalling functions for ParticlePropertyReference.
 	qScriptRegisterMetaType<ParticlePropertyReference>(&engine, fromParticlePropertyReference, toParticlePropertyReference);
 
-	// Register marshaling functions for InputColumnMapping.
+	// Register marshalling functions for InputColumnMapping.
 	qScriptRegisterMetaType<InputColumnMapping>(&engine, fromInputColumnMapping, toInputColumnMapping);
 
-	// Register marshaling functions for OutputColumnMapping.
+	// Register marshalling functions for OutputColumnMapping.
 	qScriptRegisterMetaType<OutputColumnMapping>(&engine, fromOutputColumnMapping, toOutputColumnMapping);
 
 	// Register important plugin classes.
@@ -141,10 +141,9 @@ void ParticlesBinding::toParticlePropertyReference(const QScriptValue& obj, Part
 ******************************************************************************/
 QScriptValue ParticlesBinding::fromInputColumnMapping(QScriptEngine* engine, const InputColumnMapping& mapping)
 {
-	QScriptValue result = engine->newArray(mapping.columnCount());
-	for(int i = 0; i < mapping.columnCount(); i++) {
-		ParticlePropertyReference pref(mapping.propertyType(i), mapping.propertyName(i), mapping.vectorComponent(i));
-		result.setProperty(i, engine->toScriptValue(pref));
+	QScriptValue result = engine->newArray(mapping.size());
+	for(int i = 0; i < mapping.size(); i++) {
+		result.setProperty(i, engine->toScriptValue(mapping[i].property));
 	}
 	return result;
 }
@@ -161,15 +160,15 @@ void ParticlesBinding::toInputColumnMapping(const QScriptValue& obj, InputColumn
 	}
 
 	int columnCount = obj.property("length").toInt32();
-	mapping.setColumnCount(columnCount);
+	mapping.resize(columnCount);
 	for(int i = 0; i < columnCount; i++) {
 		ParticlePropertyReference pref;
 		toParticlePropertyReference(obj.property(i), pref);
 		if(!pref.isNull()) {
 			if(pref.type() != ParticleProperty::UserProperty)
-				mapping.mapStandardColumn(i, pref.type(), pref.vectorComponent());
+				mapping[i].mapStandardColumn(pref.type(), pref.vectorComponent());
 			else
-				mapping.mapCustomColumn(i, pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
+				mapping[i].mapCustomColumn(pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
 		}
 	}
 }
@@ -179,9 +178,9 @@ void ParticlesBinding::toInputColumnMapping(const QScriptValue& obj, InputColumn
 ******************************************************************************/
 QScriptValue ParticlesBinding::fromOutputColumnMapping(QScriptEngine* engine, const OutputColumnMapping& mapping)
 {
-	QScriptValue result = engine->newArray(mapping.columnCount());
-	for(int i = 0; i < mapping.columnCount(); i++) {
-		ParticlePropertyReference pref(mapping.propertyType(i), mapping.propertyName(i), mapping.vectorComponent(i));
+	QScriptValue result = engine->newArray(mapping.size());
+	for(int i = 0; i < mapping.size(); i++) {
+		ParticlePropertyReference pref(mapping[i].type(), mapping[i].name(), mapping[i].vectorComponent());
 		result.setProperty(i, engine->toScriptValue(pref));
 	}
 	return result;
@@ -202,7 +201,7 @@ void ParticlesBinding::toOutputColumnMapping(const QScriptValue& obj, OutputColu
 	for(int i = 0; i < columnCount; i++) {
 		ParticlePropertyReference pref;
 		toParticlePropertyReference(obj.property(i), pref);
-		mapping.insertColumn(i, pref);
+		mapping.push_back(pref);
 	}
 }
 

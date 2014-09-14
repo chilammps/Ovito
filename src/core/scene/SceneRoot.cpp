@@ -21,51 +21,52 @@
 
 #include <core/Core.h>
 #include <core/scene/SceneRoot.h>
-#include <core/dataset/UndoStack.h>
-#include <core/viewport/Viewport.h>
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRoot, SceneNode)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRoot, SceneNode);
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
 SceneRoot::SceneRoot(DataSet* dataset) : SceneNode(dataset)
 {
-	setName("Scene Root");
+	setName("Scene");
 
-	// Root node does not need a tm controller.
+	// The root node does not need a transformation controller.
 	setTransformationController(nullptr);
 }
 
 /******************************************************************************
-* Searches recursively for the scene node with the given display name.
+* Searches the scene for a node with the given name.
 ******************************************************************************/
-SceneNode* SceneRoot::getNodeByNameImpl(const QString& nodeName, const SceneNode* node) const
+SceneNode* SceneRoot::getNodeByName(const QString& nodeName) const
 {
-	for(SceneNode* child : node->children()) {
-		if(child->name() == nodeName) return child;
-		SceneNode* result = getNodeByNameImpl(nodeName, child);
-		if(result) return result;
-	}
-	return nullptr;
+	SceneNode* result = nullptr;
+	visitChildren([nodeName, &result](SceneNode* node) -> bool {
+		if(node->name() == nodeName) {
+			result = node;
+			return false;
+		}
+		return true;
+	});
+	return result;
 }
 
 /******************************************************************************
-* Alters the given base name of a scene node so that it
-* becomes unique in the whole scene. Returns the generated unique name.
+* Generates a name for a node that is unique throughout the scene.
 ******************************************************************************/
 QString SceneRoot::makeNameUnique(QString baseName) const
 {
-	// Remove digits from end of base name.
+	// Remove any existing digits from end of base name.
 	if(baseName.size() > 2 && 
 		baseName.at(baseName.size()-1).isDigit() && baseName.at(baseName.size()-2).isDigit())
 		baseName.chop(2);
 		
+	// Keep appending different numbers until we arrive at a unique name.
 	for(int i = 1; ; i++) {
 		QString newName = baseName + QString::number(i).rightJustified(2, '0');
-		if(getNodeByName(newName) == NULL)
+		if(getNodeByName(newName) == nullptr)
 			return newName;
 	}		
 }

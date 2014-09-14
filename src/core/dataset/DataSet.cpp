@@ -254,7 +254,18 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 {
 	OVITO_CHECK_OBJECT_POINTER(settings);
 	OVITO_CHECK_OBJECT_POINTER(viewport);
-	OVITO_CHECK_POINTER(frameBuffer);
+
+	// If the caller did not supply a frame buffer, get the default frame buffer for the output image, or create a temporary one if necessary.
+	if(!frameBuffer) {
+		if(Application::instance().guiMode()) {
+			OVITO_ASSERT(mainWindow());
+			frameBufferWindow = mainWindow()->frameBufferWindow();
+			frameBuffer = frameBufferWindow->frameBuffer();
+		}
+		if(!frameBuffer) {
+			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
+		}
+	}
 
 	// Get the selected scene renderer.
 	SceneRenderer* renderer = settings->renderer();
@@ -321,7 +332,8 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 				int frameNumber = animationSettings()->timeToFrame(renderTime);
 				if(frameBufferWindow)
 					frameBufferWindow->setWindowTitle(tr("Frame %1").arg(frameNumber));
-				renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog.get());
+				if(!renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog.get()))
+					wasCanceled = true;
 			}
 			else if(settings->renderingRangeType() == RenderSettings::ANIMATION_INTERVAL || settings->renderingRangeType() == RenderSettings::CUSTOM_INTERVAL) {
 				// Render an animation interval.
@@ -351,8 +363,10 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 					int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
 					if(frameBufferWindow)
 						frameBufferWindow->setWindowTitle(tr("Frame %1").arg(animationSettings()->timeToFrame(renderTime)));
-					renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog.get());
-
+					if(!renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog.get())) {
+						wasCanceled = true;
+						break;
+					}
 					if(progressDialog && progressDialog->wasCanceled())
 						break;
 
@@ -371,7 +385,8 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 		// Shutdown renderer.
 		renderer->endRender();
 
-		wasCanceled = (progressDialog && progressDialog->wasCanceled());
+		if(progressDialog && progressDialog->wasCanceled())
+			wasCanceled = true;
 	}
 	catch(...) {
 		// Shutdown renderer.
@@ -385,10 +400,10 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 /******************************************************************************
 * Renders a single frame and saves the output file.
 ******************************************************************************/
-void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport,
+bool DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport,
 		FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog)
 {
-	// Generate output filename.
+	// Determine output filename for this frame.
 	QString imageFilename;
 	if(settings->saveToFile() && !videoEncoder) {
 		imageFilename = settings->imageFilename();
@@ -402,16 +417,16 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 
 			// Check for existing image file and skip.
 			if(settings->skipExistingImages() && QFileInfo(imageFilename).isFile())
-				return;
+				return true;
 		}
 	}
 
-	// Jump to animation time.
+	// Jump to animation frame.
 	animationSettings()->setTime(renderTime);
 
 	// Wait until the scene is ready.
 	if(!waitUntilSceneIsReady(tr("Preparing frame %1").arg(frameNumber), progressDialog))
-		return;
+		return false;
 
 	if(progressDialog)
 		progressDialog->setLabelText(tr("Rendering frame %1").arg(frameNumber));
@@ -426,10 +441,8 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	frameBuffer->clear();
 	renderer->beginFrame(renderTime, projParams, viewport);
 	if(!renderer->renderFrame(frameBuffer, progressDialog) || (progressDialog && progressDialog->wasCanceled())) {
-		if(progressDialog)
-			progressDialog->cancel();
 		renderer->endFrame();
-		return;
+		return false;
 	}
 	renderer->endFrame();
 
@@ -446,6 +459,8 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 #endif
 		}
 	}
+
+	return true;
 }
 
 /******************************************************************************
@@ -456,47 +471,10 @@ bool DataSet::waitUntilSceneIsReady(const QString& message, QProgressDialog* pro
 	std::atomic_flag keepWaiting;
 	keepWaiting.test_and_set();
 	runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
-	if(keepWaiting.test_and_set()) {
-		if(Application::instance().guiMode()) {
 
-			// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
-			if(!progressDialog) {
-				QProgressDialog pdlg(mainWindow());
-				pdlg.setWindowModality(Qt::WindowModal);
-				pdlg.setAutoClose(false);
-				pdlg.setAutoReset(false);
-				pdlg.setMinimumDuration(0);
-				pdlg.setValue(0);
-				pdlg.setLabelText(message);
-
-				// Poll the flag that indicates if the scene is ready.
-				while(keepWaiting.test_and_set()) {
-					if(pdlg.wasCanceled())
-						return false;
-					QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-				}
-
-			}
-			else {
-				progressDialog->setLabelText(message);
-
-				// Poll the flag that indicates if the scene is ready.
-				while(keepWaiting.test_and_set()) {
-					if(progressDialog->wasCanceled())
-						return false;
-					QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-				}
-			}
-		}
-		else {
-			// Poll the flag that indicates if the scene is ready.
-			while(keepWaiting.test_and_set()) {
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-		}
-	}
-
-	return true;
+	return container()->waitUntil([&keepWaiting]() {
+		return !keepWaiting.test_and_set();
+	}, message, progressDialog);
 }
 
 };

@@ -166,6 +166,18 @@ public:
 	/// \brief Returns the file format version of the current file.
 	quint32 formatVersion() const { return _fileFormat; }
 
+	/// \brief Returns the name of the application that wrote the file.
+	const QString& applicationName() const { return _applicationName; }
+
+	/// \brief Returns the major version number of the program that wrote the file.
+	quint32 applicationMajorVersion() const { return _applicationMajorVersion; }
+
+	/// \brief Returns the minor version number of the program that wrote the current file.
+	quint32 applicationMinorVersion() const { return _applicationMinorVersion; }
+
+	/// \brief Returns the revision version number of the program that wrote the current file.
+	quint32 applicationRevisionVersion() const { return _applicationRevisionVersion; }
+
 protected:
 
 	/// Indicates the input stream is still open.

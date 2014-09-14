@@ -29,6 +29,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "ParticlePropertyObject.h"
@@ -108,10 +109,10 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType defaultParticleRadius READ defaultParticleRadius WRITE setDefaultParticleRadius)
-	Q_PROPERTY(Ovito::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
-	Q_PROPERTY(Ovito::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
-	Q_PROPERTY(Ovito::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape)
+	Q_PROPERTY(FloatType defaultParticleRadius READ defaultParticleRadius WRITE setDefaultParticleRadius);
+	Q_PROPERTY(Ovito::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+	Q_PROPERTY(Ovito::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+	Q_PROPERTY(Ovito::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape);
 
 protected:
 
@@ -132,23 +133,25 @@ protected:
 
 	/// This helper structure is used to detect any changes in the particle positions
 	/// that require updating the particle position buffer.
-	SceneObjectCacheHelper<QPointer<ParticlePropertyObject>, unsigned int> _positionsCacheHelper;
+	SceneObjectCacheHelper<
+		WeakVersionedOORef<ParticlePropertyObject>
+		> _positionsCacheHelper;
 
 	/// This helper structure is used to detect any changes in the particle radii
 	/// that require updating the particle radius buffer.
 	SceneObjectCacheHelper<
-		QPointer<ParticlePropertyObject>, unsigned int,		// Radius property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Type property + revision number
-		FloatType											// Default radius
+		WeakVersionedOORef<ParticlePropertyObject>,		// Radius property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Type property + revision number
+		FloatType										// Default radius
 		> _radiiCacheHelper;
 
 	/// This helper structure is used to detect any changes in the particle colors
 	/// that require updating the particle color buffer.
 	SceneObjectCacheHelper<
-		QPointer<ParticlePropertyObject>, unsigned int,		// Color property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Type property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,		// Selection property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int		// Transparency property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Color property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Type property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Selection property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>		// Transparency property + revision number
 		> _colorsCacheHelper;
 
 	/// The bounding box that includes all particles.
@@ -157,10 +160,10 @@ protected:
 	/// This helper structure is used to detect changes in the input objects
 	/// that require rebuilding the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<ParticlePropertyObject>, unsigned int,	// Position property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,	// Radius property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int,	// Type property + revision number
-		FloatType> 										// Default particle radius
+		WeakVersionedOORef<ParticlePropertyObject>,	// Position property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,	// Radius property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,	// Type property + revision number
+		FloatType> 									// Default particle radius
 		_boundingBoxCacheHelper;
 
 private:

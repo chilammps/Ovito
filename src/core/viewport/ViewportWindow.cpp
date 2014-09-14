@@ -263,29 +263,35 @@ void ViewportWindow::renderNow()
 		qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
 		qDebug() << "OpenGL stencil buffer size: " << format.stencilBufferSize();
 		qDebug() << "OpenGL deprecated func:     " << format.testOption(QSurfaceFormat::DeprecatedFunctions);
+		//qDebug() << "OpenGL extensions:          " << QString((const char*)glGetString(GL_EXTENSIONS));
 	}
 #endif
 
 	if(_context->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || (_context->format().majorVersion() == OVITO_OPENGL_MINIMUM_VERSION_MAJOR && _context->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR)) {
-		Exception ex(tr(
-				"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
-				"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will now quit.\n\n"
-				"To avoid this error message, please install the newest graphics driver of the hardware vendor, or upgrade your graphics card.\n\n"
-				"The installed OpenGL graphics driver reports the following information:\n\n"
-				"OpenGL Vendor: %1\n"
-				"OpenGL Renderer: %2\n"
-				"OpenGL Version: %3\n\n"
-				"Ovito requires OpenGL version %4.%5 or higher.")
-				.arg(QString((const char*)glGetString(GL_VENDOR)))
-				.arg(QString((const char*)glGetString(GL_RENDERER)))
-				.arg(QString((const char*)glGetString(GL_VERSION)))
-				.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
-				.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
+		// Avoid infinite recursion.
+		static bool errorMessageShown = false;
+		if(!errorMessageShown) {
+			errorMessageShown = true;
+			_viewport->dataset()->viewportConfig()->suspendViewportUpdates();
+			Exception ex(tr(
+					"The OpenGL graphics driver installed on this system does not support OpenGL version %4.%5 or newer.\n\n"
+					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
+					"To avoid this error, please install the newest graphics driver of the hardware vendor or, if necessary, consider replacing your graphics card with a newer model.\n\n"
+					"The installed OpenGL graphics driver reports the following information:\n\n"
+					"OpenGL Vendor: %1\n"
+					"OpenGL Renderer: %2\n"
+					"OpenGL Version: %3\n\n"
+					"Ovito requires OpenGL version %4.%5 or higher.")
+					.arg(QString((const char*)glGetString(GL_VENDOR)))
+					.arg(QString((const char*)glGetString(GL_RENDERER)))
+					.arg(QString((const char*)glGetString(GL_VERSION)))
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
 				);
-		_viewport->dataset()->viewportConfig()->suspendViewportUpdates();
-		QCoreApplication::removePostedEvents(nullptr, 0);
-		ex.showError();
-		QCoreApplication::instance()->quit();
+			ex.showError();
+			QCoreApplication::removePostedEvents(nullptr, 0);
+			QCoreApplication::instance()->quit();
+		}
 		return;
 	}
 

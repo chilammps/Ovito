@@ -29,19 +29,18 @@
 #include <core/dataset/DataSet.h>
 #include <core/animation/TimeInterval.h>
 #include <core/reference/CloneHelper.h>
-#include <core/scene/GroupNode.h>
 #include <core/scene/SelectionSet.h>
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneNode, RefTarget)
 DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", Controller, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
-DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
+DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _lookatTargetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(SceneNode, _nodeName, "NodeName");
 DEFINE_PROPERTY_FIELD(SceneNode, _displayColor, "DisplayColor");
 SET_PROPERTY_FIELD_LABEL(SceneNode, _transformation, "Transformation");
-SET_PROPERTY_FIELD_LABEL(SceneNode, _targetNode, "Target");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _lookatTargetNode, "Target");
 SET_PROPERTY_FIELD_LABEL(SceneNode, _children, "Children");
 SET_PROPERTY_FIELD_LABEL(SceneNode, _nodeName, "Name");
 SET_PROPERTY_FIELD_LABEL(SceneNode, _displayColor, "Display color");
@@ -50,11 +49,10 @@ SET_PROPERTY_FIELD_LABEL(SceneNode, _displayColor, "Display color");
 * Default constructor.
 ******************************************************************************/
 SceneNode::SceneNode(DataSet* dataset) : RefTarget(dataset), _parentNode(nullptr), _worldTransform(AffineTransformation::Identity()),
-	_worldTransformValidity(TimeInterval::empty()), _worldBBTime(TimeNegativeInfinity()), _displayColor(0,0,0),
-	_flags(SCENENODE_NOFLAGS)
+	_worldTransformValidity(TimeInterval::empty()), _worldBBTime(TimeNegativeInfinity()), _displayColor(0,0,0)
 {
 	INIT_PROPERTY_FIELD(SceneNode::_transformation);
-	INIT_PROPERTY_FIELD(SceneNode::_targetNode);
+	INIT_PROPERTY_FIELD(SceneNode::_lookatTargetNode);
 	INIT_PROPERTY_FIELD(SceneNode::_children);
 	INIT_PROPERTY_FIELD(SceneNode::_nodeName);
 	INIT_PROPERTY_FIELD(SceneNode::_displayColor);
@@ -120,10 +118,10 @@ void SceneNode::invalidateWorldTransformation()
 void SceneNode::deleteNode()
 {
 	// Delete target too.
-	OORef<SceneNode> tn = targetNode();
+	OORef<SceneNode> tn = lookatTargetNode();
 	if(tn) {
 		// Clear reference first to prevent infinite recursion.
-        _targetNode = nullptr;
+		_lookatTargetNode = nullptr;
 		tn->deleteNode();
 	}
 
@@ -143,9 +141,9 @@ void SceneNode::deleteNode()
 * be deleted if this scene node is deleted and vice versa.
 * Returns the newly created LookAtController assigned as rotation controller for this node.
 ******************************************************************************/
-LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
+LookAtController* SceneNode::setLookatTargetNode(SceneNode* targetNode)
 {
-	_targetNode = targetNode;
+	_lookatTargetNode = targetNode;
 
 	// Let this node look at the target.
 	PRSTransformationController* prs = dynamic_object_cast<PRSTransformationController>(transformationController());
@@ -207,8 +205,8 @@ bool SceneNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			invalidateBoundingBox();
 		}
 	}
-	else if(event->type() == ReferenceEvent::TargetDeleted && source == targetNode()) {
-		// Target node has been deleted -> delete this node too.
+	else if(event->type() == ReferenceEvent::TargetDeleted && source == lookatTargetNode()) {
+		// Lookat target node has been deleted -> delete this node too.
 		if(!dataset()->undoStack().isUndoingOrRedoing())
 			deleteNode();
 	}
@@ -269,7 +267,7 @@ void SceneNode::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget
 /******************************************************************************
 * Adds a child scene node to this node.
 ******************************************************************************/
-void SceneNode::addChild(SceneNode* newChild)
+void SceneNode::insertChild(int index, SceneNode* newChild)
 {
 	OVITO_CHECK_OBJECT_POINTER(newChild);
 
@@ -285,7 +283,7 @@ void SceneNode::addChild(SceneNode* newChild)
 	OVITO_ASSERT(newChild->parentNode() == nullptr);
 
 	// Insert into children array of this parent.
-	_children.push_back(newChild);
+	_children.insert(index, newChild);
 	// This parent should be automatically filled into the child's parent pointer.
 	OVITO_ASSERT(newChild->parentNode() == this);
 
@@ -322,16 +320,6 @@ void SceneNode::removeChild(SceneNode* child)
 }
 
 /******************************************************************************
-* Returns the child of this node with the given index.
-******************************************************************************/
-SceneNode* SceneNode::childNode(int index) const
-{
-	OVITO_ASSERT_MSG(index >= 0 && index < childCount(), "SceneNode::childNode()", "Node index out of range.");
-	OVITO_ASSERT(_children[index]->parentNode() == this);
-	return _children[index];
-}
-
-/******************************************************************************
 * Returns the bounding box of the scene node in world coordinates.
 *    time - The time at which the bounding box should be returned.
 ******************************************************************************/
@@ -356,39 +344,7 @@ const Box3& SceneNode::worldBoundingBox(TimePoint time)
 ******************************************************************************/
 bool SceneNode::isSelected() const
 {
-	if(dataset()->selection()->contains(const_cast<SceneNode*>(this)))
-		return true;
-
-	GroupNode* gn = closedParentGroup();
-	if(gn == nullptr) return false;
-	return gn->isSelected();
-}
-
-/******************************************************************************
-* Controls if this node is currently selected.
-******************************************************************************/
-void SceneNode::setSelected(bool selected)
-{
-	if(selected)
-		dataset()->selection()->add(this);
-	else
-		dataset()->selection()->remove(this);
-}
-
-/******************************************************************************
-* Gets the upper most (closed) group node this node is part of or
-* NULL if this node is not part of a closed group node.
-******************************************************************************/
-GroupNode* SceneNode::closedParentGroup() const
-{
-	const SceneNode* n = this;
-	const GroupNode* gn = nullptr;
-	while((n = n->parentNode()) != NULL) {
-		if(n->isGroupNode() && !static_object_cast<GroupNode>(n)->isGroupOpen()) {
-            gn = static_object_cast<GroupNode>(n);
-		}
-	}
-	return const_cast<GroupNode*>(gn);
+	return dataset()->selection()->contains(const_cast<SceneNode*>(this));
 }
 
 /******************************************************************************
@@ -398,8 +354,8 @@ void SceneNode::saveToStream(ObjectSaveStream& stream)
 {
 	RefTarget::saveToStream(stream);
 
-	stream.beginChunk(0x01);
-	stream.writeEnum(_flags);
+	stream.beginChunk(0x02);
+	// This is for future use...
 	stream.endChunk();
 }
 
@@ -410,9 +366,11 @@ void SceneNode::loadFromStream(ObjectLoadStream& stream)
 {
 	RefTarget::loadFromStream(stream);
 
-	stream.expectChunk(0x01);
-	stream.readEnum(_flags);
+	stream.expectChunkRange(0x01, 0x02);
+	// This is for future use...
 	stream.closeChunk();
+
+	// Restore parent/child hierarchy.
 	for(SceneNode* child : children())
 		child->_parentNode = this;
 }
@@ -425,21 +383,17 @@ OORef<RefTarget> SceneNode::clone(bool deepCopy, CloneHelper& cloneHelper)
 	// Let the base class create an instance of this class.
 	OORef<SceneNode> clone = static_object_cast<SceneNode>(RefTarget::clone(deepCopy, cloneHelper));
 
-	// Copy the node flags.
-	clone->_flags = this->_flags;
+	// Clone orientation target node too.
+	if(clone->lookatTargetNode()) {
+		OVITO_ASSERT(lookatTargetNode());
 
-	// Clone target too.
-	if(clone->targetNode()) {
-		OVITO_ASSERT(targetNode());
-
-		// Insert cloned target into scene.
-		if(!clone->targetNode()->parentNode()) {
-			OVITO_CHECK_OBJECT_POINTER(targetNode()->parentNode());
-			targetNode()->parentNode()->addChild(clone->targetNode());
+		// Insert the cloned target into the same scene as out target.
+		if(lookatTargetNode()->parentNode() && !clone->lookatTargetNode()->parentNode()) {
+			lookatTargetNode()->parentNode()->addChild(clone->lookatTargetNode());
 		}
 
 		// Set new target for look-at controller.
-		clone->bindToTarget(clone->targetNode());
+		clone->setLookatTargetNode(clone->lookatTargetNode());
 	}
 
 	return clone;

@@ -14,6 +14,28 @@ See official website for more information:
 Change Log 
 ****************************************************************************************
 
+Release 2.4.0 (xx-yyy-14):
+
+ - Added Python script engine.
+ - Added the 'Voronoi analysis' modifier, which allows to compute atomic volumes, coordination numbers and Voronoi indices.
+ - Added import/export support for extended XYZ files (see http://jrkermode.co.uk/quippy/io.html#extendedxyz),
+   which include metadata describing the file columns and the simulation cell.
+ - Command line options to run old Javascript programs have been renamed to --jsscript and --jsexec.
+ - Improved I/O performance for text-based file formats.
+ - LAMMPS data file parser now supports LAMMPS atom styles such as 'charge' and 'bond'.
+ - Added calculation of non-affine displacements to 'Atomic strain' modifier. (This is Falk & Langer's D^2_min measure, see the 1998 PRB.)
+ - Added 'Bin and reduce' analysis modifier.
+ - The 'Create bonds' modifier can now handle particles that are located outside the (periodic) simulation box.
+ - The 'Color coding' modifier allows to include a color legend in the rendered image.
+ - Added a file parser for PDB files.
+ - The 'Show periodic images' modifier can now assign unique IDs to particle copies
+ - Impoved I/O performance of file export function.
+ - Bug fix: Export of compressed LAMMPS data files could result in truncated files.
+ - Bug fix: Solid volume computed by 'Construct surface mesh' modifier could be inaccurate due to low numerical precision
+ - Bug fix: 'Construct surface mesh' modifier crashed with certain input data.
+ - Bug fix: VTK mesh file parser couldn't handle multiple points per line (as written by ParaView).
+ - Bug fix: LAMMPS data file parser did not parse atom IDs.  
+
 Release 2.3.3 (22-May-14):
 
  - Added user options to application settings dialog that give control over sharing of 

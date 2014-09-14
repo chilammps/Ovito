@@ -133,17 +133,21 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 		for(SceneObject* o : state.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(!property) continue;
-			for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
-				QString propertyName = property->nameWithComponent(vectorComponent);
-				ParticlePropertyReference propRef(property, vectorComponent);
-				insertPropertyItem(propRef, propertyName);
+			if(property->componentCount() == 1) {
+				insertPropertyItem(ParticlePropertyReference(property), property->name());
 				if(property->type() == ParticleProperty::IdentifierProperty)
 					hasParticleIdentifiers = true;
 			}
+			else {
+				for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
+					QString propertyName = property->nameWithComponent(vectorComponent);
+					ParticlePropertyReference propRef(property, vectorComponent);
+					insertPropertyItem(propRef, propertyName);
+				}
+			}
 		}
-		if(!hasParticleIdentifiers) {
+		if(!hasParticleIdentifiers)
 			insertPropertyItem(ParticleProperty::IdentifierProperty, tr("Particle index"));
-		}
 
 		QPushButton* moveUpButton = new QPushButton(tr("Move up"), columnsGroupBox);
 		QPushButton* moveDownButton = new QPushButton(tr("Move down"), columnsGroupBox);
@@ -201,10 +205,10 @@ void ParticleExporterSettingsDialog::insertPropertyItem(ParticlePropertyReferenc
 	item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
 	item->setCheckState(Qt::Unchecked);
 	item->setData(Qt::UserRole, qVariantFromValue(propRef));
-	int sortKey = _columnMapping->columnCount();
+	int sortKey = _columnMapping->size();
 
-	for(int c = 0; c < _columnMapping->columnCount(); c++) {
-		if(_columnMapping->propertyType(c) == propRef.type() && _columnMapping->vectorComponent(c) == propRef.vectorComponent() && _columnMapping->propertyName(c) == propRef.name()) {
+	for(int c = 0; c < _columnMapping->size(); c++) {
+		if((*_columnMapping)[c] == propRef) {
 			item->setCheckState(Qt::Checked);
 			sortKey = c;
 			break;
@@ -212,7 +216,7 @@ void ParticleExporterSettingsDialog::insertPropertyItem(ParticlePropertyReferenc
 	}
 
 	item->setData(Qt::InitialSortOrderRole, sortKey);
-	if(sortKey < _columnMapping->columnCount()) {
+	if(sortKey < _columnMapping->size()) {
 		int insertIndex = 0;
 		for(; insertIndex < _columnMappingWidget->count(); insertIndex++) {
 			int k = _columnMappingWidget->item(insertIndex)->data(Qt::InitialSortOrderRole).value<int>();
@@ -252,8 +256,7 @@ void ParticleExporterSettingsDialog::onOk()
 			OutputColumnMapping newMapping;
 			for(int index = 0; index < _columnMappingWidget->count(); index++) {
 				if(_columnMappingWidget->item(index)->checkState() == Qt::Checked) {
-					ParticlePropertyReference propRef = _columnMappingWidget->item(index)->data(Qt::UserRole).value<ParticlePropertyReference>();
-					newMapping.insertColumn(newMapping.columnCount(), propRef);
+					newMapping.push_back(_columnMappingWidget->item(index)->data(Qt::UserRole).value<ParticlePropertyReference>());
 				}
 			}
 			*_columnMapping = newMapping;

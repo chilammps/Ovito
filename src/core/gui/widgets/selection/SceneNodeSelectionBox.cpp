@@ -63,8 +63,8 @@ void SceneNodeSelectionBox::onSceneSelectionChanged()
 	if(!selection || selection->empty()) {
 		setCurrentText(tr("No selection"));
 	}
-	else if(selection->count() > 1) {
-		setCurrentText(tr("%i selected objects").arg(selection->count()));
+	else if(selection->size() > 1) {
+		setCurrentText(tr("%i selected objects").arg(selection->size()));
 	}
 	else {
 		int index = findData(QVariant::fromValue(selection->node(0)));

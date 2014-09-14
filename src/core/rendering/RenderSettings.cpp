@@ -84,21 +84,8 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	_backgroundColor = ControllerManager::instance().createColorController(dataset);
 	setBackgroundColor(Color(1,1,1));
 
-	// Pick the default renderer class.
-	const OvitoObjectType* rendererClass = &StandardSceneRenderer::OOType;
-
-	// In console mode, use a software-based renderer instead of the OpenGL-based one.
-	if(Application::instance().guiMode() == false) {
-		for(const OvitoObjectType* rc : PluginManager::instance().listClasses(SceneRenderer::OOType)) {
-			if(rc != &StandardSceneRenderer::OOType) {
-				rendererClass = rc;
-				break;
-			}
-		}
-	}
-
 	// Create an instance of the default renderer class.
-	OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataset));
+	OORef<SceneRenderer> renderer(new StandardSceneRenderer(dataset));
 	setRenderer(renderer);
 }
 
