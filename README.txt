@@ -6,7 +6,7 @@ Author: Alexander Stukowski (mail@ovito.org)
         (Institute of Materials Science, Darmstadt University of Technology, Germany)
 
 OVITO is a scientific visualization and analysis software for atomistic simulation data. 
-See official website for more information: 
+See website for more information:
 
    http://www.ovito.org/
 
@@ -14,22 +14,23 @@ See official website for more information:
 Change Log 
 ****************************************************************************************
 
-Release 2.4.0 (xx-yyy-14):
+Release 2.4.0 (16-Sep-14):
 
- - Added Python script engine.
- - Added the 'Voronoi analysis' modifier, which allows to compute atomic volumes, coordination numbers and Voronoi indices.
- - Added import/export support for extended XYZ files (see http://jrkermode.co.uk/quippy/io.html#extendedxyz),
-   which include metadata describing the file columns and the simulation cell.
- - Command line options to run old Javascript programs have been renamed to --jsscript and --jsexec.
- - Improved I/O performance for text-based file formats.
- - LAMMPS data file parser now supports LAMMPS atom styles such as 'charge' and 'bond'.
- - Added calculation of non-affine displacements to 'Atomic strain' modifier. (This is Falk & Langer's D^2_min measure, see the 1998 PRB.)
+ - New Python script engine (see user manual for more information).
+ - Added the 'Voronoi analysis' modifier, which can compute atomic volumes, coordination numbers and Voronoi indices.
+ - Added import/export support for extended XYZ format (see http://jrkermode.co.uk/quippy/io.html#extendedxyz),
+   which includes metadata describing the file's columns and the simulation cell.
+ - Improved input and output performance for text-based file formats.
+ - Added calculation of non-affine displacements to 'Atomic strain' modifier. 
+   (This is Falk & Langer's D^2_min measure, see the 1998 PRB.)
  - Added 'Bin and reduce' analysis modifier.
  - The 'Create bonds' modifier can now handle particles that are located outside the (periodic) simulation box.
  - The 'Color coding' modifier allows to include a color legend in the rendered image.
- - Added a file parser for PDB files.
- - The 'Show periodic images' modifier can now assign unique IDs to particle copies
- - Impoved I/O performance of file export function.
+ - Added a file parser for PDB files (still experimental).
+ - The 'Show periodic images' modifier can now assign unique IDs to particle copies.
+ - LAMMPS data file parser now supports additional LAMMPS atom styles such as 'charge' and 'bond'.
+ - Command line options to run old Javascript programs have been renamed to --jsscript and --jsexec.
+   Javascript plugin has been deprecated and will be removed in a future program version.
  - Bug fix: Export of compressed LAMMPS data files could result in truncated files.
  - Bug fix: Solid volume computed by 'Construct surface mesh' modifier could be inaccurate due to low numerical precision
  - Bug fix: 'Construct surface mesh' modifier crashed with certain input data.

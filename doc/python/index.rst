@@ -14,6 +14,7 @@ Introduction:
    
    introduction/running
    introduction/overview
+   introduction/examples
 
 Module Reference:
 -----------------
