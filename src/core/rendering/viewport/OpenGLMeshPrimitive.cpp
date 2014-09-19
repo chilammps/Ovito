@@ -228,12 +228,12 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 			std::iota(p, p + 3, indices[i]*3);
 		primitiveIndices.unmap();
 		primitiveIndices.oglBuffer().bind();
-		OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glDrawElements(GL_TRIANGLES, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement(), GL_UNSIGNED_INT, nullptr));
+		OVITO_CHECK_OPENGL(glDrawElements(GL_TRIANGLES, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement(), GL_UNSIGNED_INT, nullptr));
 		primitiveIndices.oglBuffer().release();
 	}
 	else {
 		// Render faces in arbitrary order.
-		OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glDrawArrays(GL_TRIANGLES, 0, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement()));
+		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement()));
 	}
 
 	_vertexBuffer.detachPositions(vpRenderer, shader);

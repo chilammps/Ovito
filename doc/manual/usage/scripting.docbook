@@ -22,5 +22,9 @@
 	<para>
 	   OVITO's scripting interface is fully documented in the separate <link xlink:href="python/index.html">OVITO Scripting Reference</link>.
 	</para>
-  
+   	<para>
+ 	  <emphasis>Note to 64-bit Windows users:</emphasis> Due to compiler limitations, Python scripting is currently not available in the 64-bit version of OVITO for Windows.
+	  Please use the 32-bit version of OVITO for Windows instead if you want to use this feature.
+	</para>
+
 </section>

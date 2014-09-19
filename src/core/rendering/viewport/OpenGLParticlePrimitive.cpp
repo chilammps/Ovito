@@ -467,12 +467,12 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 		primitiveIndices.create(QOpenGLBuffer::StaticDraw, particleCount());
 		primitiveIndices.fill(determineRenderingOrder(direction).data());
 		primitiveIndices.oglBuffer().bind();
-		OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
+		OVITO_CHECK_OPENGL(glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
 		primitiveIndices.oglBuffer().release();
 	}
 	else {
 		// By default, render particle in arbitrary order.
-		OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_POINTS, 0, particleCount()));
+		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 	}
 
 	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
@@ -595,12 +595,12 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 			primitiveIndices.create(QOpenGLBuffer::StaticDraw, particleCount());
 			primitiveIndices.fill(determineRenderingOrder(direction).data());
 			primitiveIndices.oglBuffer().bind();
-			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
+			OVITO_CHECK_OPENGL(glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
 			primitiveIndices.oglBuffer().release();
 		}
 		else {
 			// By default, render particle in arbitrary order.
-			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_POINTS, 0, particleCount()));
+			OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 		}
 	}
 	else {
@@ -715,12 +715,12 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 			primitiveIndices.create(QOpenGLBuffer::StaticDraw, particleCount());
 			primitiveIndices.fill(determineRenderingOrder(direction).data());
 			primitiveIndices.oglBuffer().bind();
-			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
+			OVITO_CHECK_OPENGL(glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
 			primitiveIndices.oglBuffer().release();
 		}
 		else {
 			// By default, render particles in arbitrary order.
-			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_POINTS, 0, particleCount()));
+			OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 		}
 	}
 	else {
@@ -738,12 +738,12 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 				std::iota(p, p + verticesPerElement, indices[i]*verticesPerElement);
 			primitiveIndices.unmap();
 			primitiveIndices.oglBuffer().bind();
-			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_TRIANGLES, particleCount() * verticesPerElement, GL_UNSIGNED_INT, nullptr));
+			OVITO_CHECK_OPENGL(glDrawElements(GL_TRIANGLES, particleCount() * verticesPerElement, GL_UNSIGNED_INT, nullptr));
 			primitiveIndices.oglBuffer().release();
 		}
 		else {
 			// By default, render particles in arbitrary order.
-			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_TRIANGLES, 0, particleCount() * _positionsBuffer.verticesPerElement()));
+			OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, particleCount() * _positionsBuffer.verticesPerElement()));
 		}
 	}
 
