@@ -220,11 +220,16 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 		std::sort(indices.begin(), indices.end(), [&distances](GLuint a, GLuint b) {
 			return distances[a] < distances[b];
 		});
-		// Create index array which can be used with glDrawElements.
-		std::vector<GLuint> primtiveIndices(3 * faceCount());
-		for(size_t i = 0; i < indices.size(); i++)
-			std::iota(primtiveIndices.begin() + i*3, primtiveIndices.begin() + (i+1)*3, indices[i]*3);
-		OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glDrawElements(GL_TRIANGLES, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement(), GL_UNSIGNED_INT, primtiveIndices.data()));
+		// Create OpenGL index buffer which can be used with glDrawElements.
+		OpenGLBuffer<GLuint> primitiveIndices(QOpenGLBuffer::IndexBuffer);
+		primitiveIndices.create(QOpenGLBuffer::StaticDraw, 3 * faceCount());
+		GLuint* p = primitiveIndices.map(QOpenGLBuffer::WriteOnly);
+		for(size_t i = 0; i < indices.size(); i++, p += 3)
+			std::iota(p, p + 3, indices[i]*3);
+		primitiveIndices.unmap();
+		primitiveIndices.oglBuffer().bind();
+		OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glDrawElements(GL_TRIANGLES, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement(), GL_UNSIGNED_INT, nullptr));
+		primitiveIndices.oglBuffer().release();
 	}
 	else {
 		// Render faces in arbitrary order.
