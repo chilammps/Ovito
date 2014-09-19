@@ -16,7 +16,7 @@ import PyScriptScene
 # Load the native module.
 from PyScriptFileIO import *
 
-def import_file(location, mode = "AddToScene", **params):
+def import_file(location, **params):
     """ This high-level function imports an external data file. 
     
         This Python function corresponds to the *Open Local File* command in OVITO's
@@ -25,14 +25,11 @@ def import_file(location, mode = "AddToScene", **params):
         the file parser to specify how the data should be interpreted. 
         These keyword parameters are documented below.
         
+        The function creates a new :py:class:`~ovito.ObjectNode` and adds it to the current scene.
+        Thus, the imported dataset will appear as an additional object in the viewports. You can remove the node 
+        from the scene again by calling its :py:meth:`~ovito.ObjectNode.remove_from_scene` method.
+        
         :param str location: The file to import. This can be a local file path or a remote sftp:// URL.
-        :param str mode: Determines how the imported data is inserted into the current scene. 
-                           
-                           * ``AddToScene`` (default): A new :py:class:`~ovito.ObjectNode` is created and added to the scene.
-                           * ``ReplaceSelected``: The source object of the currently selected node is updated to reference the new file. 
-                             Existing modifiers are kept. 
-                           * ``ResetScene``: All existing nodes are deleted from the scene before importing the data.
-                       
         :returns: The :py:class:`~ovito.ObjectNode` that has been created for the imported data.
                   
         **File columns**
@@ -58,9 +55,6 @@ def import_file(location, mode = "AddToScene", **params):
             
     """
     
-    if isinstance(mode, basestring):
-        mode = ImportMode.__dict__[mode]
-
     # Determine the file's format.
     importer = ImportExportManager.instance.autodetectFileFormat(ovito.dataset, location)
     if not importer:
@@ -73,7 +67,7 @@ def import_file(location, mode = "AddToScene", **params):
         importer.__setattr__(key, params[key])
 
     # Import data.
-    if not importer.importFile(location, mode):
+    if not importer.importFile(location, ImportMode.AddToScene):
         raise RuntimeError("Operation has been canceled by the user.")
 
     # Get the newly created ObjectNode.
@@ -81,10 +75,15 @@ def import_file(location, mode = "AddToScene", **params):
     if not isinstance(node, ovito.ObjectNode):
         raise RuntimeError("File import failed. Nothing was imported.")
     
-    # Block execution until file is loaded.
-    # Raise exception if error occurs during loading, or if canceled by the user.
-    if not node.wait(signalError = True):
-        raise RuntimeError("Operation has been canceled by the user.")
+    try:
+        # Block execution until file is loaded.
+        # Raise exception if error occurs during loading, or if canceled by the user.
+        if not node.wait(signalError = True):
+            raise RuntimeError("Operation has been canceled by the user.")
+    except:
+        # Delete newly created scene node when import failed.
+        node.delete()
+        raise
     
     return node    
 

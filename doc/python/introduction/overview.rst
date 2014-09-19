@@ -57,6 +57,10 @@ list of object nodes in the scene (:py:attr:`dataset.scene_nodes <ovito.DataSet.
 the current animation settings (:py:attr:`dataset.anim <ovito.DataSet.anim>`), the four 
 viewports in OVITO's main window (:py:attr:`dataset.viewports <ovito.DataSet.viewports>`), and more.
 
+.. image:: graphics/ObjectNode.*
+   :width: 86 %
+   :align: center
+
 ------------------------------------
 Loading data and applying modifiers
 ------------------------------------
@@ -76,7 +80,7 @@ newly created node to the caller after it has been inserted into the scene.
 We can now populate the node's modification pipeline with some modifiers::
 
    >>> from ovito.modifiers import *
-   >>> node.modifiers.append(SelectExpressionModifier(expression = "PotentialEnergy < -3.9"))
+   >>> node.modifiers.append(SelectExpressionModifier(expression="PotentialEnergy < -3.9"))
    >>> node.modifiers.append(DeleteSelectedParticlesModifier())
 
 Here we have created two modifiers and appended them to the modification pipeline. Note how modifier parameters 
