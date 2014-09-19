@@ -47,7 +47,10 @@ class OVITO_CORE_EXPORT ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()), _glVertexIDBufferSize(-1) {}
+	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset),
+		_glcontext(nullptr),
+		_modelViewTM(AffineTransformation::Identity()),
+		_glVertexIDBufferSize(-1) {}
 
 	/// Renders the current animation frame.
 	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) override;
@@ -77,25 +80,25 @@ public:
 	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() override;
+	virtual std::shared_ptr<LinePrimitive> createLinePrimitive() override;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
+	virtual std::shared_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
 			ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) override;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() override;
+	virtual std::shared_ptr<TextPrimitive> createTextPrimitive() override;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() override;
+	virtual std::shared_ptr<ImagePrimitive> createImagePrimitive() override;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
+	virtual std::shared_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
 			ArrowPrimitive::ShadingMode shadingMode,
 			ArrowPrimitive::RenderingQuality renderingQuality) override;
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() override;
+	virtual std::shared_ptr<MeshPrimitive> createMeshPrimitive() override;
 
 	/// Renders a 2d polyline in the viewport.
 	void render2DPolyline(const Point2* points, int count, const ColorA& color, bool closed);
@@ -174,6 +177,16 @@ public:
 	/// Returns the default OpenGL surface format requested by OVITO when creating OpenGL contexts.
 	static QSurfaceFormat getDefaultSurfaceFormat();
 
+	/// Returns whether we are currently rendering translucent objects.
+	bool translucentPass() const { return _translucentPass; }
+
+	/// Adds a primitive to the list of translucent primitives which will be rendered during the second
+	/// rendering pass.
+	void registerTranslucentPrimitive(const std::shared_ptr<PrimitiveBase>& primitive) {
+		OVITO_ASSERT(!translucentPass());
+		_translucentPrimitives.emplace_back(worldTransform(), primitive);
+	}
+
 protected:
 
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
@@ -233,7 +246,14 @@ private:
 	GLint _glVertexIDBufferSize;
 
 	/// The geometry buffer used to render the construction grid of a viewport.
-	std::unique_ptr<LinePrimitive> _constructionGridGeometry;
+	std::shared_ptr<LinePrimitive> _constructionGridGeometry;
+
+	/// Indicates that we are currently rendering the translucent objects during a second rendering pass.
+	bool _translucentPass;
+
+	/// List of translucent graphics primitives collected during the first rendering pass, which
+	/// need to be rendered during the second pass.
+	std::vector<std::tuple<AffineTransformation, std::shared_ptr<PrimitiveBase>>> _translucentPrimitives;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -60,39 +60,39 @@ public:
 	const AffineTransformation& modelTM() const { return _modelTM; }
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() override {
-		return std::unique_ptr<LinePrimitive>{ new DefaultLinePrimitive() };
+	virtual std::shared_ptr<LinePrimitive> createLinePrimitive() override {
+		return std::make_shared<DefaultLinePrimitive>();
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(
+	virtual std::shared_ptr<ParticlePrimitive> createParticlePrimitive(
 			ParticlePrimitive::ShadingMode shadingMode,
 			ParticlePrimitive::RenderingQuality renderingQuality,
 			ParticlePrimitive::ParticleShape shape) override {
-		return std::unique_ptr<ParticlePrimitive>{ new DefaultParticlePrimitive(shadingMode, renderingQuality, shape) };
+		return std::make_shared<DefaultParticlePrimitive>(shadingMode, renderingQuality, shape);
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() override {
-		return std::unique_ptr<TextPrimitive>{ new DefaultTextPrimitive() };
+	virtual std::shared_ptr<TextPrimitive> createTextPrimitive() override {
+		return std::make_shared<DefaultTextPrimitive>();
 	}
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() override {
-		return std::unique_ptr<ImagePrimitive>{ new DefaultImagePrimitive() };
+	virtual std::shared_ptr<ImagePrimitive> createImagePrimitive() override {
+		return std::make_shared<DefaultImagePrimitive>();
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(
+	virtual std::shared_ptr<ArrowPrimitive> createArrowPrimitive(
 			ArrowPrimitive::Shape shape,
 			ArrowPrimitive::ShadingMode shadingMode,
 			ArrowPrimitive::RenderingQuality renderingQuality) override {
-		return std::unique_ptr<ArrowPrimitive>{ new DefaultArrowPrimitive(shape, shadingMode, renderingQuality) };
+		return std::make_shared<DefaultArrowPrimitive>(shape, shadingMode, renderingQuality);
 	}
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() override {
-		return std::unique_ptr<MeshPrimitive>{ new DefaultMeshPrimitive() };
+	virtual std::shared_ptr<MeshPrimitive> createMeshPrimitive() override {
+		return std::make_shared<DefaultMeshPrimitive>();
 	}
 
 	/// Renders the line geometry stored in the given buffer.

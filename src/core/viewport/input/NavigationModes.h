@@ -108,7 +108,7 @@ protected:
 	Point3 _currentOrbitCenter;
 
 	/// The geometry buffer used to render the orbit center.
-	std::unique_ptr<ArrowPrimitive> _orbitCenterMarker;
+	std::shared_ptr<ArrowPrimitive> _orbitCenterMarker;
 };
 
 /******************************************************************************

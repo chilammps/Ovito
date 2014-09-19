@@ -117,10 +117,10 @@ protected:
 	PropertyField<Color, QColor> _simulationCellColor;
 
 	/// The geometry buffer used to render the simulation cell in wireframe mode.
-	std::unique_ptr<LinePrimitive> _wireframeGeometry;
+	std::shared_ptr<LinePrimitive> _wireframeGeometry;
 
 	/// The geometry buffer used to render the wireframe simulation cell in object picking mode.
-	std::unique_ptr<LinePrimitive> _wireframePickingGeometry;
+	std::shared_ptr<LinePrimitive> _wireframePickingGeometry;
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for wireframe rendering.
@@ -130,10 +130,10 @@ protected:
 		> _wireframeGeometryCacheHelper;
 
 	/// The geometry buffer used to render the edges of the cell.
-	std::unique_ptr<ArrowPrimitive> _edgeGeometry;
+	std::shared_ptr<ArrowPrimitive> _edgeGeometry;
 
 	/// The geometry buffer used to render the corners of the cell.
-	std::unique_ptr<ParticlePrimitive> _cornerGeometry;
+	std::shared_ptr<ParticlePrimitive> _cornerGeometry;
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for solid rendering mode.

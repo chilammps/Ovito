@@ -267,7 +267,7 @@ void OpenGLParticlePrimitive::setSize(int particleCount)
 
 	_positionsBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
 	_radiiBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
-	_colorsBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
+	_particleCoordinates.clear();
 }
 
 /******************************************************************************
@@ -303,6 +303,8 @@ void OpenGLParticlePrimitive::setParticleRadius(FloatType radius)
 void OpenGLParticlePrimitive::setParticleColors(const Color* colors)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	_colorsAndAlphaBuffer.destroy();
+	_colorsBuffer.create(QOpenGLBuffer::StaticDraw, _positionsBuffer.elementCount(), _positionsBuffer.verticesPerElement());
 	_colorsBuffer.fill(colors);
 }
 
@@ -312,7 +314,43 @@ void OpenGLParticlePrimitive::setParticleColors(const Color* colors)
 void OpenGLParticlePrimitive::setParticleColor(const Color color)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	_colorsAndAlphaBuffer.destroy();
+	_colorsBuffer.create(QOpenGLBuffer::StaticDraw, _positionsBuffer.elementCount(), _positionsBuffer.verticesPerElement());
 	_colorsBuffer.fillConstant(color);
+}
+
+/******************************************************************************
+* Sets the colors of the particles.
+******************************************************************************/
+void OpenGLParticlePrimitive::setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions)
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	_colorsBuffer.destroy();
+	_colorsAndAlphaBuffer.create(QOpenGLBuffer::StaticDraw, _positionsBuffer.elementCount(), _positionsBuffer.verticesPerElement());
+	_colorsAndAlphaBuffer.fill(colors);
+	// Make a copy of the particle coordinates. They will be required to render particle in the correct order from back to front.
+	if(positions != nullptr) {
+		_particleCoordinates.resize(_positionsBuffer.elementCount());
+		std::copy(positions, positions + _positionsBuffer.elementCount(), _particleCoordinates.begin());
+	}
+	else _particleCoordinates.clear();
+}
+
+/******************************************************************************
+* Sets the color of all particles to the given value.
+******************************************************************************/
+void OpenGLParticlePrimitive::setParticleColorWithAlpha(const ColorA color, const Point3* positions)
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	_colorsBuffer.destroy();
+	_colorsAndAlphaBuffer.create(QOpenGLBuffer::StaticDraw, _positionsBuffer.elementCount(), _positionsBuffer.verticesPerElement());
+	_colorsAndAlphaBuffer.fillConstant(color);
+	// Make a copy of the particle coordinates. They will be required to render particle in the correct order from back to front.
+	if(positions != nullptr) {
+		_particleCoordinates.resize(_positionsBuffer.elementCount());
+		std::copy(positions, positions + _positionsBuffer.elementCount(), _particleCoordinates.begin());
+	}
+	else _particleCoordinates.clear();
 }
 
 /******************************************************************************
@@ -334,12 +372,20 @@ void OpenGLParticlePrimitive::render(SceneRenderer* renderer)
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
 	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
+	OVITO_STATIC_ASSERT(sizeof(ColorA) == 16);
 	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
 
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
 	if(particleCount() <= 0 || !vpRenderer)
 		return;
+
+	// If object is translucent, don't render it during the first rendering pass.
+	// Queue primitive so that it gets rendered during the second pass.
+	if(!renderer->isPicking() && _colorsAndAlphaBuffer.isCreated() && vpRenderer->translucentPass() == false) {
+		vpRenderer->registerTranslucentPrimitive(shared_from_this());
+		return;
+	}
 
 	if(_renderingTechnique == POINT_SPRITES)
 		renderPointSprites(vpRenderer);
@@ -399,20 +445,41 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 	_positionsBuffer.bindPositions(renderer, shader);
 	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
 	if(!renderer->isPicking()) {
-		_colorsBuffer.bindColors(renderer, shader, 3);
+		if(_colorsAndAlphaBuffer.isCreated()) {
+			glEnable(GL_BLEND);
+			renderer->glfuncs()->glBlendEquation(GL_FUNC_ADD);
+			renderer->glfuncs()->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+			_colorsAndAlphaBuffer.bindColors(renderer, shader, 4);
+		}
+		else
+			_colorsBuffer.bindColors(renderer, shader, 3);
 	}
 	else {
 		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(particleCount())));
 		renderer->activateVertexIDs(shader, particleCount());
 	}
 
-	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
+	// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
+	if(!renderer->isPicking() && _colorsAndAlphaBuffer.isCreated() && !_particleCoordinates.empty()) {
+		Vector3 direction = renderer->modelViewTM().inverse().column(2);
+		OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, determineRenderingOrder(direction).data()));
+	}
+	else {
+		// By default, render particle in arbitrary order.
+		OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_POINTS, 0, particleCount()));
+	}
 
 	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
 	_positionsBuffer.detachPositions(renderer, shader);
 	_radiiBuffer.detach(renderer, shader, "particle_radius");
-	if(!renderer->isPicking())
-		_colorsBuffer.detachColors(renderer, shader);
+	if(!renderer->isPicking()) {
+		if(_colorsAndAlphaBuffer.isCreated()) {
+			_colorsAndAlphaBuffer.detachColors(renderer, shader);
+			glDisable(GL_BLEND);
+		}
+		else
+			_colorsBuffer.detachColors(renderer, shader);
+	}
 	else
 		renderer->deactivateVertexIDs(shader);
 	shader->release();
@@ -499,7 +566,14 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 	_positionsBuffer.bindPositions(renderer, shader);
 	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
 	if(!renderer->isPicking()) {
-		_colorsBuffer.bindColors(renderer, shader, 3);
+		if(_colorsAndAlphaBuffer.isCreated()) {
+			glEnable(GL_BLEND);
+			renderer->glfuncs()->glBlendEquation(GL_FUNC_ADD);
+			renderer->glfuncs()->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+			_colorsAndAlphaBuffer.bindColors(renderer, shader, 4);
+		}
+		else
+			_colorsBuffer.bindColors(renderer, shader, 3);
 	}
 	else {
 		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(particleCount())));
@@ -507,11 +581,32 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 	}
 
 	if(_usingGeometryShader) {
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
+		// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
+		if(!renderer->isPicking() && _colorsAndAlphaBuffer.isCreated() && !_particleCoordinates.empty()) {
+			Vector3 direction = renderer->modelViewTM().inverse().column(2);
+			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, determineRenderingOrder(direction).data()));
+		}
+		else {
+			// By default, render particle in arbitrary order.
+			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_POINTS, 0, particleCount()));
+		}
 	}
 	else {
 		// Prepare arrays required for glMultiDrawArrays().
-		if(_primitiveStartIndices.size() != particleCount()) {
+
+		// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
+		if(!renderer->isPicking() && _colorsAndAlphaBuffer.isCreated() && !_particleCoordinates.empty()) {
+			Vector3 direction = renderer->modelViewTM().inverse().column(2);
+			auto indices = determineRenderingOrder(direction);
+			int verticesPerElement = _positionsBuffer.verticesPerElement();
+			_primitiveStartIndices.resize(particleCount());
+			std::transform(indices.begin(), indices.end(), _primitiveStartIndices.begin(), [verticesPerElement](GLuint i) { return i*verticesPerElement; });
+			if(_primitiveVertexCounts.size() != particleCount()) {
+				_primitiveVertexCounts.resize(particleCount());
+				std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _positionsBuffer.verticesPerElement());
+			}
+		}
+		else if(_primitiveStartIndices.size() != particleCount()) {
 			_primitiveStartIndices.resize(particleCount());
 			_primitiveVertexCounts.resize(particleCount());
 			GLint index = 0;
@@ -534,8 +629,14 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 
 	_positionsBuffer.detachPositions(renderer, shader);
 	_radiiBuffer.detach(renderer, shader, "particle_radius");
-	if(!renderer->isPicking())
-		_colorsBuffer.detachColors(renderer, shader);
+	if(!renderer->isPicking()) {
+		if(_colorsAndAlphaBuffer.isCreated()) {
+			_colorsAndAlphaBuffer.detachColors(renderer, shader);
+			glDisable(GL_BLEND);
+		}
+		else
+			_colorsBuffer.detachColors(renderer, shader);
+	}
 	else
 		renderer->deactivateVertexIDs(shader);
 
@@ -576,7 +677,14 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 	_positionsBuffer.bindPositions(renderer, shader);
 	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
 	if(!renderer->isPicking()) {
-		_colorsBuffer.bindColors(renderer, shader, 3);
+		if(_colorsAndAlphaBuffer.isCreated()) {
+			glEnable(GL_BLEND);
+			renderer->glfuncs()->glBlendEquation(GL_FUNC_ADD);
+			renderer->glfuncs()->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+			_colorsAndAlphaBuffer.bindColors(renderer, shader, 4);
+		}
+		else
+			_colorsBuffer.bindColors(renderer, shader, 3);
 	}
 	else {
 		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(particleCount())));
@@ -587,19 +695,47 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 
 	if(_usingGeometryShader) {
 		OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 1);
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
+		// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
+		if(!renderer->isPicking() && _colorsAndAlphaBuffer.isCreated() && !_particleCoordinates.empty()) {
+			Vector3 direction = renderer->modelViewTM().inverse().column(2);
+			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, determineRenderingOrder(direction).data()));
+		}
+		else {
+			// By default, render particles in arbitrary order.
+			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_POINTS, 0, particleCount()));
+		}
 	}
 	else {
 		OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 6);
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, particleCount() * _positionsBuffer.verticesPerElement()));
+		// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
+		if(!renderer->isPicking() && _colorsAndAlphaBuffer.isCreated() && !_particleCoordinates.empty()) {
+			Vector3 direction = renderer->modelViewTM().inverse().column(2);
+			auto indices = determineRenderingOrder(direction);
+			int verticesPerElement = _positionsBuffer.verticesPerElement();
+			std::vector<GLuint> primtiveIndices(verticesPerElement * particleCount());
+			for(size_t i = 0; i < indices.size(); i++) {
+				std::iota(primtiveIndices.begin() + i*verticesPerElement, primtiveIndices.begin() + (i+1)*verticesPerElement, indices[i]*verticesPerElement);
+			}
+			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawElements(GL_TRIANGLES, particleCount() * verticesPerElement, GL_UNSIGNED_INT, primtiveIndices.data()));
+		}
+		else {
+			// By default, render particles in arbitrary order.
+			OVITO_CHECK_OPENGL(renderer->glfuncs()->glDrawArrays(GL_TRIANGLES, 0, particleCount() * _positionsBuffer.verticesPerElement()));
+		}
 	}
 
 	renderer->deactivateVertexIDs(shader);
 
 	_positionsBuffer.detachPositions(renderer, shader);
 	_radiiBuffer.detach(renderer, shader, "particle_radius");
-	if(!renderer->isPicking())
-		_colorsBuffer.detachColors(renderer, shader);
+	if(!renderer->isPicking()) {
+		if(_colorsAndAlphaBuffer.isCreated()) {
+			_colorsAndAlphaBuffer.detachColors(renderer, shader);
+			glDisable(GL_BLEND);
+		}
+		else
+			_colorsBuffer.detachColors(renderer, shader);
+	}
 	else
 		renderer->deactivateVertexIDs(shader);
 	shader->release();
@@ -697,6 +833,31 @@ void OpenGLParticlePrimitive::deactivateBillboardTexture(ViewportSceneRenderer* 
 	// Disable texture mapping again when not using core profile.
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glDisable(GL_TEXTURE_2D));
+}
+
+
+/******************************************************************************
+* Returns an array of particle indices, sorted back-to-front, which is used
+* to render translucent particles.
+******************************************************************************/
+std::vector<GLuint> OpenGLParticlePrimitive::determineRenderingOrder(const Vector3& direction)
+{
+	// Create array of particle indices.
+	std::vector<GLuint> indices(particleCount());
+	std::iota(indices.begin(), indices.end(), 0);
+	if(!_particleCoordinates.empty()) {
+		OVITO_ASSERT(_particleCoordinates.size() == particleCount());
+		// First compute distance of each particle from the camera along viewing direction (=camera z-axis).
+		std::vector<FloatType> distances(particleCount());
+		std::transform(_particleCoordinates.begin(), _particleCoordinates.end(), distances.begin(), [direction](const Point3& p) {
+			return direction.dot(p - Point3::Origin());
+		});
+		// Now sort particle indices with respect to distance (back-to-front order).
+		std::sort(indices.begin(), indices.end(), [&distances](GLuint a, GLuint b) {
+			return distances[a] < distances[b];
+		});
+	}
+	return indices;
 }
 
 };

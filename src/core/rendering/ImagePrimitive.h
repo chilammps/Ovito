@@ -28,18 +28,16 @@
 #define __OVITO_IMAGE_PRIMITIVE_H
 
 #include <core/Core.h>
+#include "PrimitiveBase.h"
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for drawing bitmaps.
  */
-class OVITO_CORE_EXPORT ImagePrimitive
+class OVITO_CORE_EXPORT ImagePrimitive : public PrimitiveBase
 {
 public:
-
-	/// \brief Virtual base constructor.
-	virtual ~ImagePrimitive() {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setImage(const QImage& image) { _image = image; }
@@ -47,14 +45,14 @@ public:
 	/// \brief Returns the image stored in the buffer.
 	const QImage& image() const { return _image; }
 
-	/// \brief Returns true if the buffer is filled and can be rendered with the given renderer.
-	virtual bool isValid(SceneRenderer* renderer) = 0;
-
 	/// \brief Renders the image in a rectangle given in pixel coordinates.
 	virtual void renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size) = 0;
 
 	/// \brief Renders the image in a rectangle given in viewport coordinates.
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size) = 0;
+
+	/// \brief Renders the primitive using the given renderer.
+	virtual void render(SceneRenderer* renderer) override {}
 
 private:
 

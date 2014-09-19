@@ -16,8 +16,6 @@
      </imageobject></mediaobject></screenshot></informalfigure>  
      
 	 This is the default built-in <link linkend="usage.rendering">rendering engine</link>, which is also used by OVITO to render the contents of the interactive viewports.
-	 Since it is hardware-accelerated, it is very fast. Unlike the <link linkend="rendering.tachyon_renderer">Tachyon renderer</link>, the 
-	 OpenGL rendering engine does not support the display of semi-transparent objects at the moment.
     </para>
     
   <simplesect>

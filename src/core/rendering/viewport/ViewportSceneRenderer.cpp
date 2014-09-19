@@ -176,6 +176,7 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	OVITO_CHECK_OPENGL(glDepthMask(GL_TRUE));
 	OVITO_CHECK_OPENGL(glClearDepth(1));
 	OVITO_CHECK_OPENGL(glDisable(GL_SCISSOR_TEST));
+	_translucentPass = false;
 
 	// Clear background.
 	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
@@ -214,6 +215,14 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 			}
 		}
 	}
+
+	// Render translucent objects in a second pass.
+	_translucentPass = true;
+	for(auto& record : _translucentPrimitives) {
+		setWorldTransform(std::get<0>(record));
+		std::get<1>(record)->render(this);
+	}
+	_translucentPrimitives.clear();
 
 	return true;
 }
@@ -269,51 +278,51 @@ QSize ViewportSceneRenderer::outputSize() const
 /******************************************************************************
 * Requests a new line geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<LinePrimitive> ViewportSceneRenderer::createLinePrimitive()
+std::shared_ptr<LinePrimitive> ViewportSceneRenderer::createLinePrimitive()
 {
-	return std::unique_ptr<LinePrimitive>{ new OpenGLLinePrimitive(this) };
+	return std::make_shared<OpenGLLinePrimitive>(this);
 }
 
 /******************************************************************************
 * Requests a new particle geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ParticlePrimitive> ViewportSceneRenderer::createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
+std::shared_ptr<ParticlePrimitive> ViewportSceneRenderer::createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
 		ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) {
-	return std::unique_ptr<ParticlePrimitive>{ new OpenGLParticlePrimitive(this, shadingMode, renderingQuality, shape) };
+	return std::make_shared<OpenGLParticlePrimitive>(this, shadingMode, renderingQuality, shape);
 }
 
 /******************************************************************************
 * Requests a new text geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<TextPrimitive> ViewportSceneRenderer::createTextPrimitive()
+std::shared_ptr<TextPrimitive> ViewportSceneRenderer::createTextPrimitive()
 {
-	return std::unique_ptr<TextPrimitive>{ new OpenGLTextPrimitive(this) };
+	return std::make_shared<OpenGLTextPrimitive>(this);
 }
 
 /******************************************************************************
 * Requests a new image geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ImagePrimitive> ViewportSceneRenderer::createImagePrimitive()
+std::shared_ptr<ImagePrimitive> ViewportSceneRenderer::createImagePrimitive()
 {
-	return std::unique_ptr<ImagePrimitive>{ new OpenGLImagePrimitive(this) };
+	return std::make_shared<OpenGLImagePrimitive>(this);
 }
 
 /******************************************************************************
 * Requests a new arrow geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ArrowPrimitive> ViewportSceneRenderer::createArrowPrimitive(ArrowPrimitive::Shape shape,
+std::shared_ptr<ArrowPrimitive> ViewportSceneRenderer::createArrowPrimitive(ArrowPrimitive::Shape shape,
 		ArrowPrimitive::ShadingMode shadingMode,
 		ArrowPrimitive::RenderingQuality renderingQuality)
 {
-	return std::unique_ptr<ArrowPrimitive>{ new OpenGLArrowPrimitive(this, shape, shadingMode, renderingQuality) };
+	return std::make_shared<OpenGLArrowPrimitive>(this, shape, shadingMode, renderingQuality);
 }
 
 /******************************************************************************
 * Requests a new triangle mesh buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<MeshPrimitive> ViewportSceneRenderer::createMeshPrimitive()
+std::shared_ptr<MeshPrimitive> ViewportSceneRenderer::createMeshPrimitive()
 {
-	return std::unique_ptr<MeshPrimitive>{ new OpenGLMeshPrimitive(this) };
+	return std::make_shared<OpenGLMeshPrimitive>(this);
 }
 
 /******************************************************************************

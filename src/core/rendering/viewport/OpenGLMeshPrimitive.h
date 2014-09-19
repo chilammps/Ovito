@@ -37,7 +37,7 @@ namespace Ovito {
 /**
  * \brief Buffer object that stores a triangle mesh to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT OpenGLMeshPrimitive : public MeshPrimitive
+class OVITO_CORE_EXPORT OpenGLMeshPrimitive : public MeshPrimitive, public std::enable_shared_from_this<OpenGLMeshPrimitive>
 {
 public:
 
@@ -76,6 +76,12 @@ private:
 
 	/// The OpenGL shader program used to render the triangles in picking mode.
 	QOpenGLShaderProgram* _pickingShader;
+
+	/// Are we rendering a semi-transparent mesh?
+	bool _hasAlpha;
+
+	/// This is required to render translucent triangles in the correct order from back to front.
+	std::vector<Point3> _triangleCoordinates;
 };
 
 };

@@ -488,16 +488,16 @@ private:
 	int _renderDebugCounter;
 
 	/// The rendering buffer maintained to render the viewport's caption text.
-	std::unique_ptr<TextPrimitive> _captionBuffer;
+	std::shared_ptr<TextPrimitive> _captionBuffer;
 
 	/// The geometry buffer used to render the viewport's orientation indicator.
-	std::unique_ptr<LinePrimitive> _orientationTripodGeometry;
+	std::shared_ptr<LinePrimitive> _orientationTripodGeometry;
 
 	/// The rendering buffer used to render the viewport's orientation indicator labels.
-	std::unique_ptr<TextPrimitive> _orientationTripodLabels[3];
+	std::shared_ptr<TextPrimitive> _orientationTripodLabels[3];
 
 	/// This is used to render the render frame around the viewport.
-	std::unique_ptr<ImagePrimitive> _renderFrameOverlay;
+	std::shared_ptr<ImagePrimitive> _renderFrameOverlay;
 
 	/// This renderer generates an offscreen rendering of the scene that allows picking of objects.
 	OORef<PickingSceneRenderer> _pickingRenderer;

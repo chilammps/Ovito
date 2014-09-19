@@ -42,8 +42,8 @@
     <para>
       OVITO provides two different rendering engines. One is the default, hardware-accelerated <link linkend="rendering.opengl_renderer">OpenGL renderer</link> that is also used in the 
       interactive viewports for real-time display. Accordingly, this renderer is very fast and produces pictures that are identical to
-      what you see in the viewports. The alternative option is the <link linkend="rendering.tachyon_renderer">Tachyon</link> renderer, a software-based
-      raytracing engine. It supports semi-transparent objects, shadows, and ambient occlusion shading, but it usually takes longer to compute an image.
+      what you see in the viewports. The second option is the <link linkend="rendering.tachyon_renderer">Tachyon</link> renderer, a software-based
+      raytracing engine. It supports shadows and ambient occlusion shading, but it usually takes longer to compute an image.
     </para>
   </simplesect>
 

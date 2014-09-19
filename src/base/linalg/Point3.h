@@ -80,7 +80,7 @@ public:
 	/// \return A reference to \c this point, which has been changed.
 	Point_3& operator-=(const Vector_3<T>& v) { x() -= v.x(); y() -= v.y(); z() -= v.z(); return *this; }
 
-	/// \brief Multplies all coordinates of the point with a scalar value and stores the result in this object.
+	/// \brief Multiplies all coordinates of the point with a scalar value and stores the result in this object.
 	/// \param s The scalar value to multiply this point with.
 	/// \return A reference to \c this point, which has been changed.
 	Point_3& operator*=(T s) { x() *= s; y() *= s; z() *= s; return *this; }
@@ -94,8 +94,10 @@ public:
 	Point_3& operator=(Origin) { z() = y() = x() = T(0); return *this; }
 
 	/// \brief Converts a point to a vector.
-	Vector_3<T> operator-(Origin) const {
-		return Vector_3<T>(*this);
+	const Vector_3<T>& operator-(Origin) const {
+		// Implement this as a simple cast to Vector3 for best performance.
+		OVITO_STATIC_ASSERT(sizeof(Vector_3<T>) == sizeof(Point_3<T>));
+		return reinterpret_cast<const Vector_3<T>&>(*this);
 	}
 
 	//////////////////////////// Component access //////////////////////////
@@ -179,8 +181,10 @@ Q_DECL_CONSTEXPR Point_3<T> operator+(const Point_3<T>& a, const Vector_3<T>& b)
 
 /// \brief Converts a vector to a point.
 template<typename T>
-Q_DECL_CONSTEXPR Point_3<T> operator+(typename Point_3<T>::Origin, const Vector_3<T>& b) {
-	return Point_3<T>(b);
+Q_DECL_CONSTEXPR const Point_3<T>& operator+(typename Point_3<T>::Origin, const Vector_3<T>& b) {
+	// Use cast for best performance.
+	OVITO_STATIC_ASSERT(sizeof(Vector_3<T>) == sizeof(Point_3<T>));
+	return reinterpret_cast<const Point_3<T>&>(b);
 }
 
 /// \brief Computes the sum of a vector and a point.

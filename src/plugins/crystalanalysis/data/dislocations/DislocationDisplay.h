@@ -91,10 +91,10 @@ protected:
 protected:
 
 	/// The geometry buffer used to render the dislocation segments.
-	std::unique_ptr<ArrowPrimitive> _segmentBuffer;
+	std::shared_ptr<ArrowPrimitive> _segmentBuffer;
 
 	/// The geometry buffer used to render the segment corners.
-	std::unique_ptr<ParticlePrimitive> _cornerBuffer;
+	std::shared_ptr<ParticlePrimitive> _cornerBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffers.

@@ -28,21 +28,19 @@
 #define __OVITO_TEXT_PRIMITIVE_H
 
 #include <core/Core.h>
+#include "PrimitiveBase.h"
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class rendering of text primitives.
  */
-class OVITO_CORE_EXPORT TextPrimitive
+class OVITO_CORE_EXPORT TextPrimitive : public PrimitiveBase
 {
 public:
 
 	/// \brief Default constructor.
 	TextPrimitive() : _color(1,1,1,1), _backgroundColor(0,0,0,0) {}
-
-	/// \brief Virtual base constructor.
-	virtual ~TextPrimitive() {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setText(const QString& text) { _text = text; }
@@ -68,14 +66,14 @@ public:
 	/// Returns the text font.
 	const QFont& font() const { return _font; }
 
-	/// \brief Returns true if the buffer is filled and can be rendered with the given renderer.
-	virtual bool isValid(SceneRenderer* renderer) = 0;
-
 	/// \brief Renders the text string at the given 2D window (pixel) coordinates.
 	virtual void renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) = 0;
 
 	/// \brief Renders the text string at the given 2D normalized viewport coordinates ([-1,+1] range).
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) = 0;
+
+	/// \brief Renders the primitive using the given renderer.
+	virtual void render(SceneRenderer* renderer) override {}
 
 private:
 

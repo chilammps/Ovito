@@ -28,7 +28,7 @@ uniform mat4 projection_matrix;
 
 	// The particle data:
 	in vec3 position;
-	in vec3 color;
+	in vec4 color;
 	in float particle_radius;
 
 	// Output to fragment shader:
@@ -50,7 +50,7 @@ void main()
 #if __VERSION__ >= 130
 
 	// Forward color to fragment shader.
-	particle_color_fs = vec4(color, 1);
+	particle_color_fs = color;
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(position, 1);

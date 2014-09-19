@@ -90,15 +90,13 @@ Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProper
 
 	Box3 bbox;
 	if(positionProperty) {
-		const Point3* p = positionProperty->constDataPoint3();
-		const Point3* p_end = p + positionProperty->size();
-		for(; p != p_end; ++p)
-			bbox.addPoint(*p);
+		for(const Point3& p : positionProperty->constPoint3Range())
+			bbox.addPoint(p);
 	}
 	if(!includeParticleRadius)
 		return bbox;
 
-	// Take into account radii of particles.
+	// Extend box to account for radii of particles.
 	FloatType maxAtomRadius = defaultParticleRadius();
 	if(radiusProperty && radiusProperty->size() > 0) {
 		maxAtomRadius = *std::max_element(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + radiusProperty->size());
@@ -107,7 +105,7 @@ Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProper
 		for(const auto& it : typeProperty->radiusMap())
 			maxAtomRadius = std::max(maxAtomRadius, it.second);
 	}
-	// Enlarge the bounding box by the largest particle radius.
+	// Extend the bounding box by the largest particle radius.
 	return bbox.padBox(std::max(maxAtomRadius, FloatType(0)));
 }
 
@@ -302,10 +300,10 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		recreateBuffer |= !(_particleBuffer->setParticleShape(particleShape()));
 	}
 
-	// Do we have to resize the geometry buffer?
+	// Do we have to resize the render buffer?
 	bool resizeBuffer = recreateBuffer || (_particleBuffer->particleCount() != particleCount);
 
-	// Do we have to update the particle positions in the geometry buffer?
+	// Do we have to update the particle positions in the render buffer?
 	bool updatePositions = _positionsCacheHelper.updateState(positionProperty)
 			|| resizeBuffer;
 
@@ -321,7 +319,8 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 			colorProperty,
 			typeProperty,
 			selectionProperty,
-			transparencyProperty)
+			transparencyProperty,
+			positionProperty)
 			|| resizeBuffer;
 
 	// Re-create the geometry buffer if necessary.
@@ -339,7 +338,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	}
 
 	// Update radius buffer.
-	if(updateRadii) {
+	if(updateRadii && particleCount) {
 		if(radiusProperty) {
 			// Take particle radii directly from the radius property.
 			OVITO_ASSERT(radiusProperty->size() == particleCount);
@@ -348,12 +347,12 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		else if(typeProperty) {
 			// Assign radii based on particle types.
 			OVITO_ASSERT(typeProperty->size() == particleCount);
-			// Allocate memory buffer.
-			std::vector<FloatType> particleRadii(particleCount, defaultParticleRadius());
 			// Build a lookup map for particle type raii.
 			const std::map<int,FloatType> radiusMap = typeProperty->radiusMap();
 			// Skip the following loop if all per-type radii are zero. In this case, simply use the default radius for all particles.
 			if(std::any_of(radiusMap.cbegin(), radiusMap.cend(), [](const std::pair<int,FloatType>& it) { return it.second != 0; })) {
+				// Allocate memory buffer.
+				std::vector<FloatType> particleRadii(particleCount, defaultParticleRadius());
 				// Fill radius array.
 				const int* t = typeProperty->constDataInt();
 				for(auto c = particleRadii.begin(); c != particleRadii.end(); ++c, ++t) {
@@ -362,8 +361,12 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 					if(it != radiusMap.end() && it->second != 0)
 						*c = it->second;
 				}
+				_particleBuffer->setParticleRadii(particleRadii.data());
 			}
-			_particleBuffer->setParticleRadii(particleRadii.data());
+			else {
+				// Assign a constant radius to all particles.
+				_particleBuffer->setParticleRadius(defaultParticleRadius());
+			}
 		}
 		else {
 			// Assign a constant radius to all particles.
@@ -372,15 +375,28 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	}
 
 	// Update color buffer.
-	if(updateColors) {
-		// Allocate memory buffer.
-		std::vector<Color> colors(particleCount);
-		particleColors(colors, colorProperty, typeProperty, selectionProperty);
-		_particleBuffer->setParticleColors(colors.data());
-		if(transparencyProperty)
-			_particleBuffer->setParticleTransparencies(transparencyProperty->constDataFloat());
-		else
-			_particleBuffer->setParticleTransparency(0);
+	if(updateColors && particleCount) {
+		if(!transparencyProperty) {
+			// Fully opaque particles.
+			if(colorProperty && !selectionProperty) {
+				OVITO_ASSERT(colorProperty->size() == particleCount);
+				_particleBuffer->setParticleColors(colorProperty->constDataColor());
+			}
+			else {
+				std::vector<Color> colors(particleCount);
+				particleColors(colors, colorProperty, typeProperty, selectionProperty);
+				_particleBuffer->setParticleColors(colors.data());
+			}
+		}
+		else {
+			// Translucent particles.
+			std::vector<Color> colors(particleCount);
+			particleColors(colors, colorProperty, typeProperty, selectionProperty);
+			std::vector<ColorA> colorsWithAlpha(particleCount);
+			for(int i = 0; i < particleCount; i++)
+				colorsWithAlpha[i] = ColorA(colors[i], FloatType(1) - transparencyProperty->getFloat(i));
+			_particleBuffer->setParticleColorsWithAlpha(colorsWithAlpha.data(), positionProperty ? positionProperty->constDataPoint3() : nullptr);
+		}
 	}
 
 	renderer->beginPickObject(contextNode, sceneObject, this);

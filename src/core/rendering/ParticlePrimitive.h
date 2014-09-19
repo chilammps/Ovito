@@ -28,13 +28,14 @@
 #define __OVITO_PARTICLE_PRIMITIVE_H
 
 #include <core/Core.h>
+#include "PrimitiveBase.h"
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for particle drawing primitives.
  */
-class OVITO_CORE_EXPORT ParticlePrimitive
+class OVITO_CORE_EXPORT ParticlePrimitive : public PrimitiveBase
 {
 public:
 
@@ -64,9 +65,6 @@ public:
 	ParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape = SphericalShape)
 		: _shadingMode(shadingMode), _renderingQuality(renderingQuality), _particleShape(shape) {}
 
-	/// \brief Virtual base constructor.
-	virtual ~ParticlePrimitive() {}
-
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
 
@@ -88,17 +86,11 @@ public:
 	/// \brief Sets the color of all particles to the given value.
 	virtual void setParticleColor(const Color color) = 0;
 
-	/// \brief Sets the transparency of the particles.
-	virtual void setParticleTransparencies(const FloatType* transparencies) = 0;
+	/// \brief Sets the colors and alpha values of the particles.
+	virtual void setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions) = 0;
 
-	/// \brief Sets the transparency of all particles to the given value.
-	virtual void setParticleTransparency(FloatType transparency) = 0;
-
-	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
-	virtual bool isValid(SceneRenderer* renderer) = 0;
-
-	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer) = 0;
+	/// \brief Sets the color and alpha value of all particles to the given value.
+	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) = 0;
 
 	/// \brief Returns the shading mode for particles.
 	ShadingMode shadingMode() const { return _shadingMode; }

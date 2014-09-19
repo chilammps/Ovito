@@ -28,18 +28,16 @@
 #define __OVITO_LINE_DISPLAY_PRIMITIVE_H
 
 #include <core/Core.h>
+#include "PrimitiveBase.h"
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for line drawing primitives.
  */
-class OVITO_CORE_EXPORT LinePrimitive
+class OVITO_CORE_EXPORT LinePrimitive : public PrimitiveBase
 {
 public:
-
-	/// \brief Virtual base constructor.
-	virtual ~LinePrimitive() {}
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
 	virtual void setVertexCount(int vertexCount, FloatType lineWidth = FloatType(1)) = 0;
@@ -55,12 +53,6 @@ public:
 
 	/// \brief Sets the color of all vertices to the given value.
 	virtual void setLineColor(const ColorA color) = 0;
-
-	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
-	virtual bool isValid(SceneRenderer* renderer) = 0;
-
-	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer) = 0;
 };
 
 };

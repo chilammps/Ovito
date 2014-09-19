@@ -37,7 +37,7 @@ namespace Ovito {
 /**
  * \brief This class is responsible for rendering particle primitives using OpenGL.
  */
-class OVITO_CORE_EXPORT OpenGLParticlePrimitive : public ParticlePrimitive
+class OVITO_CORE_EXPORT OpenGLParticlePrimitive : public ParticlePrimitive, public std::enable_shared_from_this<OpenGLParticlePrimitive>
 {
 public:
 
@@ -52,7 +52,7 @@ public:
 	virtual int particleCount() const override { return _positionsBuffer.elementCount(); }
 
 	/// \brief Sets the coordinates of the particles.
-	virtual void setParticlePositions(const Point3* coordinates) override;
+	virtual void setParticlePositions(const Point3* positions) override;
 
 	/// \brief Sets the radii of the particles.
 	virtual void setParticleRadii(const FloatType* radii) override;
@@ -66,11 +66,11 @@ public:
 	/// \brief Sets the color of all particles to the given value.
 	virtual void setParticleColor(const Color color) override;
 
-	/// \brief Sets the transparency of the particles.
-	virtual void setParticleTransparencies(const FloatType* transparencies) override { /* Not supported by OpenGL renderer. */ }
+	/// \brief Sets the colors and alpha values of the particles.
+	virtual void setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions) override;
 
-	/// \brief Sets the transparency of all particles to the given value.
-	virtual void setParticleTransparency(FloatType transparency) override { /* Not supported by OpenGL renderer. */ }
+	/// \brief Sets the color and alpha value of all particles to the given value.
+	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) override;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
@@ -107,6 +107,9 @@ protected:
 	/// Renders the particles using quads.
 	void renderImposters(ViewportSceneRenderer* renderer);
 
+	/// Returns an array of particle indices, sorted back-to-front, which is used to render translucent particles.
+	std::vector<GLuint> determineRenderingOrder(const Vector3& direction);
+
 private:
 
 	/// The available techniques for rendering particles.
@@ -124,6 +127,9 @@ private:
 
 	/// The internal OpenGL vertex buffer that stores the particle colors.
 	OpenGLBuffer<Color> _colorsBuffer;
+
+	/// The internal OpenGL vertex buffer that stores the particle colors and particle transparencies.
+	OpenGLBuffer<ColorA> _colorsAndAlphaBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
@@ -148,6 +154,10 @@ private:
 
 	/// Indicates that an OpenGL geometry shader is being used.
 	bool _usingGeometryShader;
+
+	/// A copy of the particle coordinates. This is only required to render translucent
+	/// particles in the correct order from back to front.
+	std::vector<Point3> _particleCoordinates;
 };
 
 };

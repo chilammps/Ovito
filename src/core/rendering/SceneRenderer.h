@@ -113,26 +113,26 @@ public:
 	virtual const AffineTransformation& worldTransform() const = 0;
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() = 0;
+	virtual std::shared_ptr<LinePrimitive> createLinePrimitive() = 0;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode = ParticlePrimitive::NormalShading,
+	virtual std::shared_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode = ParticlePrimitive::NormalShading,
 			ParticlePrimitive::RenderingQuality renderingQuality = ParticlePrimitive::MediumQuality,
 			ParticlePrimitive::ParticleShape shape = ParticlePrimitive::SphericalShape) = 0;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() = 0;
+	virtual std::shared_ptr<TextPrimitive> createTextPrimitive() = 0;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() = 0;
+	virtual std::shared_ptr<ImagePrimitive> createImagePrimitive() = 0;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
+	virtual std::shared_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
 			ArrowPrimitive::ShadingMode shadingMode = ArrowPrimitive::NormalShading,
 			ArrowPrimitive::RenderingQuality renderingQuality = ArrowPrimitive::MediumQuality) = 0;
 
 	/// Requests a new triangle mesh geometry buffer from the renderer.
-	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() = 0;
+	virtual std::shared_ptr<MeshPrimitive> createMeshPrimitive() = 0;
 
 	/// Returns whether this renderer is rendering an interactive viewport.
 	/// \return true if rendering a real-time viewport; false if rendering an output image.

@@ -856,11 +856,6 @@ void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 	sublayout->addLayout(capTransparencyUI->createFieldLayout(), 1, 1);
 	capTransparencyUI->setMinValue(0);
 	capTransparencyUI->setMaxValue(1);
-
-	QLabel* note = new QLabel(tr("<p style=\"font-size: small;\"><b>Note:</b> With the current program version, all objects will appear fully opaque in the interactive "
-			"viewports. Use the Tachyon renderer to visualize semi-transparent surfaces.</p>"));
-	note->setWordWrap(true);
-	layout->addWidget(note);
 }
 
 };

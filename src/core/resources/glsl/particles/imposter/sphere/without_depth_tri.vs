@@ -28,7 +28,7 @@ uniform vec4 imposter_voffsets[6];
 #if __VERSION__ >= 130
 	// The particle data:
 	in vec3 position;
-	in vec3 color;
+	in vec4 color;
 	in float particle_radius;
 
 	// Output passed to fragment shader.
@@ -45,7 +45,7 @@ void main()
 {
 #if __VERSION__ >= 130
 	// Pass color to fragment shader.
-	particle_color_fs = vec4(color, 1);
+	particle_color_fs = color;
 	
 	// Assign texture coordinates. 
 	texcoords = imposter_texcoords[gl_VertexID % 6];

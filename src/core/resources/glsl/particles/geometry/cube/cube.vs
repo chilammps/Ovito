@@ -26,7 +26,7 @@ uniform mat4 modelview_matrix;
 
 // The particle data:
 in vec3 position;
-in vec3 color;
+in vec4 color;
 in float particle_radius;
 
 // Output to geometry shader.
@@ -39,7 +39,7 @@ void main()
 {
 #if __VERSION__ >= 130
 	// Forward color and radius to geometry shader.
-	particle_color_gs = vec4(color, 1);
+	particle_color_gs = color;
 	particle_radius_gs = particle_radius;
 
 	// Pass original particle position to geometry shader.

@@ -33,9 +33,7 @@
       <varlistentry>
         <term>Transparency</term>
         <listitem>
-          <para>The degree of transparency of the surface. Note that the default OpenGL renderer does not support 
-          semi-transparent objects yet. Thus, this parameter is currently used only by the 
-          <link linkend="rendering.tachyon_renderer">Tachyon software renderer</link>.</para>
+          <para>The degree of transparency of the surface.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

@@ -15,8 +15,8 @@
        <imagedata fileref="images/rendering/tachyon_renderer_panel.png" format="PNG" />
      </imageobject></mediaobject></screenshot></informalfigure>  
      
-    This is a software-based raytracing renderer. One feature is its ability to render scenes with 
-    ambient occlusion lighting and semi-transparent objects.
+    This is a software-based raytracing renderer. One special feature is its ability to render scenes with 
+    ambient occlusion lighting.
     </para>
     
   <simplesect>

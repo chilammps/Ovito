@@ -116,9 +116,11 @@ void StandardSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	OVITO_CHECK_OPENGL(glViewport(0, 0, _framebufferSize.width(), _framebufferSize.height()));
 
 	// Set rendering background color.
-	Color backgroundColor = renderSettings()->backgroundColor();
-	FloatType alpha = renderSettings()->generateAlphaChannel() ? 0.0f : 1.0f;
-	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), alpha);
+	if(!renderSettings()->generateAlphaChannel()) {
+		Color backgroundColor = renderSettings()->backgroundColor();
+		glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
+	}
+	else glClearColor(0, 0, 0, 0);
 }
 
 /******************************************************************************
@@ -134,14 +136,13 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	glcontext()->swapBuffers(_offscreenSurface.data());
 
 	// Fetch rendered image from OpenGL framebuffer.
+    QImage bufferImage = _framebufferObject->toImage();
+
 	// Scale it down to the output size.
-	QImage image = _framebufferObject->toImage().scaled(frameBuffer->image().width(), frameBuffer->image().height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+	QImage image = bufferImage.scaled(frameBuffer->image().width(), frameBuffer->image().height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
 	// Copy OpenGL image to the output frame buffer.
-	{
-		QPainter painter(&frameBuffer->image());
-		painter.drawImage(0, 0, image);
-	}
+	frameBuffer->image() = image;
 	frameBuffer->update();
 
 	return true;

@@ -138,7 +138,7 @@ protected:
 	PropertyField<ArrowPrimitive::RenderingQuality, int> _renderingQuality;
 
 	/// The buffered geometry used to render the arrows.
-	std::unique_ptr<ArrowPrimitive> _buffer;
+	std::shared_ptr<ArrowPrimitive> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

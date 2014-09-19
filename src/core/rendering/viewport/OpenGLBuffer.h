@@ -83,6 +83,13 @@ public:
 	/// Provides access to the internal OpenGL vertex buffer object.
 	QOpenGLBuffer& oglBuffer() { return _buffer; }
 
+	/// Destroys this buffer object, including the storage being used in the OpenGL server.
+	void destroy() {
+		_buffer.destroy();
+		_elementCount = 0;
+		_verticesPerElement = 0;
+	}
+
 	/// Maps the contents of this buffer into the application's memory space and returns a pointer to it.
 	T* map(QOpenGLBuffer::Access access) {
 		OVITO_ASSERT(isCreated());

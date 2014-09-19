@@ -354,16 +354,16 @@ protected:
 	PropertyField<QString> _legendValueFormatString;
 
 	/// Used to render the color scale legend on top the scene.
-	std::unique_ptr<ImagePrimitive> _colorScaleImageBuffer;
+	std::shared_ptr<ImagePrimitive> _colorScaleImageBuffer;
 
 	/// Used to render the color scale labels.
-	std::unique_ptr<TextPrimitive> _colorScaleTopLabel;
+	std::shared_ptr<TextPrimitive> _colorScaleTopLabel;
 
 	/// Used to render the color scale labels.
-	std::unique_ptr<TextPrimitive> _colorScaleBottomLabel;
+	std::shared_ptr<TextPrimitive> _colorScaleBottomLabel;
 
 	/// Used to render the color scale title.
-	std::unique_ptr<TextPrimitive> _colorScaleTitleLabel;
+	std::shared_ptr<TextPrimitive> _colorScaleTitleLabel;
 
 	/// This helper object is used to detect changes in the settings that required
 	/// updating the render buffers used to display the color scale legend.

@@ -155,13 +155,13 @@ public:
 protected:
 
 	/// The buffered geometry used to render the icon.
-	std::unique_ptr<LinePrimitive> _cameraIcon;
+	std::shared_ptr<LinePrimitive> _cameraIcon;
 
 	/// The icon geometry to be rendered in object picking mode.
-	std::unique_ptr<LinePrimitive> _pickingCameraIcon;
+	std::shared_ptr<LinePrimitive> _pickingCameraIcon;
 
 	/// The geometry for the camera's viewing cone and target line.
-	std::unique_ptr<LinePrimitive> _cameraCone;
+	std::shared_ptr<LinePrimitive> _cameraCone;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

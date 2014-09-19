@@ -29,13 +29,14 @@
 
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
+#include "PrimitiveBase.h"
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for rendering arrow glyphs and cylinders.
  */
-class OVITO_CORE_EXPORT ArrowPrimitive
+class OVITO_CORE_EXPORT ArrowPrimitive : public PrimitiveBase
 {
 public:
 
@@ -75,12 +76,6 @@ public:
 
 	/// \brief Finalizes the geometry buffer after all elements have been set.
 	virtual void endSetElements() = 0;
-
-	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
-	virtual bool isValid(SceneRenderer* renderer) = 0;
-
-	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer) = 0;
 
 	/// \brief Returns the shading mode for elements.
 	ShadingMode shadingMode() const { return _shadingMode; }

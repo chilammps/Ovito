@@ -14,6 +14,10 @@ See website for more information:
 Change Log 
 ****************************************************************************************
 
+Release 2.4.1 (xx-yyy-14):
+
+ - Semi-transparent particles and surfaces are now supported by the OpenGL renderer.
+ 
 Release 2.4.0 (16-Sep-14):
 
  - New Python script engine (see user manual for more information).

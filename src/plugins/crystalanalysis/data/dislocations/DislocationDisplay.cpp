@@ -197,7 +197,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 	glDisable(GL_DEPTH_TEST);
 
 	FloatType lineRadius = std::max(lineWidth() / 4, FloatType(0));
-	std::unique_ptr<ArrowPrimitive> segmentBuffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::FlatShading, ArrowPrimitive::HighQuality);
+	std::shared_ptr<ArrowPrimitive> segmentBuffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::FlatShading, ArrowPrimitive::HighQuality);
 	segmentBuffer->startSetElements(lineSegments.size());
 	int index = 0;
 	for(const auto& seg : lineSegments)
@@ -205,7 +205,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 	segmentBuffer->endSetElements();
 	segmentBuffer->render(renderer);
 
-	std::unique_ptr<ParticlePrimitive> cornerBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::HighQuality);
+	std::shared_ptr<ParticlePrimitive> cornerBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::HighQuality);
 	cornerBuffer->setSize(cornerVertices.size());
 	cornerBuffer->setParticlePositions(cornerVertices.constData());
 	cornerBuffer->setParticleColor(Color(1,1,1));
@@ -214,7 +214,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 
 	if(!segment->line().empty()) {
 		Point3 wrappedHeadPos = cellData.wrapPoint(segment->line().front());
-		std::unique_ptr<ParticlePrimitive> headBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::HighQuality);
+		std::shared_ptr<ParticlePrimitive> headBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::HighQuality);
 		headBuffer->setSize(1);
 		headBuffer->setParticlePositions(&wrappedHeadPos);
 		headBuffer->setParticleColor(Color(1,1,1));

@@ -74,10 +74,10 @@ public:
 protected:
 
 	/// The buffered geometry used to render the icon.
-	std::unique_ptr<LinePrimitive> _icon;
+	std::shared_ptr<LinePrimitive> _icon;
 
 	/// The icon geometry to be rendered in object picking mode.
-	std::unique_ptr<LinePrimitive> _pickingIcon;
+	std::shared_ptr<LinePrimitive> _pickingIcon;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

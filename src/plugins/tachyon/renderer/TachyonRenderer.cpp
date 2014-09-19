@@ -209,6 +209,10 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 
 	camera_init(scene);      /* Initialize all aspects of camera system  */
 
+	// Make sure the target frame buffer has the right memory format.
+	if(frameBuffer->image().format() != QImage::Format_ARGB32)
+		frameBuffer->image() = frameBuffer->image().convertToFormat(QImage::Format_ARGB32);
+
 	int tileSize = scene->numthreads * 8;
 	for(int ystart = 0; ystart < scene->vres; ystart += tileSize) {
 		for(int xstart = 0; xstart < scene->hres; xstart += tileSize) {
@@ -312,15 +316,13 @@ void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBu
 	auto p_end = particleBuffer.positions().end();
 	auto c = particleBuffer.colors().begin();
 	auto r = particleBuffer.radii().begin();
-	const FloatType* transparency = particleBuffer.transparencies().empty() ? nullptr : particleBuffer.transparencies().data();
 
 	const AffineTransformation tm = modelTM();
 
 	if(particleBuffer.particleShape() == ParticlePrimitive::SphericalShape) {
 		// Rendering spherical particles.
 		for(; p != p_end; ++p, ++c, ++r) {
-			FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
-			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), alpha);
+			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
 			Point3 tp = tm * (*p);
 			rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
 		}
@@ -328,8 +330,7 @@ void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBu
 	else {
 		// Rendering cubic particles.
 		for(; p != p_end; ++p, ++c, ++r) {
-			FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
-			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), alpha);
+			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
 			Point3 tp = tm * (*p);
 			rt_box(_rtscene, tex, rt_vector(tp.x() - *r, tp.y() - *r, -tp.z() - *r), rt_vector(tp.x() + *r, tp.y() + *r, -tp.z() + *r));
 		}

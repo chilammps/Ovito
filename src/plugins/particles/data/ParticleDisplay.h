@@ -129,7 +129,7 @@ protected:
 	PropertyField<ParticlePrimitive::ParticleShape, int> _particleShape;
 
 	/// The buffered particle geometry used to render the particles.
-	std::unique_ptr<ParticlePrimitive> _particleBuffer;
+	std::shared_ptr<ParticlePrimitive> _particleBuffer;
 
 	/// This helper structure is used to detect any changes in the particle positions
 	/// that require updating the particle position buffer.
@@ -151,7 +151,8 @@ protected:
 		WeakVersionedOORef<ParticlePropertyObject>,		// Color property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Type property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Selection property + revision number
-		WeakVersionedOORef<ParticlePropertyObject>		// Transparency property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Transparency property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>		// Position property + revision number
 		> _colorsCacheHelper;
 
 	/// The bounding box that includes all particles.

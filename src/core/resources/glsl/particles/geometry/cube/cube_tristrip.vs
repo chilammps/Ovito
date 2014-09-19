@@ -31,7 +31,7 @@ uniform vec3 normals[14];
 
 	// The particle data:
 	in vec3 position;
-	in vec3 color;
+	in vec4 color;
 	in float particle_radius;
 	
 	// Outputs to fragment shader
@@ -54,7 +54,7 @@ void main()
 #if __VERSION__ >= 130
 
 	// Forward color to fragment shader.
-	particle_color_fs = vec4(color, 1);
+	particle_color_fs = color;
 
 	// Transform and project vertex.
 	int cubeCorner = gl_VertexID % 14;

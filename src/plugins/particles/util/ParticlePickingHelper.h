@@ -89,10 +89,10 @@ protected:
 	Box3 selectionMarkerBoundingBox(Viewport* vp, const PickResult& pickRecord);
 
 	/// Used to render the marker for a selected particle.
-	std::unique_ptr<ParticlePrimitive> _highlightBuffer;
+	std::shared_ptr<ParticlePrimitive> _highlightBuffer;
 
 	/// Used to render the selected particle itself.
-	std::unique_ptr<ParticlePrimitive> _particleBuffer;
+	std::shared_ptr<ParticlePrimitive> _particleBuffer;
 };
 
 };	// End of namespace

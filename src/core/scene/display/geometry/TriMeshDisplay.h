@@ -82,7 +82,7 @@ protected:
 	ReferenceField<Controller> _transparency;
 
 	/// The buffered geometry used to render the mesh.
-	std::unique_ptr<MeshPrimitive> _buffer;
+	std::shared_ptr<MeshPrimitive> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

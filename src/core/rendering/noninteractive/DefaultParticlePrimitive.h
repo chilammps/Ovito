@@ -49,7 +49,6 @@ public:
 		_positionsBuffer.resize(particleCount);
 		_radiiBuffer.resize(particleCount);
 		_colorsBuffer.resize(particleCount);
-		_transparenciesBuffer.clear();
 	}
 
 	/// \brief Returns the number of particles stored in the buffer.
@@ -80,17 +79,14 @@ public:
 		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 
-	/// \brief Sets the transparency of the particles.
-	virtual void setParticleTransparencies(const FloatType* transparencies) override {
-		_transparenciesBuffer.assign(transparencies, transparencies + _positionsBuffer.size());
+	/// \brief Sets the colors and alpha values of the particles.
+	virtual void setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions) override {
+		std::copy(colors, colors + _colorsBuffer.size(), _colorsBuffer.begin());
 	}
 
-	/// \brief Sets the transparency of all particles to the given value.
-	virtual void setParticleTransparency(FloatType transparency) override {
-		if(transparency != FloatType(0))
-			_transparenciesBuffer.assign(_positionsBuffer.size(), transparency);
-		else
-			_transparenciesBuffer.clear();
+	/// \brief Sets the color and alpha values of all particles to the given value.
+	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) override {
+		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
@@ -106,10 +102,7 @@ public:
 	const std::vector<FloatType>& radii() const { return _radiiBuffer; }
 
 	/// Returns a reference to the internal buffer that stores the particle colors.
-	const std::vector<Color>& colors() const { return _colorsBuffer; }
-
-	/// Returns a reference to the internal buffer that stores the particle transparencies.
-	const std::vector<FloatType>& transparencies() const { return _transparenciesBuffer; }
+	const std::vector<ColorA>& colors() const { return _colorsBuffer; }
 
 private:
 
@@ -119,11 +112,8 @@ private:
 	/// The internal buffer that stores the particle radii.
 	std::vector<FloatType> _radiiBuffer;
 
-	/// The internal buffer that stores the particle colors.
-	std::vector<Color> _colorsBuffer;
-
-	/// The internal buffer that stores the particle transparencies.
-	std::vector<FloatType> _transparenciesBuffer;
+	/// The internal buffer that stores the particle colors and alpha values.
+	std::vector<ColorA> _colorsBuffer;
 };
 
 };

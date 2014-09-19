@@ -141,10 +141,10 @@ protected:
 	ReferenceField<Controller> _capTransparency;
 
 	/// The buffered geometry used to render the surface mesh.
-	std::unique_ptr<MeshPrimitive> _surfaceBuffer;
+	std::shared_ptr<MeshPrimitive> _surfaceBuffer;
 
 	/// The buffered geometry used to render the surface cap.
-	std::unique_ptr<MeshPrimitive> _capBuffer;
+	std::shared_ptr<MeshPrimitive> _capBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

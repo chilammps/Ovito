@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,33 +19,32 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file MeshPrimitive.h
- * \brief Contains the definition of the Ovito::MeshPrimitive class.
- */
-
-#ifndef __OVITO_MESH_PRIMITIVE_H
-#define __OVITO_MESH_PRIMITIVE_H
+#ifndef __OVITO_PRIMITIVE_BASE_H
+#define __OVITO_PRIMITIVE_BASE_H
 
 #include <core/Core.h>
-#include "PrimitiveBase.h"
 
 namespace Ovito {
 
+class SceneRenderer;
+
 /**
- * \brief Abstract base class for rendering triangle meshes.
+ * \brief Abstract base class for drawing primitives.
  */
-class OVITO_CORE_EXPORT MeshPrimitive : public PrimitiveBase
+class OVITO_CORE_EXPORT PrimitiveBase
 {
 public:
 
-	/// Sets the mesh to be stored in this buffer object.
-	virtual void setMesh(const TriMesh& mesh, const ColorA& meshColor) = 0;
+	/// \brief Virtual base destructor.
+	virtual ~PrimitiveBase() {}
 
-	/// \brief Returns the number of triangle faces stored in the buffer.
-	virtual int faceCount() = 0;
+	/// \brief Returns true if the primitive buffer is filled and can be rendered with the given renderer.
+	virtual bool isValid(SceneRenderer* renderer) = 0;
+
+	/// \brief Renders the primitive using the given renderer.
+	virtual void render(SceneRenderer* renderer) = 0;
 };
 
 };
 
-#endif // __OVITO_MESH_PRIMITIVE_H
+#endif // __OVITO_PRIMITIVE_BASE_H
