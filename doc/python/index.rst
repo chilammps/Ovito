@@ -4,7 +4,8 @@
 OVITO Scripting Reference
 **********************************
 
-This manual describes OVITO's scripting interface.
+This manual describes OVITO's scripting interface. You can access this manual from the Help menu in
+OVITO's main window.
 
 Introduction:
 -----------------
@@ -14,6 +15,10 @@ Introduction:
    
    introduction/running
    introduction/overview
+   introduction/file_io
+   introduction/modifiers
+   introduction/particle_properties
+   introduction/rendering
    introduction/examples
 
 Module Reference:

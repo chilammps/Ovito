@@ -547,7 +547,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"Creates bonds between nearby particles. The modifier outputs its computation results as a :py:class:`~ovito.data.Bonds` data object.")
 			.add_property("mode", &CreateBondsModifier::cutoffMode, &CreateBondsModifier::setCutoffMode)
 			.add_property("cutoff", &CreateBondsModifier::uniformCutoff, &CreateBondsModifier::setUniformCutoff,
-					"The cutoff distance for the creation of bonds between particle."
+					"The cutoff distance for the creation of bonds between particles."
 					"\n\n"
 					":Default: 3.2\n")
 			.add_property("bonds_display", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()),

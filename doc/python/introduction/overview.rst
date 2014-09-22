@@ -13,7 +13,7 @@ do many things that are already familiar from the graphical user interface (and 
   * Access per-particle data and other analysis results computed by OVITO
   * Export the output data to a file
 
-This following sections will introduce the essential concepts and walk you through different parts of OVITO's 
+The following sections will introduce the essential concepts and walk you through different parts of OVITO's 
 scripting interface.
 
 ------------------------------------
@@ -135,7 +135,7 @@ viewport in Python::
     
 As you can see, the :py:class:`~ovito.vis.Viewport` class has several parameters that control the 
 position and orientation of the camera, the projection type, and the field of view (FOV) angle. Note that this
-viewport will not be visible in OVITO's main window; it's only a temporary object used in the script.
+viewport will not be visible in OVITO's main window; it is only a temporary object used in the script.
 
 In addition we need to create a :py:class:`~ovito.vis.RenderSettings` object, which controls the rendering
 process (These are the parameters you normally set on the :guilabel:`Render` tab in OVITO's main window)::
@@ -177,8 +177,8 @@ an evaluation of the modification pipeline.
 The node stores the results of the last pipeline evaluation in its :py:attr:`~ovito.ObjectNode.output` field::
 
     >>> node.output
-    DataCollection(['Simulation cell', 'Particle identifiers', 'Particle positions', 
-                    'Potential Energy', 'Particle colors', 'Structure types'])
+    DataCollection(['Simulation cell', 'Particle Identifier', 'Position', 
+                    'Potential Energy', 'Color', 'Structure Type'])
     
 The :py:class:`~ovito.data.DataCollection` contains the *data objects* that were output
 by the modification pipeline. For example, to access the simulation cell we would write::
@@ -209,60 +209,45 @@ is cached by the :py:class:`~ovito.io.FileSource` and can be accessed through th
 :py:attr:`~ovito.io.FileSource.data` attribute::
 
     >>> node.source.data
-    DataCollection(['Simulation cell', 'Particle identifiers', 'Particle positions'])
+    DataCollection(['Simulation cell', 'Particle Identifier', 'Position'])
 
 -------------------------------------------------
 Controlling the visual appearance of objects
 -------------------------------------------------
 
-So far we have only considered data objects such as particle properties or the simulation cell
-that are processed in OVITO's modification pipeline system. How are these data objects displayed, and how
+So far we have only considered data objects such as particle properties or the simulation cell,
+which are processed in OVITO's modification pipeline system. How are these data objects displayed, and how
 can we set the parameters that control their visual appearance?
 
-Every data object that has a visual representation in OVITO is associated with a special :py:class:`~ovito.vis.Display`
-object. It is stored in the data object's :py:attr:`~.ovito.data.DataObject.display` attribute. For example::
+Every data object that has a visual representation in OVITO is associated with a specialized :py:class:`~ovito.vis.Display`
+object. The display object is stored in the data object's :py:attr:`~.ovito.data.DataObject.display` attribute. For example::
 
     >>> cell = node.source.data.cell           
     >>> cell                               # This is the data object
     <SimulationCell at 0x7f9a414c8060>
     
-    >>> cell.display                       # This is its associated display object
+    >>> cell.display                       # This is its attached display object
     <SimulationCellDisplay at 0x7fc3650a1c20>
 
 In this example we have accessed the :py:class:`~ovito.data.SimulationCell` data object from the 
 file source's data collection. Its :py:attr:`~.ovito.data.DataObject.display` attribute contains
 a :py:class:`~ovito.vis.SimulationCellDisplay` instance, which is responsible for producing
-the visual representation of the simulation cell. It provides parameters that allow us to control
+the visual representation of the simulation cell. Its parameters allow us to control
 the appearance of the cell. We can even turn off the display of the simulation cell completely::
 
     >>> cell.display.enabled = False 
 
-Particles are being rendered by a :py:class:`~ovito.vis.ParticleDisplay` object. Since there is no dedicated 
-data object for particles in OVITO, only separate data objects that store the individual particle properties, OVITO associates
-the :py:class:`~ovito.vis.ParticleDisplay` with the :py:class:`~ovito.data.ParticleProperty` data object
-containing the particle positions. Thus, to modify the particle display properties, we have to access the particle 
-positions::
+Particles are rendered by a :py:class:`~ovito.vis.ParticleDisplay`. It is attached to the 
+:py:class:`~ovito.data.ParticleProperty` containing the particle position data. Thus, to change the visual
+appearance of particles, we have to access the particle positions object in the data collection::
 
     >>> p = node.source.data.position           
     >>> p                        # This is the data object holding the input particle positions
     <ParticleProperty at 0x7ff5fc868b30>
       
-    >>> p.display                # This is the associated display object
+    >>> p.display                # This is the attached display object
     <ParticleDisplay at 0x7ff5fc868c40>
        
     >>> p.display.shading = ParticleDisplay.Shading.Flat
     >>> p.display.radius = 1.4
 
-.. note::
-
-    Note that display objects flow through the modification pipeline together with the data objects they are
-    associated with. Normally they don't get modified by modifiers in the pipeline, only the data objects are.
-    That means it doesn't matter whether we change display parameters in the input of the modification pipeline
-    or in the output.
-    
-    However, some modifiers such as the :py:class:`~ovito.modifiers.CalculateDisplacementsModifier` 
-    create new data objects (in this case a :py:class:`~ovito.data.ParticleProperty` holding the computed
-    displacement vectors). Such newly generated data objects may be associated with a display object too
-    (a :py:class:`~ovito.vis.VectorDisplay` in this case), which will only be accessible in the pipeline output
-    or via the modifier itself.
-    

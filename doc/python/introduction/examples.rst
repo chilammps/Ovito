@@ -8,8 +8,8 @@ This page will provide a collection of example scripts. So far there is only one
 Computing Voronoi indices
 ----------------------------------
 
-This example demonstrates the use of the Voronoi analysis modifier.
-The script calculates the distribution of Voronoi polyhedra in a glass.
+This script demonstrates the use of the Voronoi analysis modifier.
+The script calculates the distribution of Voronoi coordination polyhedra in an amorphous structure.
 
 A Voronoi polyhedron is expressed in terms of the Schlaefli notation,
 which is a vector of indices (n\ :sub:`1`, n\ :sub:`2`, n\ :sub:`3`, n\ :sub:`4`, n\ :sub:`5`, n\ :sub:`6`, ...),

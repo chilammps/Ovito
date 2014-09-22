@@ -45,12 +45,17 @@ print "Modification pipeline:"
 print node.modifiers
 	
 # Perform some analysis.
-cna = CommonNeighborAnalysisModifier(cutoff = 3.2, adaptive_mode = False)
+cna = CommonNeighborAnalysisModifier(adaptive_mode = True)
 node.modifiers.append(cna)
 
 # Block execution of the script until the node's modification pipeline is ready, that is, until 
 # the results of all modifiers have been computed.
 node.compute()
+for c in enumerate(cna.counts):
+	print "Type %i: %i particles" % c
+print node.output['Position'].array
+for t in node.output.structure_type.type_list:
+	print t.id, t.name, t.color
 
 # Read out analysis results.
 print "Number of FCC atoms:", cna.counts[CommonNeighborAnalysisModifier.Type.FCC]

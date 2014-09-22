@@ -29,13 +29,20 @@ from PyScriptScene import DataObject
 DataCollection.__len__ = lambda self: len(self.objects)
 def _DataCollection__iter__(self):
     for o in self.objects:
-        yield o.objectTitle
+        if hasattr(o, "_data_key"):
+            yield o._data_key
+        else:
+            yield o.objectTitle
 DataCollection.__iter__ = _DataCollection__iter__
 def _DataCollection__getitem__(self, key):
     for o in self.objects:
-        if o.objectTitle == key:
-            return o
-    raise KeyError("DataCollection does not contain an object named '%s'." % key)
+        if hasattr(o, "_data_key"):
+            if o._data_key == key:
+                return o
+        else:
+            if o.objectTitle == key:
+                return o
+    raise KeyError("DataCollection does not contain object key '%s'." % key)
 DataCollection.__getitem__ = _DataCollection__getitem__
 def _DataCollection__getattr__(self, name):
     for o in self.objects:

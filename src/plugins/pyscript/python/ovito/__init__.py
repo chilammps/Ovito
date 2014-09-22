@@ -181,6 +181,10 @@ def _ObjectNode_remove_from_scene(self):
 	    The visual representation of the node will disappear from the viewports after calling this method.
 	"""
 	del self.dataset.scene_nodes[self]
+	
+	# Unselect node
+	if self == self.dataset.selected_node:
+		self.dataset.selected_node = None
 ObjectNode.remove_from_scene = _ObjectNode_remove_from_scene
 
 # Give SceneRoot class a list-like interface.

@@ -25,6 +25,9 @@ def _ParticleProperty_data_attribute_name(self):
     else:
         return None
 Particles.ParticleProperty._data_attribute_name = property(_ParticleProperty_data_attribute_name)
+def _ParticleProperty_data_key(self):
+    return self.name
+Particles.ParticleProperty._data_key = property(_ParticleProperty_data_key)
 
 # Returns a NumPy array wrapper for a particle property.
 def _ParticleProperty_array(self):
