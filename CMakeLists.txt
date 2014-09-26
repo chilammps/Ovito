@@ -25,10 +25,12 @@ PROJECT(Ovito)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8.12)
 CMAKE_POLICY(SET CMP0023 OLD)
+CMAKE_POLICY(SET CMP0026 OLD)	# Suppress warning on reading the LOCATION target property.
+CMAKE_POLICY(SET CMP0042 OLD)	# Suppress warning because MACOSX_RPATH target is not set.
+CMAKE_POLICY(SET CMP0043 OLD)	# Suppress warning because COMPILE_DEFINITIONS_* target property is used.
 
 IF(WIN32)
-	# Automatically link to qtmain.lib on Windows.
-	CMAKE_POLICY(SET CMP0020 NEW)
+	CMAKE_POLICY(SET CMP0020 NEW) 	# Automatically link to qtmain.lib on Windows.
 ENDIF()
 
 GET_FILENAME_COMPONENT(OVITO_SOURCE_BASE_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
@@ -143,7 +145,7 @@ ELSE(OVITO_MONOLITHIC_BUILD)
 	SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 	# The RPATH to be used when building and installing
 	SET(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib/ovito")
-	# add the automatically determined parts of the RPATH
+	# Add the automatically determined parts of the RPATH,
 	# which point to directories outside the build tree to the install RPATH
 	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 

@@ -1,10 +1,13 @@
 **************************************************************************
 Install third-party libraries
 **************************************************************************
-sudo port install netcdf
+export MACOSX_DEPLOYMENT_TARGET=10.7
+sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
+sudo port -s install netcdf python27 py27-sphinx py27-numpy zlib boost +python27 +no_static cgal 
+sudo port install cmake docbook-xml docbook-xsl doxygen libxslt
 
 **************************************************************************
-Install Qt libraries, version 5.2.1
+Install Qt libraries, version 5.3.1
 **************************************************************************
 
 Build static libav library (release 0.8.8):

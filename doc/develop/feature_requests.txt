@@ -15,6 +15,9 @@
 - Test OpenGL rendering support for more than 12 million particles.
 - Allow the user to permanently override the PBC flags read from an input file.
 
+- Copy/Paste function for modifiers.
+- Improve performance of Voronoi analysis modifier by using Voro++ container class.
+
 Sha Zhendong:
 
 - Calculation of local atomic number density functions
