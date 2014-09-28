@@ -104,6 +104,7 @@ void ParticleInformationApplet::updateInformationDisplay()
 		OVITO_ASSERT(pickedParticle.objNode);
 		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(dataset->animationSettings()->time());
 
+		// If selection is based on particle ID, update the stored particle index in case order has changed.
 		if(pickedParticle.particleId >= 0) {
 			for(SceneObject* sceneObj : flowState.objects()) {
 				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
@@ -123,6 +124,11 @@ void ParticleInformationApplet::updateInformationDisplay()
 		for(SceneObject* sceneObj : flowState.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
 			if(!property || property->size() <= pickedParticle.particleIndex) continue;
+
+			// Update saved particle position in case it has changed.
+			if(property->type() == ParticleProperty::PositionProperty)
+				pickedParticle.localPos = property->getPoint3(pickedParticle.particleIndex);
+
 			if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>()) continue;
 			for(size_t component = 0; component < property->componentCount(); component++) {
 				QString propertyName = property->name();

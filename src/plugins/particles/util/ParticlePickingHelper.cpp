@@ -52,12 +52,12 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 			result.worldPos = result.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv) * result.localPos;
 
 			// Determine particle ID.
-			result.particleId = -1;
 			const PipelineFlowState& state = result.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
 			ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
 			if(identifierProperty && result.particleIndex < identifierProperty->size()) {
 				result.particleId = identifierProperty->getInt(result.particleIndex);
 			}
+			else result.particleId = -1;
 
 			return true;
 		}
