@@ -16,7 +16,9 @@
        <imagedata fileref="images/display_objects/particles_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
     
-    This display object is responsible for rendering particles.    
+    This <link linkend="display_objects">display object</link> is responsible for rendering particles and its parameters control the visual appearance
+    of particles. You can open this parameter panel
+    by selecting the <emphasis>Particles</emphasis> entry in the <link linkend="usage.modification_pipeline.pipeline_listbox">pipeline editor</link>.  
   </para>
 
    <simplesect>

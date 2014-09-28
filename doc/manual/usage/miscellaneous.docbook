@@ -14,29 +14,29 @@
     <para>
       The complete working state of the program, including the viewports, the modification pipeline, and display settings, can be saved to a <emphasis>scene file</emphasis>
       by choosing <menuchoice><guimenu>File</guimenu><guimenuitem>Save State</guimenuitem></menuchoice> from the menu. This allows you to continue working at a later time 
-      and to preserve the current visualization setup for future use. For instance, you can use such a scene file as a template to visualize a series of simulations 
-      with the same camera setup and modifier set. After loading the scene file, you can replace the input of the modification pipeline with a different simulation file. 
+      and to preserve the current visualization setup for future use. For instance, you can use a scene file as a template to visualize a multiple simulations 
+      using the same camera setup and modifier sequence. After loading the scene file, simply replace the input of the existing modification pipeline with a different simulation file. 
     </para>
     <para>       
-      By default, OVITO does not store the original particle data in the scene file to keep it small. It only saves a reference
-      to the original simulation file that was being imported, and the particle data is restored from that external file when you open the scene file.
+      By default, OVITO does not store any particle data in the scene file to keep it small. It only saves a reference
+      to the original simulation file that has been imported, and the particle data is restored from that external file when you load the scene file.
     </para>
   </simplesect>
 
   <simplesect xml:id="usage.spinner_widgets">
-    <title>User interface: spinners</title>
+    <title>User interface: spinner control elements</title>
     <para>
     <informalfigure>
         <mediaobject><imageobject>
         <imagedata fileref="images/command_panel/spinner_widget.png" format="PNG" />
         </imageobject></mediaobject>
-    </informalfigure>    
-      A spinner is a mouse-based control often used in OVITO's user interface for numeric fields and parameters. 
-      You can click or drag the spinner's up and down arrows to change the value in the field. You can also edit the value directly from the keyboard after first clicking in the input field.            
+    </informalfigure>
+      A spinner is a graphical control element often used in OVITO's user interface for numeric parameters. 
+      You can click or drag the spinner's up and down arrows to change the value in the adjacent text box.
     To change a value using a spinner, do one of the following:
     <itemizedlist>    
       <listitem>Click the spinner's up arrow to increment the value; click the down arrow to decrement the value.</listitem> 
-      <listitem>Click and hold for continuous change. Drag upward to increase the value, or drag downward to decrease it.</listitem> 
+      <listitem>Click and hold for continuously changing the value. Drag upward to increase the value, or drag downward to decrease it.</listitem> 
     </itemizedlist> 
     </para>
   </simplesect>
@@ -44,9 +44,8 @@
   <simplesect xml:id="usage.particle_inspection_utility">
     <title>Particle inspection utility</title>
     <para>
-      OVITO's command panel contains a third tab, the "Utilities" tab. It hosts a utility, which allows you to 
-      inspect the properties of individual particles and to measure distances and angles between particles. 
-      Simply activate this utility and click on a particle in one of the viewports to show its properties.
+      OVITO's command panel contains a third tab, the "Utilities" tab. Here you can 
+      inspect the properties of individual particles that you select with the mouse and measure distances and angles between them.
     </para>
   </simplesect>
   

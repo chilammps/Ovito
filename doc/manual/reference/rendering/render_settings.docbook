@@ -15,7 +15,7 @@
        <imagedata fileref="images/rendering/render_settings_panel.png" format="PNG" />
      </imageobject></mediaobject></screenshot></informalfigure>  
     
-    This parameter panel lets you set the general parameters for rendering images or movies of the current scene.
+    This parameter panel lets you set the general parameters for <link linkend="usage.rendering">rendering images or movies</link> of the current scene.
   </para>
       
   <simplesect>

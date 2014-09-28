@@ -11,7 +11,7 @@
 
     <para>Binary program packages for Linux, Windows, and Mac OS X platforms
     can be downloaded from <link xlink:href="http://www.ovito.org/">http://www.ovito.org/</link>.
-    Installation of OVITO is very simple and consists only of extracting a file archive.</para>
+    Installation of OVITO is very simple: Just extract the downloaded file archive (no admin privileges required).</para>
     
     <para>OVITO makes use of hardware-accelerated OpenGL rendering to display particles and other graphical elements.
     Older computers or outdated OpenGL graphics drivers may not be compatible with OVITO. 
@@ -19,11 +19,11 @@
 
     <simplesect xml:id="installation.runovito.linux">
       <title>Linux</title>
-      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.0.0-x86_64.tar.gz</command>. Replace
-      the filename with the one that you actually downloaded from the
+      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.4.0-x86_64.tar.gz</command>. Replace
+      the filename with the one actually downloaded from the
       website. This will create a new subdirectory containing the extracted
-      program package. Change into that subdirectory and run OVITO by invoking
-      the command <command>bin/ovito</command>.
+      program package. Change into the new directory and start OVITO by running
+      <command>bin/ovito</command>.
       </para>
       <para>
       Note that OVITO is designed to be run on the local computer and not on a remote machine.

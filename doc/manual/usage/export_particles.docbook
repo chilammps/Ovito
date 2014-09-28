@@ -16,7 +16,7 @@
   <para>If you pick an output filename that ends with the <filename>.gz</filename> suffix, the file will be automatically compressed by OVITO.</para>
   
   <para>
-  Note that OVITO exports the final results of the modification pipeline. That means, for instance, if you have deleted some particles, OVITO will export
+  Note that OVITO exports the output of the modification pipeline. That means, for instance, if you have deleted some particles using a modifier, OVITO will export
   only the remaining particles to the output file. The modification pipeline is re-evaluated for every animation frame being exported.
   </para>
   

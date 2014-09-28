@@ -10,34 +10,34 @@
   <title>Introduction</title>
 
   <para>OVITO is a scientific data visualization and analysis software for
-  large-scale atomistic simulations in materials science and engineering.
-  OVITO is freely available under an open-source license for
-  Windows, Linux and Mac OS X platforms. It is being developed and maintained by <link xlink:href="http://scholar.google.com/citations?user=f8Tw3eEAAAAJ">Alexander
-  Stukowski</link>, a postdoctoral researcher at the <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">
-  Institute of Materials Science at Darmstadt University of Technology, Germany</link>.
+  large-scale atomistic simulation models in materials science and engineering and related disciplines.
+  OVITO is made freely available for
+  Windows, Linux, and Mac OS X under an open-source license. It is being developed by <link xlink:href="http://scholar.google.com/citations?user=f8Tw3eEAAAAJ">Dr. Alexander
+  Stukowski</link> at the <link xlink:href="http://www.mawi.tu-darmstadt.de/mm/mm_mm_sw/index.en.jsp">
+  Materials Science Department</link> of Darmstadt University of Technology, Germany.
   </para>
   
   <para>
-  The first openly available version of OVITO was released in December 2009, after one and a half years of
-  (part-time) development by the author, who, at that time, was a PhD student doing molecular dynamics simulations of nanocrystalline metals.
-  Since that time, the software has further evolved, and its user base today comprises more than a thousand researchers from the computational materials science and engineering field. 
-  To introduce the new software package to the community, an <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">article on OVITO</link> was published in 2010.
+  The first publicly available version of OVITO was released in December 2009, after one and a half years of development.
+  Today OVITO's user base comprises several thousand researchers from the computational materials science field.
+  To introduce the software package to the community, a <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">journal article about OVITO</link> was published in 2010.
+  In 2013, OVITO's source code was rewritten from the ground up, and version 2.0 of the software was released.
   </para>
+  
+  <simplesect>
+  <title>Program features</title>
 
-  <para>OVITO is a software for visualizing and analyzing output data from atomistic simulations of particles, in particular molecular dynamics (MD) simulations of 
-  solid-state materials using classical interaction potential. Some noteworthy program features are: <itemizedlist>
+  <para>OVITO is a software for visualizing and analyzing data from atomistic simulations of particles, in particular molecular dynamics (MD) simulations of 
+  solid-state materials. Its main application area are large-scale simulations using classical interaction potentials (10<superscript>4</superscript> - 10<superscript>8</superscript> particles). 
+  Some noteworthy program features are: <itemizedlist>
 
       <listitem>
-        <para><link linkend="usage.import">Input</link> and <link linkend="usage.export">output</link> of various file formats used by 
-        MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR</para>
+        <para><link linkend="usage.import">Import</link> and <link linkend="usage.export">export</link> of various file formats used by 
+        MD simulation codes including LAMMPS, XYZ, CFG, IMD, POSCAR, and PDB.</para>
       </listitem>
 
       <listitem>
-        <para>Interactive display of a large number of particles using hardware-accelerated OpenGL rendering</para>
-      </listitem>
-
-      <listitem>
-        <para>Visualization of <link linkend="particles.modifiers.construct_surface_mesh">polyhedral meshes</link></para>
+        <para>Interactive display of large numbers of particles using hardware-accelerated OpenGL rendering.</para>
       </listitem>
 
       <listitem>
@@ -45,15 +45,27 @@
       </listitem>
 
       <listitem>
-        <para><link linkend="usage.modification_pipeline">Processing model</link>: Data modification and analysis functions are arranged in a processing pipeline by the user; parameters can be altered at 
-        any time with immediate update of the results. Available <link linkend="particles.modifiers">modification functions</link> include:<itemizedlist>
+        <para>Visualization and calculation of <link linkend="particles.modifiers.construct_surface_mesh">polyhedral meshes</link> from atomistic datasets.</para>
+      </listitem>
+      
+      <listitem>
+        <para><link linkend="usage.rendering">High-quality image and movie output for publication</link></para>
+      </listitem>
+      
+      <listitem>
+        <para><link linkend="usage.scripting">A powerful Python-based scripting interface</link></para>
+      </listitem>      
+
+      <listitem>
+        <para><link linkend="usage.modification_pipeline">Processing model</link>: Data modification and analysis functions are arranged in a data flow pipeline by the user; parameters can be altered at 
+        any time with immediate recalculation of the results. Available <link linkend="particles.modifiers">modification functions</link> include:<itemizedlist>
         
             <listitem>
               <para><link linkend="particles.modifiers.slice">Slicing</link></para>
             </listitem>
 
             <listitem>
-              <para><link linkend="particles.modifiers.expression_select">Selection of particles based on user criteria (Boolean expressions)</link></para>
+              <para><link linkend="particles.modifiers.expression_select">Selection of particles based on user-defined criteria (Boolean expressions)</link></para>
             </listitem>
 
             <listitem>
@@ -83,14 +95,6 @@
           </itemizedlist> 
         </para>
       </listitem>
-
-      <listitem>
-        <para><link linkend="usage.rendering">High-quality image and movie output for publication</link></para>
-      </listitem>
-      
-      <listitem>
-        <para><link linkend="usage.scripting">A scripting interface</link></para>
-      </listitem>      
 
       <listitem>
         <para>Useful analysis functions:</para>
@@ -125,9 +129,13 @@
           </listitem>
 
           <listitem>
-            <para><link linkend="particles.modifiers.construct_surface_mesh">Construction of surfaces from atomistics</link></para>
+            <para><link linkend="particles.modifiers.construct_surface_mesh">Reconstruction of surface geometry from point-like particles</link></para>
           </listitem>
 
+	      <listitem>
+            <para><link linkend="particles.modifiers.voronoi_analysis">Voronoi cell analysis</link></para>
+          </listitem>
+          
 	      <listitem>
             <para><link linkend="particles.modifiers.wigner_seitz_analysis">Wigner-Seitz cell analysis for identification of point defects</link></para>
           </listitem>
@@ -137,8 +145,12 @@
       </listitem>
 
       <listitem>
-        <para>A modular software design that makes it easy to extend OVITO through plugins</para>
+        <para>A modular software design that makes it easy to extend OVITO via plugins</para>
       </listitem>
       
-    </itemizedlist></para>
+    </itemizedlist>
+    </para>
+    
+  </simplesect>
+    
 </chapter>

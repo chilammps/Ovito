@@ -26,6 +26,13 @@
     In addition the modifier can compute the <emphasis>Voronoi index</emphasis> of each cell,
     which is a vector of integers constituting a histogram of the number of edges on the faces of the Voronoi cell.
     This index vector can be considered a characteristic signature of a particle's coordination structure.
+    For instance, an icosahedral coordination structure corresponds to the Voronoi index vector (0,0,0,0,12,0,...).
+    In other words, these indices describe a polyhdron with 12 faces with 5 edges each (a no faces with other edge counts). 
+    To select all atoms having this kind of icosahedral coordination structure we could use the 
+    <link linkend="particles.modifiers.expression_select">Expression select</link>
+    modifier with the Boolean expression:
+    <programlisting>VoronoiIndex.3==0 &amp;&amp; VoronoiIndex.4==0 &amp;&amp; VoronoiIndex.5==12 &amp;&amp; VoronoiIndex.6==0</programlisting>
+    (<literal>VoronoiIndex.1</literal> and <literal>VoronoiIndex.2</literal> are always zero because there are no faces with less than three edges.)
   </para>  
   
   <para>

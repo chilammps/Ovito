@@ -16,16 +16,15 @@
     <para>OVITO is written in C++ and makes use of the C++11 language standard. 
     The following platform/compiler combinations are known to work and are used to build the official binaries:
 	<itemizedlist>
-      <listitem><para>Linux: GNU g++ version 4.7 or higher</para></listitem>
-      <listitem><para>Microsoft Windows: MinGW toolchain with g++ version 4.7 or higher</para></listitem>
-      <listitem><para>Apple Mac OS X: Clang compiler included in Apple's Xcode command line tools</para></listitem>
+      <listitem><para>Linux: GNU g++ version 4.7 or newer</para></listitem>
+      <listitem><para>Microsoft Windows: MinGW toolchain with g++ compiler 4.7 or newer</para></listitem>
+      <listitem><para>Apple Mac OS X: Clang compiler from Apple's Xcode command line tools</para></listitem>
     </itemizedlist>
     </para>
     <para>OVITO makes use of the Qt cross-platform application framework and requires version 5.2.x or higher of the Qt library. 
-    Especially on Mac OS X, but also on other platforms, at least version 5.2.1 of the library is recommended,
-    which fixes a serious input-focus bug. Newer Linux distributions already include development packages
+    Recent Linux distributions already include development packages
     of the Qt library. Users of older Linux distributions, Windows, or Mac OS X should download the <link xlink:href="http://qt-project.org/downloads">offical Qt installer</link>. 
-    Windows users should fetch the MinGW/OpenGL variant of the Qt library, because Microsoft's MSVC 2012 compiler does not fully support C++11 language features yet that are needed
+    Windows users should fetch the MinGW/OpenGL variant of the Qt library, because Microsoft's VisualC++ 2012 compiler does not fully support C++11 language features yet that are needed
     to compile OVITO.</para>
     
     <para>If you want to build OVITO with video output support, you need the Libav video-encoding framework.
@@ -38,7 +37,9 @@
     from the offical website <link xlink:href="http://cmake.org">www.cmake.org</link>, or through a Linux package manager and
     MacPorts on Mac OS X. At least version 2.8.11 of CMake is required.</para>
 
-    <para>Take a look at the files in <filename>/doc/develop/</filename> of the source package to find more instructions on how to build OVITO from source.</para>
+    <para>Take a look at the text files in the <link xlink:href="https://sourceforge.net/p/ovito/git/ci/master/tree/doc/develop/">
+    <filename>/doc/develop/</filename> directory</link>, which 
+    contain more instructions on how to build OVITO from source on different platforms.</para>
     
   </simplesect>
 

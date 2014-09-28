@@ -12,7 +12,7 @@
   <para>
   
   Modifiers are the basic building blocks that can be used in OVITO's <link
-  linkend="usage.modification_pipeline">processing pipeline</link>. The following table
+  linkend="usage.modification_pipeline">modification pipeline</link>. The following table
   lists the available modifier types. 
   
   <informaltable>
