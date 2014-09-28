@@ -93,7 +93,7 @@ IF(APPLE)
 		PATTERN "*.pyo" EXCLUDE 
 		PATTERN "test" EXCLUDE
 		PATTERN "*.exe" EXCLUDE
-		PATTERN "sphinx" EXCLUDE)
+		PATTERN "sphinx" EXCLUDE)	
 ELSEIF(UNIX)
 	IF(OVITO_MONOLITHIC_BUILD)
 		# Install standard Python packages. 
