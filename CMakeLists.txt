@@ -25,9 +25,11 @@ PROJECT(Ovito)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8.12)
 CMAKE_POLICY(SET CMP0023 OLD)
-CMAKE_POLICY(SET CMP0026 OLD)	# Suppress warning on reading the LOCATION target property.
-CMAKE_POLICY(SET CMP0042 OLD)	# Suppress warning because MACOSX_RPATH target is not set.
-CMAKE_POLICY(SET CMP0043 OLD)	# Suppress warning because COMPILE_DEFINITIONS_* target property is used.
+IF(NOT CMAKE_VERSION VERSION_LESS "3")
+	CMAKE_POLICY(SET CMP0026 OLD)	# Suppress warning on reading the LOCATION target property.
+	CMAKE_POLICY(SET CMP0042 OLD)	# Suppress warning because MACOSX_RPATH target is not set.
+	CMAKE_POLICY(SET CMP0043 OLD)	# Suppress warning because COMPILE_DEFINITIONS_* target property is used.
+ENDIF()
 
 IF(WIN32)
 	CMAKE_POLICY(SET CMP0020 NEW) 	# Automatically link to qtmain.lib on Windows.

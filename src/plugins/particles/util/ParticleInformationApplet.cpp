@@ -118,7 +118,7 @@ void ParticleInformationApplet::updateInformationDisplay()
 			}
 		}
 
-		stream << QStringLiteral("<b>") << tr("Particle") << QStringLiteral(" ") << (pickedParticle.particleIndex + 1) << QStringLiteral(":</b>");
+		stream << QStringLiteral("<b>") << tr("Particle index") << QStringLiteral(" ") << (pickedParticle.particleIndex + 1) << QStringLiteral(":</b>");
 		stream << QStringLiteral("<table border=\"0\">");
 
 		for(SceneObject* sceneObj : flowState.objects()) {

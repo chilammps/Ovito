@@ -32,11 +32,11 @@ Individual objects in a data collection can be accessed via name keys, e.g.::
     >>> node.output['Position']
     <ParticleProperty at 0x7ff46263cff0>
     
-    >>> node.output['Position'].size             # This returns the number of particles
+    >>> node.output['Position'].size       # This returns the number of particles
     117500
     
-    >>> node.output['Position'].array            # This returns a NumPy array providing direct 
-    ...                                          # access to the internal per-particle data
+    >>> node.output['Position'].array      # This returns a NumPy array providing direct 
+    ...                                    # access to the internal per-particle data
     [[ 73.24230194  -5.77583981  -0.87618297]
      [-49.00170135 -35.47610092 -27.92519951]
      [-50.36349869 -39.02569962 -25.61310005]
@@ -82,7 +82,7 @@ particle types, each having a name, a display color, and a display radius::
     >>> print ptp
     <ParticleTypeProperty at 0x7fe0a2c355d0>
     
-    >>> print ptp.array		  # This contains the per-particle data, one integer per particle
+    >>> print ptp.array     # This contains the per-particle data, one integer per particle
     [1 1 2 ..., 1 2 1]
     
     >>> for t in ptp.type_list:

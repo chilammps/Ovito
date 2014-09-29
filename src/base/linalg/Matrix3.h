@@ -208,7 +208,7 @@ public:
 	Matrix_3 inverse() const {
 		T det = determinant();
 		OVITO_ASSERT_MSG(det != T(0), "Matrix3::inverse()", "Singular matrix cannot be inverted: Determinant is zero.");
-		if(det == 0) throw Exception("AffineTransformation cannot be inverted: determinant is zero.");
+		if(det == 0) throw Exception("Matrix3 cannot be inverted: determinant is zero.");
 		return Matrix_3((_m[1][1]*_m[2][2] - _m[1][2]*_m[2][1])/det,
 						(_m[2][0]*_m[1][2] - _m[1][0]*_m[2][2])/det,
 						(_m[1][0]*_m[2][1] - _m[1][1]*_m[2][0])/det,

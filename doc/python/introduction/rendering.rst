@@ -29,13 +29,13 @@ attribute of the :py:class:`~ovito.data.DataObject` base class::
 All display objects are derived from the :py:class:`~ovito.vis.Display` base class, which provides
 the :py:attr:`~ovito.vis.Display.enabled` attribute to turn the display on or off::
 
-    >>> cell.display.enabled = False     # This hides the simulation cell
+    >>> cell.display.enabled = False         # This hides the simulation cell
     
 The visual display of particles is controlled by a :py:class:`~ovito.vis.ParticleDisplay` object, which
 is attached to the position :py:class:`~ovito.data.ParticleProperty`. For example, to display 
 cubic particles, we would write::
 
-    >>> pos = node.source.data.position   # This is the ParticleProperty holding the positions
+    >>> pos = node.source.data.position      # ParticleProperty storing the positions
     >>> pos.display.shape = ParticleDisplay.Shape.Square
 
 .. note::
@@ -119,8 +119,8 @@ based on a software-only raytracing algorithm and is able to produce better look
 Each of these rendering engines has specific parameters, and you can access the current renderer object
 through the :py:attr:`RenderSettings.renderer <ovito.vis.RenderSettings.renderer>` attribute::
 
-    settings.renderer = TachyonRenderer()     # Replace default OpenGLRenderer with TachyonRenderer
-    settings.renderer.shadows = False         # Turn off cast shadows
+    settings.renderer = TachyonRenderer() # Replace default OpenGLRenderer with TachyonRenderer
+    settings.renderer.shadows = False     # Turn off cast shadows
     
 After all render settings have been specified, we can let OVITO render the image by calling 
 :py:meth:`Viewport.render() <ovito.vis.Viewport.render>`::

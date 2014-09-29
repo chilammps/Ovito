@@ -295,7 +295,7 @@ void MainWindow::createMainToolbar()
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 
-#if 0
+#if 1
 	_mainToolbar->addSeparator();
 
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_SELECTION_MODE));

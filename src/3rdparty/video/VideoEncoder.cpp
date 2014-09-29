@@ -250,10 +250,8 @@ void VideoEncoder::writeFrame(const QImage& image)
 	if(image.width() != videoWidth || image.height() != videoHeight)
 		throw Exception(tr("Frame image has wrong size."));
 
-	// Accept only certain image formats.
-	OVITO_ASSERT(image.format() == QImage::Format_RGB32 || image.format() == QImage::Format_ARGB32);
-	if(image.format() != QImage::Format_RGB32 && image.format() != QImage::Format_ARGB32)
-		throw Exception(tr("Frame image has wrong pixel format."));
+	// Make sure bit format of image is correct.
+	QImage finalImage = image.convertToFormat(QImage::Format_RGB32);
 
 	// Create conversion context.
 	_imgConvertCtx = sws_getCachedContext(_imgConvertCtx, videoWidth, videoHeight, PIX_FMT_BGRA,
@@ -263,12 +261,12 @@ void VideoEncoder::writeFrame(const QImage& image)
 
 	// Convert image to codec pixel format.
 	uint8_t *srcplanes[3];
-	srcplanes[0] = (uint8_t*)image.bits();
+	srcplanes[0] = (uint8_t*)finalImage.bits();
 	srcplanes[1] = 0;
 	srcplanes[2] = 0;
 
 	int srcstride[3];
-	srcstride[0] = image.bytesPerLine();
+	srcstride[0] = finalImage.bytesPerLine();
 	srcstride[1] = 0;
 	srcstride[2] = 0;
 

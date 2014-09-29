@@ -310,7 +310,7 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 	if(frame > 0)
 		interval.setStart(inputFrameToAnimationTime(frame));
 	if(frame < numberOfFrames() - 1)
-		interval.setEnd(inputFrameToAnimationTime(frame+1)-1);
+		interval.setEnd(std::max(inputFrameToAnimationTime(frame+1)-1, inputFrameToAnimationTime(frame)));
 
 	// Prepare the attribute map that will be passed to the modification pipeline
 	// along with the scene objects.
