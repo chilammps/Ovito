@@ -46,7 +46,7 @@ export CC=gcc-4.8
 export CXX=g++-4.8
 
 **************************************************************************
-Build static Qt libraries (version 5.3.0) on Ubuntu 10.04:
+Build static Qt libraries (version 5.3.2) on Ubuntu 10.04:
 
 Edit file qtbase/mkspecs/common/g++-base.conf and specify
 paths to latest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
