@@ -128,8 +128,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					"\n\n"
 					":Default: ``False``\n")
 			.add_property("keepSelection", &ColorCodingModifier::keepSelection, &ColorCodingModifier::setKeepSelection)
-			.add_property("renderLegend", &ColorCodingModifier::renderLegend, &ColorCodingModifier::setRenderLegend)
-			.add_property("legendViewport", make_function(&ColorCodingModifier::legendViewport, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setLegendViewport)
 		;
 
 		ovito_abstract_class<ColorCodingGradient, RefTarget>()

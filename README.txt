@@ -30,7 +30,6 @@ Release 2.4.0 (16-Sep-14):
    (This is Falk & Langer's D^2_min measure, see the 1998 PRB.)
  - Added 'Bin and reduce' analysis modifier.
  - The 'Create bonds' modifier can now handle particles that are located outside the (periodic) simulation box.
- - The 'Color coding' modifier allows to include a color legend in the rendered image.
  - Added a file parser for PDB files (still experimental).
  - The 'Show periodic images' modifier can now assign unique IDs to particle copies.
  - LAMMPS data file parser now supports additional LAMMPS atom styles such as 'charge' and 'bond'.
