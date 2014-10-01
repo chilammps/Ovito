@@ -27,6 +27,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
+#include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/rendering/RenderSettings.h>
@@ -138,30 +139,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		for(int i = 0; i < sizeof(imageSizePresets)/sizeof(imageSizePresets[0]); i++)
 			sizePresetsBox->addItem(tr("%1 x %2").arg(imageSizePresets[i][0]).arg(imageSizePresets[i][1]));
 		connect(sizePresetsBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &RenderSettingsEditor::onSizePresetActivated);
-		layout2->addWidget(sizePresetsBox, 1, 2);
-	}
-
-	// Options
-	{
-		QGroupBox* groupBox = new QGroupBox(tr("Options"));
-		layout->addWidget(groupBox);
-		QGridLayout* layout2 = new QGridLayout(groupBox);
-		layout2->setContentsMargins(4,4,4,4);
-		layout2->setSpacing(2);
-
-		// Background color parameter.
-		ColorParameterUI* backgroundColorPUI = new ColorParameterUI(this, PROPERTY_FIELD(RenderSettings::_backgroundColor));
-		layout2->addWidget(backgroundColorPUI->label(), 2, 0);
-		layout2->addWidget(backgroundColorPUI->colorPicker(), 2, 1, 1, 2);
-	
-		// Alpha channel.
-		BooleanParameterUI* generateAlphaUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_generateAlphaChannel));
-		layout2->addWidget(generateAlphaUI->checkBox(), 3, 0, 1, 3);
-
-		// Create 'Change renderer' button.
-		QPushButton* changeRendererButton = new QPushButton(tr("Change renderer..."), groupBox);
-		connect(changeRendererButton, &QPushButton::clicked, this, &RenderSettingsEditor::onChangeRenderer);
-		layout2->addWidget(changeRendererButton, 4, 0, 1, 3);
+		layout2->addWidget(sizePresetsBox, 0, 2);
 	}
 
 	// Render output
@@ -185,10 +163,37 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		imageFilenameUI->setEnabled(false);
 		layout2->addWidget(imageFilenameUI->textBox(), 1, 0, 1, 2);
 
-		BooleanParameterUI* skipExistingImagesUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_skipExistingImages));
-		layout2->addWidget(skipExistingImagesUI->checkBox(), 2, 0, 1, 2);
+		//BooleanParameterUI* skipExistingImagesUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_skipExistingImages));
+		//layout2->addWidget(skipExistingImagesUI->checkBox(), 2, 0, 1, 2);
+		//connect(saveFileUI->checkBox(), &QCheckBox::toggled, skipExistingImagesUI, &BooleanParameterUI::setEnabled);
+	}
 
-		connect(saveFileUI->checkBox(), &QCheckBox::toggled, skipExistingImagesUI, &BooleanParameterUI::setEnabled);
+	// Options
+	{
+		QGroupBox* groupBox = new QGroupBox(tr("Options"));
+		layout->addWidget(groupBox);
+		QGridLayout* layout2 = new QGridLayout(groupBox);
+		layout2->setContentsMargins(4,4,4,4);
+		layout2->setSpacing(2);
+
+		// Background color parameter.
+		layout2->addWidget(new QLabel(tr("Background:")), 0, 0, 1, 3);
+
+		ColorParameterUI* backgroundColorPUI = new ColorParameterUI(this, PROPERTY_FIELD(RenderSettings::_backgroundColor));
+		layout2->addWidget(backgroundColorPUI->colorPicker(), 1, 1, 1, 2);
+
+		// Alpha channel.
+		BooleanRadioButtonParameterUI* generateAlphaUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(RenderSettings::_generateAlphaChannel));
+		layout2->addWidget(generateAlphaUI->buttonFalse(), 1, 0, 1, 1);
+		layout2->addWidget(generateAlphaUI->buttonTrue(), 2, 0, 1, 3);
+		generateAlphaUI->buttonFalse()->setText(tr("Color:"));
+		generateAlphaUI->buttonTrue()->setText(tr("Transparent"));
+
+		// Create 'Change renderer' button.
+		QPushButton* changeRendererButton = new QPushButton(tr("Change renderer..."), groupBox);
+		connect(changeRendererButton, &QPushButton::clicked, this, &RenderSettingsEditor::onChangeRenderer);
+		layout2->setRowMinimumHeight(3, 8);
+		layout2->addWidget(changeRendererButton, 4, 0, 1, 3);
 	}
 
 	// Open a sub-editor for the renderer.
@@ -245,7 +250,7 @@ void RenderSettingsEditor::onChangeRenderer()
 		currentIndex = itemList.indexOf(settings->renderer()->getOOType().displayName());
 
 	bool ok;
-	QString selectedClass = QInputDialog::getItem(NULL, tr("Choose renderer"), tr("Select the rendering engine:"), itemList, currentIndex, false, &ok);
+	QString selectedClass = QInputDialog::getItem(NULL, tr("Choose renderer"), tr("Select the new rendering engine:"), itemList, currentIndex, false, &ok);
 	if(!ok) return;
 
 	int newIndex = itemList.indexOf(selectedClass);
