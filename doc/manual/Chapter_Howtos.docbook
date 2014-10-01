@@ -14,5 +14,9 @@
 
   <xi:include href="howtos/transparent_particles.docbook"/>
   <xi:include href="howtos/marker_particles.docbook"/>
+  
+  <!-- Camera animation -->
+  <!-- Parameter animation -->
+  <!-- Simulation sequence playback speed settings -->
  
 </chapter>

@@ -89,11 +89,14 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		else {
 			_currentOrbitCenter = _viewport->dataset()->viewportConfig()->orbitCenter();
 
-			// If a free camera node is selected, the current orbit center is at the same location as the camera.
-			// In this case, we should shift the orbit center such that it is in front of the camera.
-			Point3 camPos = Point3::Origin() + vp->inverseViewMatrix().translation();
-			if(_currentOrbitCenter.equals(camPos))
-				_currentOrbitCenter = camPos - 50.0f * vp->inverseViewMatrix().column(2);
+			if(vp->viewNode() != nullptr && _viewport->isPerspectiveProjection()) {
+				// If a free camera node is selected, the current orbit center is at the same location as the camera.
+				// In this case, we should shift the orbit center such that it is in front of the camera.
+				Point3 camPos = Point3::Origin() + vp->inverseViewMatrix().translation();
+				if(_currentOrbitCenter.equals(camPos)) {
+					_currentOrbitCenter = camPos - 50.0f * vp->inverseViewMatrix().column(2);
+				}
+			}
 		}
 
 		_viewport->dataset()->undoStack().beginCompoundOperation(tr("Modify camera"));
@@ -123,8 +126,8 @@ void NavigationMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 	if(_viewport == vp) {
 #if 1
 		// Take the current mouse cursor position to make the navigation mode
-		// look more responsive. The cursor position recorded when the mouse event was
-		// generates may be too old.
+		// look more responsive. The cursor position recorded at the time the mouse event was
+		// generates may already be too old.
 		QPointF pos = vp->widget()->mapFromGlobal(QCursor::pos());
 #else
 		QPointF pos = event->localPos();
