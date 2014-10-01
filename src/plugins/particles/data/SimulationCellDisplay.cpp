@@ -74,7 +74,7 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 	SimulationCell* cell = dynamic_object_cast<SimulationCell>(sceneObject);
 	OVITO_CHECK_OBJECT_POINTER(cell);
 
-	if(renderer->isInteractive()) {
+	if(renderer->isInteractive() && !renderer->viewport()->renderPreviewMode()) {
 		renderWireframe(cell, renderer, contextNode);
 	}
 	else {

@@ -28,6 +28,7 @@
 #include <core/scene/display/DisplayObject.h>
 #include <core/dataset/DataSet.h>
 #include <core/viewport/input/ViewportInputManager.h>
+#include <core/rendering/RenderSettings.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include "ViewportSceneRenderer.h"
@@ -143,7 +144,11 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	// Set viewport background color.
 	OVITO_CHECK_OPENGL();
 	if(isInteractive()) {
-		Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+		Color backgroundColor;
+		if(!viewport()->renderPreviewMode())
+			backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+		else
+			backgroundColor = renderSettings()->backgroundColor();
 		OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
 	}
 }

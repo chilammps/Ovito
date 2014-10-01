@@ -85,7 +85,7 @@
      <menuchoice><guimenuitem>Adjust View</guimenuitem></menuchoice> opens a dialog box that lets you adjust the camera's position and orientation numerically.
    </para>
    <para>
-     The <menuchoice><guimenuitem>Show Render Frame</guimenuitem></menuchoice> option activates a visual clue to indicate the area of the viewport that will be visible 
+     The <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> option activates a visual clue to indicate the area of the viewport that will be visible 
      in the final output picture. The aspect ratio of the rendered image can be adjusted in the <link linkend="core.render_settings">Render Settings</link> panel. 
    </para>
   </simplesect>     

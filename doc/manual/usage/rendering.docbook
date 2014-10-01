@@ -69,7 +69,7 @@
         <tgroup cols="2">
           <tbody>
             <row valign="bottom">
-              <entry>The gray border indicates what region will be visible:</entry>
+              <entry>The gray frame indicates what area will be visible:</entry>
               <entry>The final output image:</entry>
             </row>
             <row valign="top">
@@ -79,9 +79,9 @@
           </tbody>
         </tgroup>
       </informaltable></informalfigure>
-      When rendering an image, using the current settings for output width and height, the visible region might be different from what you see in the viewport, because
-      of a different aspect ratio. To assist you in positioning the virtual camera, it is possible to activate a visual aid by choosing <menuchoice><guimenuitem>Show Render Frame</guimenuitem></menuchoice> from the <link linkend="usage.viewports.menu">viewport menu</link>.
-      As shown in the screenshot on the right, this displays a rectangle in the viewport indicating the exact region that will be visible in the final image.
+      When rendering an image of a certain size the visible region might slightly differ from what you see in the interactive viewport because
+      of the different aspect ratio. To assist you in positioning the virtual camera, it is possible to activate the <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> option in the <link linkend="usage.viewports.menu">viewport menu</link>.
+      As shown in the screenshot on the right, in this mode a frame indicates the exact region that will be visible in the final rendered image.
      </para>
    </simplesect>
   

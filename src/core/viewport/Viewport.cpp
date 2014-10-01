@@ -52,7 +52,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _gridMatrix, "GridMatrix", PROPERTY_FIELD_
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _fieldOfView, "FieldOfView", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraPosition, "CameraPosition", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraDirection, "CameraDirection", PROPERTY_FIELD_NO_UNDO);
-DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showRenderFrame, "ShowRenderFrame", PROPERTY_FIELD_NO_UNDO);
+DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _renderPreviewMode, "ShowRenderFrame", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraTM, "CameraTransformation", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO);
@@ -64,7 +64,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_widget(nullptr), _viewportWindow(nullptr),
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME),
 		_fieldOfView(100),
-		_showRenderFrame(false),
+		_renderPreviewMode(false),
 		_isRendering(false),
 		_cameraPosition(Point3::Origin()), _cameraDirection(Vector3::Zero()),
 		_renderDebugCounter(0),
@@ -80,7 +80,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(Viewport::_fieldOfView);
 	INIT_PROPERTY_FIELD(Viewport::_cameraPosition);
 	INIT_PROPERTY_FIELD(Viewport::_cameraDirection);
-	INIT_PROPERTY_FIELD(Viewport::_showRenderFrame);
+	INIT_PROPERTY_FIELD(Viewport::_renderPreviewMode);
 	INIT_PROPERTY_FIELD(Viewport::_viewportTitle);
 	INIT_PROPERTY_FIELD(Viewport::_cameraTM);
 	INIT_PROPERTY_FIELD(Viewport::_showGrid);
@@ -336,7 +336,7 @@ void Viewport::zoomToBox(const Box3& box)
 
 		// Setup projection.
 		FloatType aspectRatio = (FloatType)size().height() / size().width();
-		if(renderFrameShown()) {
+		if(renderPreviewMode()) {
 			if(RenderSettings* renderSettings = dataset()->renderSettings())
 				aspectRatio = renderSettings->outputImageAspectRatio();
 		}
@@ -541,7 +541,7 @@ void Viewport::render(QOpenGLContext* context)
 		_projParams = projectionParameters(time, aspectRatio, boundingBox);
 
 		// Adjust projection if render frame is shown.
-		if(renderFrameShown())
+		if(renderPreviewMode())
 			adjustProjectionForRenderFrame(_projParams);
 
 		// Set up the viewport renderer.
@@ -554,7 +554,7 @@ void Viewport::render(QOpenGLContext* context)
 		_projParams = projectionParameters(time, aspectRatio, boundingBox);
 
 		// Adjust projection if render frame is shown.
-		if(renderFrameShown())
+		if(renderPreviewMode())
 			adjustProjectionForRenderFrame(_projParams);
 
 		// Pass final projection parameters to renderer.
@@ -563,11 +563,14 @@ void Viewport::render(QOpenGLContext* context)
 		// Call the viewport renderer to render the scene objects.
 		renderer->renderFrame(nullptr, nullptr);
 
-		// Render render frame.
-		renderRenderFrame();
-
-		// Render orientation tripod.
-		renderOrientationIndicator();
+		if(renderPreviewMode()) {
+			// Render render frame.
+			renderRenderFrame();
+		}
+		else {
+			// Render orientation tripod.
+			renderOrientationIndicator();
+		}
 
 		// Render viewport caption.
 		renderViewportTitle();
@@ -786,9 +789,6 @@ Box2 Viewport::renderFrameRect() const
 ******************************************************************************/
 void Viewport::renderRenderFrame()
 {
-	if(!renderFrameShown())
-		return;
-
 	// Create a rendering buffer that is responsible for rendering the frame.
 	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
@@ -863,7 +863,7 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 			ViewProjectionParameters projParams = projectionParameters(time, aspectRatio, boundingBox);
 
 			// Adjust projection if render frame is shown.
-			if(renderFrameShown())
+			if(renderPreviewMode())
 				adjustProjectionForRenderFrame(projParams);
 
 			// Set up the picking renderer.
@@ -877,7 +877,7 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 				_projParams = projectionParameters(time, aspectRatio, boundingBox);
 
 				// Adjust projection if render frame is shown.
-				if(renderFrameShown())
+				if(renderPreviewMode())
 					adjustProjectionForRenderFrame(_projParams);
 
 				// Pass final projection parameters to renderer.

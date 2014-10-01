@@ -40,9 +40,9 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	QAction* action;
 
 	// Build menu.
-	action = addAction(tr("Show Render Frame"), this, SLOT(onShowRenderFrame(bool)));
+	action = addAction(tr("Render Preview"), this, SLOT(onShowRenderFrame(bool)));
 	action->setCheckable(true);
-	action->setChecked(_viewport->renderFrameShown());
+	action->setChecked(_viewport->renderPreviewMode());
 	action = addAction(tr("Show Grid"), this, SLOT(onShowGrid(bool)));
 	action->setCheckable(true);
 	action->setChecked(_viewport->isGridVisible());
@@ -142,7 +142,7 @@ void ViewportMenu::onShowViewTypeMenu()
 ******************************************************************************/
 void ViewportMenu::onShowRenderFrame(bool checked)
 {
-	_viewport->setRenderFrameShown(checked);
+	_viewport->setRenderPreviewMode(checked);
 }
 
 /******************************************************************************

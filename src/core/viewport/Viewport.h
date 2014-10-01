@@ -264,11 +264,11 @@ public:
 	/// \brief Returns the inverse of the current projection matrix.
 	const Matrix4& inverseProjectionMatrix() const { return _projParams.inverseProjectionMatrix; }
 
-	/// \brief Returns whether the render frame is shown in the viewport.
-	bool renderFrameShown() const { return _showRenderFrame; }
+	/// \brief Returns whether the viewport displays a realtime preview of the rendered image.
+	bool renderPreviewMode() const { return _renderPreviewMode; }
 
-	/// \brief Sets whether the render frame is shown in the viewport.
-	void setRenderFrameShown(bool show) { _showRenderFrame = show; }
+	/// \brief Sets whether the viewport displays a realtime preview of the rendered image.
+	void setRenderPreviewMode(bool show) { _renderPreviewMode = show; }
 
 	/// \brief Returns whether the grid is shown in the viewport.
 	bool isGridVisible() const { return _showGrid; }
@@ -387,7 +387,7 @@ public:
 	Q_PROPERTY(AffineTransformation cameraTransformation READ cameraTransformation WRITE setCameraTransformation);
 	Q_PROPERTY(FloatType fov READ fieldOfView WRITE setFieldOfView);
 	Q_PROPERTY(ViewType type READ viewType WRITE setViewType);
-	Q_PROPERTY(bool renderFrameVisible READ renderFrameShown WRITE setRenderFrameShown);
+	Q_PROPERTY(bool renderPreviewMode READ renderPreviewMode WRITE setRenderPreviewMode);
 	Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible);
 
 protected:
@@ -457,7 +457,7 @@ private:
 	PropertyField<AffineTransformation> _cameraTM;
 
 	/// Indicates whether the rendering frame is shown.
-	PropertyField<bool> _showRenderFrame;
+	PropertyField<bool> _renderPreviewMode;
 
 	/// Indicates whether the grid is shown.
 	PropertyField<bool> _showGrid;
@@ -514,7 +514,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_fieldOfView);
 	DECLARE_PROPERTY_FIELD(_cameraPosition);
 	DECLARE_PROPERTY_FIELD(_cameraDirection);
-	DECLARE_PROPERTY_FIELD(_showRenderFrame);
+	DECLARE_PROPERTY_FIELD(_renderPreviewMode);
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 	DECLARE_PROPERTY_FIELD(_cameraTM);
 	DECLARE_PROPERTY_FIELD(_showGrid);
