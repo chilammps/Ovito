@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="howto.transparent_particles" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Making particles semi-transparent</title>
+
+  <para>
+     <figure>
+      <title>Semi-transparent particles</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/semitransparent_particles.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
+    Particles can be made semi-transparent by setting the <literal>Transparency</literal> particle property.
+    A <literal>Transparency</literal> value of 0 lets the particle appear fully opaque, while any intermediate value between
+    0 and 1 lets the particle appear more or less translucent.
+  </para>
+  
+  <para>
+    The easiest method of setting the <literal>Transparency</literal> property is using the 
+    <link linkend="particles.modifiers.compute_property">Compute property</link> modifier.
+    In the example, a simple math formula was used to set the <literal>Transparency</literal> property
+    of particles depending on their position:
+    <screen>   ReducedPosition.X</screen>
+    The expression <literal>ReducedPosition.X</literal> evaluates to a particle's X position in reduced coordinates,
+    which varies between 0 to 1 from one side of the simulation box to the other. When assigning the computed values
+    to the <literal>Transparency</literal> property, particles on the left appear fully opaque while particles
+    on the right side of the simulation box become fully transparent.
+  </para>
+  
+  <para>
+    Note that you can make only selected particles transparent by checking the <emphasis>Compute only for selected particles</emphasis> option in the
+    <link linkend="particles.modifiers.compute_property">Compute property</link> modifier.    
+  </para>
+
+</section>
