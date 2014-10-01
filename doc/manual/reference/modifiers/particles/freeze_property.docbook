@@ -12,25 +12,26 @@
 
   <para>
     <informalfigure><screenshot><mediaobject><imageobject>
-       <imagedata fileref="images/modifiers/freeze_property_panel.png" format="PNG" />
+       <imagedata fileref="images/modifiers/freeze_property_panel.png" format="png" />
     </imageobject></mediaobject></screenshot></informalfigure>  
-    This modifier takes a snapshot of the current state of a per-particle property. It subsequently
-    writes the stored values back to the selected particle property, overwriting any existing 
-    (time-dependent) values. Thus, this modifier can be used to freeze a particle property that, otherwise, is changing with 
+    At the time this modifier is inserted into a modification pipeline, it takes a snapshot of the current values of the selected input particle property. 
+    It will subsequently write the stored values back to the selected output particle property (which, by default, is the same as the input property), overwriting 
+    the current values of that property. Thus, this modifier can be used to <emphasis>freeze</emphasis> a particle property that, otherwise, would be changing with 
     simulation time.
   </para>
   
   <para>
     The modifier automatically takes a snapshot of the current state whenever the user selects a new source property for the modifier.
     The snapshot is always taken at the current animation time. You can explicitly take a new snapshot by clicking the
-    <guibutton>Take new snapshot</guibutton> button.
+    <guibutton>Take new snapshot</guibutton> button, which will replace the per-particle values stored by the modifier with the current 
+    input values.
   </para>
   
   <para>
-     By default, the property values saved by the modifier are written back to the same property from which the snapshot 
-     was taken, overwriting the current values. If you want to preserve the current values, you can let the modifier
-     write the stored snapshot to a new property by entering a different name into the <emphasis>Output property</emphasis> field.
-     Then you will be able to access both the current values and the ones from the snapshot.
+     By default, the stored property values are written back to the same property from which the snapshot 
+     was originally taken, overwriting the current values of that property. If you want to preserve the current values, you can let the modifier
+     write the stored snapshot to a new property instead by entering a different name into the <emphasis>Output property</emphasis> field.
+     Then both the current particle values and the ones stored by the modifier will be available to other downstream modifiers in the modification pipeline.
   </para>
   
   <simplesect>
@@ -104,15 +105,22 @@
   </simplesect>
     
   <simplesect>
-    <title>Implementation note</title>
+    <title>Example 3</title>
+	  <para>
+	     Another typical usage scenario for this modifier is described in <link linkend="howto.marker_particles">this mini-tutorial</link>.
+	  </para>
+  </simplesect>  
+    
+  <simplesect>
+    <title>Implementation notes</title>
     <para>
-      This modifier requires that the number of particles does not change between frames.
+      This modifier requires that the number of particles does not change between simulation frames.
     </para>
     <para>
-      If available, the modifier makes use of particle identifiers to handle a changing particle order.
-      That means it is okay if the storage order of particles changes between frames as long as each particle
-      has a unique ID assigned that does not change over time. The modifier will correctly assign the stored 
-      property values to the right particles.
+      If the <literal>Particle Identifier</literal> property is defined, then this modifier uses it to detect any changes in the particle order.
+      That means it is okay if the storage order of particles changes between simulation frames as long as each particle
+      has a unique ID assigned that does not change. The modifier will use these particle IDs to assign the stored 
+      property values to the correct particles.
     </para>
   </simplesect>  
   

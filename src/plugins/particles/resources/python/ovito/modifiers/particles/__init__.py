@@ -19,7 +19,6 @@ ovito.modifiers.ComputePropertyModifier = ParticlesModify.ComputePropertyModifie
 ovito.modifiers.FreezePropertyModifier = ParticlesModify.FreezePropertyModifier
 ovito.modifiers.ClearSelectionModifier = ParticlesModify.ClearSelectionModifier
 ovito.modifiers.InvertSelectionModifier = ParticlesModify.InvertSelectionModifier
-ovito.modifiers.FreezeSelectionModifier = ParticlesModify.FreezeSelectionModifier
 ovito.modifiers.ManualSelectionModifier = ParticlesModify.ManualSelectionModifier
 ovito.modifiers.SelectExpressionModifier = ParticlesModify.SelectExpressionModifier
 ovito.modifiers.SelectParticleTypeModifier = ParticlesModify.SelectParticleTypeModifier

@@ -36,7 +36,6 @@
 #include <plugins/particles/modifier/properties/CreateExpressionPropertyModifier.h>
 #include <plugins/particles/modifier/properties/FreezePropertyModifier.h>
 #include <plugins/particles/modifier/selection/ClearSelectionModifier.h>
-#include <plugins/particles/modifier/selection/FreezeSelectionModifier.h>
 #include <plugins/particles/modifier/selection/InvertSelectionModifier.h>
 #include <plugins/particles/modifier/selection/ManualSelectionModifier.h>
 #include <plugins/particles/modifier/selection/SelectExpressionModifier.h>
@@ -262,10 +261,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	ovito_class<InvertSelectionModifier, ParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"This modifier inverts the particle selection. It has no parameters.")
-	;
-
-	ovito_class<FreezeSelectionModifier, ParticleModifier>()
-		.def("take_snapshot", &FreezeSelectionModifier::takeSelectionSnapshot)
 	;
 
 	ovito_class<ManualSelectionModifier, ParticleModifier>()
