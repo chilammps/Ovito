@@ -39,6 +39,9 @@ OpenGLLinePrimitive::OpenGLLinePrimitive(ViewportSceneRenderer* renderer) :
 	_pickingShader = renderer->loadShaderProgram("line.picking", ":/core/glsl/lines/picking/line.vs", ":/core/glsl/lines/picking/line.fs");
 	_thickLineShader = renderer->loadShaderProgram("thick_line", ":/core/glsl/lines/thick_line.vs", ":/core/glsl/lines/line.fs");
 	_thickLinePickingShader = renderer->loadShaderProgram("thick_line.picking", ":/core/glsl/lines/picking/thick_line.vs", ":/core/glsl/lines/picking/line.fs");
+	
+	// Use VBO to store glDrawElements() indices only on a real core profile implementation.
+	_useIndexVBO = (renderer->glformat().profile() == QSurfaceFormat::CoreProfile);
 }
 
 /******************************************************************************
@@ -63,18 +66,24 @@ void OpenGLLinePrimitive::setVertexCount(int vertexCount, FloatType lineWidth)
 		_positionsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
 		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
 		_vectorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
-		if(_indicesBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount * 6 / 2)) {
-			GLuint* indices = _indicesBuffer.map(QOpenGLBuffer::WriteOnly);
-			for(int i = 0; i < vertexCount; i += 2, indices += 6) {
-				indices[0] = i * 2;
-				indices[1] = i * 2 + 1;
-				indices[2] = i * 2 + 2;
-				indices[3] = i * 2;
-				indices[4] = i * 2 + 2;
-				indices[5] = i * 2 + 3;
-			}
-			_indicesBuffer.unmap();
+		GLuint* indices;
+		if(_useIndexVBO) {
+			_indicesBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount * 6 / 2);
+			indices = _indicesBuffer.map(QOpenGLBuffer::WriteOnly);
 		}
+		else {
+			_indicesBufferClient.resize(vertexCount * 6 / 2);
+			indices = _indicesBufferClient.data();
+		}
+		for(int i = 0; i < vertexCount; i += 2, indices += 6) {
+			indices[0] = i * 2;
+			indices[1] = i * 2 + 1;
+			indices[2] = i * 2 + 2;
+			indices[3] = i * 2;
+			indices[4] = i * 2 + 2;
+			indices[5] = i * 2 + 3;
+		}
+		if(_useIndexVBO) _indicesBuffer.unmap();
 	}
 }
 
@@ -216,9 +225,14 @@ void OpenGLLinePrimitive::renderThickLines(ViewportSceneRenderer* renderer)
 	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
 	_vectorsBuffer.bind(renderer, shader, "vector", GL_FLOAT, 0, 3);
 
-	_indicesBuffer.oglBuffer().bind();
-	OVITO_CHECK_OPENGL(glDrawElements(GL_TRIANGLES, _indicesBuffer.elementCount(), GL_UNSIGNED_INT, NULL));
-	_indicesBuffer.oglBuffer().release();
+	if(_useIndexVBO) {
+		_indicesBuffer.oglBuffer().bind();
+		OVITO_CHECK_OPENGL(glDrawElements(GL_TRIANGLES, _indicesBuffer.elementCount(), GL_UNSIGNED_INT, nullptr));
+		_indicesBuffer.oglBuffer().release();
+	}
+	else {
+		OVITO_CHECK_OPENGL(glDrawElements(GL_TRIANGLES, _indicesBufferClient.size(), GL_UNSIGNED_INT, _indicesBufferClient.data()));
+	}
 
 	_positionsBuffer.detachPositions(renderer, shader);
 	if(!renderer->isPicking()) {

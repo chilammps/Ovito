@@ -86,6 +86,9 @@ private:
 	/// The internal OpenGL vertex buffer that stores the indices for a call to glDrawElements().
 	OpenGLBuffer<GLuint> _indicesBuffer;
 
+	/// The client-side buffer that stores the indices for a call to glDrawElements().
+	std::vector<GLuint> _indicesBufferClient;
+	
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
 
@@ -103,6 +106,9 @@ private:
 
 	/// The width of lines in screen space.
 	FloatType _lineWidth;
+	
+	/// Indicates that an index VBO is used.
+	bool _useIndexVBO;
 };
 
 };

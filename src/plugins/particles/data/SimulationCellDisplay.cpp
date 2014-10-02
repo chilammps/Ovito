@@ -86,7 +86,7 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 }
 
 /******************************************************************************
-* Renders the given simulation using wireframe mode.
+* Renders the given simulation cell using lines.
 ******************************************************************************/
 void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
@@ -138,7 +138,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 }
 
 /******************************************************************************
-* Renders the given simulation using solid shading mode.
+* Renders the given simulation cell using solid shading mode.
 ******************************************************************************/
 void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {

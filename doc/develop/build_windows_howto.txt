@@ -8,7 +8,8 @@ Build Boost libraries (release 1.55):
 **************************************************************************
 
 Run:
-bootstrap.bat
+
+bootstrap.bat gcc
 
 ---- 32 bit ---
 
