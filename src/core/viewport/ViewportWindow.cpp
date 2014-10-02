@@ -106,6 +106,20 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 			throw Exception(tr("Failed to create OpenGL context."));
 	}
 
+	// Determine OpenGL vendor string so other parts of the code can decide
+	// which OpenGL features are save to use.
+	if(_openGLVendor.isEmpty()) {
+		QOffscreenSurface offscreenSurface;
+		offscreenSurface.setFormat(_context->format());
+		offscreenSurface.create();
+		if(!offscreenSurface.isValid())
+			throw Exception(tr("Failed to create offscreen surface. Cannot query OpenGL vendor string."));
+		if(!_context->makeCurrent(&offscreenSurface))
+			throw Exception(tr("Failed to make OpenGL context current on offscreen surface. Cannot query OpenGL vendor string."));
+		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+		_context->doneCurrent();
+	}
+
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
 	setFormat(_context->format());
@@ -294,11 +308,6 @@ void ViewportWindow::renderNow()
 		}
 		return;
 	}
-
-	// Store OpenGL vendor string so other parts of the code can decide
-	// which OpenGL features are save to use.
-	if(_openGLVendor.isEmpty())
-		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 
 	OVITO_CHECK_OPENGL();
 	if(!_viewport->dataset()->viewportConfig()->isSuspended()) {
