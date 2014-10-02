@@ -37,7 +37,7 @@
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
 
 /// The default field of view angle in radians used for perspective view types when the scene is empty.
-#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/4.0)
+#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/5.2)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
 #define VIEWPORT_RENDER_FRAME_SIZE				0.95
