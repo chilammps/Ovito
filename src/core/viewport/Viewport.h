@@ -34,6 +34,7 @@
 #include <core/rendering/TextPrimitive.h>
 #include <core/rendering/ImagePrimitive.h>
 #include <core/rendering/LinePrimitive.h>
+#include <core/viewport/overlay/ViewportOverlay.h>
 #include "ViewportSettings.h"
 #include "ViewportWindow.h"
 
@@ -378,6 +379,24 @@ public:
 	/// Returns a pointer to the internal OpenGL rendering window.
 	ViewportWindow* viewportWindow() const { return _viewportWindow.data(); }
 
+	/// Returns this viewport's list of overlays.
+	const QVector<ViewportOverlay*>& overlays() const { return _overlays; }
+
+	/// \brief Inserts an overlay into this viewport's list of overlays.
+	/// \param index The position at which to insert the overlay.
+	/// \param overlay The overlay to insert.
+	/// \undoable
+	void insertOverlay(int index, ViewportOverlay* overlay) {
+		_overlays.insert(index, overlay);
+	}
+
+	/// \brief Removes an overlay from this viewport.
+	/// \param index The index of the overlay to remove.
+	/// \undoable
+	void removeOverlay(int index) {
+		_overlays.remove(index);
+	}
+
 public:
 
 	Q_PROPERTY(QString title READ viewportTitle);
@@ -502,6 +521,9 @@ private:
 	/// This renderer generates an offscreen rendering of the scene that allows picking of objects.
 	OORef<PickingSceneRenderer> _pickingRenderer;
 
+	/// The list of overlay objects owned by this viewport.
+	VectorReferenceField<ViewportOverlay> _overlays;
+
 private:
 
 	Q_OBJECT
@@ -518,6 +540,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 	DECLARE_PROPERTY_FIELD(_cameraTM);
 	DECLARE_PROPERTY_FIELD(_showGrid);
+	DECLARE_VECTOR_REFERENCE_FIELD(_overlays);
 
 	friend class ViewportWindow;
 	friend class ViewportMenu;

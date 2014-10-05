@@ -167,6 +167,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/input/NavigationModes.cpp
 	viewport/input/XFormModes.cpp
 	viewport/picking/PickingSceneRenderer.cpp
+	viewport/overlay/ViewportOverlay.cpp
+	viewport/overlay/CoordinateTripodOverlay.cpp
 )
 
 # Compile resources.

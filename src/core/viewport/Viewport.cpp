@@ -33,6 +33,8 @@
 #include <core/scene/objects/camera/AbstractCameraObject.h>
 #include "ViewportMenu.h"
 
+#include "overlay/CoordinateTripodOverlay.h"
+
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
 
@@ -56,6 +58,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _renderPreviewMode, "ShowRenderFrame", PRO
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraTM, "CameraTransformation", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO);
+DEFINE_VECTOR_REFERENCE_FIELD(Viewport, _overlays, "Overlays", ViewportOverlay);
 
 /******************************************************************************
 * Constructor.
@@ -84,8 +87,11 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(Viewport::_viewportTitle);
 	INIT_PROPERTY_FIELD(Viewport::_cameraTM);
 	INIT_PROPERTY_FIELD(Viewport::_showGrid);
+	INIT_PROPERTY_FIELD(Viewport::_overlays);
 
 	connect(&ViewportSettings::getSettings(), &ViewportSettings::settingsChanged, this, &Viewport::viewportSettingsChanged);
+
+	//insertOverlay(0, new CoordinateTripodOverlay(dataset));
 }
 
 /******************************************************************************
@@ -525,13 +531,15 @@ void Viewport::render(QOpenGLContext* context)
 	try {
 		_isRendering = true;
 		TimePoint time = dataset()->animationSettings()->time();
+		RenderSettings* renderSettings = dataset()->renderSettings();
+		OVITO_ASSERT(renderSettings != nullptr);
 		ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 
 		QSize vpSize = size();
 		glViewport(0, 0, vpSize.width(), vpSize.height());
 
 		// Set up the viewport renderer.
-		renderer->startRender(dataset(), dataset()->renderSettings());
+		renderer->startRender(dataset(), renderSettings);
 
 		// Request scene bounding box.
 		Box3 boundingBox = renderer->sceneBoundingBox(time);
@@ -566,6 +574,29 @@ void Viewport::render(QOpenGLContext* context)
 		if(renderPreviewMode()) {
 			// Render render frame.
 			renderRenderFrame();
+
+			// Paint overlays.
+			if(!overlays().empty()) {
+				// Let overlays paint into QImage buffer, which will then
+				// be painted over the OpenGL frame buffer.
+				QImage overlayBuffer(size(), QImage::Format_ARGB32_Premultiplied);
+				overlayBuffer.fill(0);
+				Box2 renderFrameBox = renderFrameRect();
+				QRect renderFrameRect(
+						(renderFrameBox.minc.x()+1.0f)*overlayBuffer.width()/2,
+						(renderFrameBox.minc.y()+1.0f)*overlayBuffer.height()/2,
+						renderFrameBox.width()*overlayBuffer.width()/2,
+						renderFrameBox.height()*overlayBuffer.height()/2);
+				for(ViewportOverlay* overlay : overlays()) {
+					QPainter painter(&overlayBuffer);
+					painter.setWindow(QRect(0,0,renderSettings->outputImageWidth(),renderSettings->outputImageHeight()));
+					painter.setViewport(renderFrameRect);
+					overlay->render(this, painter, _projParams, renderSettings);
+				}
+				std::shared_ptr<ImagePrimitive> overlayBufferPrim = renderer->createImagePrimitive();
+				overlayBufferPrim->setImage(overlayBuffer);
+				overlayBufferPrim->renderViewport(renderer, Point2(-1,-1), Vector2(2, 2));
+			}
 		}
 		else {
 			// Render orientation tripod.

@@ -446,6 +446,15 @@ bool DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	}
 	renderer->endFrame();
 
+	// Apply viewport overlays.
+	for(ViewportOverlay* overlay : viewport->overlays()) {
+		{
+			QPainter painter(&frameBuffer->image());
+			overlay->render(viewport, painter, projParams, settings);
+		}
+		frameBuffer->update();
+	}
+
 	// Save rendered image to disk.
 	if(settings->saveToFile()) {
 		if(!videoEncoder) {

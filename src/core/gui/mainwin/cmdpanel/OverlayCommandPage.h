@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -22,34 +22,21 @@
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
-#include <core/viewport/input/ViewportInputManager.h>
 #include <core/reference/RefTargetListener.h>
 
 namespace Ovito {
 
-class ModificationListModel;	// defined in ModificationListModel.h
-class ModificationListItem;		// defined in ModificationListModel.h
-class ModifierListBox;			// defined in ModifierListBox.h
-class SceneObject;				// defined in SceneObject.h
-class Modifier;					// defined in Modifier.h
-class DataSetContainer;			// defined in DataSetContainer.h
-class MainWindow;				// defined in MainWindow.h
-class ActionManager;			// defined in ActionManager.h
-
 /******************************************************************************
-* The command panel tab lets the user modify the selected object.
+* The command panel tab lets the user edit the viewport overlays.
 ******************************************************************************/
-class OVITO_CORE_EXPORT ModifyCommandPage : public QWidget
+class OVITO_CORE_EXPORT OverlayCommandPage : public QWidget
 {
 	Q_OBJECT
 
 public:
 
 	/// Initializes the modify page.
-    ModifyCommandPage(MainWindow* mainWindow, QWidget* parent);
-
-	/// Returns the object that is currently being edited in the properties panel.
-	RefTarget* editObject() const { return _propertiesPanel->editObject(); }
+    OverlayCommandPage(MainWindow* mainWindow, QWidget* parent);
 
 	/// Returns the list model that encapsulates the modification pipeline of the selected node(s).
 	ModificationListModel* modificationListModel() const { return _modificationListModel; }
@@ -96,9 +83,6 @@ private:
 
 	/// The container of the current dataset being edited.
 	DataSetContainer& _datasetContainer;
-
-	/// The action manager of the main window.
-	ActionManager* _actionManager;
 
 	/// This list box shows the modifier stack of the selected scene node(s).
 	QListView* _modificationListWidget;
