@@ -33,13 +33,11 @@
 #include <core/scene/objects/camera/AbstractCameraObject.h>
 #include "ViewportMenu.h"
 
-#include "overlay/CoordinateTripodOverlay.h"
-
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
 
 /// The default field of view angle in radians used for perspective view types when the scene is empty.
-#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/5.2)
+#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(35.0*FLOATTYPE_PI/180.0)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
 #define VIEWPORT_RENDER_FRAME_SIZE				0.95
@@ -90,8 +88,6 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(Viewport::_overlays);
 
 	connect(&ViewportSettings::getSettings(), &ViewportSettings::settingsChanged, this, &Viewport::viewportSettingsChanged);
-
-	//insertOverlay(0, new CoordinateTripodOverlay(dataset));
 }
 
 /******************************************************************************
@@ -372,10 +368,16 @@ void Viewport::zoomToBox(const Box3& box)
 ******************************************************************************/
 bool Viewport::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(source == viewNode() && event->type() == ReferenceEvent::TargetChanged) {
-		// Update viewport when camera node has moved.
-		updateViewport();
-		return false;
+	if(event->type() == ReferenceEvent::TargetChanged) {
+		if(source == viewNode()) {
+			// Update viewport when camera node has moved.
+			updateViewport();
+			return false;
+		}
+		else if(_overlays.contains(source)) {
+			// Update viewport when one of the overlays has changed.
+			updateViewport();
+		}
 	}
 	else if(source == viewNode() && event->type() == ReferenceEvent::TitleChanged) {
 		// Update viewport title when camera node has been renamed.
@@ -408,6 +410,29 @@ void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget
 	}
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
+
+/******************************************************************************
+* Is called when a RefTarget has been added to a VectorReferenceField.
+******************************************************************************/
+void Viewport::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
+{
+	if(field == PROPERTY_FIELD(Viewport::_overlays)) {
+		updateViewport();
+	}
+	RefTarget::referenceInserted(field, newTarget, listIndex);
+}
+
+/******************************************************************************
+* Is called when a RefTarget has been removed from a VectorReferenceField.
+******************************************************************************/
+void Viewport::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex)
+{
+	if(field == PROPERTY_FIELD(Viewport::_overlays)) {
+		updateViewport();
+	}
+	RefTarget::referenceRemoved(field, oldTarget, listIndex);
+}
+
 
 /******************************************************************************
 * Loads the class' contents from an input stream.

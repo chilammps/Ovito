@@ -420,6 +420,12 @@ protected:
 	/// Is called when the value of a reference field of this RefMaker changes.
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
+	/// Is called when a RefTarget has been added to a VectorReferenceField.
+	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
+
+	/// Is called when a RefTarget has been removed from a VectorReferenceField.
+	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex) override;
+
 	/// Loads the class' contents from an input stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 

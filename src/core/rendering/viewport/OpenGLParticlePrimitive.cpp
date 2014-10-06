@@ -407,7 +407,7 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 
 	// Enable point sprites when using the compatibility OpenGL profile.
 	// In the core profile, they are already enabled by default.
-	if(renderer->isCoreProfile() == false) {
+	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile) {
 		OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
 
 		// Specify point sprite texture coordinate replacement mode.
@@ -491,7 +491,7 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 	shader->release();
 
 	// Disable point sprites again.
-	if(renderer->isCoreProfile() == false)
+	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile)
 		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
 
 	if(particleShape() == SphericalShape && shadingMode() == NormalShading && !renderer->isPicking())

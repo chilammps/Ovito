@@ -192,7 +192,7 @@ void AdjustCameraDialog::onAdjustCamera()
 {
 	if(_camPerspective->isChecked()) {
 		if(!_viewport->isPerspectiveProjection())
-			_camFOVSpinner->setFloatValue(FLOATTYPE_PI/4.0f);
+			_camFOVSpinner->setFloatValue(35.0*FLOATTYPE_PI/180.0);
 		_viewport->setViewType(Viewport::VIEW_PERSPECTIVE);
 	}
 	else {

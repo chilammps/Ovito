@@ -39,6 +39,7 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	// Create UI widget.
 	_groupBox = new QGroupBox(label);
 	_groupBox->setCheckable(true);
+	_groupBox->setChecked(false);
 	connect(_groupBox.data(), &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
 }
 
@@ -51,6 +52,7 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	// Create UI widget.
 	_groupBox = new QGroupBox(propField.displayName());
 	_groupBox->setCheckable(true);
+	_groupBox->setChecked(false);
 	connect(_groupBox.data(), &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
 }
 

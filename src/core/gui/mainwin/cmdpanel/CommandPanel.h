@@ -31,6 +31,7 @@ class DataSetContainer;		// defined in DataSetContainer.h
 class ModifyCommandPage;	// defined in ModifyCommandPage.h
 class RenderCommandPage;	// defined in RenderCommandPage.h
 class UtilityCommandPage;	// defined in UtilityCommandPage.h
+class OverlayCommandPage;	// defined in OverlayCommandPage.h
 class MainWindow;			// defined in MainWindow.h
 
 /******************************************************************************
@@ -46,7 +47,8 @@ public:
 	enum Page {
 		MODIFY_PAGE		= 0,
 		RENDER_PAGE		= 1,
-		UTILITIES_PAGE	= 2
+		OVERLAY_PAGE	= 2,
+		UTILITIES_PAGE	= 3
 	};
 
 	/// \brief Creates the command panel.
@@ -69,6 +71,9 @@ public:
 	/// \brief Returns the rendering page contained in the command panel.
 	RenderCommandPage* renderPage() const { return _renderPage; }
 
+	/// \brief Returns the viewport overlay page contained in the command panel.
+	OverlayCommandPage* overlayPage() const { return _overlayPage; }
+
 	/// \brief Returns the utility page contained in the command panel.
 	UtilityCommandPage* utilityPage() const { return _utilityPage; }
 
@@ -80,6 +85,7 @@ private:
 	QTabWidget* _tabWidget;
 	ModifyCommandPage* _modifyPage;
 	RenderCommandPage* _renderPage;
+	OverlayCommandPage* _overlayPage;
 	UtilityCommandPage* _utilityPage;
 };
 

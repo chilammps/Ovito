@@ -26,7 +26,6 @@
 #include <core/gui/properties/StringParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
-#include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include <core/gui/actions/ActionManager.h>

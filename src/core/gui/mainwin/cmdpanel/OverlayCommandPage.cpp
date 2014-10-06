@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,50 +20,45 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
-#include <core/scene/pipeline/PipelineObject.h>
-#include <core/scene/pipeline/Modifier.h>
-#include <core/scene/ObjectNode.h>
-#include <core/scene/SelectionSet.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/gui/actions/ActionManager.h>
+#include <core/plugins/PluginManager.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/gui/widgets/selection/SceneNodeSelectionBox.h>
 #include "OverlayCommandPage.h"
-#include "ModificationListModel.h"
-#include "ModifierListBox.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Initializes the modify page.
+* Initializes the command panel page.
 ******************************************************************************/
 OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent),
-		_datasetContainer(mainWindow->datasetContainer()), _actionManager(mainWindow->actionManager())
+		_datasetContainer(mainWindow->datasetContainer())
 {
-	QGridLayout* layout = new QGridLayout(this);
+	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
-	layout->setSpacing(4);
-	layout->setColumnStretch(1,1);
+	layout->setSpacing(2);
 
-	SceneNodeSelectionBox* nodeSelBox = new SceneNodeSelectionBox(_datasetContainer, this);
-	layout->addWidget(nodeSelBox, 0, 0, 1, 2);
+	_activeViewportLabel = new QLabel(tr("Viewport:"));
+	layout->addWidget(_activeViewportLabel);
 
-	_modificationListModel = new ModificationListModel(_datasetContainer, this);
-	_modifierSelector = new ModifierListBox(this, _modificationListModel);
-    layout->addWidget(_modifierSelector, 1, 0, 1, 2);
-    connect(_modifierSelector, (void (QComboBox::*)(int))&QComboBox::activated, this, &OverlayCommandPage::onModifierAdd);
+	_newOverlayBox = new QComboBox(this);
+    layout->addWidget(_newOverlayBox);
+    connect(_newOverlayBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &OverlayCommandPage::onNewOverlay);
 
-	class ModifierStackListView : public QListView {
-	public:
-		ModifierStackListView(QWidget* parent) : QListView(parent) {}
-		virtual QSize sizeHint() const { return QSize(256, 260); }
-	};
+    _newOverlayBox->addItem(tr("Add overlay..."));
+	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(ViewportOverlay::OOType)) {
+		_newOverlayBox->addItem(clazz->displayName(), qVariantFromValue(clazz));
+	}
 
 	QSplitter* splitter = new QSplitter(Qt::Vertical);
 	splitter->setChildrenCollapsible(false);
+
+	class OverlayListWidget : public QListWidget {
+	public:
+		OverlayListWidget(QWidget* parent) : QListWidget(parent) {}
+		virtual QSize sizeHint() const override { return QSize(256, 160); }
+	};
 
 	QWidget* upperContainer = new QWidget();
 	splitter->addWidget(upperContainer);
@@ -71,12 +66,8 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	subLayout->setContentsMargins(0,0,0,0);
 	subLayout->setSpacing(2);
 
-	_modificationListWidget = new ModifierStackListView(upperContainer);
-	_modificationListWidget->setModel(_modificationListModel);
-	_modificationListWidget->setSelectionModel(_modificationListModel->selectionModel());
-	connect(_modificationListModel, &ModificationListModel::selectedItemChanged, this, &OverlayCommandPage::onSelectedItemChanged);
-	connect(_modificationListWidget, &ModifierStackListView::doubleClicked, this, &OverlayCommandPage::onModifierStackDoubleClicked);
-	subLayout->addWidget(_modificationListWidget);
+	_overlayListWidget = new OverlayListWidget(upperContainer);
+	subLayout->addWidget(_overlayListWidget);
 
 	QToolBar* editToolbar = new QToolBar(this);
 	editToolbar->setOrientation(Qt::Vertical);
@@ -85,28 +76,12 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 #endif
 	subLayout->addWidget(editToolbar);
 
-	QAction* deleteModifierAction = _actionManager->createCommandAction(ACTION_MODIFIER_DELETE, tr("Delete Modifier"), ":/core/actions/modify/delete_modifier.png");
-	connect(deleteModifierAction, &QAction::triggered, this, &OverlayCommandPage::onDeleteModifier);
-	editToolbar->addAction(deleteModifierAction);
+	_deleteOverlayAction = new QAction(QIcon(":/core/actions/modify/delete_modifier.png"), tr("Delete Overlay"), this);
+	_deleteOverlayAction->setEnabled(false);
+	connect(_deleteOverlayAction, &QAction::triggered, this, &OverlayCommandPage::onDeleteOverlay);
+	editToolbar->addAction(_deleteOverlayAction);
 
-	editToolbar->addSeparator();
-
-	QAction* moveModifierUpAction = _actionManager->createCommandAction(ACTION_MODIFIER_MOVE_UP, tr("Move Modifier Up"), ":/core/actions/modify/modifier_move_up.png");
-	connect(moveModifierUpAction, &QAction::triggered, this, &OverlayCommandPage::onModifierMoveUp);
-	editToolbar->addAction(moveModifierUpAction);
-	QAction* moveModifierDownAction = mainWindow->actionManager()->createCommandAction(ACTION_MODIFIER_MOVE_DOWN, tr("Move Modifier Down"), ":/core/actions/modify/modifier_move_down.png");
-	connect(moveModifierDownAction, &QAction::triggered, this, &OverlayCommandPage::onModifierMoveDown);
-	editToolbar->addAction(moveModifierDownAction);
-
-	QAction* toggleModifierStateAction = _actionManager->createCommandAction(ACTION_MODIFIER_TOGGLE_STATE, tr("Enable/Disable Modifier"));
-	toggleModifierStateAction->setCheckable(true);
-	QIcon toggleStateActionIcon(QString(":/core/actions/modify/modifier_enabled_large.png"));
-	toggleStateActionIcon.addFile(QString(":/core/actions/modify/modifier_disabled_large.png"), QSize(), QIcon::Normal, QIcon::On);
-	toggleModifierStateAction->setIcon(toggleStateActionIcon);
-	connect(toggleModifierStateAction, &QAction::triggered, this, &OverlayCommandPage::onModifierToggleState);
-
-	layout->addWidget(splitter, 2, 0, 1, 2);
-	layout->setRowStretch(2, 1);
+	layout->addWidget(splitter, 1);
 
 	// Create the properties panel.
 	_propertiesPanel = new PropertiesPanel(nullptr);
@@ -114,342 +89,144 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	splitter->addWidget(_propertiesPanel);
 	splitter->setStretchFactor(1,1);
 
-	connect(&_datasetContainer, &DataSetContainer::selectionChangeComplete, this, &OverlayCommandPage::onSelectionChangeComplete);
-	updateActions(nullptr);
-
-	// Create About panel.
-	createAboutPanel();
+	connect(&_datasetContainer, &DataSetContainer::viewportConfigReplaced, this, &OverlayCommandPage::onViewportConfigReplaced);
+	connect(&_viewportListener, &RefTargetListener<Viewport>::notificationEvent, this, &OverlayCommandPage::viewportEvent);
+	connect(_overlayListWidget, &QListWidget::itemSelectionChanged, this, &OverlayCommandPage::onItemSelectionChanged);
 }
 
 /******************************************************************************
-* This is called after all changes to the selection set have been completed.
+* Returns the selected overlay.
 ******************************************************************************/
-void OverlayCommandPage::onSelectionChangeComplete(SelectionSet* newSelection)
+ViewportOverlay* OverlayCommandPage::selectedOverlay() const
 {
-	// Make sure we get informed about any future changes of the selection set.
-	_modificationListModel->refreshList();
+	Viewport* vp = activeViewport();
+	if(!vp) return nullptr;
+
+	QList<QListWidgetItem*> selItems = _overlayListWidget->selectedItems();
+	if(selItems.empty()) return nullptr;
+
+	OverlayListItem* item = static_cast<OverlayListItem*>(selItems.front());
+	return item->target();
 }
 
 /******************************************************************************
-* Is called when a new modification list item has been selected, or if the currently
-* selected item has changed.
+* Constructs an item for the list widget.
 ******************************************************************************/
-void OverlayCommandPage::onSelectedItemChanged()
+OverlayCommandPage::OverlayListItem::OverlayListItem(ViewportOverlay* overlay)
+	: RefTargetListener<ViewportOverlay>(),
+	  QListWidgetItem(overlay->objectTitle(), nullptr, QListWidgetItem::UserType)
 {
-	ModificationListItem* currentItem = _modificationListModel->selectedItem();
-	RefTarget* object = currentItem ? currentItem->object() : nullptr;
+	setTarget(overlay);
+}
 
-	if(currentItem != nullptr)
-		_aboutRollout->hide();
-
-	if(object != _propertiesPanel->editObject()) {
-		_propertiesPanel->setEditObject(object);
-		if(_datasetContainer.currentSet())
-			_datasetContainer.currentSet()->viewportConfig()->updateViewports();
+/******************************************************************************
+* This is called whenever the current viewport configuration of current dataset
+* has been replaced by a new one.
+******************************************************************************/
+void OverlayCommandPage::onViewportConfigReplaced(ViewportConfiguration* newViewportConfiguration)
+{
+	disconnect(_activeViewportChangedConnection);
+	if(newViewportConfiguration) {
+		_activeViewportChangedConnection = connect(newViewportConfiguration, &ViewportConfiguration::activeViewportChanged, this, &OverlayCommandPage::onActiveViewportChanged);
+		onActiveViewportChanged(newViewportConfiguration->activeViewport());
 	}
-	updateActions(currentItem);
-
-	// Whenever no object is selected, show the About Panel containing information about the program.
-	if(currentItem == nullptr)
-		_aboutRollout->show();
+	else onActiveViewportChanged(nullptr);
 }
 
 /******************************************************************************
-* Updates the state of the actions that can be invoked on the currently selected item.
+* This is called when another viewport became active.
 ******************************************************************************/
-void OverlayCommandPage::updateActions(ModificationListItem* currentItem)
+void OverlayCommandPage::onActiveViewportChanged(Viewport* activeViewport)
 {
-	QAction* deleteModifierAction = _actionManager->getAction(ACTION_MODIFIER_DELETE);
-	QAction* moveModifierUpAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_UP);
-	QAction* moveModifierDownAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_DOWN);
-	QAction* toggleModifierStateAction = _actionManager->getAction(ACTION_MODIFIER_TOGGLE_STATE);
+	if(activeViewport)
+		_activeViewportLabel->setText(tr("Viewport: %1").arg(activeViewport->viewportTitle()));
+	else
+		_activeViewportLabel->setText(tr("Viewport: none"));
+	_viewportListener.setTarget(activeViewport);
+	_overlayListWidget->clear();
 
-	_modifierSelector->setEnabled(currentItem != nullptr);
+	// Populate overlay list.
+	if(activeViewport) {
+		for(ViewportOverlay* overlay : activeViewport->overlays()) {
+			QListWidgetItem* item = new OverlayListItem(overlay);
+			_overlayListWidget->addItem(item);
+		}
+		if(_overlayListWidget->count() != 0)
+			_overlayListWidget->setCurrentRow(0, QItemSelectionModel::ClearAndSelect);
+	}
 
-	Modifier* modifier = currentItem ? dynamic_object_cast<Modifier>(currentItem->object()) : nullptr;
-	if(modifier) {
-		deleteModifierAction->setEnabled(true);
-		if(currentItem->modifierApplications().size() == 1) {
-			ModifierApplication* modApp = currentItem->modifierApplications()[0];
-			PipelineObject* pipelineObj = modApp->pipelineObject();
-			if(pipelineObj) {
-				OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
-				moveModifierUpAction->setEnabled(modApp != pipelineObj->modifierApplications().back());
-				moveModifierDownAction->setEnabled(modApp != pipelineObj->modifierApplications().front());
-			}
-		}
-		else {
-			moveModifierUpAction->setEnabled(false);
-			moveModifierDownAction->setEnabled(false);
-		}
-		if(modifier) {
-			toggleModifierStateAction->setEnabled(true);
-			toggleModifierStateAction->setChecked(modifier->isEnabled() == false);
-		}
-		else {
-			toggleModifierStateAction->setChecked(false);
-			toggleModifierStateAction->setEnabled(false);
+	_newOverlayBox->setEnabled(activeViewport != nullptr && _newOverlayBox->count() > 1);
+}
+
+/******************************************************************************
+* This is called when the viewport generates a reference event.
+******************************************************************************/
+void OverlayCommandPage::viewportEvent(ReferenceEvent* event)
+{
+	if(event->type() == ReferenceEvent::ReferenceAdded) {
+		ReferenceFieldEvent* refEvent = static_cast<ReferenceFieldEvent*>(event);
+		if(refEvent->field() == PROPERTY_FIELD(Viewport::_overlays)) {
+			ViewportOverlay* overlay = static_object_cast<ViewportOverlay>(refEvent->newTarget());
+			QListWidgetItem* item = new OverlayListItem(overlay);
+			_overlayListWidget->insertItem(refEvent->index(), item);
+			_overlayListWidget->setCurrentRow(refEvent->index(), QItemSelectionModel::ClearAndSelect);
 		}
 	}
-	else {
-		deleteModifierAction->setEnabled(false);
-		moveModifierUpAction->setEnabled(false);
-		moveModifierDownAction->setEnabled(false);
-		toggleModifierStateAction->setChecked(false);
-		toggleModifierStateAction->setEnabled(false);
+	else if(event->type() == ReferenceEvent::ReferenceRemoved) {
+		ReferenceFieldEvent* refEvent = static_cast<ReferenceFieldEvent*>(event);
+		if(refEvent->field() == PROPERTY_FIELD(Viewport::_overlays)) {
+			delete _overlayListWidget->item(refEvent->index());
+		}
 	}
 }
 
 /******************************************************************************
-* Is called when the user has selected an item in the modifier class list.
+* Is called when a new overlay has been selected in the list box.
 ******************************************************************************/
-void OverlayCommandPage::onModifierAdd(int index)
+void OverlayCommandPage::onItemSelectionChanged()
 {
-	if(index >= 0 && _modificationListModel->isUpToDate()) {
-		const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(_modifierSelector->itemData(index).value<void*>());
-		if(descriptor) {
-			UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Apply modifier"), [descriptor, this]() {
-				// Create an instance of the modifier.
-				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance(_datasetContainer.currentSet()));
-				OVITO_CHECK_OBJECT_POINTER(modifier);
+	ViewportOverlay* overlay = selectedOverlay();
+	_propertiesPanel->setEditObject(overlay);
+	_deleteOverlayAction->setEnabled(overlay != nullptr);
+}
+
+/******************************************************************************
+* This inserts a new overlay.
+******************************************************************************/
+void OverlayCommandPage::onNewOverlay(int index)
+{
+	if(index > 0) {
+		const OvitoObjectType* descriptor = _newOverlayBox->itemData(index).value<const OvitoObjectType*>();
+		Viewport* vp = activeViewport();
+		if(descriptor && vp) {
+			int index = _overlayListWidget->currentRow();
+			if(index < 0) index = 0;
+			UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Add overlay"), [descriptor, vp, index]() {
+				// Create an instance of the overlay class.
+				OORef<ViewportOverlay> overlay = static_object_cast<ViewportOverlay>(descriptor->createInstance(vp->dataset()));
 				// Load user-defined default parameters.
-				modifier->loadUserDefaults();
-				// Apply it.
-				_modificationListModel->applyModifier(modifier);
+				overlay->loadUserDefaults();
+				// Insert it.
+				vp->insertOverlay(index, overlay);
+				// Automatically activate preview mode to make the overlay visible.
+				vp->setRenderPreviewMode(true);
 			});
-			_modificationListModel->requestUpdate();
 		}
-		_modifierSelector->setCurrentIndex(0);
+		_newOverlayBox->setCurrentIndex(0);
 	}
 }
 
 /******************************************************************************
-* Handles the ACTION_MODIFIER_DELETE command.
+* This deletes the selected overlay.
 ******************************************************************************/
-void OverlayCommandPage::onDeleteModifier()
+void OverlayCommandPage::onDeleteOverlay()
 {
-	// Get the currently selected modifier.
-	ModificationListItem* selectedItem = _modificationListModel->selectedItem();
-	if(!selectedItem) return;
+	ViewportOverlay* overlay = selectedOverlay();
+	if(!overlay) return;
 
-	Modifier* modifier = dynamic_object_cast<Modifier>(selectedItem->object());
-	if(!modifier) return;
-
-	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Delete modifier"), [selectedItem, modifier]() {
-
-		// Remove each ModifierApplication from the corresponding PipelineObject.
-		Q_FOREACH(ModifierApplication* modApp, selectedItem->modifierApplications()) {
-			OVITO_ASSERT(modApp->modifier() == modifier);
-			OVITO_CHECK_OBJECT_POINTER(modApp->pipelineObject());
-			modApp->pipelineObject()->removeModifier(modApp);
-		}
-
+	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Delete overlay"), [overlay]() {
+		overlay->deleteReferenceObject();
 	});
-}
-
-/******************************************************************************
-* This called when the user double clicks on an item in the modifier stack.
-******************************************************************************/
-void OverlayCommandPage::onModifierStackDoubleClicked(const QModelIndex& index)
-{
-	ModificationListItem* item = _modificationListModel->item(index.row());
-	OVITO_CHECK_OBJECT_POINTER(item);
-
-	Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
-	if(modifier) {
-		// Toggle enabled state of modifier.
-		UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Toggle modifier state"), [modifier]() {
-			modifier->setEnabled(!modifier->isEnabled());
-		});
-	}
-}
-
-/******************************************************************************
-* Handles the ACTION_MODIFIER_MOVE_UP command, which moves the selected
-* modifier up one position in the stack.
-******************************************************************************/
-void OverlayCommandPage::onModifierMoveUp()
-{
-	// Get the currently selected modifier.
-	ModificationListItem* selectedItem = _modificationListModel->selectedItem();
-	if(!selectedItem) return;
-
-	if(selectedItem->modifierApplications().size() != 1)
-		return;
-
-	OORef<ModifierApplication> modApp = selectedItem->modifierApplications()[0];
-	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
-	if(!pipelineObj)
-		return;
-
-	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
-	if(modApp == pipelineObj->modifierApplications().back())
-		return;
-
-	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier up"), [pipelineObj, modApp]() {
-		// Determine old position in stack.
-		int index = pipelineObj->modifierApplications().indexOf(modApp);
-		// Remove ModifierApplication from the PipelineObject.
-		pipelineObj->removeModifier(modApp);
-		// Re-insert ModifierApplication into the PipelineObject.
-		pipelineObj->insertModifierApplication(modApp, index+1);
-	});
-}
-
-/******************************************************************************
-* Handles the ACTION_MODIFIER_MOVE_DOWN command, which moves the selected
-* modifier down one position in the stack.
-******************************************************************************/
-void OverlayCommandPage::onModifierMoveDown()
-{
-	// Get the currently selected modifier.
-	ModificationListItem* selectedItem = _modificationListModel->selectedItem();
-	if(!selectedItem) return;
-
-	if(selectedItem->modifierApplications().size() != 1)
-		return;
-
-	OORef<ModifierApplication> modApp = selectedItem->modifierApplications()[0];
-	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
-	if(!pipelineObj) return;
-
-	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
-	if(modApp == pipelineObj->modifierApplications().front())
-		return;
-
-	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier down"), [pipelineObj, modApp]() {
-		// Determine old position in stack.
-		int index = pipelineObj->modifierApplications().indexOf(modApp);
-		// Remove ModifierApplication from the PipelineObject.
-		pipelineObj->removeModifier(modApp);
-		// Re-insert ModifierApplication into the PipelineObject.
-		pipelineObj->insertModifierApplication(modApp, index-1);
-	});
-}
-
-/******************************************************************************
-* Handles the ACTION_MODIFIER_TOGGLE_STATE command, which toggles the
-* enabled/disable state of the selected modifier.
-******************************************************************************/
-void OverlayCommandPage::onModifierToggleState(bool newState)
-{
-	// Get the selected modifier from the modifier stack box.
-	QModelIndexList selection = _modificationListWidget->selectionModel()->selectedRows();
-	if(selection.empty())
-		return;
-
-	onModifierStackDoubleClicked(selection.front());
-}
-
-/******************************************************************************
-* Creates the rollout panel that shows information about the application
-* whenever no object is selected.
-******************************************************************************/
-void OverlayCommandPage::createAboutPanel()
-{
-	QWidget* rollout = new QWidget();
-	QVBoxLayout* layout = new QVBoxLayout(rollout);
-	layout->setContentsMargins(8,8,8,8);
-
-	QTextBrowser* aboutLabel = new QTextBrowser(rollout);
-	aboutLabel->setObjectName("AboutLabel");
-	aboutLabel->setOpenExternalLinks(true);
-	aboutLabel->setMinimumHeight(600);
-	aboutLabel->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
-	aboutLabel->viewport()->setAutoFillBackground(false);
-	layout->addWidget(aboutLabel);
-
-	QSettings settings;
-	QByteArray newsPage;
-	if(settings.value("updates/check_for_updates", true).toBool()) {
-		// Retrieve cached news page from settings store.
-		newsPage = settings.value("news/cached_webpage").toByteArray();
-	}
-	if(newsPage.isEmpty()) {
-		QResource res("/core/mainwin/command_panel/about_panel.html");
-		newsPage = QByteArray((const char *)res.data(), (int)res.size());
-	}
-	aboutLabel->setHtml(QString::fromUtf8(newsPage.constData()));
-
-	_aboutRollout = _propertiesPanel->addRollout(rollout, QCoreApplication::applicationName());
-
-	if(settings.value("updates/check_for_updates", true).toBool()) {
-
-		// Retrieve/generate unique installation id.
-		QByteArray id;
-		if(settings.value("updates/transmit_id", true).toBool()) {
-			if(settings.contains("installation/id")) {
-				id = settings.value("id").toByteArray();
-				if(id == QByteArray(16, '\0') || id.size() != 16)
-					id.clear();
-			}
-			if(id.isEmpty()) {
-				// Generate a new unique ID.
-				id.fill('0', 16);
-				std::random_device rdev;
-				std::uniform_int_distribution<char> rdist(0, 0xFF);
-				for(auto& c : id)
-					c = rdist(rdev);
-				settings.setValue("installation/id", id);
-			}
-		}
-		else {
-			id.fill(0, 16);
-		}
-
-		QString operatingSystemString;
-#if defined(Q_OS_MAC)
-		operatingSystemString = QStringLiteral("macosx");
-#elif defined(Q_OS_WIN)
-		operatingSystemString = QStringLiteral("win");
-#elif defined(Q_OS_LINUX)
-		operatingSystemString = QStringLiteral("linux");
-#endif
-
-		// Fetch newest web page from web server.
-		QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
-		QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4&OS=%5%6")
-				.arg(OVITO_VERSION_MAJOR)
-				.arg(OVITO_VERSION_MINOR)
-				.arg(OVITO_VERSION_REVISION)
-				.arg(QString(id.toHex()))
-				.arg(operatingSystemString)
-				.arg(QT_POINTER_SIZE*8);
-		QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
-		connect(networkAccessManager, &QNetworkAccessManager::finished, this, &OverlayCommandPage::onWebRequestFinished);
-	}
-}
-
-/******************************************************************************
-* Is called by the system when fetching the news web page from the server is
-* completed.
-******************************************************************************/
-void OverlayCommandPage::onWebRequestFinished(QNetworkReply* reply)
-{
-	if(reply->error() == QNetworkReply::NoError) {
-		QByteArray page = reply->readAll();
-		reply->close();
-		if(page.startsWith("<html><!--OVITO-->")) {
-
-			QTextBrowser* aboutLabel = _aboutRollout->findChild<QTextBrowser*>("AboutLabel");
-			OVITO_CHECK_POINTER(aboutLabel);
-			aboutLabel->setHtml(QString::fromUtf8(page.constData()));
-
-			QSettings settings;
-			settings.setValue("news/cached_webpage", page);
-		}
-#if 0
-		else {
-			qDebug() << "News page fetched from server is invalid.";
-		}
-#endif
-	}
-#if 0
-	else {
-		qDebug() << "Failed to fetch news page from server: " << reply->errorString();
-	}
-#endif
-	reply->deleteLater();
 }
 
 };

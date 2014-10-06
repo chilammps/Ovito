@@ -111,10 +111,6 @@ public:
 	/// \brief Sets the current target this listener should listen to.
 	/// \param newTarget The new target or \c NULL.
 	void setTarget(T* newTarget) { RefTargetListenerBase::setTarget(newTarget); }
-
-	/// \brief Sets the current target this listener should listen to.
-	/// \param newTarget The new target or \c NULL.
-	void setTarget(const OORef<T>& newTarget) { RefTargetListenerBase::setTarget(newTarget.get()); }
 };
 
 /**

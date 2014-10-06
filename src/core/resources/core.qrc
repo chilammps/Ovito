@@ -68,6 +68,7 @@
 	<file>mainwin/command_panel/tab_create.png</file>
 	<file>mainwin/command_panel/tab_modify.png</file>
 	<file>mainwin/command_panel/tab_render.png</file>
+	<file>mainwin/command_panel/tab_overlays.png</file>
 	<file>mainwin/command_panel/tab_utilities.png</file>
 	<file>mainwin/status/status_error.png</file>
 	<file>mainwin/status/status_info.png</file>
@@ -91,6 +92,10 @@
 	<file>actions/modify/modifier_status_info.png</file>
 	<file>actions/modify/modifier_status_warning.png</file>
 	<file>actions/modify/modifier_status_error.png</file>
+	
+	<file>actions/overlays/delete_overlay.png</file>
+	<file>actions/overlays/overlay_move_up.png</file>
+	<file>actions/overlays/overlay_move_down.png</file>
 	
 	<file>actions/rendering/render_active_viewport.png</file>
 

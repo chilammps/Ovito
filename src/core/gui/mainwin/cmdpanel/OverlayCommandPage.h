@@ -21,8 +21,9 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
-#include <core/gui/widgets/general/RolloutContainer.h>
 #include <core/reference/RefTargetListener.h>
+#include <core/viewport/Viewport.h>
+#include <core/viewport/overlay/ViewportOverlay.h>
 
 namespace Ovito {
 
@@ -38,66 +39,61 @@ public:
 	/// Initializes the modify page.
     OverlayCommandPage(MainWindow* mainWindow, QWidget* parent);
 
-	/// Returns the list model that encapsulates the modification pipeline of the selected node(s).
-	ModificationListModel* modificationListModel() const { return _modificationListModel; }
-
 protected Q_SLOTS:
 
-	/// This is called after all changes to the selection set have been completed.
-	void onSelectionChangeComplete(SelectionSet* newSelection);
+	/// This is called whenever the current viewport configuration of current dataset has been replaced by a new one.
+	void onViewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
 
-	/// Is called when a new modification list item has been selected, or if the currently
-	/// selected item has changed.
-	void onSelectedItemChanged();
+	/// This is called when another viewport became active.
+	void onActiveViewportChanged(Viewport* activeViewport);
 
-	/// Handles the ACTION_MODIFIER_DELETE command, which deleted the selected modifier from the stack.
-	void onDeleteModifier();
+	/// This is called when the viewport generates a reference event.
+	void viewportEvent(ReferenceEvent* event);
 
-	/// Is called when the user has selected an item in the modifier class list.
-	void onModifierAdd(int index);
+	/// Is called when a new overlay has been selected in the list box.
+	void onItemSelectionChanged();
 
-	/// This called when the user double clicks on an item in the modifier stack.
-	void onModifierStackDoubleClicked(const QModelIndex& index);
+	/// This inserts a new overlay.
+	void onNewOverlay(int index);
 
-	/// Handles the ACTION_MODIFIER_MOVE_UP command, which moves the selected modifier up one entry in the stack.
-	void onModifierMoveUp();
-
-	/// Handles the ACTION_MODIFIER_MOVE_DOWN command, which moves the selected modifier down one entry in the stack.
-	void onModifierMoveDown();
-
-	/// Handles the ACTION_MODIFIER_TOGGLE_STATE command, which toggles the enabled/disable state of the selected modifier.
-	void onModifierToggleState(bool newState);
-
-	/// Is called by the system when fetching the news web page from the server is completed.
-	void onWebRequestFinished(QNetworkReply* reply);
+	/// This deletes the selected overlay.
+	void onDeleteOverlay();
 
 private:
 
-	/// Updates the state of the actions that can be invoked on the currently selected item.
-	void updateActions(ModificationListItem* currentItem);
+	/// Returns the active viewport.
+	Viewport* activeViewport() const { return _viewportListener.target(); }
 
-	/// Creates the rollout panel that shows information about the application whenever no object is selected.
-	void createAboutPanel();
-
-private:
+	/// Returns the selected overlay.
+	ViewportOverlay* selectedOverlay() const;
 
 	/// The container of the current dataset being edited.
 	DataSetContainer& _datasetContainer;
 
-	/// This list box shows the modifier stack of the selected scene node(s).
-	QListView* _modificationListWidget;
+	/// Receives reference events from the current viewport.
+	RefTargetListener<Viewport> _viewportListener;
 
-	/// The visual representation of the modification pipeline of the selected node(s).
-	ModificationListModel* _modificationListModel;
+	/// Contains the list of available overlay types.
+	QComboBox* _newOverlayBox;
 
-	/// This control displays the list of available modifier classes and allows the user to apply a modifier.
-	ModifierListBox* _modifierSelector;
+	/// This list box shows the overlays of the active viewport.
+	QListWidget* _overlayListWidget;
 
-	/// This panel shows the properties of the selected modifier stack entry
+	/// This panel shows the properties of the selected overlay.
 	PropertiesPanel* _propertiesPanel;
 
-	/// The panel displaying information about the application when no object is selected.
-	Rollout* _aboutRollout;
+	/// This label displays the selected viewport.
+	QLabel* _activeViewportLabel;
+
+	QMetaObject::Connection _activeViewportChangedConnection;
+	QAction* _deleteOverlayAction;
+
+	class OverlayListItem : public RefTargetListener<ViewportOverlay>, public QListWidgetItem
+	{
+	public:
+		/// Constructor.
+		OverlayListItem(ViewportOverlay* overlay);
+	};
 };
 
 };

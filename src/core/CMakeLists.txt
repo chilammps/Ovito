@@ -76,6 +76,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/ModifierListBox.cpp
 	gui/mainwin/cmdpanel/UtilityCommandPage.cpp
 	gui/mainwin/cmdpanel/UtilityApplet.cpp
+	gui/mainwin/cmdpanel/OverlayCommandPage.cpp
 	gui/dialogs/AdjustCameraDialog.cpp
 	gui/dialogs/AnimationSettingsDialog.cpp
 	gui/dialogs/ApplicationSettingsDialog.cpp

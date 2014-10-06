@@ -40,7 +40,7 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	QAction* action;
 
 	// Build menu.
-	action = addAction(tr("Render Preview"), this, SLOT(onShowRenderFrame(bool)));
+	action = addAction(tr("Render Preview"), this, SLOT(onRenderPreviewMode(bool)));
 	action->setCheckable(true);
 	action->setChecked(_viewport->renderPreviewMode());
 	action = addAction(tr("Show Grid"), this, SLOT(onShowGrid(bool)));
@@ -100,6 +100,10 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 ******************************************************************************/
 void ViewportMenu::show(const QPoint& pos)
 {
+	// Make sure deleteLater() calls are executed first.
+	QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+
+	// Show context menu.
 	exec(_viewport->widget()->mapToGlobal(pos));
 }
 
@@ -140,7 +144,7 @@ void ViewportMenu::onShowViewTypeMenu()
 /******************************************************************************
 * Handles the menu item event.
 ******************************************************************************/
-void ViewportMenu::onShowRenderFrame(bool checked)
+void ViewportMenu::onRenderPreviewMode(bool checked)
 {
 	_viewport->setRenderPreviewMode(checked);
 }
