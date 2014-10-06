@@ -47,6 +47,9 @@ public:
 	/// This returns the group box managed by this parameter UI.
 	QGroupBox* groupBox() const { return _groupBox; }
 
+	/// This returns the container managed by this parameter UI where child widgets should be inserted into.
+	QWidget* childContainer() const { return _childContainer; }
+
 	/// This method is called when a new editable object has been assigned to the properties owner this
 	/// parameter UI belongs to.
 	virtual void resetUI() override;
@@ -77,6 +80,9 @@ protected:
 
 	/// The QGroupBox control of the UI component.
 	QPointer<QGroupBox> _groupBox;
+
+	/// A container widget where child widgets should be inserted into.
+	QWidget* _childContainer;
 
 private:
 

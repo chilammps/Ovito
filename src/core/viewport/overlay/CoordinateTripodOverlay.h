@@ -46,6 +46,24 @@ private:
 	/// The corner the viewport.
 	PropertyField<int> _alignment;
 
+	/// Controls the size of the tripod.
+	PropertyField<FloatType> _tripodSize;
+
+	/// Controls the line width.
+	PropertyField<FloatType> _lineWidth;
+
+	/// Controls the horizontal offset of tripod position.
+	PropertyField<FloatType> _offsetX;
+
+	/// Controls the vertical offset of tripod position.
+	PropertyField<FloatType> _offsetY;
+
+	/// Controls the label font.
+	PropertyField<QFont> _font;
+
+	/// Controls the label font size.
+	PropertyField<FloatType> _fontSize;
+
 	/// Controls the display of the first axis.
 	PropertyField<bool> _axis1Enabled;
 
@@ -95,6 +113,12 @@ private:
 	PropertyField<Color, QColor> _axis4Color;
 
 	DECLARE_PROPERTY_FIELD(_alignment);
+	DECLARE_PROPERTY_FIELD(_font);
+	DECLARE_PROPERTY_FIELD(_fontSize);
+	DECLARE_PROPERTY_FIELD(_tripodSize);
+	DECLARE_PROPERTY_FIELD(_lineWidth);
+	DECLARE_PROPERTY_FIELD(_offsetX);
+	DECLARE_PROPERTY_FIELD(_offsetY);
 	DECLARE_PROPERTY_FIELD(_axis1Enabled);
 	DECLARE_PROPERTY_FIELD(_axis2Enabled);
 	DECLARE_PROPERTY_FIELD(_axis3Enabled);

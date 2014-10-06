@@ -56,7 +56,12 @@ void ColorPickerWidget::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
 	QBrush brush{(QColor)color()};
-	qDrawShadePanel(&painter, rect(), palette(), isDown(), 1, &brush);
+	if(isEnabled()) {
+		qDrawShadePanel(&painter, rect(), palette(), isDown(), 1, &brush);
+	}
+	else {
+		painter.fillRect(rect(), brush);
+	}
 }
 
 /******************************************************************************

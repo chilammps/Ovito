@@ -841,7 +841,7 @@ void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 
 	BooleanGroupBoxParameterUI* capGroupUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_showCap));
 	capGroupUI->groupBox()->setTitle(tr("Cap polygons"));
-	sublayout = new QGridLayout(capGroupUI->groupBox());
+	sublayout = new QGridLayout(capGroupUI->childContainer());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(4);
 	sublayout->setColumnStretch(1, 1);

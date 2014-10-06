@@ -380,7 +380,7 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	// Use cutoff.
 	BooleanGroupBoxParameterUI* useCutoffPUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_useCutoff));
 	gridlayout->addWidget(useCutoffPUI->groupBox(), 1, 0, 1, 2);
-	QGridLayout* sublayout = new QGridLayout(useCutoffPUI->groupBox());
+	QGridLayout* sublayout = new QGridLayout(useCutoffPUI->childContainer());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(4);
 	sublayout->setColumnStretch(1, 1);
@@ -394,7 +394,7 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	// Compute indices.
 	BooleanGroupBoxParameterUI* computeIndicesPUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_computeIndices));
 	gridlayout->addWidget(computeIndicesPUI->groupBox(), 2, 0, 1, 2);
-	sublayout = new QGridLayout(computeIndicesPUI->groupBox());
+	sublayout = new QGridLayout(computeIndicesPUI->childContainer());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(4);
 	sublayout->setColumnStretch(1, 1);

@@ -47,7 +47,7 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	QGroupBox* aaGroupBox = enableAntialiasingUI->groupBox();
 	mainLayout->addWidget(aaGroupBox);
 
-	QGridLayout* layout = new QGridLayout(aaGroupBox);
+	QGridLayout* layout = new QGridLayout(enableAntialiasingUI->childContainer());
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 	layout->setColumnStretch(1, 1);
@@ -62,7 +62,7 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	QGroupBox* lightsGroupBox = enableDirectLightUI->groupBox();
 	mainLayout->addWidget(lightsGroupBox);
 
-	layout = new QGridLayout(lightsGroupBox);
+	layout = new QGridLayout(enableDirectLightUI->childContainer());
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 	layout->setColumnStretch(1, 1);
@@ -83,7 +83,7 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	QGroupBox* aoGroupBox = enableAmbientOcclusionUI->groupBox();
 	mainLayout->addWidget(aoGroupBox);
 
-	layout = new QGridLayout(aoGroupBox);
+	layout = new QGridLayout(enableAmbientOcclusionUI->childContainer());
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 	layout->setColumnStretch(1, 1);

@@ -121,6 +121,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/properties/CustomParameterUI.cpp
 	gui/properties/FilenameParameterUI.cpp
 	gui/properties/FloatParameterUI.cpp
+	gui/properties/FontParameterUI.cpp
 	gui/properties/IntegerParameterUI.cpp
 	gui/properties/IntegerRadioButtonParameterUI.cpp
 	gui/properties/RefTargetListParameterUI.cpp

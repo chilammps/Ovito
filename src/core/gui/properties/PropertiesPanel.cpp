@@ -45,7 +45,7 @@ PropertiesPanel::~PropertiesPanel()
 ******************************************************************************/
 void PropertiesPanel::setEditObject(RefTarget* newEditObject)
 {
-	if(newEditObject == editObject())
+	if(newEditObject == editObject() && (newEditObject != nullptr) == (editor() != nullptr))
 		return;
 
 	if(editor()) {
@@ -64,7 +64,7 @@ void PropertiesPanel::setEditObject(RefTarget* newEditObject)
 		}
 	}
 	
-	if(newEditObject != NULL) {
+	if(newEditObject) {
 		// Open new properties editor.
 		_editor = newEditObject->createPropertiesEditor();
 		if(editor()) {

@@ -37,7 +37,7 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
-	layout->setSpacing(2);
+	layout->setSpacing(4);
 
 	_activeViewportLabel = new QLabel(tr("Viewport:"));
 	layout->addWidget(_activeViewportLabel);

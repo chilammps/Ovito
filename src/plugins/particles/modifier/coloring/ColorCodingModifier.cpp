@@ -28,10 +28,7 @@
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-#include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/gui/properties/CustomParameterUI.h>
-#include <core/gui/properties/StringParameterUI.h>
-#include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/plugins/PluginManager.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include <core/rendering/SceneRenderer.h>
@@ -324,128 +321,6 @@ void ColorCodingModifier::loadFromStream(ObjectLoadStream& stream)
 	}
 	stream.closeChunk();
 }
-
-#if 0
-/******************************************************************************
-* Lets the modifier render itself into the viewport.
-******************************************************************************/
-void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay)
-{
-	if(!renderOverlay || !isEnabled() || !renderLegend() || renderer->isPicking())
-		return;
-
-	if(renderer->viewport() && renderer->viewport() != legendViewport())
-		return;
-
-	if(!colorGradient())
-		return;
-
-	if(legendSize() <= 0.0f)
-		return;
-
-	// Get modifier's parameter values.
-	TimeInterval validityInterval;
-	FloatType startValue = 0, endValue = 0;
-	if(_startValueCtrl) startValue = _startValueCtrl->getFloatValue(time, validityInterval);
-	if(_endValueCtrl) endValue = _endValueCtrl->getFloatValue(time, validityInterval);
-
-	QByteArray format = legendValueFormatString().toLatin1();
-	if(format.contains("%s")) format.clear();
-	QString topLabel, bottomLabel;
-	topLabel.sprintf(format.constData(), endValue);
-	bottomLabel.sprintf(format.constData(), startValue);
-	QString titleLabel = legendTitle().isEmpty() ? sourceProperty().name() : legendTitle();
-
-	if(_renderBufferUpdateHelper.updateState(colorGradient())
-			|| !_colorScaleImageBuffer
-			|| !_colorScaleImageBuffer->isValid(renderer)) {
-
-		// Create the color legend image.
-		int imageHeight = 256;
-		QImage image(1, imageHeight, QImage::Format_RGB32);
-		for(int y = 0; y < image.height(); y++) {
-			FloatType t = (FloatType)y / (FloatType)(imageHeight - 1);
-			Color color = colorGradient()->valueToColor(1.0 - t);
-			image.setPixel(0, y, QColor(color).rgb());
-		}
-
-		_colorScaleImageBuffer = renderer->createImagePrimitive();
-		_colorScaleImageBuffer->setImage(image);
-	}
-
-	Box2 renderRect(Point2(-1), Point2(+1));
-	if(renderer->viewport() && renderer->isInteractive() && renderer->viewport()->renderFrameShown())
-		renderRect = renderer->viewport()->renderFrameRect();
-
-	if(!_colorScaleTopLabel || !_colorScaleTopLabel->isValid(renderer))
-		_colorScaleTopLabel = renderer->createTextPrimitive();
-	if(!_colorScaleBottomLabel || !_colorScaleBottomLabel->isValid(renderer))
-		_colorScaleBottomLabel = renderer->createTextPrimitive();
-	if(!_colorScaleTitleLabel || !_colorScaleTitleLabel->isValid(renderer))
-		_colorScaleTitleLabel = renderer->createTextPrimitive();
-
-	QFont font;
-	font.setPointSizeF(legendFontSize());
-
-	FloatType colorBarSize = legendSize() * renderRect.height();
-	FloatType vMargin = 0.015f * renderRect.height();
-	FloatType hMargin = 1.0f * vMargin;
-	FloatType textLineHeight = 1.2 * 2.0 * (FloatType)QFontMetrics(font).height() / renderer->outputSize().height();
-	FloatType colorBarAspectRatio = 0.2f * renderer->projParams().aspectRatio;
-	if(legendFontSize() <= 0) textLineHeight = 0;
-
-	Point2 colorBarPos;
-	Point2 titlePos;
-	Point2 topLabelPos, bottomLabelPos;
-	Qt::Alignment titleAlignment;
-
-	if(legendAlignment().testFlag(Qt::AlignRight)) {
-		colorBarPos.x() = renderRect.maxc.x() - hMargin - colorBarSize * colorBarAspectRatio;
-		titlePos.x() = renderRect.maxc.x() - hMargin;
-		titleAlignment = Qt::AlignRight;
-		topLabelPos.x() = renderRect.maxc.x() - 1.5 * hMargin - colorBarSize * colorBarAspectRatio;
-		bottomLabelPos.x() = topLabelPos.x();
-	}
-	else {
-		colorBarPos.x() = renderRect.minc.x() + hMargin;
-		titlePos.x() = renderRect.minc.x() + hMargin;
-		titleAlignment = Qt::AlignLeft;
-		topLabelPos.x() = renderRect.minc.x() + 1.5 * hMargin + colorBarSize * colorBarAspectRatio;
-		bottomLabelPos.x() = topLabelPos.x();
-	}
-
-	if(legendAlignment().testFlag(Qt::AlignTop)) {
-		colorBarPos.y() = renderRect.maxc.y() - vMargin - textLineHeight - colorBarSize;
-		titlePos.y() = renderRect.maxc.y() - vMargin;
-	}
-	else {
-		colorBarPos.y() = renderRect.minc.y() + vMargin;
-		titlePos.y() = renderRect.minc.y() + vMargin + colorBarSize + textLineHeight;
-	}
-	topLabelPos.y() = colorBarPos.y() + colorBarSize;
-	bottomLabelPos.y() = colorBarPos.y();
-
-	_colorScaleImageBuffer->renderViewport(renderer, colorBarPos, Vector2(colorBarSize * colorBarAspectRatio, colorBarSize));
-
-	if(legendFontSize() > 0.0f) {
-		ColorA labelColor = renderer->isInteractive() ? ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION) : ColorA(0,0,0);
-
-		_colorScaleTopLabel->setText(topLabel);
-		_colorScaleTopLabel->setColor(labelColor);
-		_colorScaleTopLabel->setFont(font);
-		_colorScaleBottomLabel->setText(bottomLabel);
-		_colorScaleBottomLabel->setColor(labelColor);
-		_colorScaleBottomLabel->setFont(font);
-		_colorScaleTitleLabel->setText(titleLabel);
-		_colorScaleTitleLabel->setColor(labelColor);
-		_colorScaleTitleLabel->setFont(font);
-
-		_colorScaleTitleLabel->renderViewport(renderer, titlePos, titleAlignment | Qt::AlignTop);
-		_colorScaleTopLabel->renderViewport(renderer, topLabelPos, titleAlignment | Qt::AlignTop);
-		_colorScaleBottomLabel->renderViewport(renderer, bottomLabelPos, titleAlignment | Qt::AlignBottom);
-	}
-}
-#endif
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.

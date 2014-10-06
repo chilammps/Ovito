@@ -213,7 +213,7 @@ void SmoothDislocationsModifierEditor::createUI(const RolloutInsertionParameters
 
 	BooleanGroupBoxParameterUI* smoothingEnabledUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(SmoothDislocationsModifier::_smoothingEnabled));
 	smoothingEnabledUI->groupBox()->setTitle(tr("Smoothing"));
-    QGridLayout* sublayout = new QGridLayout(smoothingEnabledUI->groupBox());
+    QGridLayout* sublayout = new QGridLayout(smoothingEnabledUI->childContainer());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setColumnStretch(1, 1);
 	layout->addWidget(smoothingEnabledUI->groupBox());
@@ -225,7 +225,7 @@ void SmoothDislocationsModifierEditor::createUI(const RolloutInsertionParameters
 
 	BooleanGroupBoxParameterUI* coarseningEnabledUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(SmoothDislocationsModifier::_coarseningEnabled));
 	coarseningEnabledUI->groupBox()->setTitle(tr("Coarsening"));
-    sublayout = new QGridLayout(coarseningEnabledUI->groupBox());
+    sublayout = new QGridLayout(coarseningEnabledUI->childContainer());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setColumnStretch(1, 1);
 	layout->addWidget(coarseningEnabledUI->groupBox());
