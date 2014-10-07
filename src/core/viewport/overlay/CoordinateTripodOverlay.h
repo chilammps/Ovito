@@ -43,7 +43,7 @@ public:
 
 private:
 
-	/// The corner the viewport.
+	/// The corner of the viewport where the tripod is displayed.
 	PropertyField<int> _alignment;
 
 	/// Controls the size of the tripod.
@@ -70,7 +70,7 @@ private:
 	/// Controls the display of the second axis.
 	PropertyField<bool> _axis2Enabled;
 
-	/// Controls the display of the thrid axis.
+	/// Controls the display of the third axis.
 	PropertyField<bool> _axis3Enabled;
 
 	/// Controls the display of the fourth axis.

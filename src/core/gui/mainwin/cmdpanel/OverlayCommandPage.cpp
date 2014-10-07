@@ -39,7 +39,7 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	layout->setContentsMargins(2,2,2,2);
 	layout->setSpacing(4);
 
-	_activeViewportLabel = new QLabel(tr("Viewport:"));
+	_activeViewportLabel = new QLabel(tr("Selected viewport:"));
 	layout->addWidget(_activeViewportLabel);
 
 	_newOverlayBox = new QComboBox(this);
@@ -57,7 +57,7 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	class OverlayListWidget : public QListWidget {
 	public:
 		OverlayListWidget(QWidget* parent) : QListWidget(parent) {}
-		virtual QSize sizeHint() const override { return QSize(256, 160); }
+		virtual QSize sizeHint() const override { return QSize(256, 120); }
 	};
 
 	QWidget* upperContainer = new QWidget();
@@ -139,9 +139,10 @@ void OverlayCommandPage::onViewportConfigReplaced(ViewportConfiguration* newView
 void OverlayCommandPage::onActiveViewportChanged(Viewport* activeViewport)
 {
 	if(activeViewport)
-		_activeViewportLabel->setText(tr("Viewport: %1").arg(activeViewport->viewportTitle()));
+		_activeViewportLabel->setText(tr("Selected viewport: %1").arg(activeViewport->viewportTitle()));
 	else
-		_activeViewportLabel->setText(tr("Viewport: none"));
+		_activeViewportLabel->setText(tr("Selected viewport: <none>"));
+
 	_viewportListener.setTarget(activeViewport);
 	_overlayListWidget->clear();
 
@@ -177,6 +178,9 @@ void OverlayCommandPage::viewportEvent(ReferenceEvent* event)
 		if(refEvent->field() == PROPERTY_FIELD(Viewport::_overlays)) {
 			delete _overlayListWidget->item(refEvent->index());
 		}
+	}
+	else if(event->type() == ReferenceEvent::TitleChanged) {
+		_activeViewportLabel->setText(tr("Selected viewport: %1").arg(activeViewport()->viewportTitle()));
 	}
 }
 

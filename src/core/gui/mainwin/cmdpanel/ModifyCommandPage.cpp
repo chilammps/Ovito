@@ -244,6 +244,8 @@ void ModifyCommandPage::onDeleteModifier()
 			modApp->pipelineObject()->removeModifier(modApp);
 		}
 
+		// Delete modifier.
+		modifier->deleteReferenceObject();
 	});
 }
 

@@ -119,7 +119,7 @@ void CoordinateTripodOverlay::render(Viewport* viewport, QPainter& painter, cons
 
 	FloatType arrowSize = 0.17f;
 
-	QPointF origin(_offsetX.value() * renderSettings->outputImageWidth(), _offsetY.value() * renderSettings->outputImageHeight());
+	QPointF origin(_offsetX.value() * renderSettings->outputImageWidth(), -_offsetY.value() * renderSettings->outputImageHeight());
 	FloatType margin = tripodSize + lineWidth;
 
 	if(_alignment.value() & Qt::AlignLeft) origin.rx() += margin;

@@ -502,6 +502,7 @@ void Viewport::updateViewportTitle()
 		break;
 		default: OVITO_ASSERT(false); _viewportTitle = QString(); // unknown viewport type
 	}
+	notifyDependents(ReferenceEvent::TitleChanged);
 }
 
 /******************************************************************************
