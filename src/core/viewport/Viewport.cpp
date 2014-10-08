@@ -40,7 +40,7 @@
 #define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(35.0*FLOATTYPE_PI/180.0)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
-#define VIEWPORT_RENDER_FRAME_SIZE				0.95
+#define VIEWPORT_RENDER_FRAME_SIZE				0.93
 
 namespace Ovito {
 
@@ -659,12 +659,17 @@ void Viewport::renderViewportTitle()
 		_captionBuffer->setFont(ViewportSettings::getSettings().viewportFont());
 	}
 
-#ifndef OVITO_DEBUG
-	_captionBuffer->setText(viewportTitle());
-#else
-	_captionBuffer->setText(QString("%1 [%2]").arg(viewportTitle()).arg(++_renderDebugCounter));
+	QString str = viewportTitle();
+	if(renderPreviewMode())
+		str += tr(" (preview)");
+#ifdef OVITO_DEBUG
+	str += QString(" [%1]").arg(++_renderDebugCounter);
 #endif
-	_captionBuffer->setColor(ColorA(viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION)));
+	_captionBuffer->setText(str);
+	Color textColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION);
+	if(renderPreviewMode() && textColor == renderer->renderSettings()->backgroundColor())
+		textColor = Vector3(1,1,1) - (Vector3)textColor;
+	_captionBuffer->setColor(ColorA(textColor));
 
 	QFontMetricsF metrics(_captionBuffer->font());
 	QPointF pos = QPointF(2, 2) * viewportWindow()->devicePixelRatio();

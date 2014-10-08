@@ -60,7 +60,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _axis2Color, "Axis2Color", 
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _axis3Color, "Axis3Color", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _axis4Color, "Axis4Color", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(CoordinateTripodOverlay, _alignment, "Position");
-SET_PROPERTY_FIELD_LABEL(CoordinateTripodOverlay, _tripodSize, "Size");
+SET_PROPERTY_FIELD_LABEL(CoordinateTripodOverlay, _tripodSize, "Size factor");
 SET_PROPERTY_FIELD_LABEL(CoordinateTripodOverlay, _lineWidth, "Line width");
 SET_PROPERTY_FIELD_LABEL(CoordinateTripodOverlay, _font, "Font");
 SET_PROPERTY_FIELD_LABEL(CoordinateTripodOverlay, _fontSize, "Label size");

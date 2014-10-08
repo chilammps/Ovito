@@ -5,7 +5,7 @@
 - Let the user configure the default colors and radii assigned to different atom types.
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - More particle representations (e.g. open circles/rectangles)
-- Option to include the coordinate tripod and frame number/time-step in a rendered movie.
+- Option to include frame number/time-step in a rendered movie.
 
 - Add support for low-dimensional systems.
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).

@@ -18,7 +18,7 @@
     </figure> 
     Marker atoms can be used to make the internal deformation in a solid visible as shown 
     in the example on the right. Another possible application is tracking diffusing
-    particles over the course of a simulation.
+    particles in a fluid over the course of a simulation.
   </para>
   
   <para>

@@ -147,6 +147,7 @@ hr {
 	margin: 0px auto;
 	text-align: right;
 	padding-top: 5px;
+	clear: both;
 }
 
 .programlisting {

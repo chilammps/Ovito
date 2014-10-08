@@ -268,8 +268,9 @@ void MainWindow::createMainMenu()
 	});
 #endif
 	helpMenu->addSeparator();
-	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_ABOUT));
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_OPENGL_INFO));
+	helpMenu->addSeparator();
+	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_ABOUT));
 
 	setMenuBar(menuBar);
 }
