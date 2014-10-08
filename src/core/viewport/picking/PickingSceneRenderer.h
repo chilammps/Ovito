@@ -41,8 +41,7 @@ public:
 	struct ObjectRecord {
 		quint32 baseObjectID;
 		OORef<ObjectNode> objectNode;
-		OORef<SceneObject> sceneObject;
-		OORef<DisplayObject> displayObject;
+		OORef<ObjectPickInfo> pickInfo;
 	};
 
 public:
@@ -62,7 +61,7 @@ public:
 	virtual void endFrame() override;
 
 	/// When picking mode is active, this registers an object being rendered.
-	virtual quint32 beginPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj) override;
+	virtual quint32 beginPickObject(ObjectNode* objNode, ObjectPickInfo* pickInfo = nullptr) override;
 
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) override;

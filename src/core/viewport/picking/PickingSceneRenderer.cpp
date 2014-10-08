@@ -155,14 +155,13 @@ void PickingSceneRenderer::reset()
 /******************************************************************************
 * When picking mode is active, this registers an object being rendered.
 ******************************************************************************/
-quint32 PickingSceneRenderer::beginPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj)
+quint32 PickingSceneRenderer::beginPickObject(ObjectNode* objNode, ObjectPickInfo* pickInfo)
 {
 	OVITO_ASSERT(objNode != nullptr);
 	OVITO_ASSERT(isPicking());
 
 	_currentObject.objectNode = objNode;
-	_currentObject.sceneObject = sceneObj;
-	_currentObject.displayObject = displayObj;
+	_currentObject.pickInfo = pickInfo;
 	return _currentObject.baseObjectID;
 }
 
@@ -185,8 +184,7 @@ quint32 PickingSceneRenderer::registerSubObjectIDs(quint32 subObjectCount)
 void PickingSceneRenderer::endPickObject()
 {
 	_currentObject.objectNode = nullptr;
-	_currentObject.sceneObject = nullptr;
-	_currentObject.displayObject = nullptr;
+	_currentObject.pickInfo = nullptr;
 }
 
 /******************************************************************************

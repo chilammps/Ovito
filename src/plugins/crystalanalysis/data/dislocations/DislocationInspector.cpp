@@ -331,17 +331,16 @@ bool DislocationPickMode::pickDislocationSegment(Viewport* vp, const QPoint& pos
 	if(vpPickResult.valid) {
 
 		// Check if that was a dislocation.
-		DislocationNetwork* dislocationObj = dynamic_object_cast<DislocationNetwork>(vpPickResult.sceneObject);
-		DislocationDisplay* displayObj = dynamic_object_cast<DislocationDisplay>(vpPickResult.displayObject);
-		if(dislocationObj && displayObj) {
-			int segmentIndex = displayObj->segmentIndexFromSubObjectID(vpPickResult.subobjectId);
-			if(segmentIndex >= 0 && segmentIndex < dislocationObj->segments().size()) {
+		DislocationPickInfo* pickInfo = dynamic_object_cast<DislocationPickInfo>(vpPickResult.pickInfo);
+		if(pickInfo) {
+			int segmentIndex = pickInfo->segmentIndexFromSubObjectID(vpPickResult.subobjectId);
+			if(segmentIndex >= 0 && segmentIndex < pickInfo->dislocationObj()->segments().size()) {
 
 				// Save reference to the picked segment.
 				result.objNode = vpPickResult.objectNode;
 				result.segmentIndex = segmentIndex;
-				result.segment = dislocationObj->segments()[segmentIndex];
-				result.displayObj = displayObj;
+				result.segment = pickInfo->dislocationObj()->segments()[segmentIndex];
+				result.displayObj = pickInfo->displayObject();
 
 				return true;
 			}

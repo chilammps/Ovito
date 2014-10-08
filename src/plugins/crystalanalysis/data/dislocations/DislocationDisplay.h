@@ -27,13 +27,58 @@
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
+#include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <plugins/particles/data/SimulationCell.h>
+#include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 
 namespace CrystalAnalysis {
 
 using namespace Ovito;
 using namespace Particles;
+
+class DislocationDisplay;	// defined below
+
+/**
+ * An information record used for dislocation picking in the viewports.
+ */
+class OVITO_CRYSTALANALYSIS_EXPORT DislocationPickInfo : public ObjectPickInfo
+{
+public:
+
+	/// Constructor.
+	DislocationPickInfo(DislocationDisplay* displayObj, DislocationNetwork* dislocationObj, std::vector<int>&& subobjToSegmentMap) :
+		_displayObject(displayObj), _dislocationObj(dislocationObj), _subobjToSegmentMap(std::move(subobjToSegmentMap)) {}
+
+	/// The data object containing the dislocations.
+	DislocationNetwork* dislocationObj() const { return _dislocationObj; }
+
+	/// Returns the display object that rendered the dislocations.
+	DislocationDisplay* displayObject() const { return _displayObject; }
+
+	/// \brief Given an sub-object ID returned by the Viewport::pick() method, looks up the
+	/// corresponding dislocation segment.
+	int segmentIndexFromSubObjectID(quint32 subobjID) const {
+		if(subobjID < _subobjToSegmentMap.size())
+			return _subobjToSegmentMap[subobjID];
+		else
+			return -1;
+	}
+
+private:
+
+	/// The data object containing the dislocations.
+	OORef<DislocationNetwork> _dislocationObj;
+
+	/// The display object that rendered the dislocations.
+	OORef<DislocationDisplay> _displayObject;
+
+	/// This array is used to map sub-object picking IDs back to dislocation segments.
+	std::vector<int> _subobjToSegmentMap;
+
+	Q_OBJECT
+	OVITO_OBJECT
+};
 
 /**
  * \brief A display object for the dislocation lines.
@@ -66,15 +111,6 @@ public:
 	/// \brief Sets the shading mode for dislocation lines.
 	void setShadingMode(ArrowPrimitive::ShadingMode mode) { _shadingMode = mode; }
 
-	/// \brief Given an sub-object ID returned by the Viewport::pick() method, looks up the
-	/// corresponding dislocation segment.
-	int segmentIndexFromSubObjectID(quint32 subobjID) const {
-		if(subobjID < _subobjToSegmentMap.size())
-			return _subobjToSegmentMap[subobjID];
-		else
-			return -1;
-	}
-
 	/// \brief Renders an overlay marker for a single dislocation segment.
 	void renderOverlayMarker(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode);
 
@@ -104,9 +140,6 @@ protected:
 		FloatType								// Line width
 		> _geometryCacheHelper;
 
-	/// This array is used to map sub-object picking IDs back to dislocation segments.
-	std::vector<int> _subobjToSegmentMap;
-
 	/// The cached bounding box.
 	Box3 _cachedBoundingBox;
 
@@ -124,6 +157,9 @@ protected:
 	/// Controls the shading mode for dislocation lines.
 	PropertyField<ArrowPrimitive::ShadingMode, int> _shadingMode;
 
+	/// The data record used for picking dislocations in the viewports.
+	OORef<DislocationPickInfo> _pickInfo;
+
 private:
 
 	Q_OBJECT
@@ -132,6 +168,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_lineWidth);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
 };
+
 
 /**
  * \brief A properties editor for the DislocationDisplay class.

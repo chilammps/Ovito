@@ -31,6 +31,7 @@
 #include <core/scene/display/DisplayObject.h>
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ParticlePrimitive.h>
+#include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "ParticlePropertyObject.h"
 
@@ -176,6 +177,31 @@ private:
 	DECLARE_PROPERTY_FIELD(_shadingMode);
 	DECLARE_PROPERTY_FIELD(_renderingQuality);
 	DECLARE_PROPERTY_FIELD(_particleShape);
+};
+
+/**
+ * An information record used for particle picking in the viewports.
+ */
+class OVITO_PARTICLES_EXPORT ParticlePickInfo : public ObjectPickInfo
+{
+public:
+
+	/// Constructor.
+	ParticlePickInfo(const PipelineFlowState& pipelineState) : _pipelineState(pipelineState) {}
+
+	/// The pipeline flow state containing the particle properties.
+	const PipelineFlowState& pipelineState() const { return _pipelineState; }
+
+	/// Returns a human-readable string describing the picked object, which will be displayed in the status bar by OVITO.
+	virtual QString infoString(ObjectNode* objectNode, quint32 subobjectId) override;
+
+private:
+
+	/// The pipeline flow state containing the particle properties.
+	PipelineFlowState _pipelineState;
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
 /**

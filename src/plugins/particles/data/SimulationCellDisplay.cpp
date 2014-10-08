@@ -129,7 +129,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 		_wireframePickingGeometry->setLineColor(color);
 	}
 
-	renderer->beginPickObject(contextNode, cell, this);
+	renderer->beginPickObject(contextNode);
 	if(!renderer->isPicking())
 		_wireframeGeometry->render(renderer);
 	else
@@ -177,7 +177,7 @@ void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* ren
 		_cornerGeometry->setParticleRadius(simulationCellLineWidth());
 		_cornerGeometry->setParticleColor(simulationCellRenderingColor());
 	}
-	renderer->beginPickObject(contextNode, cell, this);
+	renderer->beginPickObject(contextNode);
 	_edgeGeometry->render(renderer);
 	_cornerGeometry->render(renderer);
 	renderer->endPickObject();

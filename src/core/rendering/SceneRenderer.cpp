@@ -31,6 +31,7 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRenderer, RefTarget);
+IMPLEMENT_OVITO_OBJECT(Core, ObjectPickInfo, OvitoObject);
 
 /******************************************************************************
 * Constructor.

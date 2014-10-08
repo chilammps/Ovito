@@ -41,6 +41,26 @@
 namespace Ovito {
 
 /**
+ * Abstract base class for object-specific information used in the picking system.
+ */
+class OVITO_CORE_EXPORT ObjectPickInfo : public OvitoObject
+{
+protected:
+
+	/// Constructor
+	ObjectPickInfo() {}
+
+public:
+
+	/// Returns a human-readable string describing the picked object, which will be displayed in the status bar by OVITO.
+	virtual QString infoString(ObjectNode* objectNode, quint32 subobjectId) { return QString(); }
+
+private:
+	Q_OBJECT
+	OVITO_OBJECT
+};
+
+/**
  * \brief This is the base class for scene renderers.
  */
 class OVITO_CORE_EXPORT SceneRenderer : public RefTarget
@@ -143,7 +163,7 @@ public:
 	bool isPicking() const { return _isPicking; }
 
 	/// When picking mode is active, this registers an object being rendered.
-	virtual quint32 beginPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj) { return 0; }
+	virtual quint32 beginPickObject(ObjectNode* objNode, ObjectPickInfo* pickInfo = nullptr) { return 0; }
 
 	/// Call this when rendering of a pickable object is finished.
 	virtual void endPickObject() {}

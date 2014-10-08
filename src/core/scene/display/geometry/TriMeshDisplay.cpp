@@ -95,7 +95,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 			_buffer->setMesh(TriMesh(), ColorA(1,1,1,1));
 	}
 
-	renderer->beginPickObject(contextNode, sceneObject, this);
+	renderer->beginPickObject(contextNode);
 	_buffer->render(renderer);
 	renderer->endPickObject();
 }

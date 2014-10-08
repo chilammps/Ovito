@@ -182,7 +182,7 @@ void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipeli
 	}
 
 	if(_buffer) {
-		renderer->beginPickObject(contextNode, sceneObject, this);
+		renderer->beginPickObject(contextNode);
 		_buffer->render(renderer);
 		renderer->endPickObject();
 	}

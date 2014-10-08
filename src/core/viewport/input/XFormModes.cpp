@@ -71,6 +71,7 @@ void SelectionMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void SelectionMode::deactivated(bool temporary)
 {
+	inputManager()->mainWindow()->statusBar()->clearMessage();
 	_viewport = nullptr;
 	ViewportInputMode::deactivated(temporary);
 }
@@ -83,6 +84,13 @@ void SelectionMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 	// Change mouse cursor while hovering over an object.
 	ViewportPickResult pickResult = vp->pick(event->localPos());
 	setCursor(pickResult.valid ? _hoverCursor : QCursor());
+
+	// Display a description of the object under the mouse cursor in the status bar.
+	if(pickResult.valid && pickResult.pickInfo)
+		inputManager()->mainWindow()->statusBar()->showMessage(pickResult.pickInfo->infoString(pickResult.objectNode, pickResult.subobjectId));
+	else
+		inputManager()->mainWindow()->statusBar()->clearMessage();
+
 	ViewportInputMode::mouseMoveEvent(vp, event);
 }
 
@@ -231,7 +239,6 @@ void XFormMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 		// Change mouse cursor while hovering over an object.
 		ViewportPickResult pickResult = vp->pick(event->localPos());
 		setCursor(pickResult.valid ? _xformCursor : QCursor());
-
 	}
 	ViewportInputMode::mouseMoveEvent(vp, event);
 }

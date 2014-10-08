@@ -115,7 +115,7 @@ void TargetDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	FloatType scaling = 0.2f * renderer->viewport()->nonScalingSize(objectPos);
 	renderer->setWorldTransform(renderer->worldTransform() * AffineTransformation::scaling(scaling));
 
-	renderer->beginPickObject(contextNode, sceneObject, this);
+	renderer->beginPickObject(contextNode);
 	if(!renderer->isPicking())
 		_icon->render(renderer);
 	else

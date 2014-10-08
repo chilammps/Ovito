@@ -183,7 +183,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 		_buffer->endSetElements();
 	}
 
-	renderer->beginPickObject(contextNode, sceneObject, this);
+	renderer->beginPickObject(contextNode);
 	_buffer->render(renderer);
 	renderer->endPickObject();
 }

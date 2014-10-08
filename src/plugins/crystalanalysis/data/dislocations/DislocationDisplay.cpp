@@ -31,6 +31,7 @@ namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationDisplay, DisplayObject);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationDisplayEditor, PropertiesEditor);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationPickInfo, ObjectPickInfo);
 SET_OVITO_OBJECT_EDITOR(DislocationDisplay, DislocationDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _lineWidth, "LineWidth", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
@@ -112,7 +113,7 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 				}
 			}
 			_segmentBuffer->startSetElements(lineSegmentCount);
-			_subobjToSegmentMap.resize(lineSegmentCount + cornerCount);
+			std::vector<int> subobjToSegmentMap(lineSegmentCount + cornerCount);
 			int lineSegmentIndex = 0;
 			int dislocationIndex = 0;
 			FloatType lineRadius = std::max(lineWidth() / 2, FloatType(0));
@@ -123,11 +124,11 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 			for(DislocationSegment* segment : dislocationObj->segments()) {
 				if(segment->isVisible() && segment->burgersVectorFamily()->isVisible()) {
 					Color lineColor = segment->burgersVectorFamily()->color();
-					clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius, &dislocationIndex, lineSegmentCount](const Point3& v1, const Point3& v2, bool isInitialSegment) {
-						_subobjToSegmentMap[lineSegmentIndex] = dislocationIndex;
+					clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius, &subobjToSegmentMap, &dislocationIndex, lineSegmentCount](const Point3& v1, const Point3& v2, bool isInitialSegment) {
+						subobjToSegmentMap[lineSegmentIndex] = dislocationIndex;
 						_segmentBuffer->setElement(lineSegmentIndex++, v1, v2 - v1, ColorA(lineColor), lineRadius);
 						if(!isInitialSegment) {
-							_subobjToSegmentMap[cornerPoints.size() + lineSegmentCount] = dislocationIndex;
+							subobjToSegmentMap[cornerPoints.size() + lineSegmentCount] = dislocationIndex;
 							cornerPoints.push_back(v1);
 							cornerColors.push_back(lineColor);
 						}
@@ -140,16 +141,18 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 			_cornerBuffer->setParticlePositions(cornerPoints.empty() ? nullptr : cornerPoints.data());
 			_cornerBuffer->setParticleColors(cornerColors.empty() ? nullptr : cornerColors.data());
 			_cornerBuffer->setParticleRadius(lineRadius);
+			_pickInfo = new DislocationPickInfo(this, dislocationObj, std::move(subobjToSegmentMap));
 		}
 		else {
 			_cornerBuffer = nullptr;
 			_segmentBuffer = nullptr;
+			_pickInfo = nullptr;
 		}
 	}
 
 	// Render segments.
 	if(_cornerBuffer && _segmentBuffer) {
-		renderer->beginPickObject(contextNode, sceneObject, this);
+		renderer->beginPickObject(contextNode, _pickInfo);
 		_segmentBuffer->render(renderer);
 		_cornerBuffer->render(renderer);
 		renderer->endPickObject();

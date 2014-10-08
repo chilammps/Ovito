@@ -32,6 +32,7 @@ namespace Particles {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleDisplay, DisplayObject);
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleDisplayEditor, PropertiesEditor);
+IMPLEMENT_OVITO_OBJECT(Particles, ParticlePickInfo, ObjectPickInfo);
 SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
@@ -399,9 +400,50 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		}
 	}
 
-	renderer->beginPickObject(contextNode, sceneObject, this);
+	if(renderer->isPicking()) {
+		OORef<ParticlePickInfo> pickInfo(new ParticlePickInfo(flowState));
+		renderer->beginPickObject(contextNode, pickInfo);
+	}
+
 	_particleBuffer->render(renderer);
-	renderer->endPickObject();
+
+	if(renderer->isPicking()) {
+		renderer->endPickObject();
+	}
+}
+
+/******************************************************************************
+* Returns a human-readable string describing the picked object,
+* which will be displayed in the status bar by OVITO.
+******************************************************************************/
+QString ParticlePickInfo::infoString(ObjectNode* objectNode, quint32 subobjectId)
+{
+	QString str;
+	for(SceneObject* sceneObj : pipelineState().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+		if(!property || property->size() <= subobjectId) continue;
+		if(property->type() == ParticleProperty::SelectionProperty) continue;
+		if(property->type() == ParticleProperty::ColorProperty) continue;
+		if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>()) continue;
+		if(!str.isEmpty()) str += QStringLiteral(" | ");
+		str += property->name();
+		str += QStringLiteral(" ");
+		for(size_t component = 0; component < property->componentCount(); component++) {
+			if(component != 0) str += QStringLiteral(", ");
+			QString valueString;
+			if(property->dataType() == qMetaTypeId<int>()) {
+				str += QString::number(property->getIntComponent(subobjectId, component));
+				ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(property);
+				if(typeProperty && typeProperty->particleTypes().empty() == false) {
+					if(ParticleType* ptype = typeProperty->particleType(property->getIntComponent(subobjectId, component)))
+						str += QString(" (%1)").arg(ptype->name());
+				}
+			}
+			else if(property->dataType() == qMetaTypeId<FloatType>())
+				str += QString::number(property->getFloatComponent(subobjectId, component));
+		}
+	}
+	return str;
 }
 
 /******************************************************************************

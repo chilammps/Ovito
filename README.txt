@@ -18,7 +18,8 @@ Release 2.4.1 (xx-yyy-14):
 
  - Introduced viewport overlays, which allow to include the coordinate system tripod and a color legend in the rendered image. 
  - The OpenGL renderer now supports semi-transparent particles and surfaces.
- - The 'Freeze Selection' modifier has been superseded by the more general 'Freeze Property' modifier. 
+ - Properties of the particle under the mouse cursor are displayed in the status bar.
+ - The 'Freeze Selection' modifier has been superseded by the more general 'Freeze Property' modifier.
  
 Release 2.4.0 (16-Sep-14):
 

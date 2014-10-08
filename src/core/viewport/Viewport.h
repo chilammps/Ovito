@@ -41,6 +41,7 @@
 namespace Ovito {
 
 class PickingSceneRenderer;		// defined in PickingSceneRenderer.h
+class ObjectPickInfo;			// defined in SceneRenderer.h
 
 /******************************************************************************
 * This data structure describes a projection parameters used to render
@@ -97,11 +98,8 @@ struct ViewportPickResult
 	/// The object node that was picked.
 	OORef<ObjectNode> objectNode;
 
-	/// The scene object that was picked.
-	OORef<SceneObject> sceneObject;
-
-	/// The display object that has rendered the picked scene object.
-	OORef<DisplayObject> displayObject;
+	/// The object-specific information attached to the pick record.
+	OORef<ObjectPickInfo> pickInfo;
 
 	/// The subobject that was picked.
 	quint32 subobjectId;
@@ -559,5 +557,6 @@ Q_DECLARE_METATYPE(Ovito::Viewport::ShadingMode);
 Q_DECLARE_TYPEINFO(Ovito::Viewport::ViewType, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Viewport::ShadingMode, Q_PRIMITIVE_TYPE);
 
+#include <core/rendering/SceneRenderer.h>
 
 #endif // __OVITO_VIEWPORT_H

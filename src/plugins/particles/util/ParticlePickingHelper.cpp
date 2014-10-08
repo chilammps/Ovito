@@ -41,25 +41,26 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 	if(vpPickResult.valid) {
 
 		// Check if that was a particle.
-		OORef<ParticlePropertyObject> posProperty = dynamic_object_cast<ParticlePropertyObject>(vpPickResult.sceneObject);
-		if(posProperty && posProperty->type() == ParticleProperty::PositionProperty && vpPickResult.subobjectId < posProperty->size()) {
+		ParticlePickInfo* pickInfo = dynamic_object_cast<ParticlePickInfo>(vpPickResult.pickInfo);
+		if(pickInfo) {
+			ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(pickInfo->pipelineState(), ParticleProperty::PositionProperty);
+			if(posProperty && vpPickResult.subobjectId < posProperty->size()) {
+				// Save reference to the selected particle.
+				TimeInterval iv;
+				result.objNode = vpPickResult.objectNode;
+				result.particleIndex = vpPickResult.subobjectId;
+				result.localPos = posProperty->getPoint3(result.particleIndex);
+				result.worldPos = result.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv) * result.localPos;
 
-			// Save reference to the selected particle.
-			TimeInterval iv;
-			result.objNode = vpPickResult.objectNode;
-			result.particleIndex = vpPickResult.subobjectId;
-			result.localPos = posProperty->getPoint3(result.particleIndex);
-			result.worldPos = result.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv) * result.localPos;
+				// Determine particle ID.
+				ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(pickInfo->pipelineState(), ParticleProperty::IdentifierProperty);
+				if(identifierProperty && result.particleIndex < identifierProperty->size()) {
+					result.particleId = identifierProperty->getInt(result.particleIndex);
+				}
+				else result.particleId = -1;
 
-			// Determine particle ID.
-			const PipelineFlowState& state = result.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
-			ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
-			if(identifierProperty && result.particleIndex < identifierProperty->size()) {
-				result.particleId = identifierProperty->getInt(result.particleIndex);
+				return true;
 			}
-			else result.particleId = -1;
-
-			return true;
 		}
 	}
 

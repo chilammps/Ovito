@@ -147,7 +147,7 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 	}
 
 	// Handle picking of triangles.
-	renderer->beginPickObject(contextNode, sceneObject, this);
+	renderer->beginPickObject(contextNode);
 	_surfaceBuffer->render(renderer);
 	if(_showCap)
 		_capBuffer->render(renderer);

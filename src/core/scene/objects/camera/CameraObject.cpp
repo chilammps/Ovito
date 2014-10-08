@@ -467,7 +467,7 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	FloatType scaling = 0.3f * renderer->viewport()->nonScalingSize(cameraPos);
 	renderer->setWorldTransform(renderer->worldTransform() * AffineTransformation::scaling(scaling));
 
-	renderer->beginPickObject(contextNode, sceneObject, this);
+	renderer->beginPickObject(contextNode);
 	if(!renderer->isPicking())
 		_cameraIcon->render(renderer);
 	else
