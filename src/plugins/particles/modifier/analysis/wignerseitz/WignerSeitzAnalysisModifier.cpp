@@ -49,7 +49,7 @@ SET_PROPERTY_FIELD_LABEL(WignerSeitzAnalysisModifier, _referenceFrameOffset, "Re
 * Constructs the modifier object.
 ******************************************************************************/
 WignerSeitzAnalysisModifier::WignerSeitzAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_occupancyNumbers(new ParticleProperty(0, qMetaTypeId<int>(), sizeof(int), 1, tr("Occupancy"))),
+	_occupancyNumbers(new ParticleProperty(0, qMetaTypeId<int>(), sizeof(int), 1, tr("Occupancy"), false)),
 	_eliminateCellDeformation(false),
 	_useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1),
 	_vacancyCount(0), _interstitialCount(0)
@@ -264,7 +264,7 @@ PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time,
 	if(posProperty->size() != occupancyNumbers().size())
 		throw Exception(tr("The number of particles in the reference configuration has changed. The stored results have become invalid."));
 
-	outputCustomProperty(occupancyNumbers().name(), occupancyNumbers().dataType(), occupancyNumbers().dataTypeSize(), occupancyNumbers().componentCount())->setStorage(_occupancyNumbers.data());
+	outputCustomProperty(_occupancyNumbers.data());
 
 	return PipelineStatus(PipelineStatus::Success, tr("Found %1 vacancies and %2 interstitials").arg(vacancyCount()).arg(interstitialCount()));
 }

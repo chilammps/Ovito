@@ -40,7 +40,7 @@ SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neigh
 * Constructs the modifier object.
 ******************************************************************************/
 CentroSymmetryModifier::CentroSymmetryModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_cspValues(new ParticleProperty(0, ParticleProperty::CentroSymmetryProperty)),
+	_cspValues(new ParticleProperty(0, ParticleProperty::CentroSymmetryProperty, 0, false)),
 	_numNeighbors(12)
 {
 	INIT_PROPERTY_FIELD(CentroSymmetryModifier::_numNeighbors);
@@ -133,11 +133,7 @@ PipelineStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, Time
 	if(inputParticleCount() != cspValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	// Get output property object.
-	ParticlePropertyObject* cspProperty = outputStandardProperty(ParticleProperty::CentroSymmetryProperty);
-	OVITO_ASSERT(cspProperty->size() == cspValues().size());
-	cspProperty->setStorage(_cspValues.data());
-
+	outputStandardProperty(_cspValues.data());
 	return PipelineStatus::Success;
 }
 

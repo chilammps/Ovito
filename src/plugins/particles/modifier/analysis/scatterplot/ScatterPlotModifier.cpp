@@ -146,7 +146,7 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	FloatType selectionYAxisRangeEnd = _selectionYAxisRangeEnd;
 	size_t numSelected = 0;
 	if(_selectXAxisInRange || _selectYAxisInRange) {
-		selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
+		selProperty = outputStandardProperty(ParticleProperty::SelectionProperty, true);
 		int* s_begin = selProperty->dataInt();
 		int* s_end = s_begin + selProperty->size();
 		for(auto s = s_begin; s != s_end; ++s) {

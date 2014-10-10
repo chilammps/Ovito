@@ -40,7 +40,7 @@ SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit
 ******************************************************************************/
 CoordinationNumberModifier::CoordinationNumberModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_cutoff(3.2),
-	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty))
+	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty, 0, true))
 {
 	INIT_PROPERTY_FIELD(CoordinationNumberModifier::_cutoff);
 }
@@ -154,8 +154,7 @@ PipelineStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, 
 	if(inputParticleCount() != coordinationNumbers().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	outputStandardProperty(ParticleProperty::CoordinationProperty)->setStorage(_coordinationNumbers.data());
-
+	outputStandardProperty(_coordinationNumbers.data());
 	return PipelineStatus::Success;
 }
 

@@ -61,7 +61,7 @@ SET_PROPERTY_FIELD_UNITS(VoronoiAnalysisModifier, _edgeThreshold, WorldParameter
 VoronoiAnalysisModifier::VoronoiAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_useCutoff(false), _cutoff(6.0), _onlySelected(false), _computeIndices(false), _edgeCount(6),
 	_useRadii(false), _edgeThreshold(0), _faceThreshold(0),
-	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty)),
+	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty, 0, false)),
 	_simulationBoxVolume(0), _voronoiVolumeSum(0)
 {
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_useCutoff);
@@ -312,10 +312,10 @@ PipelineStatus VoronoiAnalysisModifier::applyModifierResults(TimePoint time, Tim
 	if(!coordinationNumbers() || inputParticleCount() != coordinationNumbers()->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	outputStandardProperty(ParticleProperty::CoordinationProperty)->setStorage(coordinationNumbers());
-	outputCustomProperty(atomicVolumes()->name(), atomicVolumes()->dataType(), atomicVolumes()->dataTypeSize(), atomicVolumes()->componentCount())->setStorage(atomicVolumes());
+	outputStandardProperty(coordinationNumbers());
+	outputCustomProperty(atomicVolumes());
 	if(voronoiIndices())
-		outputCustomProperty(voronoiIndices()->name(), voronoiIndices()->dataType(), voronoiIndices()->dataTypeSize(), voronoiIndices()->componentCount())->setStorage(voronoiIndices());
+		outputCustomProperty(voronoiIndices());
 
 	// Check computed Voronoi cell volume sum.
 	if(std::abs(_voronoiVolumeSum - _simulationBoxVolume) > 1e-10 * inputParticleCount() * _simulationBoxVolume) {

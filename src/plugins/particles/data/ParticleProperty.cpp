@@ -37,7 +37,7 @@ ParticleProperty::ParticleProperty()
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleProperty::ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
+ParticleProperty::ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory)
 	: _numParticles(0), _dataType(dataType), _dataTypeSize(dataTypeSize),
 	_perParticleSize(dataTypeSize*componentCount),
 	_componentCount(componentCount), _type(UserProperty), _name(name)
@@ -48,13 +48,13 @@ ParticleProperty::ParticleProperty(size_t particleCount, int dataType, size_t da
 		for(size_t i = 1; i <= componentCount; i++)
 			_componentNames << QString::number(i);
 	}
-	resize(particleCount);
+	resize(particleCount, initializeMemory);
 }
 
 /******************************************************************************
 * Constructor for a standard property.
 ******************************************************************************/
-ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t componentCount)
+ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t componentCount, bool initializeMemory)
 	: _numParticles(0), _type(type)
 {
 	switch(type) {
@@ -128,12 +128,12 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 		OVITO_ASSERT_MSG(false, "ParticleProperty constructor", "Invalid standard property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard property type: %1").arg(type));
 	}
-	OVITO_ASSERT_MSG(componentCount == 0, "ParticleProperty::ParticleProperty(type)", "Cannot specify component count for a standard property with a fixed component count.");
+	OVITO_ASSERT_MSG(componentCount == 0 || componentCount == _componentCount, "ParticleProperty::ParticleProperty(type)", "Cannot specify component count for a standard property with a fixed component count.");
 
 	_perParticleSize = _componentCount * _dataTypeSize;
 	_componentNames = standardPropertyComponentNames(type, _componentCount);
 	_name = standardPropertyName(type);
-	resize(particleCount);
+	resize(particleCount, initializeMemory);
 }
 
 /******************************************************************************
@@ -146,33 +146,6 @@ ParticleProperty::ParticleProperty(const ParticleProperty& other)
 	  _componentNames(other._componentNames), _data(new uint8_t[_numParticles * _perParticleSize])
 {
 	memcpy(_data.get(), other._data.get(), _numParticles * _perParticleSize);
-}
-
-/******************************************************************************
-* Changes the number of components per particle.
-******************************************************************************/
-void ParticleProperty::setComponentCount(size_t count)
-{
-	if(count == _componentCount)
-		return;
-
-	OVITO_ASSERT_MSG(type() == UserProperty, "ParticleProperty::setComponentCount", "Changing the component count of a standard property is not allowed.");
-
-	size_t oldSize = size();
-	resize(0);
-
-	_componentCount = count;
-	_perParticleSize = _componentCount * _dataTypeSize;
-	// Resize component names array.
-	if(_componentNames.size() > _componentCount)
-		_componentNames = _componentNames.mid(0, _componentCount);
-	else {
-		while(_componentNames.size() < _componentCount)
-			_componentNames.append(QString());
-	}
-
-	// Re-allocate memory.
-	resize(oldSize);
 }
 
 /******************************************************************************
@@ -254,15 +227,16 @@ void ParticleProperty::loadFromStream(LoadStream& stream)
 /******************************************************************************
 * Resizes the array to the given size.
 ******************************************************************************/
-void ParticleProperty::resize(size_t newSize)
+void ParticleProperty::resize(size_t newSize, bool preserveData)
 {
 	OVITO_ASSERT(newSize >= 0 && newSize < 0xFFFFFFFF);
 	std::unique_ptr<uint8_t[]> newBuffer(new uint8_t[newSize * _perParticleSize]);
-	memcpy(newBuffer.get(), _data.get(), _perParticleSize * std::min(_numParticles, newSize));
+	if(preserveData)
+		memcpy(newBuffer.get(), _data.get(), _perParticleSize * std::min(_numParticles, newSize));
 	_data.swap(newBuffer);
 
 	// Initialize new elements to zero.
-	if(newSize > _numParticles) {
+	if(newSize > _numParticles && preserveData) {
 		memset(_data.get() + _numParticles * _perParticleSize, 0, (newSize - _numParticles) * _perParticleSize);
 	}
 	_numParticles = newSize;
@@ -272,11 +246,11 @@ void ParticleProperty::resize(size_t newSize)
 * Copies the contents from the given source into this property storage.
 * Particles for which the bit in the given mask is set are skipped.
 ******************************************************************************/
-void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vector<bool>& mask)
+void ParticleProperty::filterCopy(const ParticleProperty& source, const boost::dynamic_bitset<>& mask)
 {
 	OVITO_ASSERT(source.size() == mask.size());
 	OVITO_ASSERT(perParticleSize() == source.perParticleSize());
-	OVITO_ASSERT(source.size() == std::count(mask.begin(), mask.end(), true) + this->size());
+	OVITO_ASSERT(source.size() == mask.count() + this->size());
 	size_t oldParticleCount = source.size();
 
 	// Optimize filter operation for the most common property types.
@@ -285,15 +259,15 @@ void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vec
 		const FloatType* src = reinterpret_cast<const FloatType*>(source.constData());
 		FloatType* dst = reinterpret_cast<FloatType*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
-			if(!mask[i]) *dst++ = *src;
+			if(!mask.test(i)) *dst++ = *src;
 		}
 	}
 	else if(perParticleSize() == sizeof(int)) {
-		// Single integer(int)
+		// Single integer
 		const int* src = reinterpret_cast<const int*>(source.constData());
 		int* dst = reinterpret_cast<int*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
-			if(!mask[i]) *dst++ = *src;
+			if(!mask.test(i)) *dst++ = *src;
 		}
 	}
 	else if(perParticleSize() == sizeof(Point3)) {
@@ -301,7 +275,7 @@ void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vec
 		const Point3* src = reinterpret_cast<const Point3*>(source.constData());
 		Point3* dst = reinterpret_cast<Point3*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
-			if(!mask[i]) *dst++ = *src;
+			if(!mask.test(i)) *dst++ = *src;
 		}
 	}
 	else {
@@ -309,7 +283,7 @@ void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vec
 		const uint8_t* src = source._data.get();
 		uint8_t* dst = _data.get();
 		for(size_t i = 0; i < oldParticleCount; i++, src += _perParticleSize) {
-			if(!mask[i]) {
+			if(!mask.test(i)) {
 				memcpy(dst, src, _perParticleSize);
 				dst += _perParticleSize;
 			}

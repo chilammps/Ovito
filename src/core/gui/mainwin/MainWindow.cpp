@@ -269,7 +269,9 @@ void MainWindow::createMainMenu()
 #endif
 	helpMenu->addSeparator();
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_OPENGL_INFO));
+#ifndef  Q_OS_MACX
 	helpMenu->addSeparator();
+#endif
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_ABOUT));
 
 	setMenuBar(menuBar);

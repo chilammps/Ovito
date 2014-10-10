@@ -50,7 +50,7 @@ PipelineStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 	AffineTransformation inverseSimCell = simCell.inverse();
 
 	expectStandardProperty(ParticleProperty::PositionProperty);
-	ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty);
+	ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty, true);
 
 	Point3* pbegin = posProperty->dataPoint3();
 	Point3* pend = pbegin + posProperty->size();

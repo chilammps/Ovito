@@ -53,7 +53,7 @@ public:
 		/// Constructor.
 		StructureIdentificationEngine(ParticleProperty* positions, const SimulationCellData& simCell) :
 			_positions(positions), _simCell(simCell),
-			_structures(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty)) {}
+			_structures(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty, 0, false)) {}
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }

@@ -36,7 +36,7 @@ SET_PROPERTY_FIELD_UNITS(ClusterAnalysisModifier, _cutoff, WorldParameterUnit);
 ******************************************************************************/
 ClusterAnalysisModifier::ClusterAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_cutoff(3.2), _numClusters(0),
-	_particleClusters(new ParticleProperty(0, ParticleProperty::ClusterProperty))
+	_particleClusters(new ParticleProperty(0, ParticleProperty::ClusterProperty, 0, false))
 {
 	INIT_PROPERTY_FIELD(ClusterAnalysisModifier::_cutoff);
 }
@@ -126,8 +126,7 @@ PipelineStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, Tim
 	if(inputParticleCount() != particleClusters().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	outputStandardProperty(ParticleProperty::ClusterProperty)->setStorage(_particleClusters.data());
-
+	outputStandardProperty(_particleClusters.data());
 	return PipelineStatus(PipelineStatus::Success, tr("Found %1 clusters").arg(_numClusters));
 }
 

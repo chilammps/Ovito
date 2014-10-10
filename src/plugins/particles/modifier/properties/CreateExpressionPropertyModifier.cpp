@@ -90,10 +90,10 @@ PipelineStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time,
 	// Prepare the deep copy of the output property.
 	ParticlePropertyObject* prop;
 	if(outputProperty().type() != ParticleProperty::UserProperty) {
-		prop = outputStandardProperty(outputProperty().type());
+		prop = outputStandardProperty(outputProperty().type(), onlySelectedParticles());
 	}
 	else if(!outputProperty().name().isEmpty() && propertyComponentCount() > 0)
-		prop = outputCustomProperty(outputProperty().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), propertyComponentCount());
+		prop = outputCustomProperty(outputProperty().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), propertyComponentCount(), onlySelectedParticles());
 	else
 		throw Exception(tr("Output property has not been specified."));
 	OVITO_CHECK_OBJECT_POINTER(prop);

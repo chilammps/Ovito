@@ -144,7 +144,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				}
 				if(!property) {
 					// Create standard property.
-					property = new ParticleProperty(particleCount, pref.type());
+					property = new ParticleProperty(particleCount, pref.type(), 0, true);
 					destination.addParticleProperty(property);
 				}
 			}
@@ -167,7 +167,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				}
 				if(!property) {
 					// Create a new user-defined property for the column.
-					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, pref.name());
+					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, pref.name(), true);
 					destination.addParticleProperty(property);
 					if(oldProperty) {
 						// We need to replace all old properties (with lower vector component count) with this one.

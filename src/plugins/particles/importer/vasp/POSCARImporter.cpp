@@ -146,9 +146,9 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 		isCartesian = true;
 
 	// Create the particle properties.
-	ParticleProperty* posProperty = new ParticleProperty(totalAtomCount, ParticleProperty::PositionProperty);
+	ParticleProperty* posProperty = new ParticleProperty(totalAtomCount, ParticleProperty::PositionProperty, 0, false);
 	addParticleProperty(posProperty);
-	ParticleProperty* typeProperty = new ParticleProperty(totalAtomCount, ParticleProperty::ParticleTypeProperty);
+	ParticleProperty* typeProperty = new ParticleProperty(totalAtomCount, ParticleProperty::ParticleTypeProperty, 0, false);
 	addParticleProperty(typeProperty);
 
 	// Read atom coordinates.
@@ -177,7 +177,7 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 			isCartesian = true;
 
 		// Read atom velocities.
-		ParticleProperty* velocityProperty = new ParticleProperty(totalAtomCount, ParticleProperty::VelocityProperty);
+		ParticleProperty* velocityProperty = new ParticleProperty(totalAtomCount, ParticleProperty::VelocityProperty, 0, false);
 		addParticleProperty(velocityProperty);
 		Vector3* v = velocityProperty->dataVector3();
 		for(int atype = 1; atype <= atomCounts.size(); atype++) {

@@ -34,7 +34,7 @@ SET_PROPERTY_FIELD_LABEL(StructureIdentificationModifier, _structureTypes, "Stru
 ******************************************************************************/
 StructureIdentificationModifier::StructureIdentificationModifier(DataSet* dataset) :
 	AsynchronousParticleModifier(dataset),
-	_structureProperty(new ParticleProperty(0, ParticleProperty::StructureTypeProperty))
+	_structureProperty(new ParticleProperty(0, ParticleProperty::StructureTypeProperty, 0, true))
 {
 	INIT_PROPERTY_FIELD(StructureIdentificationModifier::_structureTypes);
 }
@@ -91,14 +91,11 @@ PipelineStatus StructureIdentificationModifier::applyModifierResults(TimePoint t
 	if(inputParticleCount() != particleStructures().size())
 		throw Exception(tr("The number of input particles has changed. The stored analysis results have become invalid."));
 
-	// Get output property object.
-	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(ParticleProperty::StructureTypeProperty));
+	// Create output property object.
+	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(_structureProperty.data()));
 
 	// Insert structure types into output property.
 	structureProperty->setParticleTypes(structureTypes());
-
-	// Insert results into output property.
-	structureProperty->setStorage(_structureProperty.data());
 
 	// Build structure type to color map.
 	std::vector<Color> structureTypeColors(structureTypes().size());
