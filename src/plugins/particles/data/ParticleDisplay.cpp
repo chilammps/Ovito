@@ -128,16 +128,35 @@ void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropert
 	else if(typeProperty) {
 		// Assign colors based on particle types.
 		OVITO_ASSERT(typeProperty->size() == output.size());
-		// Build a lookup map for particle type colors.
+		// Generate a lookup map for particle type colors.
 		const std::map<int,Color> colorMap = typeProperty->colorMap();
-		// Fill color array.
-		const int* t = typeProperty->constDataInt();
-		for(auto c = output.begin(); c != output.end(); ++c, ++t) {
-			auto it = colorMap.find(*t);
-			if(it != colorMap.end())
-				*c = it->second;
-			else
-				*c = defaultColor;
+		std::array<Color,16> colorArray;
+		// Check if all type IDs are within a small, non-negative range.
+		// If yes, we can use an array lookup strategy. Otherwise we have to use a dictionary lookup strategy, which is slower.
+		if(std::all_of(colorMap.begin(), colorMap.end(),
+				[&colorArray](const std::map<int,Color>::value_type& i) { return i.first >= 0 && i.first < colorArray.size(); })) {
+			colorArray.fill(defaultColor);
+			for(const auto& entry : colorMap)
+				colorArray[entry.first] = entry.second;
+			// Fill color array.
+			const int* t = typeProperty->constDataInt();
+			for(auto c = output.begin(); c != output.end(); ++c, ++t) {
+				if(*t >= 0 && *t < colorArray.size())
+					*c = colorArray[*t];
+				else
+					*c = defaultColor;
+			}
+		}
+		else {
+			// Fill color array.
+			const int* t = typeProperty->constDataInt();
+			for(auto c = output.begin(); c != output.end(); ++c, ++t) {
+				auto it = colorMap.find(*t);
+				if(it != colorMap.end())
+					*c = it->second;
+				else
+					*c = defaultColor;
+			}
 		}
 	}
 	else {
