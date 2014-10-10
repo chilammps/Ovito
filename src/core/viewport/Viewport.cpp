@@ -47,7 +47,6 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewType, "ViewType", PROPERTY_FIELD_NO_UNDO);
-DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _shadingMode, "ShadingMode", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _gridMatrix, "GridMatrix", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _fieldOfView, "FieldOfView", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraPosition, "CameraPosition", PROPERTY_FIELD_NO_UNDO);
@@ -63,7 +62,7 @@ DEFINE_VECTOR_REFERENCE_FIELD(Viewport, _overlays, "Overlays", ViewportOverlay);
 ******************************************************************************/
 Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_widget(nullptr), _viewportWindow(nullptr),
-		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME),
+		_viewType(VIEW_NONE),
 		_fieldOfView(100),
 		_renderPreviewMode(false),
 		_isRendering(false),
@@ -76,7 +75,6 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
-	INIT_PROPERTY_FIELD(Viewport::_shadingMode);
 	INIT_PROPERTY_FIELD(Viewport::_gridMatrix);
 	INIT_PROPERTY_FIELD(Viewport::_fieldOfView);
 	INIT_PROPERTY_FIELD(Viewport::_cameraPosition);
@@ -554,6 +552,9 @@ void Viewport::render(QOpenGLContext* context)
 {
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::render", "Viewport is already rendering.");
 
+	// Invalidate picking buffer every time the visible contents of the viewport change.
+	_pickingRenderer->reset();
+
 	try {
 		_isRendering = true;
 		TimePoint time = dataset()->animationSettings()->time();
@@ -910,57 +911,59 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 	}
 	
 	try {
-		TimePoint time = dataset()->animationSettings()->time();
-
-		// Set up the picking renderer.
-		_pickingRenderer->startRender(dataset(), dataset()->renderSettings());
-
-		try {
-			// Request scene bounding box.
-			Box3 boundingBox = _pickingRenderer->sceneBoundingBox(time);
-
-			// Setup projection.
-			QSize vpSize = size();
-			FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
-			ViewProjectionParameters projParams = projectionParameters(time, aspectRatio, boundingBox);
-
-			// Adjust projection if render frame is shown.
-			if(renderPreviewMode())
-				adjustProjectionForRenderFrame(projParams);
+		if(_pickingRenderer->isRefreshRequired()) {
 
 			// Set up the picking renderer.
-			_pickingRenderer->beginFrame(time, projParams, this);
-			
-			try {
-				// Add bounding box of interactive elements.
-				boundingBox.addBox(_pickingRenderer->boundingBoxInteractive(time, this));
+			_pickingRenderer->startRender(dataset(), dataset()->renderSettings());
 
-				// Set up final projection.
-				_projParams = projectionParameters(time, aspectRatio, boundingBox);
+			try {
+				// Request scene bounding box.
+				TimePoint time = dataset()->animationSettings()->time();
+				Box3 boundingBox = _pickingRenderer->sceneBoundingBox(time);
+
+				// Setup projection.
+				QSize vpSize = size();
+				FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
+				ViewProjectionParameters projParams = projectionParameters(time, aspectRatio, boundingBox);
 
 				// Adjust projection if render frame is shown.
 				if(renderPreviewMode())
-					adjustProjectionForRenderFrame(_projParams);
+					adjustProjectionForRenderFrame(projParams);
 
-				// Pass final projection parameters to renderer.
-				_pickingRenderer->setProjParams(_projParams);
+				// Set up the picking renderer.
+				_pickingRenderer->beginFrame(time, projParams, this);
 
-				// Call the viewport renderer to render the scene objects.
-				_pickingRenderer->renderFrame(nullptr, nullptr);
+				try {
+					// Add bounding box of interactive elements.
+					boundingBox.addBox(_pickingRenderer->boundingBoxInteractive(time, this));
+
+					// Set up final projection.
+					_projParams = projectionParameters(time, aspectRatio, boundingBox);
+
+					// Adjust projection if render frame is shown.
+					if(renderPreviewMode())
+						adjustProjectionForRenderFrame(_projParams);
+
+					// Pass final projection parameters to renderer.
+					_pickingRenderer->setProjParams(_projParams);
+
+					// Call the viewport renderer to render the scene objects.
+					_pickingRenderer->renderFrame(nullptr, nullptr);
+				}
+				catch(...) {
+					_pickingRenderer->endFrame();
+					throw;
+				}
+
+				// Stop rendering.
+				_pickingRenderer->endFrame();
 			}
 			catch(...) {
-				_pickingRenderer->endFrame();
+				_pickingRenderer->endRender();
 				throw;
 			}
-
-			// Stop rendering.
-			_pickingRenderer->endFrame();
-		}
-		catch(...) {
 			_pickingRenderer->endRender();
-			throw;
 		}
-		_pickingRenderer->endRender();
 
 		// Query which object is located at the given window position.
 		ViewportPickResult result;
@@ -972,8 +975,6 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 			result.pickInfo = objInfo->pickInfo;
 			result.worldPosition = _pickingRenderer->worldPositionFromLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
 		}
-		// Discard data generated by picking renderer.
-		_pickingRenderer->reset();
 		return result;
 	}
 	catch(const Exception& ex) {

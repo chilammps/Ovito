@@ -1,46 +1,45 @@
-
-- Import bond information from LAMMPS.
-- Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
+User interface improvements:
 
 - Let the user configure the default colors and radii assigned to different atom types.
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
-- More particle representations (e.g. open circles/rectangles)
-- Option to include frame number/time-step in a rendered movie.
-
-- Add support for low-dimensional systems.
-- The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
-- Compute center of mass of a group of atoms, output to file
-
-- Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
-- Test OpenGL rendering support for more than 12 million particles.
-- Allow the user to permanently override the PBC flags read from an input file.
+- Add support for keyboard shortcuts (requested by Fossati, Paul C).
+- User-defined color maps (requested by Wolfgang Verestek)
+ 
+Work-flow improvements:
 
 - Copy/Paste function for modifiers.
+- "User-defined" modifiers, i.e. saving/loading often-needed sequences of modifiers (requested by Tobias Brink)
+- The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
+- Add support for low-dimensional systems.
+
+New visualization features:
+
+- Option to include frame number/time-step in a rendered movie.
+- More particle representations (e.g. open circles/rectangles)
+- Test OpenGL rendering support for more than 12 million particles.
+
+New analysis features:
+
+- Compute center of mass of a group of atoms, output to file
+- Calculation of local atomic number density functions (proposed by Sha Zhendong)
+- Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
+- Plotting the value of a certain property of a certain particle versus simulation time. To make this work, all simulation frames need to be kept in memory (requested by Taojun).
+
+New I/O functions:
+
+- Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
+- Import bond information from LAMMPS.
+- Allow the user to permanently override the PBC flags read from an input file.
+
+Performance improvements:
+
 - Improve performance of Voronoi analysis modifier by using Voro++ container class.
 
-Sha Zhendong:
+Scripting features:
 
-- Calculation of local atomic number density functions
+- Extend scripting interface to viewport overlays.
+- Python 3.x compatibility. 
 
-Fossati, Paul C:
-
-- is there a way to set key strokes to various settings? For example one key to add coordination analysis or 
-CNA to the stack, or the ability to move the camera with the arrow keys (e. g. rotate with the arrows, pan and 
-zoom with the arrows and a modifier).
-
-Wolfgang Verestek:
-
-- uU könnte es hilfreich sein, eigene ColorMaps einzubinden.
-
-Tobias:
-
-- "User-defined" modifiers (i.e. saving/loading often-needed sequences of modifiers)
-
-Taojun:
-
-- Plotting the value of a certain property of a certain particle versus simulation time. To make this work, 
-  all simulation frames need to be kept in memory.
-  
 NirajGupta@my.unt.edu:
 
 I also had a feature request, maybe you can consider adding at some point. Since you have a very quick coordination search implemented, 

@@ -127,14 +127,6 @@ public:
 	};
 	Q_ENUMS(ViewType);
 
-	/// The shading modes for viewports.
-	enum ShadingMode {
-		SHADING_WIREFRAME,
-		SHADING_SHADED,
-		SHADING_SHADED_WITH_EDGES,
-	};
-	Q_ENUMS(ShadingMode);
-
 public:
 
 	/// \brief Constructs a new viewport.
@@ -194,16 +186,6 @@ public:
 	/// \brief Returns true if the viewport is using a perspective project;
 	///        returns false if it is using an orthogonal projection.
 	bool isPerspectiveProjection() const;
-
-	/// \brief Returns the current shading mode used for scene rendering.
-	/// \return The current shading mode.
-	ShadingMode shadingMode() const { return _shadingMode; }
-
-	/// \brief Sets the shading mode to use for scene rendering.
-	/// \param mode The new shading mode.
-	/// \note This method should not be called while the scene is being rendered.
-	///       It causes the viewport to be updated.
-	void setShadingMode(ShadingMode mode) { _shadingMode = mode; }
 
 	/// \brief Returns the field of view value of the viewport.
 	/// \return Vertical camera angle in radians if the viewport uses a perspective projection or
@@ -459,9 +441,6 @@ private:
 	/// The type of the viewport (top, left, perspective, etc.)
 	PropertyField<ViewType> _viewType;
 
-	/// Shading mode of viewport (shaded, wireframe, etc..)
-	PropertyField<ShadingMode> _shadingMode;
-
 	/// The orientation of the grid.
 	PropertyField<AffineTransformation> _gridMatrix;
 
@@ -553,9 +532,7 @@ private:
 };
 
 Q_DECLARE_METATYPE(Ovito::Viewport::ViewType);
-Q_DECLARE_METATYPE(Ovito::Viewport::ShadingMode);
 Q_DECLARE_TYPEINFO(Ovito::Viewport::ViewType, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Viewport::ShadingMode, Q_PRIMITIVE_TYPE);
 
 #include <core/rendering/SceneRenderer.h>
 

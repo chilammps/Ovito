@@ -78,7 +78,10 @@ public:
 	/// Returns the world space position corresponding to the given screen position.
 	Point3 worldPositionFromLocation(const QPoint& pos) const;
 
-	/// Resets the internal state of the picking renderer and clears the stored object records.
+	/// Returns true if the picking buffer needs to be regenerated; returns false if the picking buffer still contains valid data.
+	bool isRefreshRequired() const { return _image.isNull(); }
+
+	/// Resets the picking buffer and clears the stored object records.
 	void reset();
 
 	/// Returns the Z-value at the given window position.

@@ -86,20 +86,22 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 	// Flush the contents to the FBO before extracting image.
 	glFinish();
 
+	// Clear OpenGL error state, so we start fresh for the glReadPixels() call below.
+	while(glGetError() != GL_NO_ERROR);
+
 	// Fetch rendered image from OpenGL framebuffer.
 	QSize size = _framebufferObject->size();
 	_image = QImage(size, QImage::Format_ARGB32);
-	while(glGetError() != GL_NO_ERROR);
+	// Try GL_BGRA pixel format first. If not supported, use GL_RGBA instead and convert back to GL_BGRA.
 	glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE, _image.bits());
 	if(glGetError() != GL_NO_ERROR) {
 		glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, _image.bits());
 		_image = _image.rgbSwapped();
 	}
-	_image = _image.mirrored();
-	//_image.save("picking.png");
 	OVITO_CHECK_OPENGL();
 
-	// Also fetch depth buffer data.
+	// Also acquire OpenGL depth buffer data.
+	// The depth information is used to compute the XYZ coordinate of the point under the mouse cursor.
 	_depthBufferBits = glformat().depthBufferSize();
 	if(_depthBufferBits == 16) {
 		_depthBuffer.reset(new quint8[size.width() * size.height() * sizeof(GLushort)]);
@@ -132,6 +134,7 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 ******************************************************************************/
 void PickingSceneRenderer::endFrame()
 {
+	endPickObject();
 	_framebufferObject.reset();
 	ViewportSceneRenderer::endFrame();
 }
@@ -194,7 +197,8 @@ std::tuple<const PickingSceneRenderer::ObjectRecord*, quint32> PickingSceneRende
 {
 	if(!_image.isNull()) {
 		if(pos.x() >= 0 && pos.x() < _image.width() && pos.y() >= 0 && pos.y() < _image.height()) {
-			QRgb pixel = _image.pixel(pos);
+			QPoint mirroredPos(pos.x(), _image.height() - 1 - pos.y());
+			QRgb pixel = _image.pixel(mirroredPos);
 			quint32 red = qRed(pixel);
 			quint32 green = qGreen(pixel);
 			quint32 blue = qBlue(pixel);
@@ -237,21 +241,22 @@ FloatType PickingSceneRenderer::depthAtPixel(const QPoint& pos) const
 		int w = _image.width();
 		int h = _image.height();
 		if(pos.x() >= 0 && pos.x() < w && pos.y() >= 0 && pos.y() < h) {
-			if(_image.pixel(pos) != 0) {
+			QPoint mirroredPos(pos.x(), _image.height() - 1 - pos.y());
+			if(_image.pixel(mirroredPos) != 0) {
 				if(_depthBufferBits == 16) {
-					GLushort bval = reinterpret_cast<const GLushort*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
-					return (FloatType)bval / 65535.0f;
+					GLushort bval = reinterpret_cast<const GLushort*>(_depthBuffer.get())[(mirroredPos.y()) * w + pos.x()];
+					return (FloatType)bval / FloatType(65535.0);
 				}
 				else if(_depthBufferBits == 24) {
-					GLuint bval = reinterpret_cast<const GLuint*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
-					return (FloatType)((bval>>8) & 0x00FFFFFF) / 16777215.0f;
+					GLuint bval = reinterpret_cast<const GLuint*>(_depthBuffer.get())[(mirroredPos.y()) * w + pos.x()];
+					return (FloatType)((bval>>8) & 0x00FFFFFF) / FloatType(16777215.0);
 				}
 				else if(_depthBufferBits == 32) {
-					GLuint bval = reinterpret_cast<const GLuint*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
-					return (FloatType)bval / 4294967295.0f;
+					GLuint bval = reinterpret_cast<const GLuint*>(_depthBuffer.get())[(mirroredPos.y()) * w + pos.x()];
+					return (FloatType)bval / FloatType(4294967295.0);
 				}
 				else if(_depthBufferBits == 0) {
-					return reinterpret_cast<const GLfloat*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
+					return reinterpret_cast<const GLfloat*>(_depthBuffer.get())[(mirroredPos.y()) * w + pos.x()];
 				}
 			}
 		}
@@ -267,9 +272,9 @@ Point3 PickingSceneRenderer::worldPositionFromLocation(const QPoint& pos) const
 	FloatType zvalue = depthAtPixel(pos);
 	if(zvalue != 0) {
 		Point3 ndc(
-				(FloatType)pos.x() / _image.width() * 2.0f - 1.0f,
-				1.0f - (FloatType)pos.y() / _image.height() * 2.0f,
-				zvalue * 2.0f - 1.0f);
+				(FloatType)pos.x() / _image.width() * 2.0 - 1.0,
+				1.0 - (FloatType)pos.y() / _image.height() * 2.0,
+				zvalue * 2.0 - 1.0);
 		Point3 worldPos = projParams().inverseViewMatrix * (projParams().inverseProjectionMatrix * ndc);
 		return worldPos;
 	}
