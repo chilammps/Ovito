@@ -290,7 +290,10 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				if(s) stream.munmap();
 
 				// Sort the particle type list since we created particles on the go and their order depends on the occurrence of types in the file.
-				sortParticleTypesById();
+				if(columnParser.usingNamedParticleTypes())
+					sortParticleTypesByName();
+				else
+					sortParticleTypesById();
 
 				// Find out if coordinates are given in reduced format and need to be rescaled to absolute format.
 				bool reducedCoordinates = false;

@@ -30,6 +30,7 @@ New I/O functions:
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
 - Import bond information from LAMMPS.
 - Allow the user to permanently override the PBC flags read from an input file.
+- Export of LAMMPS data files with other atom styles (requested by rafaelgonzalezvaldes@gmail.com)
 
 Performance improvements:
 
@@ -38,7 +39,8 @@ Performance improvements:
 Scripting features:
 
 - Extend scripting interface to viewport overlays.
-- Python 3.x compatibility. 
+- Python 3.x compatibility (requested by jan.oliver.oelerich@physik.uni-marburg.de). 
+- Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
 
 NirajGupta@my.unt.edu:
 
