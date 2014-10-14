@@ -102,10 +102,11 @@ public:
 	/// \param componentCount The component count if this type of property
 	///                       has a variable component count; otherwise 0 to use the
 	///                       default number of components.
+	/// \param initializeMemory Controls whether the newly allocated memory is initialized with zeros.
 	///
 	/// Data type, component count and property name are automatically set by this
 	/// constructor.
-	ParticleProperty(size_t particleCount, Type type, size_t componentCount = 0);
+	ParticleProperty(size_t particleCount, Type type, size_t componentCount, bool initializeMemory);
 
 	/// \brief Constructor that creates a user-defined property storage.
 	/// \param particleCount The number of particles.
@@ -116,7 +117,8 @@ public:
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
 	/// \param name The name assigned to the property.
-	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name);
+	/// \param initializeMemory Controls whether the newly allocated memory is initialized with zeros.
+	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory);
 
 	/// \brief Copy constructor.
 	ParticleProperty(const ParticleProperty& other);
@@ -136,7 +138,9 @@ public:
 
 	/// \brief Resizes the property storage.
 	/// \param newSize The new number of particles.
-	void resize(size_t newSize);
+	/// \param preserveData Controls whether the existing per-particle data is preserved.
+	///                     This also determines whether newly allocated memory is initialized to zero.
+	void resize(size_t newSize, bool preserveData);
 
 	/// \brief Returns the type of this property.
 	Type type() const { return _type; }
@@ -171,11 +175,6 @@ public:
 	/// \brief Returns the number of array elements per particle.
 	/// \return The number of data values stored per particle in this storage object.
 	size_t componentCount() const { return _componentCount; }
-
-	/// \brief Changes the number of components per particle.
-	/// \param count The new number of data values stored per particle in this storage object.
-	/// \note Calling this function will destroy all data stored in the property storage.
-	void setComponentCount(size_t count);
 
 	/// \brief Returns the human-readable names for the vector components if this is a vector property.
 	/// \return The names of the vector components if this property contains more than one value per atom.
@@ -548,7 +547,7 @@ public:
 
 	/// Copies the contents from the given source into this storage.
 	/// Particles for which the bit in the given mask is set are skipped.
-	void filterCopy(const ParticleProperty& source, const std::vector<bool>& mask);
+	void filterCopy(const ParticleProperty& source, const boost::dynamic_bitset<>& mask);
 
 	/// Writes the ParticleProperty to an output stream.
 	void saveToStream(SaveStream& stream, bool onlyMetadata = false) const;

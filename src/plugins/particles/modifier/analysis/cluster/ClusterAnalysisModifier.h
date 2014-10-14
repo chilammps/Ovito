@@ -66,7 +66,7 @@ private:
 		/// Constructor.
 		ClusterAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
 			_positions(positions), _simCell(simCell), _cutoff(cutoff),
-			_particleClusters(new ParticleProperty(positions->size(), ParticleProperty::ClusterProperty)) {}
+			_particleClusters(new ParticleProperty(positions->size(), ParticleProperty::ClusterProperty, 0, false)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;

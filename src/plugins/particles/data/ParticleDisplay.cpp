@@ -91,8 +91,7 @@ Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProper
 
 	Box3 bbox;
 	if(positionProperty) {
-		for(const Point3& p : positionProperty->constPoint3Range())
-			bbox.addPoint(p);
+		bbox.addPoints(positionProperty->constDataPoint3(), positionProperty->size());
 	}
 	if(!includeParticleRadius)
 		return bbox;

@@ -167,21 +167,23 @@ PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval
 
 	// Get the particle selection property if enabled by the user.
 	ParticlePropertyObject* selProperty = nullptr;
-	if(colorOnlySelected())
+	const int* sel = nullptr;
+	std::vector<Color> existingColors;
+	if(colorOnlySelected()) {
 		selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
+		if(selProperty) {
+			sel = selProperty->constDataInt();
+			existingColors = inputParticleColors(time, validityInterval);
+		}
+	}
 
-	// Get the deep copy of the color output property.
+	// Create the color output property.
 	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
-
 	OVITO_ASSERT(colorProperty->size() == property->size());
 
 	Color* c_begin = colorProperty->dataColor();
 	Color* c_end = c_begin + colorProperty->size();
 	Color* c = c_begin;
-	const int* sel = selProperty ? selProperty->constDataInt() : nullptr;
-	std::vector<Color> existingColors;
-	if(selProperty)
-		existingColors = inputParticleColors(time, validityInterval);
 
 	if(property->dataType() == qMetaTypeId<FloatType>()) {
 		const FloatType* v = property->constDataFloat() + vecComponent;

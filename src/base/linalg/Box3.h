@@ -181,10 +181,13 @@ public:
 
 	/// \brief Enlarges the box to include the given point.
 	/// \sa addPoints(), addBox()
-	void addPoint(const Point_3<T>& p) {
-		minc.x() = std::min(minc.x(), p.x()); maxc.x() = std::max(maxc.x(), p.x());
-		minc.y() = std::min(minc.y(), p.y()); maxc.y() = std::max(maxc.y(), p.y());
-		minc.z() = std::min(minc.z(), p.z()); maxc.z() = std::max(maxc.z(), p.z());
+	inline void addPoint(const Point_3<T>& p) {
+		if(p.x() < minc.x()) minc.x() = p.x();
+		if(p.x() > maxc.x()) maxc.x() = p.x();
+		if(p.y() < minc.y()) minc.y() = p.y();
+		if(p.y() > maxc.y()) maxc.y() = p.y();
+		if(p.z() < minc.z()) minc.z() = p.z();
+		if(p.z() > maxc.z()) maxc.z() = p.z();
 	}
 
 	/// \brief Enlarges the box to include the given points.
@@ -192,11 +195,9 @@ public:
 	/// \param count The number of points in the array.
 	/// \sa addPoint()
 	void addPoints(const Point_3<T>* points, std::size_t count) {
-		for(; count != 0; count--, ++points) {
-			minc.x() = std::min(minc.x(), points->x()); maxc.x() = std::max(maxc.x(), points->x());
-			minc.y() = std::min(minc.y(), points->y()); maxc.y() = std::max(maxc.y(), points->y());
-			minc.z() = std::min(minc.z(), points->z()); maxc.z() = std::max(maxc.z(), points->z());
-		}
+		const Point_3<T>* const points_end = points + count;
+		for(; points != points_end; ++points)
+			addPoint(*points);
 	}
 
 	/// \brief Enlarges this box to include the given box.
@@ -246,7 +247,7 @@ public:
 	
 	/// Returns a string representation of this box.
 	QString toString() const {
-			return "[Min: " + minc.toString() + " Max: " + maxc.toString() + "]";
+		return "[Min: " + minc.toString() + " Max: " + maxc.toString() + "]";
 	}
 };
 

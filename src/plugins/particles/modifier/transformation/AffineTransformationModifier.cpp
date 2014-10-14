@@ -108,7 +108,7 @@ PipelineStatus AffineTransformationModifier::modifyParticles(TimePoint time, Tim
 
 	if(applyToParticles()) {
 		expectStandardProperty(ParticleProperty::PositionProperty);
-		ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty);
+		ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty, true);
 
 		if(selectionOnly()) {
 			ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);

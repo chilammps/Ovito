@@ -127,7 +127,7 @@ PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& 
 	FloatType selectionRangeEnd = _selectionRangeEnd;
 	size_t numSelected = 0;
 	if(_selectInRange) {
-		selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
+		selProperty = outputStandardProperty(ParticleProperty::SelectionProperty, true);
 		if(selectionRangeStart > selectionRangeEnd)
 			std::swap(selectionRangeStart, selectionRangeEnd);
 	}

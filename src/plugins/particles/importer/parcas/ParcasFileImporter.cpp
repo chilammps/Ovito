@@ -211,9 +211,9 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
 
     	ParticleProperty* property;
 		if(propertyType != ParticleProperty::UserProperty)
-			property = new ParticleProperty(natoms, propertyType);
+			property = new ParticleProperty(natoms, propertyType, 0, true);
 		else
-			property = new ParticleProperty(natoms, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, propertyName);
+			property = new ParticleProperty(natoms, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, propertyName, true);
 		addParticleProperty(property);
 		properties.push_back(property);
     }
@@ -254,11 +254,11 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
 	futureInterface.setProgressRange(numAtoms);
 
 	// Create the required standard properties.
-	ParticleProperty* posProperty = new ParticleProperty(natoms, ParticleProperty::PositionProperty);
+	ParticleProperty* posProperty = new ParticleProperty(natoms, ParticleProperty::PositionProperty, 0, true);
 	addParticleProperty(posProperty);
-	ParticleProperty* typeProperty = new ParticleProperty(natoms, ParticleProperty::ParticleTypeProperty);
+	ParticleProperty* typeProperty = new ParticleProperty(natoms, ParticleProperty::ParticleTypeProperty, 0, true);
 	addParticleProperty(typeProperty);
-	ParticleProperty* identifierProperty = new ParticleProperty(natoms, ParticleProperty::IdentifierProperty);
+	ParticleProperty* identifierProperty = new ParticleProperty(natoms, ParticleProperty::IdentifierProperty, 0, true);
 	addParticleProperty(identifierProperty);
 
 	// Parse atoms.

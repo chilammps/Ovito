@@ -66,7 +66,7 @@ public:
 
 	/// Remaps the bonds after some of the particles have been deleted.
 	/// Dangling bonds are removed too.
-	void particlesDeleted(const std::vector<bool>& deletedParticlesMask);
+	void particlesDeleted(const boost::dynamic_bitset<>& deletedParticlesMask);
 
 	/// \brief This method must be called every time the contents of the bonds object are changed.
 	///        It generates a ReferenceEvent::TargetChanged event.

@@ -83,9 +83,6 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 	if(!ViewportSceneRenderer::renderFrame(frameBuffer, progress))
 		return false;
 
-	// Flush the contents to the FBO before extracting image.
-	glFinish();
-
 	// Clear OpenGL error state, so we start fresh for the glReadPixels() call below.
 	while(glGetError() != GL_NO_ERROR);
 

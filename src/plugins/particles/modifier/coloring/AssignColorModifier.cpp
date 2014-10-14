@@ -66,7 +66,7 @@ PipelineStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval
 	ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 
 	// Get the output color property.
-	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
+	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty, selProperty != nullptr);
 
 	// Get the color to be assigned.
 	Color color(1,1,1);

@@ -93,12 +93,18 @@ protected:
 	/// Creates a standard particle property in the modifier's output.
 	/// If the particle property already exists in the input, its contents are copied to the
 	/// output property by this method.
-	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which);
+	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which, bool initializeMemory = false);
+
+	/// Creates a standard particle property in the modifier's output and sets its content.
+	ParticlePropertyObject* outputStandardProperty(ParticleProperty* storage);
 
 	/// Creates a custom particle property in the modifier's output.
 	/// If the particle property already exists in the input, its contents are copied to the
 	/// output property by this method.
-	ParticlePropertyObject* outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount);
+	ParticlePropertyObject* outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount, bool initializeMemory = false);
+
+	/// Creates a custom particle property in the modifier's output and sets its content.
+	ParticlePropertyObject* outputCustomProperty(ParticleProperty* storage);
 
 	/// Returns the modifier's output simulation cell.
 	SimulationCell* outputSimulationCell();
@@ -120,7 +126,7 @@ protected:
 
 	/// Deletes the particles given by the bit-mask.
 	/// Returns the number of remaining particles.
-	size_t deleteParticles(const std::vector<bool>& mask, size_t deleteCount);
+	size_t deleteParticles(const boost::dynamic_bitset<>& mask, size_t deleteCount);
 
 	/// Returns a reference to the input state.
 	PipelineFlowState& input() { return _input; }

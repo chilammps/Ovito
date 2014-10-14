@@ -115,9 +115,9 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	stream.seek(0);
 
 	// Create the particle properties.
-	ParticleProperty* posProperty = new ParticleProperty(numAtoms, ParticleProperty::PositionProperty);
+	ParticleProperty* posProperty = new ParticleProperty(numAtoms, ParticleProperty::PositionProperty, 0, true);
 	addParticleProperty(posProperty);
-	ParticleProperty* typeProperty = new ParticleProperty(numAtoms, ParticleProperty::ParticleTypeProperty);
+	ParticleProperty* typeProperty = new ParticleProperty(numAtoms, ParticleProperty::ParticleTypeProperty, 0, true);
 	addParticleProperty(typeProperty);
 
 	// Parse atoms.

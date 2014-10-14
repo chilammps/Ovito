@@ -41,17 +41,16 @@ PipelineStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInte
 
 	// Compute filter mask.
 	size_t numRejected = 0;
-	std::vector<bool> mask(inputParticleCount());
+	boost::dynamic_bitset<> mask(inputParticleCount());
 	const int* s = selProperty->constDataInt();
 	const int* s_end = s + selProperty->size();
-	auto m = mask.begin();
-	for(; s != s_end; ++s, ++m) {
+	boost::dynamic_bitset<>::size_type i = 0;
+	for(; s != s_end; ++s, ++i) {
 		if(*s) {
-			*m = true;
+			mask.set(i);
 			numRejected++;
 		}
-		else
-			*m = false;
+		else mask.reset(i);
 	}
 
 	// Remove selection property.

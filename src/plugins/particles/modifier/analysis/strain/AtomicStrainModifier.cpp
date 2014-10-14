@@ -68,12 +68,12 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
     _cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _calculateNonaffineSquaredDisplacements(false),
     _selectInvalidParticles(true),
-	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"))),
-	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"))),
-	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty)),
-	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty)),
-	_nonaffineSquaredDisplacements(new ParticleProperty(0, ParticleProperty::NonaffineSquaredDisplacementProperty)),
-    _invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty)),
+	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"), false)),
+	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"), false)),
+	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty, 0, false)),
+	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty, 0, false)),
+	_nonaffineSquaredDisplacements(new ParticleProperty(0, ParticleProperty::NonaffineSquaredDisplacementProperty, 0, false)),
+    _invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty, 0, false)),
     _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1)
 {
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceObject);
@@ -414,27 +414,27 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 	if(eng->shearStrains())
 		_shearStrainValues = eng->shearStrains();
 	else
-		_shearStrainValues->resize(0);
+		_shearStrainValues->resize(0, false);
 	if(eng->volumetricStrains())
 		_volumetricStrainValues = eng->volumetricStrains();
 	else
-		_volumetricStrainValues->resize(0);
+		_volumetricStrainValues->resize(0, false);
 	if(eng->strainTensors())
 		_strainTensors = eng->strainTensors();
 	else
-		_strainTensors->resize(0);
+		_strainTensors->resize(0, false);
 	if(eng->deformationGradients())
 		_deformationGradients = eng->deformationGradients();
 	else
-		_deformationGradients->resize(0);
+		_deformationGradients->resize(0, false);
 	if(eng->nonaffineSquaredDisplacements())
 		_nonaffineSquaredDisplacements = eng->nonaffineSquaredDisplacements();
 	else
-		_nonaffineSquaredDisplacements->resize(0);
+		_nonaffineSquaredDisplacements->resize(0, false);
 	if(eng->invalidParticles())
 		_invalidParticles = eng->invalidParticles();
 	else
-		_invalidParticles->resize(0);
+		_invalidParticles->resize(0, false);
 
 	_numInvalidParticles = eng->numInvalidParticles();
 }
@@ -444,28 +444,31 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 ******************************************************************************/
 PipelineStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() != shearStrainValues().size() || inputParticleCount() != volumetricStrainValues().size())
+	if(outputParticleCount() != shearStrainValues().size() || outputParticleCount() != volumetricStrainValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	if(selectInvalidParticles() && invalidParticles().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::SelectionProperty)->setStorage(_invalidParticles.data());
+	if(selectInvalidParticles() && invalidParticles().size() == outputParticleCount())
+		outputStandardProperty(_invalidParticles.data());
 
-	if(calculateStrainTensors() && strainTensors().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::StrainTensorProperty)->setStorage(_strainTensors.data());
+	if(calculateStrainTensors() && strainTensors().size() == outputParticleCount())
+		outputStandardProperty(_strainTensors.data());
 
-	if(calculateDeformationGradients() && deformationGradients().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::DeformationGradientProperty)->setStorage(_deformationGradients.data());
+	if(calculateDeformationGradients() && deformationGradients().size() == outputParticleCount())
+		outputStandardProperty(_deformationGradients.data());
 
-	if(calculateNonaffineSquaredDisplacements() && nonaffineSquaredDisplacements().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::NonaffineSquaredDisplacementProperty)->setStorage(_nonaffineSquaredDisplacements.data());
+	if(calculateNonaffineSquaredDisplacements() && nonaffineSquaredDisplacements().size() == outputParticleCount())
+		outputStandardProperty(_nonaffineSquaredDisplacements.data());
 
-	outputCustomProperty(volumetricStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_volumetricStrainValues.data());
-	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_shearStrainValues.data());
+	if(volumetricStrainValues().size() == outputParticleCount())
+		outputCustomProperty(_volumetricStrainValues.data());
 
-	if(_numInvalidParticles == 0)
+	if(shearStrainValues().size() == outputParticleCount())
+		outputCustomProperty(_shearStrainValues.data());
+
+	if(invalidParticleCount() == 0)
 		return PipelineStatus::Success;
 	else
-		return PipelineStatus(PipelineStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(_numInvalidParticles));
+		return PipelineStatus(PipelineStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(invalidParticleCount()));
 }
 
 /******************************************************************************

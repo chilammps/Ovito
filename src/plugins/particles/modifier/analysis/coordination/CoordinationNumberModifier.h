@@ -71,7 +71,7 @@ private:
 		CoordinationAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff, int rdfSampleCount) :
 			_positions(positions), _simCell(simCell),
 			_cutoff(cutoff), _rdfHistogram(rdfSampleCount, 0.0),
-			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty)) {}
+			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty, 0, true)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;

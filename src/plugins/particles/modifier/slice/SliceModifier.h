@@ -129,7 +129,7 @@ protected:
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Performs the actual rejection of particles.
-	size_t filterParticles(std::vector<bool>& mask, TimePoint time, TimeInterval& validityInterval);
+	size_t filterParticles(boost::dynamic_bitset<>& mask, TimePoint time, TimeInterval& validityInterval);
 
 	/// \brief Renders the modifier's visual representation and computes its bounding box.
 	Box3 renderVisual(TimePoint time, ObjectNode* contextNode, SceneRenderer* renderer);

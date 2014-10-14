@@ -480,7 +480,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 						}
 						if(!property) {
 							// Create standard property.
-							property = new ParticleProperty(particleCount, propertyType);
+							property = new ParticleProperty(particleCount, propertyType, 0, true);
 							addParticleProperty(property);
 						}
 					}
@@ -498,7 +498,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 						}
 						if(!property) {
 							// Create a new user-defined property for the column.
-							property = new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, propertyName);
+							property = new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, propertyName, true);
 							addParticleProperty(property);
 						}
 					}

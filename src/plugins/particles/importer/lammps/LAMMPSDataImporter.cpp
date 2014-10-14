@@ -242,19 +242,19 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 				if(_detectAtomStyle)
 					return;
 
-				ParticleProperty* posProperty = new ParticleProperty(natoms, ParticleProperty::PositionProperty);
+				ParticleProperty* posProperty = new ParticleProperty(natoms, ParticleProperty::PositionProperty, 0, true);
 				addParticleProperty(posProperty);
 				Point3* pos = posProperty->dataPoint3();
-				ParticleProperty* typeProperty = new ParticleProperty(natoms, ParticleProperty::ParticleTypeProperty);
+				ParticleProperty* typeProperty = new ParticleProperty(natoms, ParticleProperty::ParticleTypeProperty, 0, true);
 				addParticleProperty(typeProperty);
 				int* atomType = typeProperty->dataInt();
-				ParticleProperty* identifierProperty = new ParticleProperty(natoms, ParticleProperty::IdentifierProperty);
+				ParticleProperty* identifierProperty = new ParticleProperty(natoms, ParticleProperty::IdentifierProperty, 0, true);
 				addParticleProperty(identifierProperty);
 				int* atomId = identifierProperty->dataInt();
 
 				Point3I* pbcImage = nullptr;
 				if(withPBCImageFlags) {
-					ParticleProperty* pbcProperty = new ParticleProperty(natoms, ParticleProperty::PeriodicImageProperty);
+					ParticleProperty* pbcProperty = new ParticleProperty(natoms, ParticleProperty::PeriodicImageProperty, 0, true);
 					addParticleProperty(pbcProperty);
 					pbcImage = pbcProperty->dataPoint3I();
 				}
@@ -277,7 +277,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 					}
 				}
 				else if(_atomStyle == AtomStyle_Charge || _atomStyle == AtomStyle_Dipole) {
-					ParticleProperty* chargeProperty = new ParticleProperty(natoms, ParticleProperty::ChargeProperty);
+					ParticleProperty* chargeProperty = new ParticleProperty(natoms, ParticleProperty::ChargeProperty, 0, true);
 					addParticleProperty(chargeProperty);
 					FloatType* charge = chargeProperty->dataFloat();
 					for(int i = 0; i < natoms; i++, ++pos, ++atomType, ++atomId, ++charge) {
@@ -297,7 +297,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 					}
 				}
 				else if(_atomStyle == AtomStyle_Angle || _atomStyle == AtomStyle_Bond || _atomStyle == AtomStyle_Molecular) {
-					ParticleProperty* moleculeProperty = new ParticleProperty(natoms, ParticleProperty::MoleculeProperty);
+					ParticleProperty* moleculeProperty = new ParticleProperty(natoms, ParticleProperty::MoleculeProperty, 0, true);
 					addParticleProperty(moleculeProperty);
 					int* molecule = moleculeProperty->dataInt();
 					for(int i = 0; i < natoms; i++, ++pos, ++atomType, ++atomId, ++molecule) {
@@ -333,7 +333,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 				throw Exception(tr("Atoms section must precede Velocities section in data file (error in line %1).").arg(stream.lineNumber()));
 
 			// Create the velocity property.
-			ParticleProperty* velocityProperty = new ParticleProperty(natoms, ParticleProperty::VelocityProperty);
+			ParticleProperty* velocityProperty = new ParticleProperty(natoms, ParticleProperty::VelocityProperty, 0, true);
 			addParticleProperty(velocityProperty);
 
 			for(int i = 0; i < natoms; i++) {

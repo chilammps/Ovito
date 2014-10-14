@@ -93,13 +93,13 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 
 		// Create copy.
 		OORef<ParticlePropertyObject> newProperty = cloneHelper()->cloneObject(originalOutputProperty, false);
-		newProperty->resize(newParticleCount);
-
-		// Replace original property with the filtered one.
-		_output.replaceObject(originalOutputProperty, newProperty);
+		newProperty->resize(newParticleCount, false);
 
 		OVITO_ASSERT(originalOutputProperty->size() == oldParticleCount);
 		size_t destinationIndex = oldParticleCount;
+
+		// Copy original property data.
+		memcpy((char*)newProperty->data(), originalOutputProperty->constData(), newProperty->perParticleSize() * oldParticleCount);
 
 		for(int imageX = -(nPBCx-1)/2; imageX <= nPBCx/2; imageX++) {
 			for(int imageY = -(nPBCy-1)/2; imageY <= nPBCy/2; imageY++) {
@@ -109,7 +109,7 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 
 					// Duplicate property data.
 					memcpy((char*)newProperty->data() + (destinationIndex * newProperty->perParticleSize()),
-							newProperty->constData(), newProperty->perParticleSize() * oldParticleCount);
+							originalOutputProperty->constData(), newProperty->perParticleSize() * oldParticleCount);
 
 					if(newProperty->type() == ParticleProperty::PositionProperty) {
 						// Shift particle positions by the periodicity vector.
@@ -136,6 +136,9 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 					*id += offset;
 			}
 		}
+
+		// Replace original property with the modified one.
+		_output.replaceObject(originalOutputProperty, newProperty);
 	}
 
 	if(adjustBoxSize()) {

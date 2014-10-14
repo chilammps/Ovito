@@ -115,7 +115,7 @@ PipelineStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& vali
 	QString statusMessage = tr("%n input particles", 0, inputParticleCount());
 
 	// Compute filter mask.
-	std::vector<bool> mask(inputParticleCount());
+	boost::dynamic_bitset<> mask(inputParticleCount());
 	size_t numRejected = filterParticles(mask, time, validityInterval);
 	size_t numKept = inputParticleCount() - numRejected;
 
@@ -135,9 +135,9 @@ PipelineStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& vali
 
 		ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
 		OVITO_ASSERT(mask.size() == selProperty->size());
-		auto m = mask.begin();
+		boost::dynamic_bitset<>::size_type i = 0;
 		for(int& s : selProperty->intRange())
-			s = *m++;
+			s = mask.test(i++);
 		selProperty->changed();
 	}
 	return PipelineStatus(PipelineStatus::Success, statusMessage);
@@ -146,12 +146,13 @@ PipelineStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& vali
 /******************************************************************************
 * Performs the actual rejection of particles.
 ******************************************************************************/
-size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, TimeInterval& validityInterval)
+size_t SliceModifier::filterParticles(boost::dynamic_bitset<>& mask, TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the required input properties.
-	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	ParticlePropertyObject* selProperty = applyToSelection() ? inputStandardProperty(ParticleProperty::SelectionProperty) : nullptr;
+	ParticlePropertyObject* const posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
+	ParticlePropertyObject* const selProperty = applyToSelection() ? inputStandardProperty(ParticleProperty::SelectionProperty) : nullptr;
 	OVITO_ASSERT(posProperty->size() == mask.size());
+	OVITO_ASSERT(!selProperty || selProperty->size() == mask.size());
 
 	FloatType sliceWidth = 0;
 	if(_widthCtrl) sliceWidth = _widthCtrl->getFloatValue(time, validityInterval);
@@ -160,30 +161,50 @@ size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, T
 	Plane3 plane = slicingPlane(time, validityInterval);
 
 	size_t na = 0;
-	auto m = mask.begin();
+	boost::dynamic_bitset<>::size_type i = 0;
 	const Point3* p = posProperty->constDataPoint3();
 	const Point3* p_end = p + posProperty->size();
-	const int* s = nullptr;
-	if(selProperty) {
-		OVITO_ASSERT(selProperty->size() == mask.size());
-		s = selProperty->constDataInt();
-	}
 
 	if(sliceWidth <= 0) {
-		for(; p != p_end; ++p, ++s, ++m) {
-			if(plane.pointDistance(*p) > 0) {
-				if(selProperty && !*s) continue;
-				*m = true;
-				na++;
+		if(selProperty) {
+			const int* s = selProperty->constDataInt();
+			for(; p != p_end; ++p, ++s, ++i) {
+				if(*s && plane.pointDistance(*p) > 0) {
+					mask.set(i);
+					na++;
+				}
+				else mask.reset(i);
+			}
+		}
+		else {
+			for(; p != p_end; ++p, ++i) {
+				if(plane.pointDistance(*p) > 0) {
+					mask.set(i);
+					na++;
+				}
+				else mask.reset(i);
 			}
 		}
 	}
 	else {
-		for(; p != p_end; ++p, ++s, ++m) {
-			if(inverse() == (plane.classifyPoint(*p, sliceWidth) == 0)) {
-				if(selProperty && !*s) continue;
-				*m = true;
-				na++;
+		bool invert = inverse();
+		if(selProperty) {
+			const int* s = selProperty->constDataInt();
+			for(; p != p_end; ++p, ++s, ++i) {
+				if(*s && invert == (plane.classifyPoint(*p, sliceWidth) == 0)) {
+					mask.set(i);
+					na++;
+				}
+				else mask.reset(i);
+			}
+		}
+		else {
+			for(; p != p_end; ++p, ++i) {
+				if(invert == (plane.classifyPoint(*p, sliceWidth) == 0)) {
+					mask.set(i);
+					na++;
+				}
+				else mask.reset(i);
 			}
 		}
 	}

@@ -196,10 +196,10 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	int* atomTypePointer = nullptr;
 	ParticleProperty* typeProperty = nullptr;
 	if(header.isExtendedFormat) {
-		typeProperty = new ParticleProperty(header.numParticles, ParticleProperty::ParticleTypeProperty);
+		typeProperty = new ParticleProperty(header.numParticles, ParticleProperty::ParticleTypeProperty, 0, false);
 		addParticleProperty(typeProperty);
 		atomTypePointer = typeProperty->dataInt();
-		ParticleProperty* massProperty = new ParticleProperty(header.numParticles, ParticleProperty::MassProperty);
+		ParticleProperty* massProperty = new ParticleProperty(header.numParticles, ParticleProperty::MassProperty, 0, false);
 		addParticleProperty(massProperty);
 		massPointer = massProperty->dataFloat();
 	}

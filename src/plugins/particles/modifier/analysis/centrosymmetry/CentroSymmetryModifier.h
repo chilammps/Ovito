@@ -72,7 +72,7 @@ private:
 			_nneighbors(nneighbors),
 			_positions(positions),
 			_simCell(simCell),
-			_csp(new ParticleProperty(positions->size(), ParticleProperty::CentroSymmetryProperty)) {}
+			_csp(new ParticleProperty(positions->size(), ParticleProperty::CentroSymmetryProperty, 0, false)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;

@@ -31,7 +31,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, InvertSelectionModifier, Particle
 ******************************************************************************/
 PipelineStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
+	ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty, true);
 
 	for(int& s : selProperty->intRange())
 		s = !s;

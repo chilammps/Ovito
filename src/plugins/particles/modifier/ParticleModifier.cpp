@@ -161,7 +161,7 @@ SimulationCell* ParticleModifier::expectSimulationCell() const
 * If the particle property already exists in the input, its contents are copied to the
 * output property by this method.
 ******************************************************************************/
-ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticleProperty::Type which)
+ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticleProperty::Type which, bool initializeMemory)
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty = inputStandardProperty(which);
@@ -176,10 +176,50 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
 			_output.replaceObject(inputProperty, outputProperty);
 		}
+		// Create a new storage buffer to avoid copying the contents of the old one when
+		// a deep copy is made on the first write access.
+		if(!initializeMemory) {
+			outputProperty->setStorage(new ParticleProperty(outputProperty->size(), which, 0, false));
+		}
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::createStandardProperty(dataset(), _outputParticleCount, which);
+		outputProperty = ParticlePropertyObject::createStandardProperty(dataset(), _outputParticleCount, which, 0, initializeMemory);
+		_output.addObject(outputProperty);
+	}
+
+	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
+	return outputProperty;
+}
+
+/******************************************************************************
+* Creates a standard particle in the modifier's output and sets its content.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticleProperty* storage)
+{
+	OVITO_CHECK_POINTER(storage);
+	OVITO_ASSERT(storage->type() != ParticleProperty::UserProperty);
+
+	// Check if property already exists in the input.
+	OORef<ParticlePropertyObject> inputProperty = inputStandardProperty(storage->type());
+
+	// Check if property already exists in the output.
+	OORef<ParticlePropertyObject> outputProperty = ParticlePropertyObject::findInState(_output, storage->type());
+
+	if(outputProperty) {
+		// Is the existing output property still a shallow copy of the input?
+		if(outputProperty == inputProperty) {
+			// Make a real copy of the property, which may be modified.
+			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
+			_output.replaceObject(inputProperty, outputProperty);
+		}
+		OVITO_ASSERT(storage->size() == outputProperty->size());
+		OVITO_ASSERT(storage->perParticleSize() == outputProperty->perParticleSize());
+		outputProperty->setStorage(storage);
+	}
+	else {
+		// Create a new particle property in the output.
+		outputProperty = ParticlePropertyObject::createFromStorage(dataset(), storage);
 		_output.addObject(outputProperty);
 	}
 
@@ -190,7 +230,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 /******************************************************************************
 * Creates a custom particle property in the modifier's output.
 ******************************************************************************/
-ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount)
+ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount, bool initializeMemory)
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
@@ -228,7 +268,60 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::createUserProperty(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name);
+		outputProperty = ParticlePropertyObject::createUserProperty(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name, initializeMemory);
+		_output.addObject(outputProperty);
+	}
+
+	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
+	return outputProperty;
+}
+
+/******************************************************************************
+* Creates a custom particle property in the modifier's output and sets its content.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::outputCustomProperty(ParticleProperty* storage)
+{
+	OVITO_CHECK_POINTER(storage);
+	OVITO_ASSERT(storage->type() == ParticleProperty::UserProperty);
+
+	// Check if property already exists in the input.
+	OORef<ParticlePropertyObject> inputProperty;
+	for(SceneObject* o : input().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
+		if(property && property->type() == ParticleProperty::UserProperty && property->name() == storage->name()) {
+			inputProperty = property;
+			if(property->dataType() != storage->dataType() || property->dataTypeSize() != storage->dataTypeSize())
+				throw Exception(tr("Existing property '%1' has a different data type.").arg(property->name()));
+			if(property->componentCount() != storage->componentCount())
+				throw Exception(tr("Existing property '%1' has a different number of components.").arg(property->name()));
+			break;
+		}
+	}
+
+	// Check if property already exists in the output.
+	OORef<ParticlePropertyObject> outputProperty;
+	for(SceneObject* o : output().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
+		if(property && property->type() == ParticleProperty::UserProperty && property->name() == storage->name()) {
+			outputProperty = property;
+			OVITO_ASSERT(property->dataType() == storage->dataType());
+			OVITO_ASSERT(property->componentCount() == storage->componentCount());
+			break;
+		}
+	}
+
+	if(outputProperty) {
+		// Is the existing output property still a shallow copy of the input?
+		if(outputProperty == inputProperty) {
+			// Make a real copy of the property, which may be modified.
+			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
+			_output.replaceObject(inputProperty, outputProperty);
+		}
+		outputProperty->setStorage(storage);
+	}
+	else {
+		// Create a new particle property in the output.
+		outputProperty = ParticlePropertyObject::createFromStorage(dataset(), storage);
 		_output.addObject(outputProperty);
 	}
 
@@ -274,10 +367,10 @@ SimulationCell* ParticleModifier::outputSimulationCell()
 * Deletes the particles given by the bit-mask.
 * Returns the number of remaining particles.
 ******************************************************************************/
-size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t deleteCount)
+size_t ParticleModifier::deleteParticles(const boost::dynamic_bitset<>& mask, size_t deleteCount)
 {
 	OVITO_ASSERT(mask.size() == inputParticleCount());
-	OVITO_ASSERT(std::count(mask.begin(), mask.end(), true) == deleteCount);
+	OVITO_ASSERT(mask.count() == deleteCount);
 	OVITO_ASSERT(outputParticleCount() == inputParticleCount());
 
 	size_t oldParticleCount = inputParticleCount();
@@ -299,7 +392,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 
 		// Create copy.
 		OORef<ParticlePropertyObject> newProperty = cloneHelper()->cloneObject(originalOutputProperty, false);
-		newProperty->resize(newParticleCount);
+		newProperty->resize(newParticleCount, false);
 
 		// Replace original property with the filtered one.
 		_output.replaceObject(originalOutputProperty, newProperty);

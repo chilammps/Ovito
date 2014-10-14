@@ -40,17 +40,17 @@ ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticlePropert
 /******************************************************************************
 * Factory function that creates a user-defined property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
+OORef<ParticlePropertyObject> ParticlePropertyObject::createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory)
 {
-	return createFromStorage(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name));
+	return createFromStorage(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name, initializeMemory));
 }
 
 /******************************************************************************
 * Factory function that creates a standard property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::createStandardProperty(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount)
+OORef<ParticlePropertyObject> ParticlePropertyObject::createStandardProperty(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount, bool initializeMemory)
 {
-	return createFromStorage(dataset, new ParticleProperty(particleCount, which, componentCount));
+	return createFromStorage(dataset, new ParticleProperty(particleCount, which, componentCount, initializeMemory));
 }
 
 /******************************************************************************
@@ -90,6 +90,27 @@ void ParticlePropertyObject::setStorage(ParticleProperty* storage)
 {
 	OVITO_CHECK_POINTER(storage);
 	_storage = storage;
+	changed();
+}
+
+/******************************************************************************
+* Resizes the property storage.
+******************************************************************************/
+void ParticlePropertyObject::resize(size_t newSize, bool preserveData)
+{
+	if(preserveData) {
+		// If existing data should be preserved, resize existing storage.
+		_storage.detach();
+		_storage->resize(newSize, true);
+	}
+	else {
+		// If data should not be preserved, allocate new storage to replace old one.
+		// This avoids calling the ParticleProperty copy constructor unnecessarily.
+		if(type() != ParticleProperty::UserProperty)
+			_storage = new ParticleProperty(newSize, type(), componentCount(), false);
+		else
+			_storage = new ParticleProperty(newSize, dataType(), dataTypeSize(), componentCount(), name(), false);
+	}
 	changed();
 }
 

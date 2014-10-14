@@ -70,7 +70,8 @@ public:
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
 	/// \param name The name assigned to the property.
-	static OORef<ParticlePropertyObject> createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name);
+	/// \param initializeMemory Controls whether the newly allocated memory is initialized with zeros.
+	static OORef<ParticlePropertyObject> createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory);
 
 	/// \brief Factory function that creates a standard property object.
 	/// \param particleCount The number of particles.
@@ -79,7 +80,8 @@ public:
 	/// \param componentCount The component count if this type of property
 	///                       has a variable component count; otherwise 0 to use the
 	///                       default number of components.
-	static OORef<ParticlePropertyObject> createStandardProperty(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount = 0);
+	/// \param initializeMemory Controls whether the newly allocated memory is initialized with zeros.
+	static OORef<ParticlePropertyObject> createStandardProperty(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount, bool initializeMemory);
 
 	/// \brief Factory function that creates a property object based on an existing storage.
 	static OORef<ParticlePropertyObject> createFromStorage(DataSet* dataset, ParticleProperty* storage);
@@ -110,11 +112,9 @@ public:
 
 	/// \brief Resizes the property storage.
 	/// \param newSize The new number of particles.
-	void resize(size_t newSize) {
-		_storage.detach();
-		_storage->resize(newSize);
-		changed();
-	}
+	/// \param preserveData Controls whether the existing per-particle data is preserved.
+	///                     This also determines whether newly allocated memory is initialized to zero.
+	void resize(size_t newSize, bool preserveData);
 
 	/// \brief Returns the type of this property.
 	ParticleProperty::Type type() const { return _storage->type(); }
@@ -166,7 +166,7 @@ public:
 
 	/// Copies the contents from the given source into this storage.
 	/// Particles for which the bit in the given mask is set are skipped.
-	void filterCopy(ParticlePropertyObject* source, const std::vector<bool>& mask) {
+	void filterCopy(ParticlePropertyObject* source, const boost::dynamic_bitset<>& mask) {
 		_storage.detach();
 		_storage->filterCopy(*source->_storage.constData(), mask);
 		changed();
@@ -546,7 +546,7 @@ public:
 public:
 
 	Q_PROPERTY(QString name READ name WRITE setName);
-	Q_PROPERTY(size_t size READ size WRITE resize);
+	Q_PROPERTY(size_t size READ size);
 	Q_PROPERTY(int dataType READ dataType);
 
 protected:

@@ -69,9 +69,9 @@ SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetY, PercentParameterUnit);
 * Constructor.
 ******************************************************************************/
 ColorLegendOverlay::ColorLegendOverlay(DataSet* dataset) : ViewportOverlay(dataset),
-		_alignment(Qt::AlignHCenter | Qt::AlignBottom), _orientation(Qt::Vertical),
-		_legendSize(0.2), _offsetX(0), _offsetY(0),
-		_fontSize(0.1), _valueFormatString("%g"), _aspectRatio(6.0),
+		_alignment(Qt::AlignHCenter | Qt::AlignBottom), _orientation(Qt::Horizontal),
+		_legendSize(0.3), _offsetX(0), _offsetY(0),
+		_fontSize(0.1), _valueFormatString("%g"), _aspectRatio(8.0),
 		_textColor(0,0,0)
 {
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_alignment);
@@ -163,7 +163,7 @@ void ColorLegendOverlay::render(Viewport* viewport, QPainter& painter, const Vie
 	QString topLabel, bottomLabel;
 	topLabel.sprintf(format.constData(), endValue);
 	bottomLabel.sprintf(format.constData(), startValue);
-	QString titleLabel = title().isEmpty() ? modifier()->sourceProperty().name() : title();
+	QString titleLabel = title().isEmpty() ? modifier()->sourceProperty().nameWithComponent() : title();
 
 	font.setPointSizeF(fontSize);
 	painter.setFont(font);
