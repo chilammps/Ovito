@@ -131,7 +131,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	_usePointSprites = ViewportWindow::pointSpritesEnabled();
 
 	// Determine whether its okay to use geometry shaders.
-	_useGeometryShaders = QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+	_useGeometryShaders = ViewportWindow::geometryShadersEnabled() && QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 
 	// Set up a vertex array object (VAO). An active VAO is required during rendering according to the OpenGL core profile.
 	if(glformat().majorVersion() >= 3) {

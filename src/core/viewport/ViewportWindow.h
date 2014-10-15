@@ -60,6 +60,12 @@ public:
 	/// Determines whether OpenGL point sprites should be used or not.
 	static bool pointSpritesEnabled(bool forceDefaultSetting = false);
 
+	/// Determines whether OpenGL geometry shader programs should be used or not.
+	static bool geometryShadersEnabled(bool forceDefaultSetting = false);
+
+	/// Determines whether OpenGL geometry shader programs are supported by the hardware.
+	static bool geometryShadersSupported() { return _openglSupportsGeomShaders; }
+
 protected:
 
 	/// Handles the expose events.
@@ -105,6 +111,9 @@ private:
 
 	/// The vendor of the OpenGL implementation in use.
 	static QByteArray _openGLVendor;
+
+	/// Indicates whether the OpenGL implementation supports geometry shader programs.
+	static bool _openglSupportsGeomShaders;
 
 private:
 

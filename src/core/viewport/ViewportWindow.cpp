@@ -32,13 +32,16 @@ namespace Ovito {
 /// The vendor of the OpenGL implementation in use.
 QByteArray ViewportWindow::_openGLVendor;
 
+/// Indicates whether the OpenGL implementation supports geometry shader programs.
+bool ViewportWindow::_openglSupportsGeomShaders = false;
+
 /******************************************************************************
 * Returns whether all viewport windows should share one GL context or not.
 ******************************************************************************/
 bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 {
 	if(!forceDefaultSetting) {
-		// The user can control the use of multiple GL contexts.
+		// The user can override the use of multiple GL contexts.
 		QVariant userSetting = QSettings().value("display/share_opengl_context");
 		if(userSetting.isValid())
 			return userSetting.toBool();
@@ -63,7 +66,7 @@ bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 bool ViewportWindow::pointSpritesEnabled(bool forceDefaultSetting)
 {
 	if(!forceDefaultSetting) {
-		// The user can control the use of point sprites.
+		// The user can override the use of point sprites.
 		QVariant userSetting = QSettings().value("display/use_point_sprites");
 		if(userSetting.isValid())
 			return userSetting.toBool();
@@ -81,6 +84,20 @@ bool ViewportWindow::pointSpritesEnabled(bool forceDefaultSetting)
 
 	// Use point sprites by default.
 	return true;
+}
+
+/******************************************************************************
+* Determines whether OpenGL geometry shader programs should be used or not.
+******************************************************************************/
+bool ViewportWindow::geometryShadersEnabled(bool forceDefaultSetting)
+{
+	if(!forceDefaultSetting) {
+		// The user can override the use of geometry shaders.
+		QVariant userSetting = QSettings().value("display/use_geometry_shaders");
+		if(userSetting.isValid())
+			return userSetting.toBool() && _openglSupportsGeomShaders;
+	}
+	return _openglSupportsGeomShaders;
 }
 
 /******************************************************************************
@@ -117,6 +134,7 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 		if(!_context->makeCurrent(&offscreenSurface))
 			throw Exception(tr("Failed to make OpenGL context current on offscreen surface. Cannot query OpenGL vendor string."));
 		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+		_openglSupportsGeomShaders = QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 		_context->doneCurrent();
 	}
 

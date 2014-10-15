@@ -38,7 +38,7 @@ Performance improvements:
 
 Scripting features:
 
-- Extend scripting interface to viewport overlays.
+- Implement scripting interface for viewport overlays.
 - Python 3.x compatibility (requested by jan.oliver.oelerich@physik.uni-marburg.de). 
 - Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
 

@@ -640,7 +640,24 @@ void Viewport::render(QOpenGLContext* context)
 		_isRendering = false;
 	}
 	catch(Exception& ex) {
+		_isRendering = false;
 		ex.prependGeneralMessage(tr("An unexpected error occurred while rendering the viewport contents. The program will quit."));
+
+		QString openGLReport;
+		QTextStream stream(&openGLReport, QIODevice::WriteOnly | QIODevice::Text);
+		stream << "OpenGL version: " << context->format().majorVersion() << QStringLiteral(".") << context->format().minorVersion() << endl;
+		stream << "OpenGL profile: " << (context->format().profile() == QSurfaceFormat::CoreProfile ? "core" : (context->format().profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none")) << endl;
+		stream << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR)) << endl;
+		stream << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER)) << endl;
+		stream << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION)) << endl;
+		stream << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)) << endl;
+		stream << "OpenGL shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms() << endl;
+		stream << "OpenGL geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry, context) << endl;
+		stream << "Using point sprites: " << ViewportWindow::pointSpritesEnabled() << endl;
+		stream << "Using geometry shaders: " << ViewportWindow::geometryShadersEnabled() << endl;
+		stream << "Context sharing: " << ViewportWindow::contextSharingEnabled() << endl;
+		ex.appendDetailMessage(openGLReport);
+
 		dataset()->viewportConfig()->suspendViewportUpdates();
 		QCoreApplication::removePostedEvents(nullptr, 0);
 		ex.showError();

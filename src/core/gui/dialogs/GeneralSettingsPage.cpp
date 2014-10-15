@@ -90,7 +90,26 @@ void GeneralSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* se
 	_overrideUseOfPointSprites->setChecked(settings.contains("display/use_point_sprites"));
 	_pointSpriteMode->setCurrentIndex(ViewportWindow::pointSpritesEnabled() ? 0 : 1);
 
-	layout2->addWidget(new QLabel(tr("<p style=\"font-size: small; color: #686868;\">(Restart required for changes to take effect.)</p>")), 2, 0, 1, 2);
+	// OpenGL geometry shaders:
+	_overrideUseOfGeometryShaders = new QCheckBox(tr("Override usage of geometry shaders"), openglGroupBox);
+	_overrideUseOfGeometryShaders->setToolTip(tr("<p>Activate this option to explicitly control the usage of OpenGL geometry shaders.</p>"));
+	layout2->addWidget(_overrideUseOfGeometryShaders, 2, 0);
+	_geometryShaderMode = new QComboBox(openglGroupBox);
+	_geometryShaderMode->setEnabled(false);
+	if(ViewportWindow::geometryShadersEnabled(true)) {
+		_geometryShaderMode->addItem(tr("Use geometry shaders (default)"));
+		_geometryShaderMode->addItem(tr("Don't use geometry shaders"));
+	}
+	else {
+		_geometryShaderMode->addItem(tr("Use geometry shaders"));
+		_geometryShaderMode->addItem(tr("Don't use geometry shaders (default)"));
+	}
+	layout2->addWidget(_geometryShaderMode, 2, 1);
+	connect(_overrideUseOfGeometryShaders, &QCheckBox::toggled, _geometryShaderMode, &QComboBox::setEnabled);
+	_overrideUseOfGeometryShaders->setChecked(settings.contains("display/use_geometry_shaders"));
+	_geometryShaderMode->setCurrentIndex(ViewportWindow::geometryShadersEnabled() ? 0 : 1);
+
+	layout2->addWidget(new QLabel(tr("<p style=\"font-size: small; color: #686868;\">(Restart required for changes to take effect.)</p>")), 3, 0, 1, 2);
 
 	QGroupBox* updateGroupBox = new QGroupBox(tr("Program updates"), page);
 	layout1->addWidget(updateGroupBox);
@@ -134,6 +153,10 @@ bool GeneralSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog, 
 		settings.setValue("display/use_point_sprites", _pointSpriteMode->currentIndex() == 0);
 	else
 		settings.remove("display/use_point_sprites");
+	if(_overrideUseOfGeometryShaders->isChecked())
+		settings.setValue("display/use_geometry_shaders", _geometryShaderMode->currentIndex() == 0);
+	else
+		settings.remove("display/use_geometry_shaders");
 	return true;
 }
 

@@ -51,6 +51,8 @@ private:
 	QComboBox* _contextSharingMode;
 	QCheckBox* _overrideUseOfPointSprites;
 	QComboBox* _pointSpriteMode;
+	QCheckBox* _overrideUseOfGeometryShaders;
+	QComboBox* _geometryShaderMode;
 	QCheckBox* _enableUpdateChecks;
 	QCheckBox* _enableUsageStatistics;
 
