@@ -18,24 +18,12 @@ public:
 		if(!_billboardTexture.isCreated())
 			initializeBillboardTexture();
 
-		int verticesPerParticle = 1;
+		using namespace Ovito;
 
 		QOpenGLShaderProgram* shader = getShader();
 		if(!shader) return;
 
-		OpenGLBuffer<Vector3> _positionsBuffer(_id);
-		_positionsBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		Vector3 pos[2] = {{0,0,0.5}, {0.4,0.4,0.5}};
-		_positionsBuffer.fill(pos);
-
-		OpenGLBuffer<Color> _colorsBuffer(_id);
-		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		Color colors[2] = {{1,0,0}, {0,1,0}};
-		_colorsBuffer.fill(colors);
-
-		OpenGLBuffer<FloatType> _radiiBuffer(_id);
-		_radiiBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		_radiiBuffer.fillConstant(0.2f);
+		initParticleBuffers(1);
 
 		OVITO_CHECK_OPENGL(shader->bind());
 
@@ -45,9 +33,9 @@ public:
 		glCullFace(GL_BACK);
 		glEnable(GL_CULL_FACE);
 
-		shader->setUniformValue("projection_matrix", QMatrix4x4());
-		shader->setUniformValue("modelview_matrix", QMatrix4x4());
-		shader->setUniformValue("modelviewprojection_matrix", QMatrix4x4());
+		shader->setUniformValue("projection_matrix", (QMatrix4x4)projParams().projectionMatrix);
+		shader->setUniformValue("modelview_matrix", (QMatrix4x4)modelViewTM());
+		shader->setUniformValue("modelviewprojection_matrix", (QMatrix4x4)(projParams().projectionMatrix * modelViewTM()));
 
 		_positionsBuffer.bindPositions(this, shader);
 		_radiiBuffer.bind(this, shader, "particle_radius", GL_FLOAT, 0, 1);

@@ -25,9 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/viewport/OpenGLHelpers.h>
 #include <base/utilities/Exception.h>
-#include "ViewportWindow.h"
-
-using namespace Ovito;
+#include "TestWindow.h"
 
 /**
  * \brief A wrapper for the QOpenGLBuffer class, which adds more features.
@@ -51,11 +49,11 @@ public:
 			_verticesPerElement = verticesPerElement;
 			if(!_buffer.isCreated()) {
 				if(!_buffer.create())
-					throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
+					throw Ovito::Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
 				_buffer.setUsagePattern(usagePattern);
 			}
 			if(!_buffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+				throw Ovito::Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 			_buffer.allocate(sizeof(T) * _elementCount * _verticesPerElement);
 			OVITO_CHECK_OPENGL();
 			_buffer.release();
@@ -117,7 +115,7 @@ public:
 		OVITO_ASSERT(_verticesPerElement >= 1);
 
 		if(!_buffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+			throw Ovito::Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 		if(_verticesPerElement == 1) {
 			_buffer.write(0, data, _elementCount * sizeof(T));
 		}
@@ -126,7 +124,7 @@ public:
 				T* bufferData = static_cast<T*>(_buffer.map(QOpenGLBuffer::WriteOnly));
 				OVITO_CHECK_POINTER(bufferData);
 				if(!bufferData)
-					throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
+					throw Ovito::Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
 				const T* endData = data + _elementCount;
 				for(; data != endData; ++data) {
 					for(int i = 0; i < _verticesPerElement; i++, ++bufferData) {
@@ -147,12 +145,12 @@ public:
 		OVITO_ASSERT(_verticesPerElement >= 1);
 
 		if(!_buffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+			throw Ovito::Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 		if(_elementCount) {
 			T* bufferData = static_cast<T*>(_buffer.map(QOpenGLBuffer::WriteOnly));
 			OVITO_CHECK_POINTER(bufferData);
 			if(!bufferData)
-				throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
+				throw Ovito::Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
 			std::fill(bufferData, bufferData + _elementCount * _verticesPerElement, value);
 			_buffer.unmap();
 		}
@@ -161,29 +159,29 @@ public:
 	}
 
 	/// Binds this buffer to a vertex attribute of a vertex shader.
-	void bind(ViewportWindow* renderer, QOpenGLShaderProgram* shader, const char* attributeName, GLenum type, int offset, int tupleSize, int stride = 0) {
+	void bind(TestWindow* renderer, QOpenGLShaderProgram* shader, const char* attributeName, GLenum type, int offset, int tupleSize, int stride = 0) {
 		OVITO_ASSERT(isCreated());
 		OVITO_ASSERT(type != GL_FLOAT || (sizeof(T) == sizeof(GLfloat)*tupleSize && stride == 0) || sizeof(T) == sizeof(GLfloat)*stride);
 		OVITO_ASSERT(type != GL_INT || (sizeof(T) == sizeof(GLint)*tupleSize && stride == 0) || sizeof(T) == sizeof(GLint)*stride);
 		if(!_buffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+			throw Ovito::Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 		OVITO_CHECK_OPENGL(shader->enableAttributeArray(attributeName));
 		OVITO_CHECK_OPENGL(shader->setAttributeBuffer(attributeName, type, offset, tupleSize, stride));
 		_buffer.release();
 	}
 
 	/// After rendering is done, release the binding of the buffer to a shader attribute.
-	void detach(ViewportWindow* renderer, QOpenGLShaderProgram* shader, const char* attributeName) {
+	void detach(TestWindow* renderer, QOpenGLShaderProgram* shader, const char* attributeName) {
 		OVITO_CHECK_OPENGL(shader->disableAttributeArray(attributeName));
 	}
 
 	/// Binds this buffer to the vertex position attribute of a vertex shader.
-	void bindPositions(ViewportWindow* renderer, QOpenGLShaderProgram* shader, size_t byteOffset = 0) {
+	void bindPositions(TestWindow* renderer, QOpenGLShaderProgram* shader, size_t byteOffset = 0) {
 		OVITO_ASSERT(isCreated());
 		OVITO_STATIC_ASSERT(sizeof(T) >= sizeof(GLfloat)*3);
 
 		if(!_buffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex positions buffer."));
+			throw Ovito::Exception(QStringLiteral("Failed to bind OpenGL vertex positions buffer."));
 
 		if(renderer->glformat().majorVersion() >= 3) {
 			OVITO_CHECK_OPENGL(shader->enableAttributeArray("position"));
@@ -198,7 +196,7 @@ public:
 	}
 
 	/// After rendering is done, release the binding of the buffer to the vertex position attribute.
-	void detachPositions(ViewportWindow* renderer, QOpenGLShaderProgram* shader) {
+	void detachPositions(TestWindow* renderer, QOpenGLShaderProgram* shader) {
 		if(renderer->glformat().majorVersion() >= 3) {
 			OVITO_CHECK_OPENGL(shader->disableAttributeArray("position"));
 		}
@@ -208,13 +206,13 @@ public:
 	}
 
 	/// Binds this buffer to the vertex color attribute of a vertex shader.
-	void bindColors(ViewportWindow* renderer, QOpenGLShaderProgram* shader, int components, size_t byteOffset = 0) {
+	void bindColors(TestWindow* renderer, QOpenGLShaderProgram* shader, int components, size_t byteOffset = 0) {
 		OVITO_ASSERT(isCreated());
 		OVITO_ASSERT(sizeof(T) >= sizeof(GLfloat)*components);
 		OVITO_ASSERT(components == 3 || components == 4);
 
 		if(!_buffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex color buffer."));
+			throw Ovito::Exception(QStringLiteral("Failed to bind OpenGL vertex color buffer."));
 
 		if(renderer->glformat().majorVersion() >= 3) {
 			OVITO_CHECK_OPENGL(shader->enableAttributeArray("color"));
@@ -229,7 +227,7 @@ public:
 	}
 
 	/// After rendering is done, release the binding of the buffer to the vertex color attribute.
-	void detachColors(ViewportWindow* renderer, QOpenGLShaderProgram* shader) {
+	void detachColors(TestWindow* renderer, QOpenGLShaderProgram* shader) {
 		if(renderer->glformat().majorVersion() >= 3) {
 			OVITO_CHECK_OPENGL(shader->disableAttributeArray("color"));
 		}
@@ -239,7 +237,7 @@ public:
 	}
 
 	/// Binds this buffer to the vertex normal attribute of a vertex shader.
-	void bindNormals(ViewportWindow* renderer, QOpenGLShaderProgram* shader, size_t byteOffset = 0) {
+	void bindNormals(TestWindow* renderer, QOpenGLShaderProgram* shader, size_t byteOffset = 0) {
 		OVITO_ASSERT(isCreated());
 		OVITO_STATIC_ASSERT(sizeof(T) >= sizeof(GLfloat)*3);
 
@@ -259,7 +257,7 @@ public:
 	}
 
 	/// After rendering is done, release the binding of the buffer to the vertex normal attribute.
-	void detachNormals(ViewportWindow* renderer, QOpenGLShaderProgram* shader) {
+	void detachNormals(TestWindow* renderer, QOpenGLShaderProgram* shader) {
 		if(renderer->glformat().majorVersion() >= 3) {
 			OVITO_CHECK_OPENGL(shader->disableAttributeArray("normal"));
 		}

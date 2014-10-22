@@ -19,21 +19,22 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_GLTEST_VIEWPORT_WINDOW_H
-#define __OVITO_GLTEST_VIEWPORT_WINDOW_H
+#ifndef __OVITO_GLTEST_WINDOW_H
+#define __OVITO_GLTEST_WINDOW_H
 
 #include <core/Core.h>
+#include <core/viewport/Viewport.h>
 
 #include <QOpenGLFunctions_2_0>
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
 
-class ViewportWindow : public QWindow
+class TestWindow : public QWindow
 {
 public:
 
 	/// Constructor.
-	ViewportWindow(int id);
+	TestWindow(int id);
 
 	/// Returns the window's OpenGL context used for rendering.
 	QOpenGLContext* glcontext() const { return _context; }
@@ -59,6 +60,12 @@ public:
 
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
+
+	/// Returns the view projection parameters.
+	const Ovito::ViewProjectionParameters& projParams() const { return _projParams; }
+
+	/// Returns the current model-to-view transformation matrix.
+	Ovito::AffineTransformation modelViewTM() const { return Ovito::AffineTransformation::Identity(); }
 
 	/// The OpenGL glPointParameterf() function.
 	void glPointParameterf(GLenum pname, GLfloat param) {
@@ -145,7 +152,9 @@ protected:
 	/// The number of IDs stored in the OpenGL buffer.
 	GLint _glVertexIDBufferSize;
 
+	Ovito::ViewProjectionParameters _projParams;
+
 	Q_OBJECT
 };
 
-#endif // __OVITO_GLTEST_VIEWPORT_WINDOW_H
+#endif // __OVITO_GLTEST_WINDOW_H

@@ -23,7 +23,7 @@
 SET(EXECUTABLE_OUTPUT_PATH "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS")
 
 # Builds the OpenGL test executable.
-ADD_EXECUTABLE(OpenGLTest Main.cpp ViewportWindow.cpp)
+ADD_EXECUTABLE(OpenGLTest Main.cpp TestWindow.cpp)
 
 # The executable makes use of OVITO's core functions.
 TARGET_LINK_LIBRARIES(OpenGLTest Base Core)

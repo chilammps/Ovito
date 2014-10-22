@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportWindow.h"
+#include "TestWindow.h"
 #include "Window1.h"
 #include "Window2.h"
 #include "Window3.h"
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	mainlayout->addWidget(buttonBox);
 
 	layout->setSpacing(10);
-	QList<ViewportWindow*> windows;
+	QList<TestWindow*> windows;
 
 	windows.push_back(new Window1());
 	windows.push_back(new Window2());

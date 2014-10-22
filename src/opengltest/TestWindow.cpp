@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "ViewportWindow.h"
+#include "TestWindow.h"
 #include <core/rendering/viewport/OpenGLHelpers.h>
 #include <base/utilities/Exception.h>
 
@@ -28,7 +28,7 @@ using namespace Ovito;
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportWindow::ViewportWindow(int id) :
+TestWindow::TestWindow(int id) :
 	_id(id), _context(nullptr),
 	_glVertexIDBufferSize(-1)
 {
@@ -46,14 +46,14 @@ ViewportWindow::ViewportWindow(int id) :
 /******************************************************************************
 * Immediately redraws the contents of this window.
 ******************************************************************************/
-void ViewportWindow::renderContent()
+void TestWindow::renderContent()
 {
 }
 
 /******************************************************************************
 * Handles the expose events.
 ******************************************************************************/
-void ViewportWindow::exposeEvent(QExposeEvent*)
+void TestWindow::exposeEvent(QExposeEvent*)
 {
 	if(isExposed()) {
 		renderNow();
@@ -63,7 +63,7 @@ void ViewportWindow::exposeEvent(QExposeEvent*)
 /******************************************************************************
 * Handles the resize events.
 ******************************************************************************/
-void ViewportWindow::resizeEvent(QResizeEvent*)
+void TestWindow::resizeEvent(QResizeEvent*)
 {
 	if(isExposed()) {
 		renderNow();
@@ -73,10 +73,22 @@ void ViewportWindow::resizeEvent(QResizeEvent*)
 /******************************************************************************
 * Immediately redraws the contents of this window.
 ******************************************************************************/
-void ViewportWindow::renderNow()
+void TestWindow::renderNow()
 {
 	if(!isExposed())
 		return;
+
+	_projParams.aspectRatio = (FloatType)height() / width();
+	_projParams.isPerspective = false;
+	_projParams.znear = -4;
+	_projParams.zfar = 4;
+	_projParams.fieldOfView = 1;
+	_projParams.viewMatrix = AffineTransformation::Identity();
+	_projParams.inverseViewMatrix = _projParams.viewMatrix.inverse();
+	_projParams.projectionMatrix = Matrix4::ortho(-_projParams.fieldOfView / _projParams.aspectRatio, _projParams.fieldOfView / _projParams.aspectRatio,
+						-_projParams.fieldOfView, _projParams.fieldOfView,
+						_projParams.znear, _projParams.zfar);
+	_projParams.inverseProjectionMatrix = _projParams.projectionMatrix.inverse();
 
 	msg() << "------------------------------------------------------";
 
@@ -217,7 +229,7 @@ void checkOpenGLErrorStatus(const char* command, const char* sourceFile, int sou
 /******************************************************************************
 * Loads an OpenGL shader program.
 ******************************************************************************/
-QOpenGLShaderProgram* ViewportWindow::loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile)
+QOpenGLShaderProgram* TestWindow::loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile)
 {
 	// The OpenGL shaders are only created once per OpenGL context group.
 	QScopedPointer<QOpenGLShaderProgram> program(findChild<QOpenGLShaderProgram*>(id));
@@ -250,7 +262,7 @@ QOpenGLShaderProgram* ViewportWindow::loadShaderProgram(const QString& id, const
 /******************************************************************************
 * Loads and compiles a GLSL shader and adds it to the given program object.
 ******************************************************************************/
-void ViewportWindow::loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename)
+void TestWindow::loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename)
 {
 	// Load shader source.
 	QFile shaderSourceFile(filename);
@@ -328,7 +340,7 @@ void ViewportWindow::loadShader(QOpenGLShaderProgram* program, QOpenGLShader::Sh
 /******************************************************************************
 * Makes vertex IDs available to the shader.
 ******************************************************************************/
-void ViewportWindow::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO)
+void TestWindow::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO)
 {
 	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
 	// variable. Therefore we have to provide the IDs in a vertex buffer.
@@ -369,7 +381,7 @@ void ViewportWindow::activateVertexIDs(QOpenGLShaderProgram* shader, GLint verte
 /******************************************************************************
 * Disables vertex IDs.
 ******************************************************************************/
-void ViewportWindow::deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO)
+void TestWindow::deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO)
 {
 	if(glformat().majorVersion() < 3 || alwaysUseVBO)
 		shader->disableAttributeArray("vertexID");

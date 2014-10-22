@@ -1,16 +1,34 @@
-#include "ViewportWindow.h"
+#include "TestWindow.h"
 #include "OpenGLBuffer.h"
 #include <core/rendering/viewport/OpenGLTexture.h>
 
 #ifndef OVITO_GL_TEST_PARTICLE_WINDOW
 #define OVITO_GL_TEST_PARTICLE_WINDOW
 
-class ParticleWindow : public ViewportWindow
+class ParticleWindow : public TestWindow
 {
 public:
 
 	/// Constructor.
-	ParticleWindow(int id) : ViewportWindow(id) {}
+	ParticleWindow(int id) : TestWindow(id), _positionsBuffer(id), _colorsBuffer(id), _radiiBuffer(id) {}
+
+	OpenGLBuffer<Ovito::Vector3> _positionsBuffer;
+	OpenGLBuffer<Ovito::Color> _colorsBuffer;
+	OpenGLBuffer<Ovito::FloatType> _radiiBuffer;
+
+	void initParticleBuffers(int verticesPerParticle) {
+		_positionsBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
+		Ovito::Vector3 pos[2] = {{0,0,0.5}, {0.4,0.4,0.6}};
+		_positionsBuffer.fill(pos);
+
+		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
+		Ovito::Color colors[2] = {{1,0,0}, {0,1,0}};
+		_colorsBuffer.fill(colors);
+
+		_radiiBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
+		Ovito::FloatType radii[2] = {0.5f, 0.4f};
+		_radiiBuffer.fill(radii);
+	}
 
 	/// The maximum resolution of the texture used for billboard rendering of particles. Specified as a power of two.
 	static constexpr int BILLBOARD_TEXTURE_LEVELS = 8;
@@ -20,6 +38,8 @@ public:
 	******************************************************************************/
 	void initializeBillboardTexture()
 	{
+		using namespace Ovito;
+
 		static std::vector<std::array<GLubyte,4>> textureImages[BILLBOARD_TEXTURE_LEVELS];
 		static bool generatedImages = false;
 
@@ -100,7 +120,7 @@ public:
 	}
 
 	/// The OpenGL texture that is used for billboard rendering of particles.
-	OpenGLTexture _billboardTexture;
+	Ovito::OpenGLTexture _billboardTexture;
 
 };
 

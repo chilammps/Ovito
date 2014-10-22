@@ -16,24 +16,12 @@ public:
 
 	virtual void renderContent() override {
 
-		int verticesPerParticle = 1;
+		using namespace Ovito;
 
 		QOpenGLShaderProgram* shader = getShader();
 		if(!shader) return;
 
-		OpenGLBuffer<Vector3> _positionsBuffer(_id);
-		_positionsBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		Vector3 pos[2] = {{0,0,0.5}, {0.4,0.4,0.5}};
-		_positionsBuffer.fill(pos);
-
-		OpenGLBuffer<Color> _colorsBuffer(_id);
-		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		Color colors[2] = {{1,0,0}, {0,1,0}};
-		_colorsBuffer.fill(colors);
-
-		OpenGLBuffer<FloatType> _radiiBuffer(_id);
-		_radiiBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		_radiiBuffer.fillConstant(0.2f);
+		initParticleBuffers(1);
 
 		OVITO_CHECK_OPENGL(shader->bind());
 
@@ -61,11 +49,11 @@ public:
 		};
 		shader->setUniformValueArray("cubeVerts", &cubeVerts[0][0], 14, 3);
 
-		shader->setUniformValue("projection_matrix", QMatrix4x4());
-		shader->setUniformValue("inverse_projection_matrix", QMatrix4x4());
-		shader->setUniformValue("modelview_matrix", QMatrix4x4());
-		shader->setUniformValue("modelviewprojection_matrix", QMatrix4x4());
-		shader->setUniformValue("is_perspective", false);
+		shader->setUniformValue("projection_matrix", (QMatrix4x4)projParams().projectionMatrix);
+		shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)projParams().inverseProjectionMatrix);
+		shader->setUniformValue("modelview_matrix", (QMatrix4x4)modelViewTM());
+		shader->setUniformValue("modelviewprojection_matrix", (QMatrix4x4)(projParams().projectionMatrix * modelViewTM()));
+		shader->setUniformValue("is_perspective", projParams().isPerspective);
 
 		GLint viewportCoords[4];
 		glGetIntegerv(GL_VIEWPORT, viewportCoords);
