@@ -22,6 +22,8 @@
 #include <plugins/pyscript/PyScript.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
+#include <core/viewport/overlay/ViewportOverlay.h>
+#include <core/viewport/overlay/CoordinateTripodOverlay.h>
 #include <core/scene/SceneNode.h>
 #include "PythonBinding.h"
 
@@ -139,6 +141,10 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 		.def("updateViewports", &ViewportConfiguration::updateViewports)
 		.add_property("viewports", make_function(&ViewportConfiguration::viewports, return_internal_reference<>()))
 	;
+
+	ovito_abstract_class<ViewportOverlay, RefTarget>();
+
+	ovito_class<CoordinateTripodOverlay, ViewportOverlay>();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptViewport);

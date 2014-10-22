@@ -95,5 +95,11 @@ SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 
 ADD_SUBDIRECTORY(main)
 
+################# OpenGL test program ####################
+OPTION(OVITO_BUILD_OPENGLTEST "Build the OpenGL test program." "OFF")
+IF(OVITO_BUILD_OPENGLTEST)
+	ADD_SUBDIRECTORY(opengltest)
+ENDIF()
+
 # Propagate the plugin list to the parent scope.
 SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)
