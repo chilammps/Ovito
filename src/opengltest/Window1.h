@@ -9,9 +9,10 @@ public:
 	Window1(int id = 1) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
-		return { ":/core/glsl/particles/imposter/sphere/without_depth_tri.vs",
+		return std::tuple<QString, QString, QString>(
+			":/core/glsl/particles/imposter/sphere/without_depth_tri.vs",
 			":/core/glsl/particles/imposter/sphere/without_depth.fs",
-			QString()};
+			QString());
 	}
 
 	virtual void renderContent() override {

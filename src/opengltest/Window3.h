@@ -9,9 +9,10 @@ public:
 	Window3(int id = 3) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
-		return { ":/core/glsl/particles/geometry/sphere/sphere.vs",
+		return std::tuple<QString, QString, QString>(
+			":/core/glsl/particles/geometry/sphere/sphere.vs",
 			":/core/glsl/particles/geometry/sphere/sphere.fs",
-			":/core/glsl/particles/geometry/sphere/sphere.gs" };
+			":/core/glsl/particles/geometry/sphere/sphere.gs");
 	}
 
 	virtual void renderContent() override {
