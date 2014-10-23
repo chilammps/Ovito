@@ -48,10 +48,10 @@ bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 	}
 
 #if defined(Q_OS_OSX)
-	// On Mac OS X 10.9, sharing a single context doesn't work very well.
+	// On Mac OS X 10.9 with Intel graphics, using a single context for multiple viewports doesn't work very well.
 	return false;
 #elif defined(Q_OS_LINUX)
-	// On Intel graphics under Linux, sharing a single context doesn't work very well.
+	// On Intel graphics under Linux, sharing a single context doesn't work very well either.
 	if(_openGLVendor.contains("Intel"))
 		return false;
 #endif
@@ -310,10 +310,10 @@ void ViewportWindow::renderNow()
 					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
 					"To avoid this error, please install the newest graphics driver of the hardware vendor or, if necessary, consider replacing your graphics card with a newer model.\n\n"
 					"The installed OpenGL graphics driver reports the following information:\n\n"
-					"OpenGL Vendor: %1\n"
-					"OpenGL Renderer: %2\n"
-					"OpenGL Version: %3\n\n"
-					"Ovito requires OpenGL version %4.%5 or higher.")
+					"OpenGL vendor: %1\n"
+					"OpenGL renderer: %2\n"
+					"OpenGL version: %3\n\n"
+					"Ovito requires at least OpenGL version %4.%5.")
 					.arg(QString((const char*)glGetString(GL_VENDOR)))
 					.arg(QString((const char*)glGetString(GL_RENDERER)))
 					.arg(QString((const char*)glGetString(GL_VERSION)))

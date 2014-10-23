@@ -517,7 +517,7 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 
 	// This is to draw the cube with a single triangle strip.
 	// The cube vertices:
-	static const GLfloat cubeVerts[14][3] = {
+	static const QVector3D cubeVerts[14] = {
 		{ 1,  1,  1},
 		{ 1, -1,  1},
 		{ 1,  1, -1},
@@ -533,12 +533,11 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 		{-1,  1,  1},
 		{-1, -1,  1},
 	};
-	shader->setUniformValueArray("cubeVerts", &cubeVerts[0][0], 14, 3);
+	OVITO_CHECK_OPENGL(shader->setUniformValueArray("cubeVerts", cubeVerts, 14));
 
-	// Set up look-up table for triangle strips.
 	if(particleShape() != SphericalShape && !renderer->isPicking()) {
 		// The normal vectors for the cube triangle strip.
-		static const GLfloat normals[14][3] = {
+		static const QVector3D normals[14] = {
 			{ 1,  0,  0},
 			{ 1,  0,  0},
 			{ 1,  0,  0},
@@ -554,7 +553,7 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 			{-1,  0,  0},
 			{-1,  0,  0}
 		};
-		shader->setUniformValueArray("normals", &normals[0][0], 14, 3);
+		OVITO_CHECK_OPENGL(shader->setUniformValueArray("normals", normals, 14));
 		shader->setUniformValue("normal_matrix", (QMatrix3x3)(renderer->modelViewTM().linear().inverse().transposed()));
 	}
 
@@ -675,11 +674,11 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 	if(!_usingGeometryShader) {
 		// The texture coordinates of a quad made of two triangles.
 		static const QVector2D texcoords[6] = {{0,1},{1,1},{1,0},{0,1},{1,0},{0,0}};
-		shader->setUniformValueArray("imposter_texcoords", &texcoords[0], 6);
+		OVITO_CHECK_OPENGL(shader->setUniformValueArray("imposter_texcoords", texcoords, 6));
 
 		// The coordinate offsets of the six vertices of a quad made of two triangles.
 		static const QVector4D voffsets[6] = {{-1,-1,0,0},{1,-1,0,0},{1,1,0,0},{-1,-1,0,0},{1,1,0,0},{-1,1,0,0}};
-		shader->setUniformValueArray("imposter_voffsets", &voffsets[0], 6);
+		OVITO_CHECK_OPENGL(shader->setUniformValueArray("imposter_voffsets", voffsets, 6));
 	}
 
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);

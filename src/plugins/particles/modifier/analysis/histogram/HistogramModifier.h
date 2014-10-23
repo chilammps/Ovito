@@ -59,7 +59,7 @@ public:
 	void setNumberOfBins(int n) { _numberOfBins = n; }
 
 	/// Returns the stored histogram data.
-	const std::vector<int>& histogramData() const { return _histogramData; }
+	const QVector<int>& histogramData() const { return _histogramData; }
 
 	/// Returns whether particles within the specified range should be selected.
 	bool selectInRange() const { return _selectInRange; }
@@ -81,6 +81,12 @@ public:
 
 	/// Set start and end value of the x-axis.
 	void setXAxisRange(FloatType start, FloatType end) { _xAxisRangeStart = start; _xAxisRangeEnd = end; }
+
+	/// Set start value of the x-axis.
+	void setXAxisRangeStart(FloatType start) { _xAxisRangeStart = start; }
+
+	/// Set end value of the x-axis.
+	void setXAxisRangeEnd(FloatType end) { _xAxisRangeEnd = end; }
 
 	/// Returns the start value of the x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
@@ -146,7 +152,7 @@ private:
 	PropertyField<FloatType> _yAxisRangeEnd;
 
 	/// Stores the histogram data.
-	std::vector<int> _histogramData;
+	QVector<int> _histogramData;
 
 	Q_OBJECT
 	OVITO_OBJECT

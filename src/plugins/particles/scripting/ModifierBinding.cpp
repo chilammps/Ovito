@@ -644,9 +644,43 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"\n")
 	;
 
-	ovito_class<HistogramModifier, ParticleModifier>()
-		.add_property("property", make_function(&HistogramModifier::sourceProperty, return_value_policy<copy_const_reference>()), &HistogramModifier::setSourceProperty)
-		.add_property("num_bins", &HistogramModifier::numberOfBins, &HistogramModifier::setNumberOfBins)
+	ovito_class<HistogramModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Generates a histogram from the values of a particle property. "
+			"\n\n"
+			"The value range of the histogram is determined automatically from the minimum and maximum values of the selected property "
+			"unless :py:attr:`.fix_xrange` is set to ``True``. In this case the range of the histogram is controlled by the "
+			":py:attr:`.xrange_start` and :py:attr:`.xrange_end` parameters."
+			"\n\n"
+			"Example::"
+			"\n\n"
+			"   modifier = HistogramModifier(bin_count=100, property=\"Potential Energy\")\n"
+			"   node.modifiers.append(modifier)\n"
+			"   node.compute()\n"
+			"   \n"
+			"   import numpy\n"
+			"   numpy.savetxt(\"histogram.txt\", modifier.histogram)\n"
+			"\n")
+		.add_property("property", make_function(&HistogramModifier::sourceProperty, return_value_policy<copy_const_reference>()), &HistogramModifier::setSourceProperty,
+				"The name of the input particle property for which to compute the histogram.")
+		.add_property("bin_count", &HistogramModifier::numberOfBins, &HistogramModifier::setNumberOfBins,
+				"The number of histogram bins."
+				"\n\n"
+				":Default: 200\n")
+		.add_property("fix_xrange", &HistogramModifier::fixXAxisRange, &HistogramModifier::setFixXAxisRange,
+				"Controls how the value range of the histogram is determined. If false, the range is chosen automatically by the modifier to include "
+				"all particle property values. If true, the range is specified manually using the :py:attr:`.xrange_start` and :py:attr:`.xrange_end` attributes."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("xrange_start", &HistogramModifier::xAxisRangeStart, &HistogramModifier::setXAxisRangeStart,
+				"If :py:attr:`.fix_xrange` is true, then this specifies the lower end of the value range covered by the histogram."
+				"\n\n"
+				":Default: 0.0\n")
+		.add_property("xrange_end", &HistogramModifier::xAxisRangeEnd, &HistogramModifier::setXAxisRangeEnd,
+				"If :py:attr:`.fix_xrange` is true, then this specifies the upper end of the value range covered by the histogram."
+				"\n\n"
+				":Default: 0.0\n")
+		.add_property("histogramData", make_function(&HistogramModifier::histogramData, return_internal_reference<>()))
 	;
 
 	ovito_class<ScatterPlotModifier, ParticleModifier>()

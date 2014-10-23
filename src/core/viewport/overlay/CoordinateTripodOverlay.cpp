@@ -41,8 +41,8 @@ DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _tripodSize, "Size", PROPER
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _lineWidth, "LineWidth", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _font, "Font", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _fontSize, "FontSize", PROPERTY_FIELD_MEMORIZE);
-DEFINE_PROPERTY_FIELD(CoordinateTripodOverlay, _offsetX, "OffsetX");
-DEFINE_PROPERTY_FIELD(CoordinateTripodOverlay, _offsetY, "OffsetY");
+DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _offsetX, "OffsetX", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(CoordinateTripodOverlay, _offsetY, "OffsetY", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(CoordinateTripodOverlay, _axis1Enabled, "Axis1Enabled");
 DEFINE_PROPERTY_FIELD(CoordinateTripodOverlay, _axis2Enabled, "Axis2Enabled");
 DEFINE_PROPERTY_FIELD(CoordinateTripodOverlay, _axis3Enabled, "Axis3Enabled");

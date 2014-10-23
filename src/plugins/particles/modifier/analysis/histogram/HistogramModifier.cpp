@@ -62,8 +62,9 @@ SET_PROPERTY_FIELD_LABEL(HistogramModifier, _sourceProperty, "Source property");
 ******************************************************************************/
 HistogramModifier::HistogramModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_numberOfBins(200), _selectInRange(false),
-	_selectionRangeStart(0), _selectionRangeEnd(1), _fixXAxisRange(false), _xAxisRangeStart(0),
-	_xAxisRangeEnd(0), _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
+	_selectionRangeStart(0), _selectionRangeEnd(1),
+	_fixXAxisRange(false), _xAxisRangeStart(0), _xAxisRangeEnd(0),
+	_fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(HistogramModifier::_numberOfBins);
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectInRange);
@@ -146,11 +147,12 @@ PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& 
 					if(*v > intervalEnd) intervalEnd = *v;
 				}
 			}
-			if(intervalEnd != intervalStart) {
+			if(intervalEnd > intervalStart) {
 				FloatType binSize = (intervalEnd - intervalStart) / _histogramData.size();
 				for(auto v = v_begin; v != v_end; v += vecComponentCount) {
-					size_t binIndex = (*v - intervalStart) / binSize;
-					_histogramData[std::min(binIndex, _histogramData.size() - 1)]++;
+					if(*v < intervalStart || *v > intervalEnd) continue;
+					int binIndex = (*v - intervalStart) / binSize;
+					_histogramData[std::max(0, std::min(binIndex, _histogramData.size() - 1))]++;
 				}
 			}
 			else {
@@ -180,11 +182,12 @@ PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& 
 					if(*v > intervalEnd) intervalEnd = *v;
 				}
 			}
-			if(intervalEnd != intervalStart) {
+			if(intervalEnd > intervalStart) {
 				FloatType binSize = (intervalEnd - intervalStart) / _histogramData.size();
 				for(auto v = v_begin; v != v_end; v += vecComponentCount) {
-					size_t binIndex = ((FloatType)*v - intervalStart) / binSize;
-					_histogramData[std::min(binIndex, _histogramData.size() - 1)]++;
+					if(*v < intervalStart || *v > intervalEnd) continue;
+					int binIndex = ((FloatType)*v - intervalStart) / binSize;
+					_histogramData[std::max(0, std::min(binIndex, _histogramData.size() - 1))]++;
 				}
 			}
 			else {

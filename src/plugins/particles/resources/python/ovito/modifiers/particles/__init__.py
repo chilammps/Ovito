@@ -52,3 +52,21 @@ def _CoordinationNumberModifier_rdf(self):
     rdfy = numpy.asarray(self.rdf_y)
     return numpy.transpose((rdfx,rdfy))
 ovito.modifiers.CoordinationNumberModifier.rdf = property(_CoordinationNumberModifier_rdf)
+
+# Implement the 'histogram' attribute of the HistogramModifier class.
+def _HistogramModifier_histogram(self):
+    """
+    Returns a NumPy array containing the histogram computed by the modifier.    
+    The returned array is two-dimensional and consists of [*x*, *count(x)*] value pairs, where
+    *x* denotes the bin center and *count(x)* the number of particles whose property value falls into the bin.
+    
+    Note that accessing this array is only possible after the modifier has computed its results. 
+    Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that the histogram was generated.
+    """
+    # Get counts
+    ydata = numpy.asarray(self.histogramData)
+    # Compute bin center positions
+    binsize = (self.xrange_end - self.xrange_start) / len(ydata)
+    xdata = numpy.linspace(self.xrange_start + binsize * 0.5, self.xrange_end + binsize * 0.5, len(ydata), endpoint = False)
+    return numpy.transpose((xdata,ydata))
+ovito.modifiers.HistogramModifier.histogram = property(_HistogramModifier_histogram)

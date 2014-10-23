@@ -41,7 +41,6 @@ Class name                                     User interface name
 :py:class:`SelectParticleTypeModifier`         :guilabel:`Select particle type`
 :py:class:`ShowPeriodicImagesModifier`         :guilabel:`Show periodic images`
 :py:class:`SliceModifier`                      :guilabel:`Slice`
-:py:class:`SpatialCorrelationFunctionModifier` :guilabel:`Spatial correlation function`
 :py:class:`VoronoiAnalysisModifier`            :guilabel:`Voronoi analysis`
 :py:class:`WignerSeitzAnalysisModifier`        :guilabel:`Wigner-Seitz defect analysis`
 :py:class:`WrapPeriodicImagesModifier`         :guilabel:`Wrap at periodic boundaries`

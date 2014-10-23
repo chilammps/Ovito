@@ -173,8 +173,8 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 
 		// Set up look-up table for texture coordinates.
-		const GLfloat uvcoords[] { 0,0,  1,0,  0,1,  1,1 };
-		OVITO_CHECK_OPENGL(_shader->setUniformValueArray("uvcoords", uvcoords, 4, 2));
+		static const QVector2D uvcoords[] = {{0,0}, {1,0}, {0,1}, {1,1}};
+		OVITO_CHECK_OPENGL(_shader->setUniformValueArray("uvcoords", uvcoords, 4));
 
 		OVITO_CHECK_OPENGL(_vertexBuffer.write(0, corners, 4 * sizeof(Point2)));
 		OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_pos"));

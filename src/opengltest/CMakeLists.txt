@@ -20,7 +20,11 @@
 ###############################################################################
 
 # Put the executable into the right directory.
-SET(EXECUTABLE_OUTPUT_PATH "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS")
+IF(APPLE)
+	SET(EXECUTABLE_OUTPUT_PATH "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS")
+ELSE()
+	SET(EXECUTABLE_OUTPUT_PATH "${OVITO_BINARY_DIRECTORY}")
+ENDIF()
 
 # Builds the OpenGL test executable.
 ADD_EXECUTABLE(OpenGLTest Main.cpp TestWindow.cpp)

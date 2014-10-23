@@ -18,12 +18,21 @@ New visualization features:
 - More particle representations (e.g. open circles/rectangles)
 - Test OpenGL rendering support for more than 12 million particles.
 
+Unresolved OpenGL problems:
+
+- High-quality particle rendering doesn't work on some systems: 
+    (Ricardo Scharz: Intel(R) HD Graphics, Windows, OpenGL 3.2 core)
+    (francesca.tavazza@nist.gov, Intel(R) HD Graphics 4000, Windows 64, 3.2 core)
+- Shader compilation error (:/core/glsl/lines/line.vs):
+    (chen.qwj@gmail.com, NVIDIA Quadro FX 4600, Linux, OpenGL 2.1)
+    (Group laptop, Intel 965/963 Graphics, GLSL 110, Windows, OpenGL 2.0)
+
 New analysis features:
 
 - Compute center of mass of a group of atoms, output to file
 - Calculation of local atomic number density functions (proposed by Sha Zhendong)
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
-- Plotting the value of a certain property of a certain particle versus simulation time. To make this work, all simulation frames need to be kept in memory (requested by Taojun).
+- Plotting the value of a certain property of a certain particle versus simulation time. To make this work, all simulation frames need to be kept in memory (requested by Taojun & Mathieu Marciante).
 
 New I/O functions:
 
@@ -31,6 +40,7 @@ New I/O functions:
 - Import bond information from LAMMPS.
 - Allow the user to permanently override the PBC flags read from an input file.
 - Export of LAMMPS data files with other atom styles (requested by rafaelgonzalezvaldes@gmail.com)
+- Export to Blender (Paul Erhart, Filip Sund <filip.sund@fys.uio.no>)
 
 Performance improvements:
 
@@ -38,7 +48,7 @@ Performance improvements:
 
 Scripting features:
 
-- Implement scripting interface for viewport overlays.
+- Scripting interface for viewport overlays.
 - Python 3.x compatibility (requested by jan.oliver.oelerich@physik.uni-marburg.de). 
 - Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
 
