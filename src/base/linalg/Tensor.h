@@ -41,7 +41,7 @@ typedef Matrix3 Tensor2;
 /*
  * \brief A symmetric 2nd order tensor.
  *
- * Stores only the lower left part of the 3x3 matrix.
+ * Stores only the upper right part of the 3x3 matrix.
  */
 template<typename T>
 class SymmetricTensor2T : public std::array<T, 6>
@@ -89,25 +89,25 @@ public:
 	/// \brief Tensor element access.
 	inline const T& operator()(size_type row, size_type col) const {
 		OVITO_ASSERT(row < row_count() && col < col_count());
-		if(row < col) std::swap(row, col);
-		switch(row - col) {
-			case 0: return (*this)[row];
-			case 1: return (*this)[row+2];
-			case 2: return (*this)[5];
-			default: OVITO_ASSERT(false); return (*this)[0];
+		if(row == col) return (*this)[row];
+		if(row > col) std::swap(row, col);
+		if(row == 0) {
+			if(col == 1) return xy();
+			else return xz();
 		}
+		else return yz();
 	}
 
 	/// \brief Tensor element access.
 	inline T& operator()(size_type row, size_type col) {
 		OVITO_ASSERT(row < row_count() && col < col_count());
-		if(row < col) std::swap(row, col);
-		switch(row - col) {
-			case 0: return (*this)[row];
-			case 1: return (*this)[row+2];
-			case 2: return (*this)[5];
-			default: OVITO_ASSERT(false); return (*this)[0];
+		if(row == col) return (*this)[row];
+		if(row > col) std::swap(row, col);
+		if(row == 0) {
+			if(col == 1) return xy();
+			else return xz();
 		}
+		else return yz();
 	}
 
 	/// \brief Returns the value of the XX component of this tensor.
