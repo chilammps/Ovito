@@ -1,18 +1,18 @@
 #include "ParticleWindow.h"
 #include "OpenGLBuffer.h"
 
-class Window3 : public ParticleWindow
+class Window5 : public ParticleWindow
 {
 public:
 
 	/// Constructor.
-	Window3(int id = 3) : ParticleWindow(id) {}
+	Window5(int id = 5) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
 		return std::tuple<QString, QString, QString>(
-			":/core/glsl/particles/geometry/sphere/sphere.vs",
-			":/core/glsl/particles/geometry/sphere/sphere.fs",
-			":/core/glsl/particles/geometry/sphere/sphere.gs");
+				":/core/glsl/particles/geometry/cube/cube.vs",
+				":/core/glsl/particles/geometry/cube/cube.fs",
+				":/core/glsl/particles/geometry/cube/cube.gs");
 	}
 
 	virtual void renderContent() override {
@@ -32,7 +32,7 @@ public:
 
 		// This is to draw the cube with a single triangle strip.
 		// The cube vertices:
-		static const QVector3D cubeVerts[14] = {
+		static const GLfloat cubeVerts[14][3] = {
 			{ 1,  1,  1},
 			{ 1, -1,  1},
 			{ 1,  1, -1},
@@ -48,9 +48,27 @@ public:
 			{-1,  1,  1},
 			{-1, -1,  1},
 		};
-		OVITO_CHECK_OPENGL();
-		OVITO_CHECK_OPENGL(shader->setUniformValueArray("cubeVerts", cubeVerts, 14));
-		OVITO_CHECK_OPENGL();
+		shader->setUniformValueArray("cubeVerts", &cubeVerts[0][0], 14, 3);
+
+		// The normal vectors for the cube triangle strip.
+		static const QVector3D normals[14] = {
+			{ 1,  0,  0},
+			{ 1,  0,  0},
+			{ 1,  0,  0},
+			{ 1,  0,  0},
+			{ 0,  0, -1},
+			{ 0, -1,  0},
+			{ 0, -1,  0},
+			{ 0,  0,  1},
+			{ 0,  0,  1},
+			{ 0,  1,  0},
+			{ 0,  1,  0},
+			{ 0,  0, -1},
+			{-1,  0,  0},
+			{-1,  0,  0}
+		};
+		OVITO_CHECK_OPENGL(shader->setUniformValueArray("normals", normals, 14));
+		shader->setUniformValue("normal_matrix", (QMatrix3x3)(modelViewTM().linear().inverse().transposed()));
 
 		shader->setUniformValue("projection_matrix", (QMatrix4x4)projParams().projectionMatrix);
 		shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)projParams().inverseProjectionMatrix);

@@ -1,18 +1,18 @@
 #include "ParticleWindow.h"
 #include "OpenGLBuffer.h"
 
-class Window3 : public ParticleWindow
+class Window6 : public ParticleWindow
 {
 public:
 
 	/// Constructor.
-	Window3(int id = 3) : ParticleWindow(id) {}
+	Window6(int id = 6) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
 		return std::tuple<QString, QString, QString>(
-			":/core/glsl/particles/geometry/sphere/sphere.vs",
-			":/core/glsl/particles/geometry/sphere/sphere.fs",
-			":/core/glsl/particles/geometry/sphere/sphere.gs");
+				":/gltest/glsl/cube_flat.vs",
+				":/gltest/glsl/cube_flat.fs",
+				":/gltest/glsl/cube_flat.gs");
 	}
 
 	virtual void renderContent() override {
@@ -26,9 +26,7 @@ public:
 
 		OVITO_CHECK_OPENGL(shader->bind());
 
-		// Need to render only the front facing sides of the cubes.
-		glCullFace(GL_BACK);
-		glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
 
 		// This is to draw the cube with a single triangle strip.
 		// The cube vertices:

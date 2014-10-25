@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+
+<qresource prefix="/gltest">
+
+	<file>glsl/cube_flat.fs</file>
+	<file>glsl/cube_flat.vs</file>
+	<file>glsl/cube_flat.gs</file>
+
+	<file>glsl/cube_flat2.fs</file>
+	<file>glsl/cube_flat2.vs</file>
+	<file>glsl/cube_flat2.gs</file>
+
+
+	<file>glsl/cube_flat_noarray.fs</file>
+	<file>glsl/cube_flat_noarray.vs</file>
+	<file>glsl/cube_flat_noarray.gs</file>
+
+</qresource>
+
+</RCC>

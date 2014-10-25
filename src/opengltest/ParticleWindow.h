@@ -26,9 +26,11 @@ public:
 		_colorsBuffer.fill(colors);
 
 		_radiiBuffer.create(QOpenGLBuffer::StaticDraw, 2, verticesPerParticle);
-		Ovito::FloatType radii[2] = {0.5f, 0.4f};
+		Ovito::FloatType radii[2] = {0.5f, 0.35f};
 		_radiiBuffer.fill(radii);
 	}
+
+	int particleCount() const { return 2; }
 
 	/// The maximum resolution of the texture used for billboard rendering of particles. Specified as a power of two.
 	static constexpr int BILLBOARD_TEXTURE_LEVELS = 8;

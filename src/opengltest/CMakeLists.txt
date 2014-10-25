@@ -26,8 +26,11 @@ ELSE()
 	SET(EXECUTABLE_OUTPUT_PATH "${OVITO_BINARY_DIRECTORY}")
 ENDIF()
 
+# Compile resources.
+QT5_ADD_RESOURCES(OVITO_GLTEST_RESOURCE_FILES gltest.qrc)
+
 # Builds the OpenGL test executable.
-ADD_EXECUTABLE(OpenGLTest Main.cpp TestWindow.cpp)
+ADD_EXECUTABLE(OpenGLTest Main.cpp TestWindow.cpp ${OVITO_GLTEST_RESOURCE_FILES})
 
 # The executable makes use of OVITO's core functions.
 TARGET_LINK_LIBRARIES(OpenGLTest Base Core)

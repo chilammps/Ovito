@@ -24,6 +24,11 @@
 #include "Window1.h"
 #include "Window2.h"
 #include "Window3.h"
+#include "Window4.h"
+#include "Window5.h"
+#include "Window6.h"
+#include "Window7.h"
+#include "Window8.h"
 
 int main(int argc, char** argv)
 {
@@ -62,7 +67,8 @@ int main(int argc, char** argv)
 	});
 	QObject::connect(buttonBox->addButton(QString("Copy screenshot to clipboard"), QDialogButtonBox::ActionRole), &QPushButton::clicked,
 			[mainWindow]() {
-		QApplication::clipboard()->setPixmap(QGuiApplication::allWindows().front()->screen()->grabWindow(mainWindow->winId()));
+		QApplication::clipboard()->setPixmap(
+				QGuiApplication::allWindows().front()->screen()->grabWindow(mainWindow->winId()).copy(mainWindow->frameGeometry()));
 	});
 	mainlayout->addWidget(buttonBox);
 
@@ -72,6 +78,11 @@ int main(int argc, char** argv)
 	windows.push_back(new Window1());
 	windows.push_back(new Window2());
 	windows.push_back(new Window3());
+	windows.push_back(new Window4());
+	windows.push_back(new Window5());
+	windows.push_back(new Window6());
+	windows.push_back(new Window7());
+	windows.push_back(new Window8());
 
 	for(int i = 0; i < windows.size(); i++) {
 		QWidget* widget = QWidget::createWindowContainer(windows[i], mainWindow);

@@ -65,7 +65,10 @@ public:
 	const Ovito::ViewProjectionParameters& projParams() const { return _projParams; }
 
 	/// Returns the current model-to-view transformation matrix.
-	Ovito::AffineTransformation modelViewTM() const { return Ovito::AffineTransformation::Identity(); }
+	Ovito::AffineTransformation modelViewTM() const { return Ovito::AffineTransformation::lookAt(
+			Ovito::Point3(0.6,0.3,3),
+			Ovito::Point3(0,0,0),
+			Ovito::Vector3(0,1,0)); }
 
 	/// The OpenGL glPointParameterf() function.
 	void glPointParameterf(GLenum pname, GLfloat param) {

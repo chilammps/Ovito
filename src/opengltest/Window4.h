@@ -1,18 +1,18 @@
 #include "ParticleWindow.h"
 #include "OpenGLBuffer.h"
 
-class Window3 : public ParticleWindow
+class Window4 : public ParticleWindow
 {
 public:
 
 	/// Constructor.
-	Window3(int id = 3) : ParticleWindow(id) {}
+	Window4(int id = 4) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
 		return std::tuple<QString, QString, QString>(
-			":/core/glsl/particles/geometry/sphere/sphere.vs",
-			":/core/glsl/particles/geometry/sphere/sphere.fs",
-			":/core/glsl/particles/geometry/sphere/sphere.gs");
+				":/core/glsl/particles/geometry/sphere/sphere_tristrip.vs",
+				":/core/glsl/particles/geometry/sphere/sphere.fs",
+				QString());
 	}
 
 	virtual void renderContent() override {
@@ -22,7 +22,7 @@ public:
 		QOpenGLShaderProgram* shader = getShader();
 		if(!shader) return;
 
-		initParticleBuffers(1);
+		initParticleBuffers(14);
 
 		OVITO_CHECK_OPENGL(shader->bind());
 
@@ -32,7 +32,7 @@ public:
 
 		// This is to draw the cube with a single triangle strip.
 		// The cube vertices:
-		static const QVector3D cubeVerts[14] = {
+		static const GLfloat cubeVerts[14][3] = {
 			{ 1,  1,  1},
 			{ 1, -1,  1},
 			{ 1,  1, -1},
@@ -48,9 +48,7 @@ public:
 			{-1,  1,  1},
 			{-1, -1,  1},
 		};
-		OVITO_CHECK_OPENGL();
-		OVITO_CHECK_OPENGL(shader->setUniformValueArray("cubeVerts", cubeVerts, 14));
-		OVITO_CHECK_OPENGL();
+		shader->setUniformValueArray("cubeVerts", &cubeVerts[0][0], 14, 3);
 
 		shader->setUniformValue("projection_matrix", (QMatrix4x4)projParams().projectionMatrix);
 		shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)projParams().inverseProjectionMatrix);
@@ -67,8 +65,23 @@ public:
 		_radiiBuffer.bind(this, shader, "particle_radius", GL_FLOAT, 0, 1);
 		_colorsBuffer.bindColors(this, shader, 3);
 
-		// By default, render particle in arbitrary order.
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _positionsBuffer.elementCount()));
+		// Prepare arrays required for glMultiDrawArrays().
+
+		std::vector<GLint> _primitiveStartIndices;
+		std::vector<GLsizei> _primitiveVertexCounts;
+		_primitiveStartIndices.resize(particleCount());
+		_primitiveVertexCounts.resize(particleCount());
+		GLint index = 0;
+		for(GLint& s : _primitiveStartIndices) {
+			s = index;
+			index += _positionsBuffer.verticesPerElement();
+		}
+		std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _positionsBuffer.verticesPerElement());
+
+		OVITO_CHECK_OPENGL(glMultiDrawArrays(GL_TRIANGLE_STRIP,
+				_primitiveStartIndices.data(),
+				_primitiveVertexCounts.data(),
+				_primitiveStartIndices.size()));
 
 		_positionsBuffer.detachPositions(this, shader);
 		_radiiBuffer.detach(this, shader, "particle_radius");
