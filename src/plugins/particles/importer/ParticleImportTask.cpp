@@ -136,7 +136,10 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 		destination->addSceneObject(cell);
 	}
 	else {
-		cell->setData(simulationCell());
+		// Adopt pbc flags from input file only if it is a new file.
+		// This gives the user the option to change the pbc flags without them
+		// being overwritten when a new frame from a simulation sequence is loaded.
+		cell->setData(simulationCell(), _isNewFile);
 	}
 	activeObjects.insert(cell);
 

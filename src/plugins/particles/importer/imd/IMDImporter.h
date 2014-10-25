@@ -61,7 +61,7 @@ protected:
 	public:
 
 		/// Normal constructor.
-		IMDImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		IMDImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
 
 	protected:
 
@@ -73,7 +73,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<IMDImportTask>(frame);
+		return std::make_shared<IMDImportTask>(frame, isNewlySelectedFile());
 	}
 
 	Q_OBJECT

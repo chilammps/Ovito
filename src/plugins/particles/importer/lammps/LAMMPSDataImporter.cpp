@@ -72,6 +72,9 @@ bool LAMMPSDataImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceL
 ******************************************************************************/
 bool LAMMPSDataImporter::inspectNewFile(LinkedFileObject* obj)
 {
+	if(!ParticleImporter::inspectNewFile(obj))
+		return false;
+
 	if(obj->frames().empty())
 		return false;
 
@@ -80,7 +83,7 @@ bool LAMMPSDataImporter::inspectNewFile(LinkedFileObject* obj)
 		return true;
 
 	// Start task that inspects the file to detect the LAMMPS atom style.
-	std::unique_ptr<LAMMPSDataImportTask> inspectionTask(new LAMMPSDataImportTask(obj->frames().front(), atomStyle(), true));
+	std::unique_ptr<LAMMPSDataImportTask> inspectionTask(new LAMMPSDataImportTask(obj->frames().front(), true, atomStyle(), true));
 	DataSetContainer& datasetContainer = *dataset()->container();
 	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&LAMMPSDataImportTask::load,
 			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));

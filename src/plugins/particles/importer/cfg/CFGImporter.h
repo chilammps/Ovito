@@ -62,7 +62,7 @@ protected:
 	public:
 
 		/// Normal constructor.
-		CFGImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		CFGImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
 
 	protected:
 
@@ -74,7 +74,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<CFGImportTask>(frame);
+		return std::make_shared<CFGImportTask>(frame, isNewlySelectedFile());
 	}
 
 	/// Guesses the mapping of input file columns to internal particle properties.

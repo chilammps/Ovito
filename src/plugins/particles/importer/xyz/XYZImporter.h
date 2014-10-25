@@ -86,12 +86,12 @@ protected:
 	public:
 
 		/// Normal constructor.
-		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame, const InputColumnMapping& columnMapping)
-		  : ParticleImportTask(frame), _parseFileHeaderOnly(false), _columnMapping(columnMapping), _propertiesAssigned(false) {}
+		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile, const InputColumnMapping& columnMapping)
+		  : ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _columnMapping(columnMapping), _propertiesAssigned(false) {}
 
 		/// Constructor used when reading only the file header information.
 		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
-		  : ParticleImportTask(frame), _parseFileHeaderOnly(true), _propertiesAssigned(false) {}
+		  : ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _propertiesAssigned(false) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _columnMapping; }
@@ -124,7 +124,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<XYZImportTask>(frame, _columnMapping);
+		return std::make_shared<XYZImportTask>(frame, isNewlySelectedFile(), _columnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.

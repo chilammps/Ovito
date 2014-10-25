@@ -83,12 +83,12 @@ protected:
 	public:
 
 		/// Normal constructor.
-		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame, const InputColumnMapping& columnMapping)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(false), _columnMapping(columnMapping) {}
+		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile, const InputColumnMapping& columnMapping)
+			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _columnMapping(columnMapping) {}
 
 		/// Constructor used when reading only the file header information.
 		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(true) {}
+			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _columnMapping; }
@@ -117,7 +117,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<LAMMPSBinaryDumpImportTask>(frame, _columnMapping);
+		return std::make_shared<LAMMPSBinaryDumpImportTask>(frame, isNewlySelectedFile(), _columnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.

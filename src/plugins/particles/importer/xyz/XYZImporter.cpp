@@ -104,6 +104,9 @@ bool XYZImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 ******************************************************************************/
 bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 {
+	if(!ParticleImporter::inspectNewFile(obj))
+		return false;
+
 	if(obj->frames().empty())
 		return false;
 

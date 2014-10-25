@@ -72,7 +72,7 @@ protected:
 	public:
 
 		/// Normal constructor.
-		CrystalAnalysisImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool loadParticles) : ParticleImportTask(frame), _loadParticles(loadParticles) {}
+		CrystalAnalysisImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool loadParticles) : ParticleImportTask(frame, true), _loadParticles(loadParticles) {}
 
 		/// Lets the data container insert the data it holds into the scene by creating
 		/// appropriate scene objects.

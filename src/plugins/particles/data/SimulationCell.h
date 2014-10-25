@@ -97,14 +97,16 @@ public:
 	}
 
 	/// \brief Sets the cell geometry to match the given cell data structure.
-	void setData(const SimulationCellData& data) {
+	void setData(const SimulationCellData& data, bool setPBCFlags = true) {
 		_cellVector1 = data.matrix().column(0);
 		_cellVector2 = data.matrix().column(1);
 		_cellVector3 = data.matrix().column(2);
 		_cellOrigin = Point3::Origin() + data.matrix().column(3);
-		_pbcX = data.pbcFlags()[0];
-		_pbcY = data.pbcFlags()[1];
-		_pbcZ = data.pbcFlags()[2];
+		if(setPBCFlags) {
+			_pbcX = data.pbcFlags()[0];
+			_pbcY = data.pbcFlags()[1];
+			_pbcZ = data.pbcFlags()[2];
+		}
 	}
 
 	/// \brief Returns a simulation cell data structure that stores the cell's properties.

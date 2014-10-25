@@ -334,7 +334,7 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 		else particleFileInfo.sourceFile = QUrl::fromLocalFile(atomsFilename);
 
 		// Create and execute the import sub-task.
-		_particleLoadTask = std::make_shared<LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, false, InputColumnMapping());
+		_particleLoadTask = std::make_shared<LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, true, false, InputColumnMapping());
 		_particleLoadTask->load(datasetContainer(), futureInterface);
 		if(futureInterface.isCanceled())
 			return;

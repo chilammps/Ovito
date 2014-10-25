@@ -121,4 +121,19 @@ void ParticleImporter::propertyChanged(const PropertyFieldDescriptor& field)
 	LinkedFileImporter::propertyChanged(field);
 }
 
+/******************************************************************************
+* This method is called by the LinkedFileObject each time a new source
+* file has been selected by the user.
+******************************************************************************/
+bool ParticleImporter::inspectNewFile(LinkedFileObject* obj)
+{
+	if(!LinkedFileImporter::inspectNewFile(obj))
+		return false;
+
+	// Set flag that this file is new.
+	_isNewFile = true;
+
+	return true;
+}
+
 };

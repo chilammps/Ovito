@@ -61,7 +61,7 @@ protected:
 	public:
 
 		/// Constructor.
-		PDBImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		PDBImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
 
 	protected:
 
@@ -71,7 +71,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<PDBImportTask>(frame);
+		return std::make_shared<PDBImportTask>(frame, isNewlySelectedFile());
 	}
 
 private:

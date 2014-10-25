@@ -90,13 +90,13 @@ public:
 	public:
 
 		/// Normal constructor.
-		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame,
+		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile,
 				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
+			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
 
 		/// Constructor used when reading only the file header information.
 		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
+			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
@@ -126,7 +126,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<LAMMPSTextDumpImportTask>(frame, _useCustomColumnMapping, _customColumnMapping);
+		return std::make_shared<LAMMPSTextDumpImportTask>(frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.

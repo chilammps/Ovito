@@ -109,6 +109,9 @@ bool LAMMPSBinaryDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& s
 ******************************************************************************/
 bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 {
+	if(!ParticleImporter::inspectNewFile(obj))
+		return false;
+
 	if(obj->frames().empty())
 		return false;
 

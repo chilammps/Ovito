@@ -51,7 +51,11 @@ public:
 public:
 
 	/// Constructor.
-	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame), _datasetContainer(nullptr), _timestep(-1) {}
+	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile)
+		: LinkedFileImporter::ImportTask(frame),
+		  _datasetContainer(nullptr),
+		  _timestep(-1),
+		  _isNewFile(isNewFile) {}
 
 	/// Is called in the background thread to perform the data file import.
 	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
@@ -172,6 +176,12 @@ private:
 
 	/// The current dataset container.
 	DataSetContainer* _datasetContainer;
+
+	/// Flag indicating that the file currently being loaded has been newly selected by the user.
+	/// If not, then the file being loaded is just another frame from the existing sequence.
+	/// In this case we don't want to overwrite any settings like the periodic boundary flags that
+	/// might have been changed by the user.
+	bool _isNewFile;
 };
 
 };

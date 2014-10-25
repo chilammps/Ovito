@@ -62,7 +62,7 @@ protected:
 	public:
 
 		/// Normal constructor.
-		ParcasFileImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		ParcasFileImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
 
 	protected:
 
@@ -74,7 +74,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<ParcasFileImportTask>(frame);
+		return std::make_shared<ParcasFileImportTask>(frame, isNewlySelectedFile());
 	}
 
 	Q_OBJECT

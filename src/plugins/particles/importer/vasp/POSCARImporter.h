@@ -61,7 +61,7 @@ protected:
 	public:
 
 		/// Constructor.
-		POSCARImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		POSCARImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
 
 	protected:
 
@@ -71,7 +71,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<POSCARImportTask>(frame);
+		return std::make_shared<POSCARImportTask>(frame, isNewlySelectedFile());
 	}
 
 private:

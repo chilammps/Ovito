@@ -108,8 +108,9 @@ protected:
 
 		/// Normal constructor.
 		LAMMPSDataImportTask(const LinkedFileImporter::FrameSourceInformation& frame,
+				bool isNewFile,
 				LAMMPSAtomStyle atomStyle = AtomStyle_Unknown,
-				bool detectAtomStyle = false) : ParticleImportTask(frame), _atomStyle(atomStyle), _detectAtomStyle(detectAtomStyle) {}
+				bool detectAtomStyle = false) : ParticleImportTask(frame, isNewFile), _atomStyle(atomStyle), _detectAtomStyle(detectAtomStyle) {}
 
 		/// Returns the LAMMPS atom style used in the data file.
 		LAMMPSAtomStyle atomStyle() const { return _atomStyle; }
@@ -138,7 +139,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<LAMMPSDataImportTask>(frame, atomStyle());
+		return std::make_shared<LAMMPSDataImportTask>(frame, isNewlySelectedFile(), atomStyle());
 	}
 
 private:
