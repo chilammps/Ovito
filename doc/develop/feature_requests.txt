@@ -34,6 +34,7 @@ New analysis features:
 - Calculation of local atomic number density functions (proposed by Sha Zhendong)
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
 - Plotting the value of a certain property of a certain particle versus simulation time. To make this work, all simulation frames need to be kept in memory (requested by Taojun & Mathieu Marciante).
+- Voronoi analysis: Higher-order faces above the edge count limit are silently ignored at the moment. Add a diagnostic so user can detect this situation and increase edge count limit.
 
 New I/O functions:
 

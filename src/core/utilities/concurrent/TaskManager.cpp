@@ -125,6 +125,7 @@ void TaskManager::showIndicator()
 			_progressTextDisplay = new QLabel();
 			_progressTextDisplay->setLineWidth(0);
 			_progressTextDisplay->setAlignment(Qt::Alignment(Qt::AlignRight | Qt::AlignVCenter));
+			_progressTextDisplay->setAutoFillBackground(true);
 			_progressTextDisplay->setMargin(2);
 			_progressBar = new QProgressBar(_progressWidget);
 			_cancelTaskButton = new QToolButton(_progressWidget);
