@@ -1,18 +1,18 @@
 #include "ParticleWindow.h"
 #include "OpenGLBuffer.h"
 
-class Window8 : public ParticleWindow
+class Window9 : public ParticleWindow
 {
 public:
 
 	/// Constructor.
-	Window8(int id = 8) : ParticleWindow(id) {}
+	Window9(int id = 9) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
 		return std::tuple<QString, QString, QString>(
-				":/gltest/glsl/cube_flat_noarray.vs",
-				":/gltest/glsl/cube_flat_noarray.fs",
-				":/gltest/glsl/cube_flat_noarray.gs");
+				":/core/glsl/particles/geometry/sphere/sphere.vs",
+				":/core/glsl/particles/geometry/sphere/sphere.fs",
+				":/gltest/glsl/sphere_const_array.gs");
 	}
 
 	virtual void renderContent() override {

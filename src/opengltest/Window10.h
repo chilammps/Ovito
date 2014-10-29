@@ -1,18 +1,18 @@
 #include "ParticleWindow.h"
 #include "OpenGLBuffer.h"
 
-class Window8 : public ParticleWindow
+class Window10 : public ParticleWindow
 {
 public:
 
 	/// Constructor.
-	Window8(int id = 8) : ParticleWindow(id) {}
+	Window10(int id = 10) : ParticleWindow(id) {}
 
 	virtual std::tuple<QString, QString, QString> shaderFiles() const override {
 		return std::tuple<QString, QString, QString>(
-				":/gltest/glsl/cube_flat_noarray.vs",
-				":/gltest/glsl/cube_flat_noarray.fs",
-				":/gltest/glsl/cube_flat_noarray.gs");
+			":/core/glsl/particles/geometry/sphere/sphere.vs",
+			":/core/glsl/particles/geometry/sphere/sphere.fs",
+			":/gltest/glsl/sphere_init_uniform.gs");
 	}
 
 	virtual void renderContent() override {
@@ -26,8 +26,31 @@ public:
 
 		OVITO_CHECK_OPENGL(shader->bind());
 
+		// Need to render only the front facing sides of the cubes.
 		glCullFace(GL_BACK);
-		glDisable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE);
+
+		// This is to draw the cube with a single triangle strip.
+		// The cube vertices:
+		static const QVector3D cubeVerts[14] = {
+			{ 1,  1,  1},
+			{ 1, -1,  1},
+			{ 1,  1, -1},
+			{ 1, -1, -1},
+			{-1, -1, -1},
+			{ 1, -1,  1},
+			{-1, -1,  1},
+			{ 1,  1,  1},
+			{-1,  1,  1},
+			{ 1,  1, -1},
+			{-1,  1, -1},
+			{-1, -1, -1},
+			{-1,  1,  1},
+			{-1, -1,  1},
+		};
+		OVITO_CHECK_OPENGL();
+		OVITO_CHECK_OPENGL(shader->setUniformValueArray("cubeVerts", cubeVerts, 14));
+		OVITO_CHECK_OPENGL();
 
 		shader->setUniformValue("projection_matrix", (QMatrix4x4)projParams().projectionMatrix);
 		shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)projParams().inverseProjectionMatrix);

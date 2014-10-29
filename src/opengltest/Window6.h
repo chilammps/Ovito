@@ -26,6 +26,7 @@ public:
 
 		OVITO_CHECK_OPENGL(shader->bind());
 
+		glCullFace(GL_BACK);
 		glDisable(GL_CULL_FACE);
 
 		// This is to draw the cube with a single triangle strip.

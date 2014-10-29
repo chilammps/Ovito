@@ -471,7 +471,7 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 		primitiveIndices.oglBuffer().release();
 	}
 	else {
-		// By default, render particle in arbitrary order.
+		// By default, render particles in arbitrary order.
 		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 	}
 
@@ -598,7 +598,7 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 			primitiveIndices.oglBuffer().release();
 		}
 		else {
-			// By default, render particle in arbitrary order.
+			// By default, render particles in arbitrary order.
 			OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 		}
 	}

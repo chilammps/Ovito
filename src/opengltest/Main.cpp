@@ -29,6 +29,9 @@
 #include "Window6.h"
 #include "Window7.h"
 #include "Window8.h"
+#include "Window9.h"
+#include "Window10.h"
+#include "Window11.h"
 
 int main(int argc, char** argv)
 {
@@ -83,6 +86,9 @@ int main(int argc, char** argv)
 	windows.push_back(new Window6());
 	windows.push_back(new Window7());
 	windows.push_back(new Window8());
+	windows.push_back(new Window9());
+	windows.push_back(new Window10());
+	windows.push_back(new Window11());
 
 	for(int i = 0; i < windows.size(); i++) {
 		QWidget* widget = QWidget::createWindowContainer(windows[i], mainWindow);

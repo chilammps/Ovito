@@ -15,6 +15,10 @@
 	<file>glsl/cube_flat_noarray.vs</file>
 	<file>glsl/cube_flat_noarray.gs</file>
 
+	<file>glsl/sphere_const_array.gs</file>
+	<file>glsl/sphere_init_uniform.gs</file>
+	<file>glsl/sphere_vec4.gs</file>
+
 </qresource>
 
 </RCC>
