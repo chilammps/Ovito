@@ -118,7 +118,7 @@ CompressedTextWriterStream& CompressedTextWriterStream::operator<<(quint64 i)
 	return *this;
 }
 
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) && (QT_POINTER_SIZE != 4)
 /******************************************************************************
 * Writes an integer number to the text-based output file.
 ******************************************************************************/
