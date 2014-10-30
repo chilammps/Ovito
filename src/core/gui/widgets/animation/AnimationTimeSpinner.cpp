@@ -65,12 +65,12 @@ void AnimationTimeSpinner::onAnimationSettingsReplaced(AnimationSettings* newAni
 	if(newAnimationSettings) {
 		_animIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, &AnimationTimeSpinner::onIntervalChanged);
 		_timeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, &AnimationTimeSpinner::onTimeChanged);
-		onTimeChanged(newAnimationSettings->time());
 		onIntervalChanged(newAnimationSettings->animationInterval());
+		onTimeChanged(newAnimationSettings->time());
 	}
 	else {
-		onTimeChanged(0);
 		onIntervalChanged(TimeInterval(0));
+		onTimeChanged(0);
 	}
 }
 

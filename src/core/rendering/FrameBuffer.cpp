@@ -30,6 +30,33 @@ namespace Ovito {
 #define IMAGE_FORMAT_FILE_FORMAT_VERSION		1
 
 /******************************************************************************
+* Detects the file format based on the filename suffix.
+******************************************************************************/
+bool ImageInfo::guessFormatFromFilename()
+{
+	if(filename().endsWith(QStringLiteral(".png"), Qt::CaseInsensitive)) {
+		setFormat("png");
+		return true;
+	}
+	else if(filename().endsWith(QStringLiteral(".jpg"), Qt::CaseInsensitive) || filename().endsWith(QStringLiteral(".jpeg"), Qt::CaseInsensitive)) {
+		setFormat("jpg");
+		return true;
+	}
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
+		for(const QString& extension : videoFormat.extensions) {
+			if(filename().endsWith(QStringLiteral(".") + extension, Qt::CaseInsensitive)) {
+				setFormat(videoFormat.name);
+				return true;
+			}
+		}
+	}
+#endif
+
+	return false;
+}
+
+/******************************************************************************
 * Returns whether the selected file format is a video format.
 ******************************************************************************/
 bool ImageInfo::isMovie() const

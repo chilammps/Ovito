@@ -78,7 +78,7 @@ void FrameBufferWindow::saveImage()
 	if(fileDialog.exec()) {
 		QString imageFilename = fileDialog.imageInfo().filename();
 		if(!frameBuffer()->image().save(imageFilename, fileDialog.imageInfo().format())) {
-			Exception ex(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));
+			Exception ex(tr("Failed to save image to file '%1'.").arg(imageFilename));
 			ex.showError();
 		}
 	}

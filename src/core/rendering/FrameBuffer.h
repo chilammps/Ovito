@@ -61,7 +61,10 @@ public:
 	const QString& filename() const { return _filename; }
 
 	/// Sets the filename of the image on disk.
-	void setFilename(const QString& filename) { _filename = filename; }
+	void setFilename(const QString& filename) {
+		_filename = filename;
+		guessFormatFromFilename();
+	}
 
 	/// Returns the format of the image on disk.
 	const QByteArray& format() const { return _format; }
@@ -69,6 +72,9 @@ public:
 	/// Sets the format of the image on disk.
 	void setFormat(const QByteArray& format) { _format = format; }
 	
+	/// Detects the file format based on the filename suffix.
+	bool guessFormatFromFilename();
+
 	/// Returns whether the selected file format is a video format.
 	bool isMovie() const;
 

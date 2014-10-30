@@ -108,7 +108,7 @@ the necessary parameters::
 
     from ovito.vis import *
     settings = RenderSettings(
-        filename = "myimage.png"
+        filename = "myimage.png",
         size = (800, 600)
     )
 
