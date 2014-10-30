@@ -26,7 +26,9 @@ layout(triangle_strip, max_vertices=14) out;
 uniform mat4 projection_matrix;
 uniform mat4 modelview_matrix;
 uniform mat4 modelviewprojection_matrix;
-uniform vec3 cubeVerts[14];
+
+// Uniform arrays do not work properly with Intel OpenGL 3.2 driver on Windows.
+//uniform vec3 cubeVerts[14];
 
 // Inputs from vertex shader
 in vec4 particle_color_gs[1];
@@ -37,10 +39,83 @@ flat out vec4 particle_color_fs;
 
 void main()
 {
+	// Uniform arrays do not work properly with Intel OpenGL 3.2 driver on Windows.
+#if 0
 	for(int vertex = 0; vertex < 14; vertex++) {
 		particle_color_fs = particle_color_gs[0];
 		gl_Position = modelviewprojection_matrix *
 			(gl_in[0].gl_Position + vec4(cubeVerts[vertex] * particle_radius_gs[0], 0));
 		EmitVertex();
 	}
+#else
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], -particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+#endif
 }

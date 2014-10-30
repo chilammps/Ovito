@@ -27,8 +27,10 @@ uniform mat4 projection_matrix;
 uniform mat4 modelview_matrix;
 uniform mat4 modelviewprojection_matrix;
 uniform mat3 normal_matrix;
-uniform vec3 cubeVerts[14];
-uniform vec3 normals[14];
+
+// Uniform arrays do not work properly with Intel OpenGL 3.2 driver on Windows.
+//uniform vec3 cubeVerts[14];
+//uniform vec3 normals[14];
 
 // Inputs from vertex shader
 in vec4 particle_color_gs[1];
@@ -40,6 +42,8 @@ flat out vec3 surface_normal_fs;
 
 void main()
 {
+	// Uniform arrays do not work properly with Intel OpenGL 3.2 driver on Windows.
+#if 0
 	for(int vertex = 0; vertex < 14; vertex++) {
 		particle_color_fs = particle_color_gs[0];
 		surface_normal_fs = normal_matrix * normals[vertex];
@@ -47,4 +51,89 @@ void main()
 			(gl_in[0].gl_Position + vec4(cubeVerts[vertex] * particle_radius_gs[0], 0));
 		EmitVertex();
 	}	
+#else
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], -particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = -normal_matrix[2];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = -normal_matrix[1];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = -normal_matrix[1];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[2];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[2];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[1];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(particle_radius_gs[0], particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = normal_matrix[1];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = -normal_matrix[2];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], -particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = -normal_matrix[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+
+	particle_color_fs = particle_color_gs[0];
+	surface_normal_fs = -normal_matrix[0];
+	gl_Position = modelviewprojection_matrix *
+		(gl_in[0].gl_Position + vec4(-particle_radius_gs[0], -particle_radius_gs[0], particle_radius_gs[0], 0));
+	EmitVertex();
+#endif
 }

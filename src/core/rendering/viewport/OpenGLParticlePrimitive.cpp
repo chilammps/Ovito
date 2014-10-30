@@ -515,46 +515,50 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	// This is to draw the cube with a single triangle strip.
-	// The cube vertices:
-	static const QVector3D cubeVerts[14] = {
-		{ 1,  1,  1},
-		{ 1, -1,  1},
-		{ 1,  1, -1},
-		{ 1, -1, -1},
-		{-1, -1, -1},
-		{ 1, -1,  1},
-		{-1, -1,  1},
-		{ 1,  1,  1},
-		{-1,  1,  1},
-		{ 1,  1, -1},
-		{-1,  1, -1},
-		{-1, -1, -1},
-		{-1,  1,  1},
-		{-1, -1,  1},
-	};
-	OVITO_CHECK_OPENGL(shader->setUniformValueArray("cubeVerts", cubeVerts, 14));
+	if(!_usingGeometryShader) {
+		// This is to draw the cube with a single triangle strip.
+		// The cube vertices:
+		static const QVector3D cubeVerts[14] = {
+			{ 1,  1,  1},
+			{ 1, -1,  1},
+			{ 1,  1, -1},
+			{ 1, -1, -1},
+			{-1, -1, -1},
+			{ 1, -1,  1},
+			{-1, -1,  1},
+			{ 1,  1,  1},
+			{-1,  1,  1},
+			{ 1,  1, -1},
+			{-1,  1, -1},
+			{-1, -1, -1},
+			{-1,  1,  1},
+			{-1, -1,  1},
+		};
+		OVITO_CHECK_OPENGL(shader->setUniformValueArray("cubeVerts", cubeVerts, 14));
+	}
 
 	if(particleShape() != SphericalShape && !renderer->isPicking()) {
-		// The normal vectors for the cube triangle strip.
-		static const QVector3D normals[14] = {
-			{ 1,  0,  0},
-			{ 1,  0,  0},
-			{ 1,  0,  0},
-			{ 1,  0,  0},
-			{ 0,  0, -1},
-			{ 0, -1,  0},
-			{ 0, -1,  0},
-			{ 0,  0,  1},
-			{ 0,  0,  1},
-			{ 0,  1,  0},
-			{ 0,  1,  0},
-			{ 0,  0, -1},
-			{-1,  0,  0},
-			{-1,  0,  0}
-		};
-		OVITO_CHECK_OPENGL(shader->setUniformValueArray("normals", normals, 14));
 		shader->setUniformValue("normal_matrix", (QMatrix3x3)(renderer->modelViewTM().linear().inverse().transposed()));
+		if(!_usingGeometryShader) {
+			// The normal vectors for the cube triangle strip.
+			static const QVector3D normals[14] = {
+				{ 1,  0,  0},
+				{ 1,  0,  0},
+				{ 1,  0,  0},
+				{ 1,  0,  0},
+				{ 0,  0, -1},
+				{ 0, -1,  0},
+				{ 0, -1,  0},
+				{ 0,  0,  1},
+				{ 0,  0,  1},
+				{ 0,  1,  0},
+				{ 0,  1,  0},
+				{ 0,  0, -1},
+				{-1,  0,  0},
+				{-1,  0,  0}
+			};
+			OVITO_CHECK_OPENGL(shader->setUniformValueArray("normals", normals, 14));
+		}
 	}
 
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
