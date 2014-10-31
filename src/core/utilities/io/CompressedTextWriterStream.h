@@ -60,7 +60,7 @@ public:
 	/// Writes a 64-bit unsigned integer number to the text-based output file.
 	CompressedTextWriterStream& operator<<(quint64 i);
 
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) && (QT_POINTER_SIZE != 4)
 	/// Writes an unsigned integer number to the text-based output file.
 	CompressedTextWriterStream& operator<<(size_t i);
 #endif
