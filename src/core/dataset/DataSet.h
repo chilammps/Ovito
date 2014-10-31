@@ -138,6 +138,12 @@ public:
 	/// \return true on success; false if the operation has been canceled by the user.
 	bool waitUntilSceneIsReady(const QString& message, QProgressDialog* progressDialog = nullptr);
 
+	/// \brief Saves the dataset to the given file.
+	/// \throw Exception on error.
+	///
+	/// Note that this method does NOT invoke setFilePath().
+	void saveToFile(const QString& filePath);
+
 public:
 
 	Q_PROPERTY(SceneRoot* sceneRoot READ sceneRoot);

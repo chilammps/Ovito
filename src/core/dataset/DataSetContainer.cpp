@@ -147,19 +147,7 @@ bool DataSetContainer::fileSave()
 
 	// Save dataset to file.
 	try {
-		QFile fileStream(currentSet()->filePath());
-	    if(!fileStream.open(QIODevice::WriteOnly))
-			throw Exception(tr("Failed to open output file '%1' for writing.").arg(currentSet()->filePath()));
-
-		QDataStream dataStream(&fileStream);
-		ObjectSaveStream stream(dataStream);
-		stream.saveObject(currentSet());
-		stream.close();
-
-		if(fileStream.error() != QFile::NoError)
-			throw Exception(tr("Failed to write output file '%1'.").arg(currentSet()->filePath()));
-		fileStream.close();
-
+		currentSet()->saveToFile(currentSet()->filePath());
 		currentSet()->undoStack().setClean();
 	}
 	catch(const Exception& ex) {

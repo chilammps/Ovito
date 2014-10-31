@@ -114,6 +114,7 @@ BOOST_PYTHON_MODULE(PyScriptApp)
 		.def("rescaleTime", &DataSet::rescaleTime)
 		.def("waitUntilSceneIsReady", &DataSet::waitUntilSceneIsReady, DataSet_waitUntilSceneIsReady_overloads())
 		.def("renderScene", &DataSet::renderScene, DataSet_renderScene_overloads())
+		.def("saveToFile", &DataSet::saveToFile)
 	;
 
 	ovito_abstract_class<DataSetContainer, RefMaker>()

@@ -3,7 +3,7 @@ User interface improvements:
 - Let the user configure the default colors and radii assigned to different atom types.
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
-- User-defined color maps (requested by Wolfgang Verestek)
+- User-defined color maps (requested by Wolfgang Verestek and Yongjian Yang). Simple implementation could be based on custom images.
  
 Work-flow improvements:
 
@@ -50,7 +50,6 @@ Scripting features:
 - Scripting interface for viewport overlays.
 - Python 3.x compatibility (requested by jan.oliver.oelerich@physik.uni-marburg.de). 
 - Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
-- Expose function for saving the current dataset to an OVITO file.
 
 NirajGupta@my.unt.edu:
 

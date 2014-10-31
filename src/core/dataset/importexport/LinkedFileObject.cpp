@@ -125,6 +125,13 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 ******************************************************************************/
 bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, bool useExactURL)
 {
+	// Make file path absolute.
+	if(sourceUrl.isLocalFile()) {
+		QFileInfo fileInfo(sourceUrl.toLocalFile());
+		if(fileInfo.isRelative())
+			sourceUrl = QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+	}
+
 	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;
 

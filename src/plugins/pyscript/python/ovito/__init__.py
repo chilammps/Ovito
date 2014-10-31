@@ -36,6 +36,14 @@ def _set_DataSet_selected_node(self, node):
     else: self.selection.clear()
 DataSet.selected_node = property(_get_DataSet_selected_node, _set_DataSet_selected_node)
 
+def _DataSet_save(self, filename):
+    """ 
+    Saves the dataset, including the viewports, all objects that are part of the scene, modification pipelines, and other settings, to an OVITO file.
+    This function works like the *Save State As* function in OVITO's file menu. 
+    """
+    self.saveToFile(filename)
+DataSet.save = _DataSet_save
+
 # Implement the 'modifiers' property of the ObjectNode class, which provides access to modifiers in the pipeline. 
 def _get_ObjectNode_modifiers(self):
     """The node's modification pipeline.

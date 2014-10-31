@@ -486,4 +486,23 @@ bool DataSet::waitUntilSceneIsReady(const QString& message, QProgressDialog* pro
 	}, message, progressDialog);
 }
 
+/******************************************************************************
+* Saves the dataset to the given file.
+******************************************************************************/
+void DataSet::saveToFile(const QString& filePath)
+{
+	QFile fileStream(filePath);
+    if(!fileStream.open(QIODevice::WriteOnly))
+		throw Exception(tr("Failed to open output file '%1' for writing.").arg(filePath));
+
+	QDataStream dataStream(&fileStream);
+	ObjectSaveStream stream(dataStream);
+	stream.saveObject(this);
+	stream.close();
+
+	if(fileStream.error() != QFile::NoError)
+		throw Exception(tr("Failed to write output file '%1'.").arg(filePath));
+	fileStream.close();
+}
+
 };
