@@ -14,18 +14,18 @@ See website for more information:
 Change Log 
 ****************************************************************************************
 
-Release 2.4.1 (xx-yyy-14):
+Release 2.4.1 (01-Nov-14):
 
- - Introduced viewport overlays, which allow to include the coordinate system tripod and a color legend in the rendered image. 
- - The OpenGL renderer now supports semi-transparent particles and surfaces.
- - Properties of the particle under the mouse cursor are displayed in the status bar.
- - The 'Freeze Selection' modifier has been superseded by the more general 'Freeze Property' modifier.
- - Periodic boundary conditions can be overwritten by user without changes being lost when a new simulation frame is loaded.
+ - Introduced viewport overlay concept, which allows to include the coordinate system tripod and a color legend in the rendered image. 
+ - The OpenGL renderer now supports the display of semi-transparent particles and surfaces.
+ - Particle properties are displayed in the status bar when hovering over a particle in the viewports.
+ - Periodic boundary conditions can be overwritten by the user without the changes being lost when a new simulation frame is loaded.
  - Bug fix: Implemented workaround for high-quality particle rendering on Windows computers with Intel HD 4000 graphics.
  - Bug fix: StrainTensor.XZ and StrainTensor.YZ components output by Atomic Strain modifier were swapped.
  - Bug fix: Fixed issue in Histogram modifier that occured when the fixed x-range is smaller than the value range.
  - Bug fix: Atom type ordering is now maintained when importing a sequence of LAMMPS dump files with named atom types.
  - Performance improvements in modification pipeline by avoiding unnecessary particle data copies and initialization operations.
+ - The 'Freeze Selection' modifier has been superseded by the more general 'Freeze Property' modifier.
  
 Release 2.4.0 (16-Sep-14):
 
