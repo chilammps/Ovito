@@ -216,7 +216,7 @@ bool DataSetContainer::fileSaveAs(const QString& filename)
 ******************************************************************************/
 bool DataSetContainer::askForSaveChanges()
 {
-	if(!currentSet() || currentSet()->undoStack().isClean() || !mainWindow())
+	if(!currentSet() || currentSet()->undoStack().isClean() || currentSet()->filePath().isEmpty() || !mainWindow())
 		return true;
 
 	QMessageBox::StandardButton result = QMessageBox::question(mainWindow(), tr("Save changes"),

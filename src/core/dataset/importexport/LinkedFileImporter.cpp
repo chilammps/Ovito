@@ -136,11 +136,11 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 				msgBox.setEscapeButton(cancelButton);
 				msgBox.exec();
 
-				if(msgBox.clickedButton() == cancelButton)
+				if(msgBox.clickedButton() == cancelButton) {
 					return false; // Operation canceled by user.
+				}
 				else if(msgBox.clickedButton() == resetSceneButton) {
 					importMode = ResetScene;
-
 					// Ask user if current scene should be saved before it is replaced by the imported data.
 					if(!dataset()->container()->askForSaveChanges())
 						return false;
@@ -160,8 +160,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 					tr("Do you want to keep the existing objects in the current scene?"),
 					QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
 
-				if(result == QMessageBox::Cancel)
+				if(result == QMessageBox::Cancel) {
 					return false; // Operation canceled by user.
+				}
 				else if(result == QMessageBox::No) {
 					importMode = ResetScene;
 

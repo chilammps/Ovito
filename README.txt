@@ -19,7 +19,7 @@ Release 2.4.1 (01-Nov-14):
  - Introduced viewport overlay concept, which allows to include the coordinate system tripod and a color legend in the rendered image. 
  - The OpenGL renderer now supports the display of semi-transparent particles and surfaces.
  - Particle properties are displayed in the status bar when hovering over a particle in the viewports.
- - Periodic boundary conditions can be overwritten by the user without the changes being lost when a new simulation frame is loaded.
+ - Periodic boundary conditions can be overridden by the user without the changes being lost when a new simulation frame is loaded.
  - Bug fix: Implemented workaround for high-quality particle rendering on Windows computers with Intel HD 4000 graphics.
  - Bug fix: StrainTensor.XZ and StrainTensor.YZ components output by Atomic Strain modifier were swapped.
  - Bug fix: Fixed issue in Histogram modifier that occured when the fixed x-range is smaller than the value range.
