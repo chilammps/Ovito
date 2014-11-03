@@ -44,9 +44,12 @@ dict ParticlePropertyObject__array_interface__(const ParticlePropertyObject& p)
 	dict ai;
 	if(p.componentCount() == 1) {
 		ai["shape"] = boost::python::make_tuple(p.size());
+		if(p.stride() != p.dataTypeSize())
+			ai["strides"] = boost::python::make_tuple(p.stride());
 	}
 	else if(p.componentCount() > 1) {
 		ai["shape"] = boost::python::make_tuple(p.size(), p.componentCount());
+		ai["strides"] = boost::python::make_tuple(p.stride(), p.dataTypeSize());
 	}
 	else throw Exception("Cannot access empty particle property from Python.");
 	if(p.dataType() == qMetaTypeId<int>()) {
@@ -230,7 +233,7 @@ BOOST_PYTHON_MODULE(Particles)
 					)
 			.add_property("dataType", &ParticlePropertyObject::dataType)
 			.add_property("dataTypeSize", &ParticlePropertyObject::dataTypeSize)
-			.add_property("perParticleSize", &ParticlePropertyObject::perParticleSize)
+			.add_property("stride", &ParticlePropertyObject::stride)
 			.add_property("components", &ParticlePropertyObject::componentCount,
 					"The number of vector components (if this is a vector particle property); otherwise 1 (= scalar property).")
 			.add_property("__array_interface__", &ParticlePropertyObject__array_interface__)

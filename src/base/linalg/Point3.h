@@ -38,13 +38,24 @@ namespace Ovito {
  * \brief A point in 3D space.
  */
 template<typename T>
-class Point_3 : public std::array<T, 3>
+class Point_3 : private std::array<T, 3>
 {
 public:
 
 	struct Origin {};
 
-public:
+	using typename std::array<T, 3>::size_type;
+	using typename std::array<T, 3>::difference_type;
+	using typename std::array<T, 3>::value_type;
+	using std::array<T, 3>::data;
+	using std::array<T, 3>::size;
+	using std::array<T, 3>::operator[];
+	using typename std::array<T, 3>::iterator;
+	using typename std::array<T, 3>::const_iterator;
+	using std::array<T, 3>::begin;
+	using std::array<T, 3>::end;
+	using std::array<T, 3>::cbegin;
+	using std::array<T, 3>::cend;
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
@@ -157,12 +168,12 @@ public:
 	///////////////////////////////// Utilities ////////////////////////////////
 
 	/// \brief Returns the index of the coordinate with the maximum value.
-	Q_DECL_CONSTEXPR inline std::size_t maxComponent() const {
+	Q_DECL_CONSTEXPR inline size_type maxComponent() const {
 	    return ((x() >= y()) ? ((x() >= z()) ? 0 : 2) : ((y() >= z()) ? 1 : 2));
 	}
 
 	/// \brief Returns the index of the coordinate with the minimum value.
-	Q_DECL_CONSTEXPR inline std::size_t minComponent() const {
+	Q_DECL_CONSTEXPR inline size_type minComponent() const {
 	    return ((x() <= y()) ? ((x() <= z()) ? 0 : 2) : ((y() <= z()) ? 1 : 2));
 	}
 

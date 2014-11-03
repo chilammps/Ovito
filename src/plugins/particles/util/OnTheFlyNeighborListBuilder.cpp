@@ -49,15 +49,25 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 	simCellInverse = simCell.inverse();
 	pbc = cellData.pbcFlags();
 
-	// Calculate the number of bins required in each spatial direction.
 	AffineTransformation binCell;
 	binCell.translation() = simCell.translation();
 	Vector3 planeNormals[3];
+
+	// Determine the number of bins in each spatial direction.
 	for(size_t i = 0; i < 3; i++) {
 		planeNormals[i] = cellData.cellNormalVector(i);
-		binDim[i] = (int)floor(simCell.column(i).dot(planeNormals[i]) / _cutoffRadius);
-		binDim[i] = std::min(binDim[i], 60);
-		binDim[i] = std::max(binDim[i], 1);
+		binDim[i] = std::max((int)floor(simCell.column(i).dot(planeNormals[i]) / _cutoffRadius), 1);
+	}
+	// Impose limit on the total number of bins.
+	const int binCountLimit = 128*128*128;
+	// Scale bin count in each dimension to stay below limit.
+	if(binDim[0] * binDim[1] * binDim[2] > binCountLimit) {
+		FloatType factor = pow((FloatType)binCountLimit / (binDim[0] * binDim[1] * binDim[2]), 1.0/3.0);
+		for(size_t i = 0; i < 3; i++) {
+			binDim[i] = std::max((int)(binDim[i] * factor), 1);
+		}
+	}
+	for(size_t i = 0; i < 3; i++) {
 		binCell.column(i) = simCell.column(i) / binDim[i];
 	}
 	bins.resize(binDim[0] * binDim[1] * binDim[2]);
@@ -65,21 +75,62 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 	// Compute the reciprocal bin cell for fast lookup.
 	reciprocalBinCell = binCell.inverse();
 
-	// Calculate size of stencil.
-	Vector3I stencilCount;
-	for(size_t dim = 0; dim < 3; dim++) {
-		stencilCount[dim] = (int)floor(binCell.column(dim).dot(planeNormals[dim]) / _cutoffRadius);
-		stencilCount[dim] = std::min(stencilCount[dim], 50);
-		stencilCount[dim] = std::max(stencilCount[dim], 1);
-	}
-
 	// Generate stencil.
-	for(int ix = -stencilCount[0]; ix <= +stencilCount[0]; ix++) {
-		for(int iy = -stencilCount[1]; iy <= +stencilCount[1]; iy++) {
-			for(int iz = -stencilCount[2]; iz <= +stencilCount[2]; iz++) {
-				stencil.push_back(Vector3I(ix,iy,iz));
+
+	// This helper functions computes the shortest distance between a point and a bin cell located at the origin.
+	auto shortestCellCellDistance = [binCell, planeNormals](const Vector3I& d) {
+		Vector3 p = binCell * Vector3(d);
+		// Compute distance from point to corner.
+		FloatType distSq = p.squaredLength();
+		for(size_t dim = 0; dim < 3; dim++) {
+			// Compute shortest distance from point to edge.
+			FloatType t = -p.dot(binCell.column(dim)) / binCell.column(dim).squaredLength();
+			if(t > 0 && t < 1)
+				distSq = std::min(distSq, (p - t * binCell.column(dim)).squaredLength());
+			// Compute shortest distance from point to cell face.
+			const Vector3& u = binCell.column((dim+1)%3);
+			const Vector3& v = binCell.column((dim+2)%3);
+			const Vector3& n = planeNormals[dim];
+			OVITO_ASSERT(std::abs(n.squaredLength() - 1.0) < FLOATTYPE_EPSILON);
+			t = n.dot(p);
+			Vector3 p0 = p - t * n;
+			FloatType a = u.dot(v)*p0.dot(v) - v.squaredLength()*p0.dot(u);
+			FloatType b = u.dot(v)*p0.dot(u) - u.squaredLength()*p0.dot(v);
+			FloatType denom = u.dot(v);
+			denom *= denom;
+			denom -= u.squaredLength()*v.squaredLength();
+			a /= denom;
+			b /= denom;
+			if(a > 0 && b > 0 && a < 1 && b < 1)
+				distSq = std::min(distSq, t*t);
+		}
+		return distSq;
+	};
+
+	for(int stencilRadius = 0; stencilRadius < 100; stencilRadius++) {
+		size_t oldCount = stencil.size();
+		for(int ix = -stencilRadius; ix <= stencilRadius; ix++) {
+			for(int iy = -stencilRadius; iy <= stencilRadius; iy++) {
+				for(int iz = -stencilRadius; iz <= stencilRadius; iz++) {
+					if(std::abs(ix) < stencilRadius && std::abs(iy) < stencilRadius && std::abs(iz) < stencilRadius)
+						continue;
+					FloatType shortestDistance = FLOATTYPE_MAX;
+					for(int dx = -1; dx <= 1; dx++) {
+						for(int dy = -1; dy <= 1; dy++) {
+							for(int dz = -1; dz <= 1; dz++) {
+								Vector3I d(dx + ix, dy + iy, dz + iz);
+								shortestDistance = std::min(shortestDistance, shortestCellCellDistance(d));
+							}
+						}
+					}
+					if(shortestDistance < _cutoffRadius * _cutoffRadius) {
+						stencil.push_back(Vector3I(ix,iy,iz));
+					}
+				}
 			}
 		}
+		if(stencil.size() == oldCount)
+			break;
 	}
 
 	// Reset flag.

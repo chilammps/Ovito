@@ -55,6 +55,7 @@ public:
 	struct Identity {};
 
 	typedef T value_type;
+	typedef Vector_3<T> column_type;
 	typedef std::size_t size_type;
 
 public:
@@ -84,7 +85,7 @@ public:
 			Vector_3<T>(m14,m24,m34)} {}
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
-	Q_DECL_CONSTEXPR Matrix_34(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) :
+	Q_DECL_CONSTEXPR Matrix_34(const column_type& c1, const column_type& c2, const column_type& c3, const column_type& c4) :
 			_m{c1, c2, c3, c4} {}
 
 	/// \brief Initializes the matrix to the null matrix.
@@ -131,14 +132,14 @@ public:
 	/// \brief Returns a column vector in the matrix.
 	/// \param col The index of the column to return.
 	/// \return The i-th column of the matrix as a vector.
-	inline Q_DECL_CONSTEXPR const Vector_3<T>& column(size_type col) const {
+	inline Q_DECL_CONSTEXPR const column_type& column(size_type col) const {
 		return _m[col];
 	}
 
 	/// \brief Returns a reference to a column vector of the matrix.
 	/// \param col The column to return.
 	/// \return The i-th column of the matrix as a vector reference. Modifying the vector modifies the matrix.
-	inline Vector_3<T>& column(size_type col) {
+	inline column_type& column(size_type col) {
 		return _m[col];
 	}
 	
@@ -151,10 +152,10 @@ public:
 
 	/// \brief Returns the translational part of this transformation matrix.
 	/// \return A vector that specifies the translation.
-	Q_DECL_CONSTEXPR const Vector_3<T>& translation() const { return column(3); }
+	Q_DECL_CONSTEXPR const column_type& translation() const { return column(3); }
 
 	/// \brief Returns a reference to the translational part of this transformation matrix.
-	Vector_3<T>& translation() { return column(3); }
+	column_type& translation() { return column(3); }
 
 	/// \brief Sets all components of the matrix to zero.
 	Matrix_34& setZero() {
@@ -170,10 +171,10 @@ public:
 
 	/// \brief Sets the matrix to the identity matrix.
 	Matrix_34& setIdentity() {
-		_m[0][0] = T(1); _m[0][1] = T(0); _m[0][2] = T(0);
-		_m[1][0] = T(0); _m[1][1] = T(1); _m[1][2] = T(0);
-		_m[2][0] = T(0); _m[2][1] = T(0); _m[2][2] = T(1);
-		_m[3][0] = T(0); _m[3][1] = T(0); _m[3][2] = T(0);
+		_m[0] = Vector_3<T>(T(1),T(0),T(0));
+		_m[1] = Vector_3<T>(T(0),T(1),T(0));
+		_m[2] = Vector_3<T>(T(0),T(0),T(1));
+		_m[3].setZero();
 		return *this;
 	}
 
@@ -182,19 +183,15 @@ public:
 		return setIdentity();
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 12 matrix elements in column-major order.
+	/// \brief Returns a pointer to the element data of the matrix.
 	/// \sa constData()
 	T* data() {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
 		return reinterpret_cast<T*>(&_m);
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 12 matrix elements in column-major order.
+	/// \brief Returns a pointer to the element data of the matrix.
 	/// \sa data()
 	const T* constData() const {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
 		return reinterpret_cast<const T*>(&_m);
 	}
 

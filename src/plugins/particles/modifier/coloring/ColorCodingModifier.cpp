@@ -155,7 +155,7 @@ PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval
 		throw Exception(tr("The vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty().name()).arg(property->componentCount()));
 
 	int vecComponent = std::max(0, sourceProperty().vectorComponent());
-	int vecComponentCount = property->componentCount();
+	int stride = property->stride() / property->dataTypeSize();
 
 	if(!_colorGradient)
 		throw Exception(tr("No color gradient has been selected."));
@@ -187,7 +187,7 @@ PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval
 
 	if(property->dataType() == qMetaTypeId<FloatType>()) {
 		const FloatType* v = property->constDataFloat() + vecComponent;
-		for(; c != c_end; ++c, v += vecComponentCount) {
+		for(; c != c_end; ++c, v += stride) {
 
 			// If the "only selected" option is enabled, and the particle is not selected, use the existing particle color.
 			if(sel && !(*sel++)) {
@@ -213,7 +213,7 @@ PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval
 	}
 	else if(property->dataType() == qMetaTypeId<int>()) {
 		const int* v = property->constDataInt() + vecComponent;
-		for(; c != c_end; ++c, v += vecComponentCount) {
+		for(; c != c_end; ++c, v += stride) {
 
 			// If the "only selected" option is enabled, and the particle is not selected, use the existing particle color.
 			if(sel && !(*sel++)) {
@@ -265,23 +265,23 @@ bool ColorCodingModifier::adjustRange()
 	if(sourceProperty().vectorComponent() >= (int)property->componentCount())
 		return false;
 	int vecComponent = std::max(0, sourceProperty().vectorComponent());
-	int vecComponentCount = property->componentCount();
+	int stride = property->stride() / property->dataTypeSize();
 
 	// Iterate over all atoms.
 	FloatType maxValue = -FLOATTYPE_MAX;
 	FloatType minValue = +FLOATTYPE_MAX;
 	if(property->dataType() == qMetaTypeId<FloatType>()) {
 		const FloatType* v = property->constDataFloat() + vecComponent;
-		const FloatType* vend = v + (property->size() * vecComponentCount);
-		for(; v != vend; v += vecComponentCount) {
+		const FloatType* vend = v + (property->size() * stride);
+		for(; v != vend; v += stride) {
 			if(*v > maxValue) maxValue = *v;
 			if(*v < minValue) minValue = *v;
 		}
 	}
 	else if(property->dataType() == qMetaTypeId<int>()) {
 		const int* v = property->constDataInt() + vecComponent;
-		const int* vend = v + (property->size() * vecComponentCount);
-		for(; v != vend; v += vecComponentCount) {
+		const int* vend = v + (property->size() * stride);
+		for(; v != vend; v += stride) {
 			if(*v > maxValue) maxValue = *v;
 			if(*v < minValue) minValue = *v;
 		}

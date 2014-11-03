@@ -101,7 +101,7 @@ protected:
 	/// Creates a custom particle property in the modifier's output.
 	/// If the particle property already exists in the input, its contents are copied to the
 	/// output property by this method.
-	ParticlePropertyObject* outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount, bool initializeMemory = false);
+	ParticlePropertyObject* outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount, size_t stride, bool initializeMemory = false);
 
 	/// Creates a custom particle property in the modifier's output and sets its content.
 	ParticlePropertyObject* outputCustomProperty(ParticleProperty* storage);

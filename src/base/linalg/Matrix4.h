@@ -56,6 +56,7 @@ public:
 	struct Identity {};
 
 	typedef T value_type;
+	typedef Vector_4<T> column_type;
 	typedef std::size_t size_type;
 
 public:
@@ -150,14 +151,14 @@ public:
 	/// \brief Returns a column vector in the matrix.
 	/// \param col The index of the column to return.
 	/// \return The i-th column of the matrix as a vector.
-	inline Q_DECL_CONSTEXPR const Vector_4<T>& column(size_type col) const {
+	inline Q_DECL_CONSTEXPR const column_type& column(size_type col) const {
 		return _m[col];
 	}
 
 	/// \brief Returns a reference to a column vector of the matrix.
 	/// \param col The column to return.
 	/// \return The i-th column of the matrix as a vector reference. Modifying the vector modifies the matrix.
-	inline Vector_4<T>& column(size_type col) {
+	inline column_type& column(size_type col) {
 		return _m[col];
 	}
 	
@@ -258,19 +259,15 @@ public:
 				det3x3( a1, a2, a3, b1, b2, b3, c1, c2, c3) / det);
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 16 matrix elements in column-major order.
+	/// \brief Returns a pointer to the element data of the matrix.
 	/// \sa constData() 
 	T* data() {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
 		return reinterpret_cast<T*>(&_m);
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 16 matrix elements in column-major order.
+	/// \brief Returns a pointer to the element data of the matrix.
 	/// \sa data() 
 	const T* constData() const {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
 		return reinterpret_cast<const T*>(&_m);
 	}
 
@@ -282,7 +279,6 @@ public:
 				(*this)(2,0), (*this)(2,1), (*this)(2,2), (*this)(2,3),
 				(*this)(3,0), (*this)(3,1), (*this)(3,2), (*this)(3,3));
 	}
-
 
 	///////////////////////////// Generation //////////////////////////////////
 

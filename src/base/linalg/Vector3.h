@@ -45,13 +45,24 @@ namespace Ovito {
  * in a three dimensional coordinate system.
  */
 template<typename T>
-class Vector_3 : public std::array<T, 3>
+class Vector_3 : private std::array<T, 3>
 {
 public:
 
 	struct Zero {};
 
-public:
+	using typename std::array<T, 3>::size_type;
+	using typename std::array<T, 3>::difference_type;
+	using typename std::array<T, 3>::value_type;
+	using std::array<T, 3>::data;
+	using std::array<T, 3>::size;
+	using std::array<T, 3>::operator[];
+	using typename std::array<T, 3>::iterator;
+	using typename std::array<T, 3>::const_iterator;
+	using std::array<T, 3>::begin;
+	using std::array<T, 3>::end;
+	using std::array<T, 3>::cbegin;
+	using std::array<T, 3>::cend;
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
@@ -219,12 +230,12 @@ public:
 	///////////////////////////////// Utilities ////////////////////////////////
 
 	/// \brief Returns the index of the component with the maximum value.
-	Q_DECL_CONSTEXPR inline std::size_t maxComponent() const {
+	Q_DECL_CONSTEXPR inline size_type maxComponent() const {
 	    return ((x() >= y()) ? ((x() >= z()) ? 0 : 2) : ((y() >= z()) ? 1 : 2));
 	}
 
 	/// \brief Returns the index of the component with the minimum value.
-	Q_DECL_CONSTEXPR inline std::size_t minComponent() const {
+	Q_DECL_CONSTEXPR inline size_type minComponent() const {
 	    return ((x() <= y()) ? ((x() <= z()) ? 0 : 2) : ((y() <= z()) ? 1 : 2));
 	}
 
@@ -263,19 +274,6 @@ Q_DECL_CONSTEXPR Vector_3<T> operator*(T s, const Vector_3<T>& a) {
 template<typename T, typename S>
 Q_DECL_CONSTEXPR Vector_3<T> operator/(const Vector_3<T>& a, S s) {
 	return Vector_3<T>{ a.x() / s, a.y() / s, a.z() / s };
-}
-
-/// \brief Writes the vector to a text output stream.
-template<typename T>
-inline std::ostream& operator<<(std::ostream& os, const Vector_3<T>& v) {
-	return os << "(" << v.x() << ", " << v.y()  << ", " << v.z() << ")";
-}
-
-/// \brief Writes the vector to the Qt debug stream.
-template<typename T>
-inline QDebug operator<<(QDebug dbg, const Vector_3<T>& v) {
-    dbg.nospace() << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
-    return dbg.space();
 }
 
 /// \brief Writes a vector to a binary output stream.

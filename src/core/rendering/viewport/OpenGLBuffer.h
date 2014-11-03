@@ -167,8 +167,8 @@ public:
 	/// Binds this buffer to a vertex attribute of a vertex shader.
 	void bind(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader, const char* attributeName, GLenum type, int offset, int tupleSize, int stride = 0) {
 		OVITO_ASSERT(isCreated());
-		OVITO_ASSERT(type != GL_FLOAT || (sizeof(T) == sizeof(GLfloat)*tupleSize && stride == 0) || sizeof(T) == sizeof(GLfloat)*stride);
-		OVITO_ASSERT(type != GL_INT || (sizeof(T) == sizeof(GLint)*tupleSize && stride == 0) || sizeof(T) == sizeof(GLint)*stride);
+		OVITO_ASSERT(type != GL_FLOAT || (sizeof(T) == sizeof(GLfloat)*tupleSize && stride == 0) || sizeof(T) == stride);
+		OVITO_ASSERT(type != GL_INT || (sizeof(T) == sizeof(GLint)*tupleSize && stride == 0) || sizeof(T) == stride);
 		if(!_buffer.bind())
 			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 		OVITO_CHECK_OPENGL(shader->enableAttributeArray(attributeName));

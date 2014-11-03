@@ -69,9 +69,10 @@ public:
 	///                     This is necessary because the Qt type system has no function to query
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
+	/// \param stride The number of bytes per particle.
 	/// \param name The name assigned to the property.
 	/// \param initializeMemory Controls whether the newly allocated memory is initialized with zeros.
-	static OORef<ParticlePropertyObject> createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory);
+	static OORef<ParticlePropertyObject> createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, size_t stride, const QString& name, bool initializeMemory);
 
 	/// \brief Factory function that creates a standard property object.
 	/// \param particleCount The number of particles.
@@ -140,8 +141,7 @@ public:
 	size_t dataTypeSize() const { return _storage->dataTypeSize(); }
 
 	/// \brief Returns the number of bytes used per particle.
-	/// \return The size of the property' data type multiplied by the component count.
-	size_t perParticleSize() const { return _storage->perParticleSize(); }
+	size_t stride() const { return _storage->stride(); }
 
 	/// \brief Returns the number of array elements per particle.
 	/// \return The number of data values stored per particle in this storage object.
@@ -213,12 +213,6 @@ public:
 		return _storage->constDataColor();
 	}
 
-	/// \brief Returns a read-only pointer to the first tensor element in the property storage.
-	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
-	const Tensor2* constDataTensor2() const {
-		return _storage->constDataTensor2();
-	}
-
 	/// \brief Returns a read-only pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	const SymmetricTensor2* constDataSymmetricTensor2() const {
@@ -259,11 +253,6 @@ public:
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const Point3I*> constPoint3IRange() const {
 		return _storage->constPoint3IRange();
-	}
-
-	/// \brief Returns a range of const iterators over the elements stored in this object.
-	ParticleProperty::Range<const Tensor2*> constTensor2Range() const {
-		return _storage->constTensor2Range();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
@@ -324,13 +313,6 @@ public:
 		return _storage->dataColor();
 	}
 
-	/// \brief Returns a read-write pointer to the first tensor element in the property storage.
-	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
-	Tensor2* dataTensor2() {
-		_storage.detach();
-		return _storage->dataTensor2();
-	}
-
 	/// \brief Returns a read-write pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	SymmetricTensor2* dataSymmetricTensor2() {
@@ -379,12 +361,6 @@ public:
 	ParticleProperty::Range<Point3I*> point3IRange() {
 		_storage.detach();
 		return _storage->point3IRange();
-	}
-
-	/// \brief Returns a range of iterators over the elements stored in this object.
-	ParticleProperty::Range<Tensor2*> tensor2Range() {
-		_storage.detach();
-		return _storage->tensor2Range();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
@@ -437,11 +413,6 @@ public:
 	/// Returns a Color element at the given index (if this is a point property).
 	const Color& getColor(size_t particleIndex) const {
 		return _storage->getColor(particleIndex);
-	}
-
-	/// Returns a Tensor2 element stored for the given particle.
-	const Tensor2& getTensor2(size_t particleIndex) const {
-		return _storage->getTensor2(particleIndex);
 	}
 
 	/// Returns a SymmetricTensor2 element stored for the given particle.
@@ -500,12 +471,6 @@ public:
 	void setColor(size_t particleIndex, const Color& newValue) {
 		_storage.detach();
 		_storage->setColor(particleIndex, newValue);
-	}
-
-	/// Sets the value of a Tensor2 element for the given particle.
-	void setTensor2(size_t particleIndex, const Tensor2& newValue) {
-		_storage.detach();
-		_storage->setTensor2(particleIndex, newValue);
 	}
 
 	/// Sets the value of a SymmetricTensor2 element for the given particle.

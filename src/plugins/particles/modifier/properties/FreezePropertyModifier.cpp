@@ -110,12 +110,12 @@ PipelineStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInter
 				const int* id = idProperty->constDataInt();
 				char* dest = static_cast<char*>(outputProperty->data());
 				const char* src = static_cast<const char*>(savedProperty->property()->constData());
-				size_t perParticleSize = outputProperty->perParticleSize();
-				for(size_t index = 0; index < outputProperty->size(); index++, ++id, dest += perParticleSize) {
+				size_t stride = outputProperty->stride();
+				for(size_t index = 0; index < outputProperty->size(); index++, ++id, dest += stride) {
 					auto mapEntry = idmap.find(*id);
 					if(mapEntry == idmap.end())
 						throw Exception(tr("Detected unknown particle ID %1. Cannot restore saved property values.").arg(*id));
-					memcpy(dest, src + perParticleSize * mapEntry->second, perParticleSize);
+					memcpy(dest, src + stride * mapEntry->second, stride);
 				}
 
 				outputProperty->changed();

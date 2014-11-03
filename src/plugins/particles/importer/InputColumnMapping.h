@@ -167,12 +167,12 @@ private:
 
 	struct TargetPropertyRecord {
 		ParticleProperty* property;
-		FloatType* floatData;
-		int* intData;
+		uint8_t* data;
 		size_t stride;
 		size_t count;
 		int vectorComponent;
 		bool isTypeProperty;
+		bool isInt;
 	};
 
 	/// Stores the destination particle properties.

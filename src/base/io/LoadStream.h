@@ -267,7 +267,7 @@ inline LoadStream& operator>>(LoadStream& stream, QVector<T>& v)
 template<typename T, std::size_t N>
 inline LoadStream& operator>>(LoadStream& stream, std::array<T, N>& a)
 {
-	for(size_t i = 0; i < N; ++i)
+	for(typename std::array<T, N>::size_type i = 0; i < N; ++i)
 		stream >> a[i];
 	return stream;
 }

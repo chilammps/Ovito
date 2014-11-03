@@ -116,9 +116,10 @@ public:
 	///                     This is necessary because the Qt type system has no function to query
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
+	/// \param stride The number of bytes per particle.
 	/// \param name The name assigned to the property.
 	/// \param initializeMemory Controls whether the newly allocated memory is initialized with zeros.
-	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory);
+	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, size_t stride, const QString& name, bool initializeMemory);
 
 	/// \brief Copy constructor.
 	ParticleProperty(const ParticleProperty& other);
@@ -169,8 +170,7 @@ public:
 	size_t dataTypeSize() const { return _dataTypeSize; }
 
 	/// \brief Returns the number of bytes used per particle.
-	/// \return The size of the property' data type multiplied by the component count.
-	size_t perParticleSize() const { return _perParticleSize; }
+	size_t stride() const { return _stride; }
 
 	/// \brief Returns the number of array elements per particle.
 	/// \return The number of data values stored per particle in this storage object.
@@ -229,13 +229,6 @@ public:
 		return reinterpret_cast<const Color*>(constData());
 	}
 
-	/// \brief Returns a read-only pointer to the first tensor element in the property storage.
-	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
-	const Tensor2* constDataTensor2() const {
-		OVITO_ASSERT(dataType() == qMetaTypeId<Tensor2>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 9));
-		return reinterpret_cast<const Tensor2*>(constData());
-	}
-
 	/// \brief Returns a read-only pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	const SymmetricTensor2* constDataSymmetricTensor2() const {
@@ -280,11 +273,6 @@ public:
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	Range<const Point3I*> constPoint3IRange() const {
 		return Range<const Point3I*>(constDataPoint3I(), size());
-	}
-
-	/// \brief Returns a range of const iterators over the elements stored in this object.
-	Range<const Tensor2*> constTensor2Range() const {
-		return Range<const Tensor2*>(constDataTensor2(), size());
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
@@ -345,13 +333,6 @@ public:
 		return reinterpret_cast<Color*>(data());
 	}
 
-	/// \brief Returns a read-write pointer to the first tensor element in the property storage.
-	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
-	Tensor2* dataTensor2() {
-		OVITO_ASSERT(dataType() == qMetaTypeId<Tensor2>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 9));
-		return reinterpret_cast<Tensor2*>(data());
-	}
-
 	/// \brief Returns a read-write pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	SymmetricTensor2* dataSymmetricTensor2() {
@@ -396,11 +377,6 @@ public:
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	Range<Point3I*> point3IRange() {
 		return Range<Point3I*>(dataPoint3I(), size());
-	}
-
-	/// \brief Returns a range of iterators over the elements stored in this object.
-	Range<Tensor2*> tensor2Range() {
-		return Range<Tensor2*>(dataTensor2(), size());
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
@@ -461,12 +437,6 @@ public:
 		return constDataColor()[particleIndex];
 	}
 
-	/// Returns a Tensor2 element stored for the given particle.
-	const Tensor2& getTensor2(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size());
-		return constDataTensor2()[particleIndex];
-	}
-
 	/// Returns a SymmetricTensor2 element stored for the given particle.
 	const SymmetricTensor2& getSymmetricTensor2(size_t particleIndex) const {
 		OVITO_ASSERT(particleIndex < size());
@@ -525,12 +495,6 @@ public:
 	void setColor(size_t particleIndex, const Color& newValue) {
 		OVITO_ASSERT(particleIndex < size());
 		dataColor()[particleIndex] = newValue;
-	}
-
-	/// Sets the value of a Tensor2 element for the given particle.
-	void setTensor2(size_t particleIndex, const Tensor2& newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataTensor2()[particleIndex] = newValue;
 	}
 
 	/// Sets the value of a SymmetricTensor2 element for the given particle.
@@ -600,11 +564,10 @@ protected:
 	/// The number of per-particle elements in the property storage.
 	size_t _numParticles;
 
-	/// The number of bytes per element.
-	/// This is the size of the data type multiplied by the component count.
-	size_t _perParticleSize;
+	/// The number of bytes per particle.
+	size_t _stride;
 
-	/// The number of array elements per particle.
+	/// The number of elements per particle.
 	size_t _componentCount;
 
 	/// The names of the vector components if this property consists of more than one value per particle.

@@ -82,7 +82,7 @@ public:
 
 	//// Constructor that builds the binary search tree.
 	TreeNeighborListBuilder(int _numNeighbors = 16) : numNeighbors(_numNeighbors), numLeafNodes(0), maxTreeDepth(1) {
-		bucketSize = std::max(numNeighbors * 2, 16);
+		bucketSize = std::max(_numNeighbors / 2, 8);
 	}
 
 	/// \brief Prepares the tree data structure.

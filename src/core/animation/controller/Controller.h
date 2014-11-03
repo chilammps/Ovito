@@ -95,8 +95,14 @@ public:
 	/// \param[out] result This output variable takes the controller's values.
 	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
 	void getColorValue(TimePoint time, Color& result, TimeInterval& validityInterval) {
-		OVITO_STATIC_ASSERT(sizeof(Color) == sizeof(Vector3));
-		getVector3Value(time, reinterpret_cast<Vector3&>(result), validityInterval);
+		if(sizeof(Color) == sizeof(Vector3)) {
+			getVector3Value(time, reinterpret_cast<Vector3&>(result), validityInterval);
+		}
+		else {
+			Vector3 v;
+			getVector3Value(time, v, validityInterval);
+			result = v;
+		}
 	}
 
 	/// \brief Gets a position controller's value at a certain animation time.
@@ -184,8 +190,12 @@ public:
 	/// \param time The animation time at which to set the controller's value.
 	/// \param newValue The new value to be assigned to the controller.
 	void setColorValue(TimePoint time, const Color& newValue) {
-		OVITO_STATIC_ASSERT(sizeof(Color) == sizeof(Vector3));
-		setVector3Value(time, reinterpret_cast<const Vector3&>(newValue));
+		if(sizeof(Color) == sizeof(Vector3)) {
+			setVector3Value(time, reinterpret_cast<const Vector3&>(newValue));
+		}
+		else {
+			setVector3Value(time, Vector3(newValue));
+		}
 	}
 
 	/// \brief Sets a position controller's value at the given animation time.
@@ -227,8 +237,12 @@ public:
 	/// \brief Sets the controller's value at the current animation time.
 	/// \param newValue The new value to be assigned to the controller.
 	void setCurrentColorValue(const Color& newValue) {
-		OVITO_STATIC_ASSERT(sizeof(Color) == sizeof(Vector3));
-		setCurrentVector3Value(reinterpret_cast<const Vector3&>(newValue));
+		if(sizeof(Color) == sizeof(Vector3)) {
+			setCurrentVector3Value(reinterpret_cast<const Vector3&>(newValue));
+		}
+		else {
+			setCurrentVector3Value(Vector3(newValue));
+		}
 	}
 
 	/// \brief Rescales the times of all animation keys from the old animation interval to the new interval.

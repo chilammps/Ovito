@@ -57,6 +57,7 @@ public:
 	struct Identity {};
 
 	typedef T value_type;
+	typedef Vector_3<T> column_type;
 	typedef std::size_t size_type;
 
 	enum EulerAxisSequence {
@@ -78,7 +79,7 @@ public:
 		_m{Vector_3<T>(m11,m21,m31),Vector_3<T>(m12,m22,m32),Vector_3<T>(m13,m23,m33)} {}
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
-	Q_DECL_CONSTEXPR Matrix_3(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3) : _m{c1, c2, c3} {}
+	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3) : _m{c1, c2, c3} {}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
@@ -127,14 +128,14 @@ public:
 	/// \brief Returns a column vector in the matrix.
 	/// \param col The index of the column to return.
 	/// \return The i-th column of the matrix as a vector.
-	Q_DECL_CONSTEXPR const Vector_3<T>& column(size_type col) const {
+	Q_DECL_CONSTEXPR const column_type& column(size_type col) const {
 		return _m[col];
 	}
 
 	/// \brief Returns a reference to a column vector of the matrix.
 	/// \param col The column to return.
 	/// \return The i-th column of the matrix as a vector reference. Modifying the vector modifies the matrix.
-	Vector_3<T>& column(size_type col) {
+	column_type& column(size_type col) {
 		return _m[col];
 	}
 	
@@ -171,19 +172,15 @@ public:
 		return setIdentity();
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 9 matrix elements in column-major order.
+	/// \brief Returns a pointer to the element data of the matrix.
 	/// \sa constData()
 	T* data() {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
 		return reinterpret_cast<T*>(&_m);
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 9 matrix elements in column-major order.
+	/// \brief Returns a pointer to the element data of the matrix.
 	/// \sa data()
 	const T* constData() const {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
 		return reinterpret_cast<const T*>(&_m);
 	}
 

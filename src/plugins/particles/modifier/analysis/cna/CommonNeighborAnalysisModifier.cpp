@@ -164,7 +164,7 @@ struct NeighborBondArray
 	}
 
 	/// Sets whether two nearest neighbors have a bond between them.
-	void setNeighborBond(int neighborIndex1, int neighborIndex2, bool bonded) {
+	inline void setNeighborBond(int neighborIndex1, int neighborIndex2, bool bonded) {
 		OVITO_ASSERT(neighborIndex1 < CNA_MAX_PATTERN_NEIGHBORS);
 		OVITO_ASSERT(neighborIndex2 < CNA_MAX_PATTERN_NEIGHBORS);
 		if(bonded) {
@@ -285,8 +285,6 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 
 	// Find N nearest neighbor of current atom.
 	loc.findNeighbors(neighList.particlePos(particleIndex));
-
-	// Early rejection of under-coordinated atoms:
 	int numNeighbors = loc.results().size();
 
 	{ /////////// 12 neighbors ///////////
@@ -470,16 +468,18 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 		numNeighbors++;
 	}
 
+	if(numNeighbors != 12 && numNeighbors != 14 && numNeighbors != 16)
+		return OTHER;
+
+	// Compute bond bit-flag array.
+	NeighborBondArray neighborArray;
+	for(int ni1 = 0; ni1 < numNeighbors; ni1++) {
+		neighborArray.setNeighborBond(ni1, ni1, false);
+		for(int ni2 = ni1+1; ni2 < numNeighbors; ni2++)
+			neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
+	}
+
 	if(numNeighbors == 12) { // Detect FCC and HCP atoms each having 12 NN.
-
-		// Compute bond bit-flag array.
-		NeighborBondArray neighborArray;
-		for(int ni1 = 0; ni1 < 12; ni1++) {
-			neighborArray.setNeighborBond(ni1, ni1, false);
-			for(int ni2 = ni1+1; ni2 < 12; ni2++)
-				neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
-		}
-
 		int n421 = 0;
 		int n422 = 0;
 		int n555 = 0;
@@ -512,15 +512,6 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 		else if(n555 == 12) return ICO;
 	}
 	else if(numNeighbors == 14) { // Detect BCC atoms having 14 NN (in 1st and 2nd shell).
-
-		// Compute bond bit-flag array.
-		NeighborBondArray neighborArray;
-		for(int ni1 = 0; ni1 < 14; ni1++) {
-			neighborArray.setNeighborBond(ni1, ni1, false);
-			for(int ni2 = ni1+1; ni2 < 14; ni2++)
-				neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
-		}
-
 		int n444 = 0;
 		int n666 = 0;
 		for(int ni = 0; ni < 14; ni++) {
@@ -546,15 +537,6 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 		if(n666 == 8 && n444 == 6) return BCC;
 	}
 	else if(numNeighbors == 16) { // Detect DIA atoms having 16 NN. Detection according to http://arxiv.org/pdf/1202.5005.pdf
-
-		// Compute bond bit-flag array.
-		NeighborBondArray neighborArray;
-		for(int ni1 = 0; ni1 < numNeighbors; ni1++) {
-			neighborArray.setNeighborBond(ni1, ni1, false);
-			for(int ni2 = ni1+1; ni2 < numNeighbors; ni2++)
-				neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
-		}
-
 		int n543 = 0;
 		int n663 = 0;
 		for(int ni = 0; ni < numNeighbors; ni++) {

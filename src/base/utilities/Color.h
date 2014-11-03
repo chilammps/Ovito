@@ -61,7 +61,7 @@ public:
 	/// \brief Converts a vector to a color structure.
 	/// \param v The input vector. Its X, Y and Z components are taken as red, green and blue components 
 	///          respectively.
-	Q_DECL_CONSTEXPR explicit ColorT(const Vector_3<T>& v) : std::array<T, 3>(v) {}
+	Q_DECL_CONSTEXPR explicit ColorT(const Vector_3<T>& v) : std::array<T, 3>{{v.x(), v.y(), v.z()}}  {}
 
 	/// \brief Conversion from a Qt color object.
 	/// \param c The Qt color to convert to a floating-point representation.

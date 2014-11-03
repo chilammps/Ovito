@@ -68,8 +68,8 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
     _cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _calculateNonaffineSquaredDisplacements(false),
     _selectInvalidParticles(true),
-	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"), false)),
-	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"), false)),
+	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), tr("Shear Strain"), false)),
+	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), tr("Volumetric Strain"), false)),
 	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty, 0, false)),
 	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty, 0, false)),
 	_nonaffineSquaredDisplacements(new ParticleProperty(0, ParticleProperty::NonaffineSquaredDisplacementProperty, 0, false)),
@@ -336,8 +336,13 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 	Matrix_3<double> inverseV;
 	if(numNeighbors < 3 || !V.inverse(inverseV, 1e-4) || std::abs(W.determinant()) < 1e-4) {
 		_invalidParticles->setInt(particleIndex, 1);
-		if(_deformationGradients)
-			_deformationGradients->setTensor2(particleIndex, Tensor2::Zero());
+		if(_deformationGradients) {
+			for(Matrix_3<double>::size_type col = 0; col < 3; col++) {
+				for(Matrix_3<double>::size_type row = 0; row < 3; row++) {
+					_deformationGradients->setFloatComponent(particleIndex, col*3+row, FloatType(0));
+				}
+			}
+		}
 		if(_strainTensors)
 			_strainTensors->setSymmetricTensor2(particleIndex, SymmetricTensor2::Zero());
         if(_nonaffineSquaredDisplacements)
@@ -349,8 +354,13 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 
 	// Calculate deformation gradient tensor.
 	Matrix_3<double> F = W * inverseV;
-	if(_deformationGradients)
-		_deformationGradients->setTensor2(particleIndex, (Tensor2)F);
+	if(_deformationGradients) {
+		for(Matrix_3<double>::size_type col = 0; col < 3; col++) {
+			for(Matrix_3<double>::size_type row = 0; row < 3; row++) {
+				_deformationGradients->setFloatComponent(particleIndex, col*3+row, (FloatType)F(row,col));
+			}
+		}
+	}
 
 	// Calculate strain tensor.
 	SymmetricTensor2T<double> strain = (Product_AtA(F) - SymmetricTensor2T<double>::Identity()) * 0.5;

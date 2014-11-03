@@ -157,12 +157,11 @@ void NetCDFImporter::NetCDFImportTask::openNetCDF(const QString &filename)
 	// Make sure we have the right file conventions
 	size_t len;
 	NCERR( nc_inq_attlen(_ncid, NC_GLOBAL, "Conventions", &len) );
-	char *conventions_str = new char[len+1];
-	NCERR( nc_get_att_text(_ncid, NC_GLOBAL, "Conventions", conventions_str) );
+	std::unique_ptr<char[]> conventions_str(new char[len+1]);
+	NCERR( nc_get_att_text(_ncid, NC_GLOBAL, "Conventions", conventions_str.get()) );
 	conventions_str[len] = 0;
-	if (strcmp(conventions_str, "AMBER"))
-		throw Exception(tr("NetCDF file %1 follows '%2' conventions, expected 'AMBER'.").arg(filename, conventions_str));
-	delete [] conventions_str;
+	if (strcmp(conventions_str.get(), "AMBER"))
+		throw Exception(tr("NetCDF file %1 follows '%2' conventions, expected 'AMBER'.").arg(filename, conventions_str.get()));
 
 #if 0
 	// Read creator information
@@ -411,17 +410,15 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
                 int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
                 detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
 
-                FloatType *data = new FloatType[nativeComponentCount*particleCount];
+                std::unique_ptr<FloatType[]> data(new FloatType[nativeComponentCount*particleCount]);
 
 #ifdef FLOATTYPE_FLOAT
-                NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+                NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
                 while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_FLOAT)  particleCount--;
 #else
-                NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+                NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
                 while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_DOUBLE)  particleCount--;
 #endif
-
-                delete [] data;
             }
 
         }
@@ -498,12 +495,12 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 						}
 						if(!property) {
 							// Create a new user-defined property for the column.
-							property = new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, propertyName, true);
+							property = new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, dataTypeSize * componentCount, propertyName, true);
 							addParticleProperty(property);
 						}
 					}
 
-					OVITO_ASSERT(property != NULL);
+					OVITO_ASSERT(property != nullptr);
 					property->setName(propertyName);
 
 					if (property->componentCount() != componentCount) {
@@ -516,10 +513,9 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 							if (componentCount == 6 && nativeComponentCount == 9 && type != NC_CHAR) {
 								// Convert this property to Voigt notation.
-								int *data = new int[9*particleCount];
-								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName));
-								fullToVoigt(particleCount, data, property->dataInt());
-								delete [] data;
+								std::unique_ptr<int[]> data(new int[9*particleCount]);
+								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName));
+								fullToVoigt(particleCount, data.get(), property->dataInt());
 							}
 							else {						
                                 // Create particles types if this is the particle type property.
@@ -535,10 +531,10 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
                                             startp[nDimsDetected] = 0;
                                             countp[nDimsDetected] = strLen;
-                                            char *particleNamesData = new char[strLen*particleCount];
+                                            std::unique_ptr<char[]> particleNamesData(new char[strLen*particleCount]);
                                                 
                                             // This is a string particle type, i.e. element names
-                                            NCERRI( nc_get_vara_text(_ncid, varId, startp, countp, particleNamesData), tr("(While reading variable '%1'.)").arg(columnName) );
+                                            NCERRI( nc_get_vara_text(_ncid, varId, startp, countp, particleNamesData.get()), tr("(While reading variable '%1'.)").arg(columnName) );
 
                                             // Collect all distinct particle names
                                             QMap<QString, bool> discoveredParticleNames;
@@ -568,8 +564,6 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
                                                 *particleTypes = particleNameToType.value(name);
                                                 particleTypes++;
                                             }
-
-                                            delete [] particleNamesData;
                                         }
                                     }
                                     else {
@@ -605,14 +599,13 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 							if (componentCount == 6 && nativeComponentCount == 9) {
 								// Convert this property to Voigt notation.
-								FloatType *data = new FloatType[9*particleCount];
+								std::unique_ptr<FloatType[]> data(new FloatType[9*particleCount]);
 #ifdef FLOATTYPE_FLOAT
-								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
 #else
-								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
-								fullToVoigt(particleCount, data, property->dataFloat());
-								delete [] data;
+								fullToVoigt(particleCount, data.get(), property->dataFloat());
 							}
 							else {
 #ifdef FLOATTYPE_FLOAT

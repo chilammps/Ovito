@@ -99,7 +99,7 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 		size_t destinationIndex = oldParticleCount;
 
 		// Copy original property data.
-		memcpy((char*)newProperty->data(), originalOutputProperty->constData(), newProperty->perParticleSize() * oldParticleCount);
+		memcpy((char*)newProperty->data(), originalOutputProperty->constData(), newProperty->stride() * oldParticleCount);
 
 		for(int imageX = -(nPBCx-1)/2; imageX <= nPBCx/2; imageX++) {
 			for(int imageY = -(nPBCy-1)/2; imageY <= nPBCy/2; imageY++) {
@@ -108,8 +108,8 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 						continue;
 
 					// Duplicate property data.
-					memcpy((char*)newProperty->data() + (destinationIndex * newProperty->perParticleSize()),
-							originalOutputProperty->constData(), newProperty->perParticleSize() * oldParticleCount);
+					memcpy((char*)newProperty->data() + (destinationIndex * newProperty->stride()),
+							originalOutputProperty->constData(), newProperty->stride() * oldParticleCount);
 
 					if(newProperty->type() == ParticleProperty::PositionProperty) {
 						// Shift particle positions by the periodicity vector.

@@ -213,7 +213,7 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
 		if(propertyType != ParticleProperty::UserProperty)
 			property = new ParticleProperty(natoms, propertyType, 0, true);
 		else
-			property = new ParticleProperty(natoms, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, propertyName, true);
+			property = new ParticleProperty(natoms, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), propertyName, true);
 		addParticleProperty(property);
 		properties.push_back(property);
     }

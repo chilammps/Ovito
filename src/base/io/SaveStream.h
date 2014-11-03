@@ -193,7 +193,7 @@ inline SaveStream& operator<<(SaveStream& stream, const QVector<T>& v)
 template<typename T, std::size_t N>
 inline SaveStream& operator<<(SaveStream& stream, const std::array<T, N>& a)
 {
-	for(size_t i = 0; i < N; ++i)
+	for(typename std::array<T, N>::size_type i = 0; i < N; ++i)
 		stream << a[i];
 	return stream;
 }

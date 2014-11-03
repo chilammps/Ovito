@@ -214,7 +214,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 			_output.replaceObject(inputProperty, outputProperty);
 		}
 		OVITO_ASSERT(storage->size() == outputProperty->size());
-		OVITO_ASSERT(storage->perParticleSize() == outputProperty->perParticleSize());
+		OVITO_ASSERT(storage->stride() == outputProperty->stride());
 		outputProperty->setStorage(storage);
 	}
 	else {
@@ -230,7 +230,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 /******************************************************************************
 * Creates a custom particle property in the modifier's output.
 ******************************************************************************/
-ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount, bool initializeMemory)
+ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount, size_t stride, bool initializeMemory)
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
@@ -242,6 +242,8 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 				throw Exception(tr("Existing property '%1' has a different data type.").arg(name));
 			if(property->componentCount() != componentCount)
 				throw Exception(tr("Existing property '%1' has a different number of components.").arg(name));
+			if(property->stride() != stride)
+				throw Exception(tr("Existing property '%1' has a different stride.").arg(name));
 			break;
 		}
 	}
@@ -268,7 +270,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::createUserProperty(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name, initializeMemory);
+		outputProperty = ParticlePropertyObject::createUserProperty(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, stride, name, initializeMemory);
 		_output.addObject(outputProperty);
 	}
 

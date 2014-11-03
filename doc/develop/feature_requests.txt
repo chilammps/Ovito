@@ -25,6 +25,10 @@ Unresolved OpenGL problems:
     (chen.qwj@gmail.com, NVIDIA Quadro FX 4600, Linux, OpenGL 2.1)
     (Group laptop, Intel 965/963 Graphics, GLSL 110, Windows, OpenGL 2.0)
 
+Unresolved bugs:
+
+- TreeNeighborListBuilder doesn't work properly for triclinic cells with small angles.
+
 New analysis features:
 
 - Compute center of mass of a group of atoms, output to file
@@ -59,3 +63,4 @@ new channel that sums or averages over all the atoms within that radius. For ins
 LAMMPS dump, I can specify a radius  of 10 and write an expression like sum(c_stress1)/sum(c_vol) to get an averaged stress component over all the 
 atoms within a 10 ang radius, and assign that value to that atom (more realistically to that point in space). I've written a little post-processing 
 tool to do this, but perhaps it would useful to other users. 
+

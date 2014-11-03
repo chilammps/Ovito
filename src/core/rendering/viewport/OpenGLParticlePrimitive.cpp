@@ -373,7 +373,6 @@ void OpenGLParticlePrimitive::render(SceneRenderer* renderer)
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
 	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
 	OVITO_STATIC_ASSERT(sizeof(ColorA) == 16);
-	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
 
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 

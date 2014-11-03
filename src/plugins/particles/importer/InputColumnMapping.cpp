@@ -167,7 +167,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				}
 				if(!property) {
 					// Create a new user-defined property for the column.
-					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, pref.name(), true);
+					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, dataTypeSize * (vectorComponent + 1), pref.name(), true);
 					destination.addParticleProperty(property);
 					if(oldProperty) {
 						// We need to replace all old properties (with lower vector component count) with this one.
@@ -195,11 +195,18 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 	// Finalize the target property records.
 	for(TargetPropertyRecord& rec : _properties) {
 		if(rec.property) {
-			rec.stride = rec.property->componentCount();
 			rec.count = rec.property->size();
 			rec.isTypeProperty = (rec.property->type() == ParticleProperty::ParticleTypeProperty);
-			rec.floatData = (rec.property->dataType() == qMetaTypeId<FloatType>()) ? (rec.property->dataFloat() + rec.vectorComponent) : nullptr;
-			rec.intData = (rec.property->dataType() == qMetaTypeId<int>()) ? (rec.property->dataInt() + rec.vectorComponent) : nullptr;
+			if(rec.property->dataType() == qMetaTypeId<FloatType>()) {
+				rec.data = reinterpret_cast<uint8_t*>(rec.property->dataFloat() + rec.vectorComponent);
+				rec.isInt = false;
+			}
+			else if(rec.property->dataType() == qMetaTypeId<int>()) {
+				rec.data = reinterpret_cast<uint8_t*>(rec.property->dataInt() + rec.vectorComponent);
+				rec.isInt = true;
+			}
+			else rec.data = nullptr;
+			rec.stride = rec.property->stride();
 		}
 	}
 }
@@ -347,17 +354,17 @@ void InputColumnReader::readParticle(size_t particleIndex, const char* s)
 void InputColumnReader::parseField(size_t particleIndex, int columnIndex, const char* token, const char* token_end)
 {
 	const TargetPropertyRecord& prec = _properties[columnIndex];
-	if(!prec.property) return;
+	if(!prec.property || !prec.data) return;
 
 	if(particleIndex >= prec.count)
 		throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(prec.count));
 
-	if(prec.floatData) {
-		if(!parseFloatType(token, token_end, prec.floatData[particleIndex * prec.stride]))
+	if(!prec.isInt) {
+		if(!parseFloatType(token, token_end, *reinterpret_cast<FloatType*>(prec.data + particleIndex * prec.stride)))
 			throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(prec.property->name()).arg(QString::fromLocal8Bit(token, token_end - token)));
 	}
-	else if(prec.intData) {
-		int& d = prec.intData[particleIndex * prec.stride];
+	else {
+		int& d = *reinterpret_cast<int*>(prec.data + particleIndex * prec.stride);
 		bool ok = parseInt(token, token_end, d);
 		if(!prec.isTypeProperty) {
 			if(!ok) {
@@ -399,16 +406,18 @@ void InputColumnReader::readParticle(size_t particleIndex, const double* values,
 		if(particleIndex >= prec->count)
 			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(prec->count));
 
-		if(prec->floatData) {
-			prec->floatData[particleIndex * prec->stride] = (FloatType)*token;
-		}
-		else if(prec->intData) {
-			int ival = (int)*token;
-			if(prec->isTypeProperty) {
-				// Automatically register a new particle type if a new type identifier is encountered.
-				_destination.addParticleTypeId(ival);
+		if(prec->data) {
+			if(!prec->isInt) {
+				*reinterpret_cast<FloatType*>(prec->data + particleIndex * prec->stride) = (FloatType)*token;
 			}
-			prec->intData[particleIndex * prec->stride] = ival;
+			else {
+				int ival = (int)*token;
+				if(prec->isTypeProperty) {
+					// Automatically register a new particle type if a new type identifier is encountered.
+					_destination.addParticleTypeId(ival);
+				}
+				*reinterpret_cast<int*>(prec->data + particleIndex * prec->stride) = ival;
+			}
 		}
 	}
 }

@@ -49,7 +49,7 @@ SET_PROPERTY_FIELD_LABEL(WignerSeitzAnalysisModifier, _referenceFrameOffset, "Re
 * Constructs the modifier object.
 ******************************************************************************/
 WignerSeitzAnalysisModifier::WignerSeitzAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_occupancyNumbers(new ParticleProperty(0, qMetaTypeId<int>(), sizeof(int), 1, tr("Occupancy"), false)),
+	_occupancyNumbers(new ParticleProperty(0, qMetaTypeId<int>(), sizeof(int), 1, sizeof(int), tr("Occupancy"), false)),
 	_eliminateCellDeformation(false),
 	_useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1),
 	_vacancyCount(0), _interstitialCount(0)

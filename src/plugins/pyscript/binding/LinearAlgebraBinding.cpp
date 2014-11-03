@@ -109,7 +109,8 @@ dict Matrix__array_interface__(T& m)
 {
 	dict ai;
 	ai["shape"] = boost::python::make_tuple(m.row_count(), m.col_count());
-	ai["strides"] = boost::python::make_tuple(sizeof(typename T::value_type), sizeof(typename T::value_type) * m.row_count());
+	ai["strides"] = boost::python::make_tuple(sizeof(typename T::value_type), sizeof(typename T::column_type));
+	OVITO_STATIC_ASSERT(sizeof(T) == T::col_count() * sizeof(typename T::column_type));
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 	ai["typestr"] = str("<f") + str(sizeof(typename T::value_type));
 #else

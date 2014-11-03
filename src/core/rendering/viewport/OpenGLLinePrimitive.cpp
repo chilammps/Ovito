@@ -62,7 +62,6 @@ void OpenGLLinePrimitive::setVertexCount(int vertexCount, FloatType lineWidth)
 		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount);
 	}
 	else {
-		OVITO_STATIC_ASSERT(sizeof(Vector3) == sizeof(GLfloat)*3);
 		_positionsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
 		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
 		_vectorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
@@ -223,7 +222,7 @@ void OpenGLLinePrimitive::renderThickLines(ViewportSceneRenderer* renderer)
 	FloatType param = renderer->projParams().projectionMatrix(1,1) * viewportCoords[3];
 	shader->setUniformValue("line_width", 0.5f * _lineWidth / param);
 	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
-	_vectorsBuffer.bind(renderer, shader, "vector", GL_FLOAT, 0, 3);
+	_vectorsBuffer.bind(renderer, shader, "vector", GL_FLOAT, 0, 3, sizeof(Vector3));
 
 	if(_useIndexVBO) {
 		_indicesBuffer.oglBuffer().bind();

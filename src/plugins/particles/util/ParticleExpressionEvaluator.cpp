@@ -84,7 +84,7 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 				v.dataPointer = reinterpret_cast<const char*>(property->constDataInt() + k);
 			else
 				v.dataPointer = reinterpret_cast<const char*>(property->constDataFloat() + k);
-			v.stride = property->perParticleSize();
+			v.stride = property->stride();
 
 			addVariable(v);
 		}

@@ -40,9 +40,9 @@ ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticlePropert
 /******************************************************************************
 * Factory function that creates a user-defined property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name, bool initializeMemory)
+OORef<ParticlePropertyObject> ParticlePropertyObject::createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, size_t stride, const QString& name, bool initializeMemory)
 {
-	return createFromStorage(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name, initializeMemory));
+	return createFromStorage(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, stride, name, initializeMemory));
 }
 
 /******************************************************************************
@@ -109,7 +109,7 @@ void ParticlePropertyObject::resize(size_t newSize, bool preserveData)
 		if(type() != ParticleProperty::UserProperty)
 			_storage = new ParticleProperty(newSize, type(), componentCount(), false);
 		else
-			_storage = new ParticleProperty(newSize, dataType(), dataTypeSize(), componentCount(), name(), false);
+			_storage = new ParticleProperty(newSize, dataType(), dataTypeSize(), componentCount(), stride(), name(), false);
 	}
 	changed();
 }
