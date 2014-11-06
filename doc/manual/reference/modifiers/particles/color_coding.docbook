@@ -15,22 +15,37 @@
        <imagedata fileref="images/modifiers/color_coding_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This modifier assigns a color to each particle based on an existing scalar
-  particle property. 
+  This modifier assigns a color to each particle based on some scalar particle property.
   </para>
   
   <para>
-  The input property values are first mapped and clamped to the [0,1] range based on the
+  The values of the selected input property are first linearly mapped and clamped to the unit interval [0,1] using the
   <emphasis>Start value</emphasis> and <emphasis>End value</emphasis>
-  parameters of the modifier. The normalized property value of each particle is then mapped to 
-  a color using the selected color gradient.</para>
+  parameters of the modifier. The normalized per-particle values are then mapped to 
+  a color using the selected color gradient map.</para>
 
   <para>The <guibutton>Adjust range</guibutton> button sets the <emphasis>Start value</emphasis> and
   <emphasis>End value</emphasis> parameters to the minimum and maximum values
-  stored in the input particle property. This ensures that no clamping occurs
+  of the selected input particle property. This ensures that no clamping occurs
   during the color mapping. The <guibutton>Reverse range</guibutton> button
   swaps the <emphasis>Start value</emphasis> and <emphasis>End
   value</emphasis> parameters to effectively reverse the color scale.</para>
+
+  <simplesect>
+    <title>Custom color maps</title>
+    <para>
+      The color gradient list box contains an entry "<emphasis>Load custom color map...</emphasis>", which allows you to pick
+      an image file from disk. With this feature you can import arbitrary color maps into OVITO by preparing a
+      corresponding image with an external image editor. OVITO uses the colors along one row of 
+      pixels of the image to generate a user-defined color map. Here are two examples:
+        <screenshot><mediaobject><imageobject>
+          <imagedata fileref="images/modifiers/color_coding_custom_map.png" format="PNG" />
+        </imageobject></mediaobject></screenshot>
+        <screenshot><mediaobject><imageobject>
+          <imagedata fileref="images/modifiers/color_coding_custom_map2.png" format="PNG" />
+        </imageobject></mediaobject></screenshot>
+    </para>
+  </simplesect>
 
   <simplesect>
     <title>Parameters</title>
@@ -39,38 +54,39 @@
       <varlistentry>
         <term>Property</term>
         <listitem>
-          <para>The input particle property whose values are mapped to a color.</para>
+          <para>The input particle property to be used for color mapping.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Color gradient</term>
         <listitem>
-          <para>The type of color gradient to use.</para>
+          <para>The type of color map to use.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Start value, end value</term>
         <listitem>
-          <para>This interval controls the linear mapping of the input values to the [0,1] range.</para>
+          <para>Controls the source range for the linear mapping of particle values to the [0,1] unit interval.</para>
         </listitem>
       </varlistentry>
       
       <varlistentry>
         <term>Color only selected particles</term>
         <listitem>
-          <para>This option restricts the assignment of colors to selected particles.</para>
+          <para>This option restricts the generation of colors to selected particles.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Keep particles selected</term>
         <listitem>
-          <para>OVITO highlights selected particles in the viewports using a special color (red by default). 
-          Since this highlighting would mask the color assigned by the Color Coding modifier, 
-          the particle selection is cleared by default. You can disable this behavior and preserve the current particle selection by 
-          activating this option.</para>
+          <para>OVITO typically highlights selected particles in the viewports using a special color (red by default). 
+          Since this highlighting would mask the color assigned by the <emphasis>Color Coding</emphasis> modifier, 
+          the current particle selection is cleared by default. You can disable this behavior and preserve the current particle selection by 
+          activating this option. This allows you to use the particle selection
+          further down the modification pipeline.</para>
         </listitem>
       </varlistentry>
 

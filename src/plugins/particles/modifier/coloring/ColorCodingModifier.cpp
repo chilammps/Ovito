@@ -24,6 +24,8 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/reference/CloneHelper.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/dialogs/LoadImageFileDialog.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/ColorParameterUI.h>
@@ -59,6 +61,8 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodi
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGrayscaleGradient, ColorCodingGradient);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHotGradient, ColorCodingGradient);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingImageGradient, ColorCodingGradient);
+DEFINE_PROPERTY_FIELD(ColorCodingImageGradient, _image, "Image");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -325,6 +329,31 @@ void ColorCodingModifier::loadFromStream(ObjectLoadStream& stream)
 }
 
 /******************************************************************************
+* Loads the given image file from disk.
+******************************************************************************/
+void ColorCodingImageGradient::loadImage(const QString& filename)
+{
+	QImage image(filename);
+	if(image.isNull())
+		throw Exception(tr("Could not load image file '%1'.").arg(filename));
+	setImage(image);
+}
+
+/******************************************************************************
+* Converts a scalar value to a color value.
+******************************************************************************/
+Color ColorCodingImageGradient::valueToColor(FloatType t)
+{
+	if(image().isNull()) return Color(0,0,0);
+	QPoint p;
+	if(image().width() > image().height())
+		p = QPoint(std::min((int)(t * image().width()), image().width()-1), 0);
+	else
+		p = QPoint(0, std::min((int)(t * image().height()), image().height()-1));
+	return Color(image().pixel(p));
+}
+
+/******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
 void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
@@ -344,10 +373,16 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	colorGradientList = new QComboBox(rollout);
 	layout1->addWidget(new QLabel(tr("Color gradient:"), rollout));
 	layout1->addWidget(colorGradientList);
+	colorGradientList->setIconSize(QSize(48,16));
 	connect(colorGradientList, (void (QComboBox::*)(int))&QComboBox::activated, this, &ColorCodingModifierEditor::onColorGradientSelected);
-	for(OvitoObjectType* clazz : PluginManager::instance().listClasses(ColorCodingGradient::OOType)) {
-		colorGradientList->addItem(clazz->displayName(), qVariantFromValue((void*)clazz));
+	for(const OvitoObjectType* clazz : PluginManager::instance().listClasses(ColorCodingGradient::OOType)) {
+		if(clazz == &ColorCodingImageGradient::OOType)
+			continue;
+		colorGradientList->addItem(iconFromColorMapClass(clazz), clazz->displayName(), QVariant::fromValue(clazz));
 	}
+	colorGradientList->insertSeparator(colorGradientList->count());
+	colorGradientList->addItem(tr("Load custom color map..."));
+	_gradientListContainCustomItem = false;
 
 	// Update color legend if another modifier has been loaded into the editor.
 	connect(this, &ColorCodingModifierEditor::contentsReplaced, this, &ColorCodingModifierEditor::updateColorGradient);
@@ -377,7 +412,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	// Export color scale button.
 	QToolButton* exportBtn = new QToolButton(rollout);
 	exportBtn->setIcon(QIcon(":/particles/icons/export_color_scale.png"));
-	exportBtn->setToolTip("Export color map to graphics file");
+	exportBtn->setToolTip("Export color map to image file");
 	exportBtn->setAutoRaise(true);
 	exportBtn->setIconSize(QSize(42,22));
 	connect(exportBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onExportColorScale);
@@ -403,12 +438,6 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->addWidget(keepSelectionPUI->checkBox());
 	connect(onlySelectedPUI->checkBox(), &QCheckBox::toggled, keepSelectionPUI, &BooleanParameterUI::setEnabled);
 	keepSelectionPUI->setEnabled(false);
-
-#if 0
-	// Status label.
-	layout1->addSpacing(2);
-	layout1->addWidget(statusLabel());
-#endif
 }
 
 /******************************************************************************
@@ -430,10 +459,32 @@ void ColorCodingModifierEditor::updateColorGradient()
 	colorLegendLabel->setPixmap(QPixmap::fromImage(image));
 
 	// Select the right entry in the color gradient selector.
-	if(mod->colorGradient())
-		colorGradientList->setCurrentIndex(colorGradientList->findData(qVariantFromValue((void*)&mod->colorGradient()->getOOType())));
-	else
-		colorGradientList->setCurrentIndex(-1);
+	bool isCustomMap = false;
+	if(mod->colorGradient()) {
+		int index = colorGradientList->findData(QVariant::fromValue(&mod->colorGradient()->getOOType()));
+		if(index >= 0)
+			colorGradientList->setCurrentIndex(index);
+		else
+			isCustomMap = true;
+	}
+	else colorGradientList->setCurrentIndex(-1);
+
+	if(isCustomMap) {
+		if(!_gradientListContainCustomItem) {
+			_gradientListContainCustomItem = true;
+			colorGradientList->insertItem(colorGradientList->count() - 2, iconFromColorMap(mod->colorGradient()), tr("Custom color map"));
+			colorGradientList->insertSeparator(colorGradientList->count() - 3);
+		}
+		else {
+			colorGradientList->setItemIcon(colorGradientList->count() - 3, iconFromColorMap(mod->colorGradient()));
+		}
+		colorGradientList->setCurrentIndex(colorGradientList->count() - 3);
+	}
+	else if(_gradientListContainCustomItem) {
+		_gradientListContainCustomItem = false;
+		colorGradientList->removeItem(colorGradientList->count() - 3);
+		colorGradientList->removeItem(colorGradientList->count() - 3);
+	}
 }
 
 /******************************************************************************
@@ -457,22 +508,31 @@ void ColorCodingModifierEditor::onColorGradientSelected(int index)
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(colorGradientList->itemData(index).value<void*>());
-	if(!descriptor) return;
+	const OvitoObjectType* descriptor = colorGradientList->itemData(index).value<const OvitoObjectType*>();
+	if(descriptor) {
+		undoableTransaction(tr("Change color gradient"), [descriptor, mod]() {
+			OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance(mod->dataset()));
+			if(gradient) {
+				mod->setColorGradient(gradient);
 
-	undoableTransaction(tr("Change color gradient"), [descriptor, mod]() {
-		// Create an instance of the selected color gradient class.
-		OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance(mod->dataset()));
-		if(gradient) {
-	        mod->setColorGradient(gradient);
-
-			QSettings settings;
-			settings.beginGroup(ColorCodingModifier::OOType.plugin()->pluginId());
-			settings.beginGroup(ColorCodingModifier::OOType.name());
-			settings.setValue(PROPERTY_FIELD(ColorCodingModifier::_colorGradient).identifier(),
-					QVariant::fromValue(OvitoObjectType::encodeAsString(descriptor)));
-		}
-	});
+				QSettings settings;
+				settings.beginGroup(ColorCodingModifier::OOType.plugin()->pluginId());
+				settings.beginGroup(ColorCodingModifier::OOType.name());
+				settings.setValue(PROPERTY_FIELD(ColorCodingModifier::_colorGradient).identifier(),
+						QVariant::fromValue(OvitoObjectType::encodeAsString(descriptor)));
+			}
+		});
+	}
+	else if(index == colorGradientList->count() - 1) {
+		undoableTransaction(tr("Change color gradient"), [this, mod]() {
+			LoadImageFileDialog fileDialog(container(), tr("Pick color map image"));
+			if(fileDialog.exec()) {
+				OORef<ColorCodingImageGradient> gradient(new ColorCodingImageGradient(mod->dataset()));
+				gradient->loadImage(fileDialog.imageInfo().filename());
+				mod->setColorGradient(gradient);
+			}
+		});
+	}
 }
 
 /******************************************************************************
@@ -535,5 +595,51 @@ void ColorCodingModifierEditor::onExportColorScale()
 		}
 	}
 }
+
+/******************************************************************************
+* Returns an icon representing the given color map class.
+******************************************************************************/
+QIcon ColorCodingModifierEditor::iconFromColorMapClass(const OvitoObjectType* clazz)
+{
+	/// Cache icons for color map types.
+	static std::map<const OvitoObjectType*, QIcon> iconCache;
+	auto entry = iconCache.find(clazz);
+	if(entry != iconCache.end())
+		return entry->second;
+
+	DataSet* dataset = mainWindow()->datasetContainer().currentSet();
+	OVITO_ASSERT(dataset);
+	if(dataset) {
+		try {
+			// Create a temporary instance of the color map class.
+			OORef<ColorCodingGradient> map = static_object_cast<ColorCodingGradient>(clazz->createInstance(dataset));
+			if(map) {
+				QIcon icon = iconFromColorMap(map);
+				iconCache.insert(std::make_pair(clazz, icon));
+				return icon;
+			}
+		}
+		catch(...) {}
+	}
+	return QIcon();
+}
+
+/******************************************************************************
+* Returns an icon representing the given color map.
+******************************************************************************/
+QIcon ColorCodingModifierEditor::iconFromColorMap(ColorCodingGradient* map)
+{
+	const int sizex = 48;
+	const int sizey = 16;
+	QImage image(sizex, sizey, QImage::Format_RGB32);
+	for(int x = 0; x < sizex; x++) {
+		FloatType t = (FloatType)x / (sizex - 1);
+		uint c = QColor(map->valueToColor(t)).rgb();
+		for(int y = 0; y < sizey; y++)
+			image.setPixel(x, y, c);
+	}
+	return QIcon(QPixmap::fromImage(image));
+}
+
 
 };	// End of namespace

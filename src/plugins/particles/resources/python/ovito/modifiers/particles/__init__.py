@@ -70,3 +70,10 @@ def _HistogramModifier_histogram(self):
     xdata = numpy.linspace(self.xrange_start + binsize * 0.5, self.xrange_end + binsize * 0.5, len(ydata), endpoint = False)
     return numpy.transpose((xdata,ydata))
 ovito.modifiers.HistogramModifier.histogram = property(_HistogramModifier_histogram)
+
+# Implement the ColorCodingModifier custom color map constructor.
+def _ColorCodingModifier_Custom(filename):
+    gradient = ovito.modifiers.ColorCodingModifier.Image()
+    gradient.loadImage(filename)
+    return gradient
+ovito.modifiers.ColorCodingModifier.Custom = staticmethod(_ColorCodingModifier_Custom)

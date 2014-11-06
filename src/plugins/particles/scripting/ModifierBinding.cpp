@@ -114,14 +114,15 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					"This parameter defines the value range when mapping the input property to a color.")
 			.add_property("endValueController", make_function(&ColorCodingModifier::endValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setEndValueController)
 			.add_property("gradient", make_function(&ColorCodingModifier::colorGradient, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setColorGradient,
-					"The color gradient object, which is responsible for mapping normalized property values to colors."
-					"\n\n"
+					"The color gradient object, which is responsible for mapping normalized property values to colors. "
 					"Available gradient types are:\n"
 					" * ``ColorCodingModifier.Rainbow()`` (default)\n"
 					" * ``ColorCodingModifier.Grayscale()``\n"
 					" * ``ColorCodingModifier.Hot()``\n"
 					" * ``ColorCodingModifier.Jet()``\n"
-					"\n")
+					" * ``ColorCodingModifier.Custom(\"<image file>\")``\n"
+					"The last color map constructor expects the path to an image file on disk, "
+					"which will be used to create a custom color gradient from a row of pixels in the image.")
 			.add_property("only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
 					"If ``True``, only selected particles will be affected by the modifier and the existing colors "
 					"of unselected particles will be preserved; if ``False``, all particles will be colored."
@@ -141,6 +142,9 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		ovito_class<ColorCodingHotGradient, ColorCodingGradient>(nullptr, "Hot")
 		;
 		ovito_class<ColorCodingJetGradient, ColorCodingGradient>(nullptr, "Jet")
+		;
+		ovito_class<ColorCodingImageGradient, ColorCodingGradient>(nullptr, "Image")
+			.def("loadImage", &ColorCodingImageGradient::loadImage)
 		;
 	}
 

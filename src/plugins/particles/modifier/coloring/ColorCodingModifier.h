@@ -157,6 +157,44 @@ private:
 	Q_CLASSINFO("DisplayName", "Jet");
 };
 
+/*
+ * Converts a scalar value to a color based on a user-defined image.
+ */
+class ColorCodingImageGradient : public ColorCodingGradient
+{
+public:
+
+	/// Constructor.
+	Q_INVOKABLE ColorCodingImageGradient(DataSet* dataset) : ColorCodingGradient(dataset) {
+		INIT_PROPERTY_FIELD(ColorCodingImageGradient::_image);
+	}
+
+	/// \brief Converts a scalar value to a color value.
+	/// \param t A value between 0 and 1.
+	/// \return The color that visualizes the given scalar value.
+	virtual Color valueToColor(FloatType t) override;
+
+	/// Changes the image to be used for mapping values to colors.
+	void setImage(const QImage& image) { _image = image; }
+
+	/// Loads the given image file from disk.
+	void loadImage(const QString& filename);
+
+	/// Returns the image being used for mapping values to colors.
+	const QImage& image() const { return _image; }
+
+private:
+
+	/// The user-defined color map image.
+	PropertyField<QImage> _image;
+
+	Q_OBJECT
+	OVITO_OBJECT
+	Q_CLASSINFO("DisplayName", "User image");
+
+	DECLARE_PROPERTY_FIELD(_image);
+};
+
 
 /*
  * This modifier assigns a colors to the particles based on the value of a
@@ -304,8 +342,17 @@ protected:
 
 private:
 
+	/// Returns an icon representing the given color map class.
+	QIcon iconFromColorMapClass(const OvitoObjectType* clazz);
+
+	/// Returns an icon representing the given color map.
+	QIcon iconFromColorMap(ColorCodingGradient* map);
+
 	/// The list of available color gradients.
 	QComboBox* colorGradientList;
+
+	/// Indicates the combo box already contains an item for a custom color map.
+	bool _gradientListContainCustomItem;
 
 	/// Label that displays the color gradient picture.
 	QLabel* colorLegendLabel;

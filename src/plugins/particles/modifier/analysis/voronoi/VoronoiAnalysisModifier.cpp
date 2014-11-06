@@ -134,12 +134,12 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase
 
 	double boxDiameter;
 	if(_cutoff > 0) {
-		// Prepare the neighbor list generator.
+		// Prepare the cutoff-based neighbor list generator.
 		if(!onTheFlyNeighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
 			return;
 	}
 	else {
-		// Prepare the neighbor list.
+		// Prepare the nearest neighbor list generator.
 		if(!treeNeighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
 			return;
 	}

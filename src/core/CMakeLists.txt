@@ -86,6 +86,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/dialogs/ImportFileDialog.cpp
 	gui/dialogs/ImportRemoteFileDialog.cpp
 	gui/dialogs/SaveImageFileDialog.cpp
+	gui/dialogs/LoadImageFileDialog.cpp
 	gui/dialogs/RemoteAuthenticationDialog.cpp
 	gui/actions/ActionManager.cpp
 	gui/actions/FileActions.cpp

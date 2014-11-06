@@ -3,7 +3,6 @@ User interface improvements:
 - Let the user configure the default colors and radii assigned to different atom types.
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
-- User-defined color maps (requested by Wolfgang Verestek and Yongjian Yang). Simple implementation could be based on custom images.
  
 Work-flow improvements:
 
