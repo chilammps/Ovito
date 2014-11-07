@@ -65,7 +65,7 @@ public:
 	/// Returns whether the current queue size is zero.
 	bool empty() const { return _count == 0; }
 
-	/// Returns greatest element.
+	/// Returns the greatest element.
 	const value_type& top() const { return _data[0]; }
 
 	/// Inserts a new element into the priority queue.
@@ -74,10 +74,10 @@ public:
 		value_type* data1 = (&_data[0]-1);
 		if(full()) {
 			if(_comp(x, top())) {
-				int j(1), k(2);
-				while (k <= _count) {
+				int j = 1, k = 2;
+				while(k <= _count) {
 					value_type* z = &(data1[k]);
-					if((k < _count) && _comp(*z, data1[k+1]))
+					if(k < _count && _comp(*z, data1[k+1]))
 						z = &(data1[++k]);
 
 					if(_comp(*z, x)) break;
@@ -89,7 +89,7 @@ public:
 			}
 		}
 		else {
-			int i(++_count), j;
+			int i = ++_count, j;
 			while(i >= 2) {
 				j = i >> 1;
 				value_type& y = data1[j];

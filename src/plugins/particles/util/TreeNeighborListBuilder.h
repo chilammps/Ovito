@@ -48,34 +48,45 @@ private:
 	struct NeighborListAtom {
 		/// The next atom in the linked list used for binning.
 		NeighborListAtom* nextInBin;
-		/// The index of the atom in the original AtomsObject.
-		size_t index;
 		/// The wrapped position of the atom.
 		Point3 pos;
 	};
 
 	struct TreeNode {
 		/// Constructor for a leaf node.
-		TreeNode(TreeNode* _parent, const Box3& _bounds) :
-			parent(_parent), bounds(_bounds), atoms(nullptr), numAtoms(0), children{nullptr,nullptr} {}
+		TreeNode() : splitDim(-1), atoms(nullptr), numAtoms(0) {}
 
 		/// Returns true this is a leaf node.
-		bool isLeaf() const { return children[0] == nullptr; }
+		bool isLeaf() const { return splitDim == -1; }
 
-		/// The parent node of this tree node.
-		TreeNode* parent;
+		/// Converts the bounds of this node and all children to absolute coordinates.
+		void convertToAbsoluteCoordinates(const SimulationCellData& cell) {
+			bounds.minc = cell.reducedToAbsolute(bounds.minc);
+			bounds.maxc = cell.reducedToAbsolute(bounds.maxc);
+			if(!isLeaf()) {
+				children[0]->convertToAbsoluteCoordinates(cell);
+				children[1]->convertToAbsoluteCoordinates(cell);
+			}
+		}
+
+		/// The splitting direction (or -1 if this is a leaf node).
+		int splitDim;
+		union {
+			struct {
+				/// The two child nodes (if this is not a leaf node).
+				TreeNode* children[2];
+				/// The position of the split plane.
+				FloatType splitPos;
+			};
+			struct {
+				/// The linked list of atoms (if this is a leaf node).
+				NeighborListAtom* atoms;
+				/// Number of atoms in this leaf node.
+				int numAtoms;
+			};
+		};
 		/// The bounding box of the node.
 		Box3 bounds;
-		/// The dimension of the splitting if this is not a leaf node.
-		int splitDim;
-		/// The position of the split plane.
-		FloatType splitPos;
-		/// The two child nodes if this is not a leaf node.
-		TreeNode* children[2];
-		/// The linked list of atoms if this is a leaf node.
-		NeighborListAtom* atoms;
-		/// Number of atoms in this leaf node.
-		int numAtoms;
 	};
 
 public:
@@ -87,7 +98,7 @@ public:
 
 	/// \brief Prepares the tree data structure.
 	/// \param posProperty The positions of the particles.
-	/// \param simCell The simulation cell data.
+	/// \param cellData The simulation cell data.
 	/// \return \c false when the operation has been canceled by the user;
 	///         \c true on success.
 	/// \throw Exception on error.
@@ -106,7 +117,7 @@ public:
 		auto visitor = [&closestIndex, &closestDistanceSq](const Neighbor& n, FloatType& mrs) {
 			if(n.distanceSq < closestDistanceSq) {
 				mrs = closestDistanceSq = n.distanceSq;
-				closestIndex = n.index();
+				closestIndex = n.index;
 			}
 		};
 		visitNeighbors(query_point, visitor, includeSelf);
@@ -115,12 +126,10 @@ public:
 
 	struct Neighbor
 	{
-		NeighborListAtom* atom;
-		FloatType distanceSq;
 		Vector3 delta;
-
-		/// Returns the index of the neighbor atom.
-		size_t index() const { return atom->index; }
+		FloatType distanceSq;
+		NeighborListAtom* atom;
+		size_t index;
 
 		/// Used for ordering.
 		bool operator<(const Neighbor& other) const { return distanceSq < other.distanceSq; }
@@ -139,8 +148,10 @@ public:
 			queue.clear();
 			for(const Vector3& pbcShift : t.pbcImages) {
 				q = query_point - pbcShift;
-				qr = t.simCellInverse * q;
-				visitNode(t.root);
+				if(!queue.full() || queue.top().distanceSq > t.minimumDistance(t.root, q)) {
+					qr = t.simCell.absoluteToReduced(q);
+					visitNode(t.root);
+				}
 			}
 			queue.sort();
 		}
@@ -159,21 +170,25 @@ public:
 					n.distanceSq = n.delta.squaredLength();
 					if(n.distanceSq != 0) {
 						n.atom = atom;
+						n.index = atom - &t.atoms.front();
 						queue.insert(n);
 					}
 				}
 			}
 			else {
+				TreeNode* cnear;
+				TreeNode* cfar;
 				if(qr[node->splitDim] < node->splitPos) {
-					visitNode(node->children[0]);
-					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[1]->bounds, q))
-						visitNode(node->children[1]);
+					cnear = node->children[0];
+					cfar  = node->children[1];
 				}
 				else {
-					visitNode(node->children[1]);
-					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[0]->bounds, q))
-						visitNode(node->children[0]);
+					cnear = node->children[1];
+					cfar  = node->children[0];
 				}
+				visitNode(cnear);
+				if(!queue.full() || queue.top().distanceSq > t.minimumDistance(cfar, q))
+					visitNode(cfar);
 			}
 		}
 
@@ -188,9 +203,9 @@ public:
 		FloatType mrs = FLOATTYPE_MAX;
 		for(const Vector3& pbcShift : pbcImages) {
 			Point3 q = query_point - pbcShift;
-			Point3 qr = simCellInverse * q;
-			if(mrs > minimumDistance(root->bounds, q))
-				visitNode(root, q, qr, v, mrs, includeSelf);
+			if(mrs > minimumDistance(root, q)) {
+				visitNode(root, q, simCell.absoluteToReduced(q), v, mrs, includeSelf);
+			}
 		}
 	}
 
@@ -206,9 +221,9 @@ private:
 	int determineSplitDirection(TreeNode* node);
 
 	/// Computes the minimum distance from the query point to the given bounding box.
-	FloatType minimumDistance(const Box3& box, const Point3& query_point) const {
-		Vector3 p1 = simCell * box.minc - query_point;
-		Vector3 p2 = query_point - simCell * box.maxc;
+	FloatType minimumDistance(TreeNode* node, const Point3& query_point) const {
+		Vector3 p1 = node->bounds.minc - query_point;
+		Vector3 p2 = query_point - node->bounds.maxc;
 		FloatType minDistance = 0;
 		for(size_t dim = 0; dim < 3; dim++) {
 			FloatType t_min = planeNormals[dim].dot(p1);
@@ -228,21 +243,25 @@ private:
 				n.distanceSq = n.delta.squaredLength();
 				if(includeSelf || n.distanceSq != 0) {
 					n.atom = atom;
+					n.index = atom - &atoms.front();
 					v(n, mrs);
 				}
 			}
 		}
 		else {
+			TreeNode* cnear;
+			TreeNode* cfar;
 			if(qr[node->splitDim] < node->splitPos) {
-				visitNode(node->children[0], q, qr, v, mrs, includeSelf);
-				if(mrs > minimumDistance(node->children[1]->bounds, q))
-					visitNode(node->children[1], q, qr, v, mrs, includeSelf);
+				cnear = node->children[0];
+				cfar  = node->children[1];
 			}
 			else {
-				visitNode(node->children[1], q, qr, v, mrs, includeSelf);
-				if(mrs > minimumDistance(node->children[0]->bounds, q))
-					visitNode(node->children[0], q, qr, v, mrs, includeSelf);
+				cnear = node->children[1];
+				cfar  = node->children[0];
 			}
+			visitNode(cnear, q, qr, v, mrs, includeSelf);
+			if(mrs > minimumDistance(cfar, q))
+				visitNode(cfar, q, qr, v, mrs, includeSelf);
 		}
 	}
 
@@ -251,10 +270,8 @@ private:
 	/// The internal list of atoms.
 	std::vector<NeighborListAtom> atoms;
 
-	// Simulation cell properties.
-	AffineTransformation simCell;
-	AffineTransformation simCellInverse;
-	std::array<bool,3> pbc;
+	// Simulation cell.
+	SimulationCellData simCell;
 
 	/// The normal vectors of the three cell planes.
 	Vector3 planeNormals[3];

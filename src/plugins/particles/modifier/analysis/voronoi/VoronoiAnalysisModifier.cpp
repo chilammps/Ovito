@@ -216,10 +216,10 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase
 			int nvisits = 0;
 			auto visitFunc = [this, &v, &nvisits, index](const TreeNeighborListBuilder::Neighbor& n, FloatType& mrs) {
 				// Skip unselected particles (if requested).
-				if(!_selection || _selection->getInt(n.index())) {
+				if(!_selection || _selection->getInt(n.index)) {
 					FloatType rs = n.distanceSq;
 					if(!_squaredRadii.empty())
-						 rs += _squaredRadii[index] - _squaredRadii[n.index()];
+						 rs += _squaredRadii[index] - _squaredRadii[n.index];
 					v.plane(n.delta.x(), n.delta.y(), n.delta.z(), rs);
 				}
 				if(nvisits == 0) {

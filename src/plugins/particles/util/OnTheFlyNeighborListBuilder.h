@@ -45,18 +45,12 @@ private:
 
 	// An internal per-particle data structure.
 	struct NeighborListParticle {
-
 		/// The position of the particle, wrapped at periodic boundaries.
 		Point3 pos;
-
 		/// The offset applied to the particle when wrapping it at periodic boundaries.
 		Vector_3<int8_t> pbcShift;
-
-		/// The next item in the linked list used for binning.
-		NeighborListParticle* nextInBin;
-
-		/// The index of the particle.
-		size_t index;
+		/// Pointer to next particle in linked list.
+		const NeighborListParticle* nextInBin;
 	};
 
 public:
@@ -66,7 +60,7 @@ public:
 
 	/// \brief Prepares the bin cells.
 	/// \param posProperty The positions of the particles.
-	/// \param simCell The simulation cell data.
+	/// \param cellData The simulation cell data.
 	/// \param hasWrappedParticles If non-null, this output parameter will indicate whether one or more particles
 	///                            have been wrapped at periodic boundaries.
 	/// \return \c false when the operation has been canceled by the user;
@@ -91,7 +85,7 @@ public:
 		iterator(const OnTheFlyNeighborListBuilder& builder, size_t particleIndex);
 
 		bool atEnd() const { return _atEnd; }
-		size_t next();
+		void next();
 		size_t current() { return _neighborIndex; }
 		const Vector3& delta() const { return _delta; }
 		FloatType distanceSquared() const { return _distsq; }
@@ -115,14 +109,13 @@ public:
 
 		const OnTheFlyNeighborListBuilder& _builder;
 		bool _atEnd;
-		Point3 _center;
+		Point3 _center, _shiftedCenter;
 		size_t _centerIndex;
 		std::vector<Vector3I>::const_iterator _stencilIter;
 		Point3I _centerBin;
 		Point3I _currentBin;
-		NeighborListParticle* _neighbor;
+		const NeighborListParticle* _neighbor;
 		size_t _neighborIndex;
-		Vector3 _pbcOffset;
 		Vector_3<int8_t> _pbcShift;
 		Vector3 _delta;
 		FloatType _distsq;
@@ -136,10 +129,8 @@ private:
 	/// The neighbor criterion.
 	FloatType _cutoffRadiusSquared;
 
-	// Simulation cell properties.
-	AffineTransformation simCell;
-	AffineTransformation simCellInverse;
-	std::array<bool,3> pbc;
+	// Simulation cell.
+	SimulationCellData simCell;
 
 	/// Number of bins in each spatial direction.
 	int binDim[3];
@@ -151,7 +142,7 @@ private:
 	std::vector<NeighborListParticle> particles;
 
 	/// An 3d array of cubic bins. Each bin is a linked list of particles.
-	std::vector<NeighborListParticle*> bins;
+	std::vector<const NeighborListParticle*> bins;
 
 	/// The list of adjacent cells to visit while finding the neighbors of a
 	/// central particle.
