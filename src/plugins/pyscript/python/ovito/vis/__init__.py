@@ -69,19 +69,19 @@ def _set_RenderSettings_filename(self, filename):
         self.saveToFile = False
 RenderSettings.filename = property(_get_RenderSettings_filename, _set_RenderSettings_filename)
 
-def _Viewport_render(self, renderSettings = None):
+def _Viewport_render(self, settings = None):
     """ Renders an image or movie of the viewport's view.
     
-        :param renderSettings: A render settings object, which specifies the resolution and filename of the output image. 
-                               If ``None``, the global render settings are used (see :py:attr:`DataSet.render_settings <ovito.DataSet.render_settings>` attribute).
-        :type renderSettings: :py:class:`RenderSettings`
+        :param settings: A render settings object, which specifies the resolution and filename of the output image. 
+                         If ``None``, the global render settings are used (see :py:attr:`DataSet.render_settings <ovito.DataSet.render_settings>` attribute).
+        :type settings: :py:class:`RenderSettings`
         :returns: ``True`` on success; ``False`` if operation has been canceled by the user.
     """
-    if renderSettings == None:
-        renderSettings = self.dataset.renderSettings
-    elif isinstance(renderSettings, dict):
-        renderSettings = RenderSettings(renderSettings)
-    return self.dataset.renderScene(renderSettings, self)
+    if settings == None:
+        settings = self.dataset.render_settings
+    elif isinstance(settings, dict):
+        settings = RenderSettings(settings)
+    return self.dataset.renderScene(settings, self)
 Viewport.render = _Viewport_render
 
 
