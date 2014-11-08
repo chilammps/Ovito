@@ -216,22 +216,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
  *****************************************************************************/
 inline bool parseFloatType(const char* s, const char* s_end, float& f)
 {
-#if 0
-	// First use the atof() function to parse the number because it's fast.
-	// However, atof() returns 0.0 to report a parsing error. Thus, if
-	// we get 0.0, we need to use the slower strtof() function as a means to
-	// discriminate invalid strings from an actual zero value.
-	f = (float)std::atof(s);
-	if(f != 0.0f)
-		return true;
-	else {
-		char* endptr;
-		f = std::strtof(s, &endptr);
-		return !*endptr;
-	}
-#else
 	return boost::spirit::qi::parse(s, s_end, boost::spirit::qi::float_, f);
-#endif
 }
 
 /******************************************************************************
@@ -239,22 +224,7 @@ inline bool parseFloatType(const char* s, const char* s_end, float& f)
  *****************************************************************************/
 inline bool parseFloatType(const char* s, const char* s_end, double& f)
 {
-#if 0
-	// First use the atof() function to parse the number because it's fast.
-	// However, atof() returns 0.0 to report a parsing error. Thus, if
-	// we get 0.0, we need to use the slower strtod() function as a means to
-	// discriminate invalid strings from an actual zero value.
-	f = std::atof(s);
-	if(f != 0.0)
-		return true;
-	else {
-		char* endptr;
-		f = std::strtod(s, &endptr);
-		return !*endptr;
-	}
-#else
 	return boost::spirit::qi::parse(s, s_end, boost::spirit::qi::double_, f);
-#endif
 }
 
 /******************************************************************************
@@ -262,13 +232,7 @@ inline bool parseFloatType(const char* s, const char* s_end, double& f)
  *****************************************************************************/
 inline bool parseInt(const char* s, const char* s_end, int& i)
 {
-#if 0
-	char* endptr;
-	i = std::strtol(s, &endptr, 10);
-	return !*endptr;
-#else
 	return boost::spirit::qi::parse(s, s_end, boost::spirit::qi::int_, i);
-#endif
 }
 
 /******************************************************************************

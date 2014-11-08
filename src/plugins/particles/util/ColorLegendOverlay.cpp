@@ -49,6 +49,8 @@ DEFINE_FLAGS_PROPERTY_FIELD(ColorLegendOverlay, _fontSize, "FontSize", PROPERTY_
 DEFINE_PROPERTY_FIELD(ColorLegendOverlay, _offsetX, "OffsetX");
 DEFINE_PROPERTY_FIELD(ColorLegendOverlay, _offsetY, "OffsetY");
 DEFINE_PROPERTY_FIELD(ColorLegendOverlay, _title, "Title");
+DEFINE_PROPERTY_FIELD(ColorLegendOverlay, _label1, "Label1");
+DEFINE_PROPERTY_FIELD(ColorLegendOverlay, _label2, "Label2");
 DEFINE_FLAGS_PROPERTY_FIELD(ColorLegendOverlay, _aspectRatio, "AspectRatio", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(ColorLegendOverlay, _valueFormatString, "ValueFormatString");
 DEFINE_FLAGS_REFERENCE_FIELD(ColorLegendOverlay, _modifier, "Modifier", ColorCodingModifier, PROPERTY_FIELD_NO_SUB_ANIM);
@@ -62,6 +64,9 @@ SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _offsetX, "Offset X");
 SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _offsetY, "Offset Y");
 SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _aspectRatio, "Aspect ratio");
 SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _textColor, "Font color");
+SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _title, "Title");
+SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _label1, "Label 1");
+SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _label2, "Label 2");
 SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetX, PercentParameterUnit);
 SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetY, PercentParameterUnit);
 
@@ -83,11 +88,13 @@ ColorLegendOverlay::ColorLegendOverlay(DataSet* dataset) : ViewportOverlay(datas
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_font);
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_fontSize);
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_title);
+	INIT_PROPERTY_FIELD(ColorLegendOverlay::_label1);
+	INIT_PROPERTY_FIELD(ColorLegendOverlay::_label2);
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_valueFormatString);
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_modifier);
 	INIT_PROPERTY_FIELD(ColorLegendOverlay::_textColor);
 
-	// Find a ColorCodingModifiers in the scene.
+	// Find a ColorCodingModifiers in the scene that we can connect to.
 	dataset->sceneRoot()->visitObjectNodes([this](ObjectNode* node) {
 		SceneObject* obj = node->dataProvider();
 		while(obj) {
@@ -160,10 +167,20 @@ void ColorLegendOverlay::render(Viewport* viewport, QPainter& painter, const Vie
 
 	QByteArray format = valueFormatString().toLatin1();
 	if(format.contains("%s")) format.clear();
-	QString topLabel, bottomLabel;
-	topLabel.sprintf(format.constData(), endValue);
-	bottomLabel.sprintf(format.constData(), startValue);
-	QString titleLabel = title().isEmpty() ? modifier()->sourceProperty().nameWithComponent() : title();
+
+	QString titleLabel, topLabel, bottomLabel;
+	if(label1().isEmpty())
+		topLabel.sprintf(format.constData(), endValue);
+	else
+		topLabel = label1();
+	if(label2().isEmpty())
+		bottomLabel.sprintf(format.constData(), startValue);
+	else
+		bottomLabel = label2();
+	if(title().isEmpty())
+		titleLabel = modifier()->sourceProperty().nameWithComponent();
+	else
+		titleLabel = title();
 
 	font.setPointSizeF(fontSize);
 	painter.setFont(font);
@@ -338,21 +355,29 @@ void ColorLegendOverlayEditor::createUI(const RolloutInsertionParameters& rollou
 	sublayout->addWidget(new QLabel(tr("Custom title:")), 0, 0);
 	sublayout->addWidget(titlePUI->textBox(), 0, 1, 1, 2);
 
+	StringParameterUI* label1PUI = new StringParameterUI(this, PROPERTY_FIELD(ColorLegendOverlay::_label1));
+	sublayout->addWidget(new QLabel(tr("Custom label 1:")), 1, 0);
+	sublayout->addWidget(label1PUI->textBox(), 1, 1, 1, 2);
+
+	StringParameterUI* label2PUI = new StringParameterUI(this, PROPERTY_FIELD(ColorLegendOverlay::_label2));
+	sublayout->addWidget(new QLabel(tr("Custom label 2:")), 2, 0);
+	sublayout->addWidget(label2PUI->textBox(), 2, 1, 1, 2);
+
 	StringParameterUI* valueFormatStringPUI = new StringParameterUI(this, PROPERTY_FIELD(ColorLegendOverlay::_valueFormatString));
-	sublayout->addWidget(new QLabel(tr("Format string:")), 1, 0);
-	sublayout->addWidget(valueFormatStringPUI->textBox(), 1, 1, 1, 2);
+	sublayout->addWidget(new QLabel(tr("Format string:")), 3, 0);
+	sublayout->addWidget(valueFormatStringPUI->textBox(), 3, 1, 1, 2);
 
 	FloatParameterUI* fontSizePUI = new FloatParameterUI(this, PROPERTY_FIELD(ColorLegendOverlay::_fontSize));
-	sublayout->addWidget(new QLabel(tr("Text size/color:")), 2, 0);
-	sublayout->addLayout(fontSizePUI->createFieldLayout(), 2, 1);
+	sublayout->addWidget(new QLabel(tr("Text size/color:")), 4, 0);
+	sublayout->addLayout(fontSizePUI->createFieldLayout(), 4, 1);
 	fontSizePUI->setMinValue(0);
 
 	ColorParameterUI* textColorPUI = new ColorParameterUI(this, PROPERTY_FIELD(ColorLegendOverlay::_textColor));
-	sublayout->addWidget(textColorPUI->colorPicker(), 2, 2);
+	sublayout->addWidget(textColorPUI->colorPicker(), 4, 2);
 
 	FontParameterUI* labelFontPUI = new FontParameterUI(this, PROPERTY_FIELD(ColorLegendOverlay::_font));
-	sublayout->addWidget(labelFontPUI->label(), 3, 0);
-	sublayout->addWidget(labelFontPUI->fontPicker(), 3, 1, 1, 2);
+	sublayout->addWidget(labelFontPUI->label(), 5, 0);
+	sublayout->addWidget(labelFontPUI->fontPicker(), 5, 1, 1, 2);
 }
 
 };

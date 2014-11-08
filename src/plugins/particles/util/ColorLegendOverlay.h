@@ -62,6 +62,12 @@ public:
 	/// Sets the title text of the color legend.
 	void setTitle(const QString& text) { _title = text; }
 
+	/// Returns the user-defined text to be used for the first numeric label.
+	const QString& label1() const { return _label1; }
+
+	/// Returns the user-defined text to be used for the second numeric label.
+	const QString& label2() const { return _label2; }
+
 public:
 
 	Q_PROPERTY(Particles::ColorCodingModifier* modifier READ modifier WRITE setModifier);
@@ -95,6 +101,12 @@ private:
 	/// The title label.
 	PropertyField<QString> _title;
 
+	/// User-defined text for the first numeric label.
+	PropertyField<QString> _label1;
+
+	/// User-defined text for the second numeric label.
+	PropertyField<QString> _label2;
+
 	/// The ColorCodingModifier for which to display the legend.
 	ReferenceField<ColorCodingModifier> _modifier;
 
@@ -113,6 +125,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_offsetX);
 	DECLARE_PROPERTY_FIELD(_offsetY);
 	DECLARE_PROPERTY_FIELD(_title);
+	DECLARE_PROPERTY_FIELD(_label1);
+	DECLARE_PROPERTY_FIELD(_label2);
 	DECLARE_PROPERTY_FIELD(_valueFormatString);
 	DECLARE_PROPERTY_FIELD(_textColor);
 	DECLARE_REFERENCE_FIELD(_modifier);
