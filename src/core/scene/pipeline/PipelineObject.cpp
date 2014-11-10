@@ -221,7 +221,8 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			// modifiers in the pipeline need to be informed (unless it's from a disabled modifier).
 			int index = _modApps.indexOf(source);
 			if(index != -1) {
-				if(modifierApplications()[index]->modifier()->isEnabled())
+				Modifier* mod = modifierApplications()[index]->modifier();
+				if(mod && mod->isEnabled())
 					modifierChanged(index);
 			}
 		}
