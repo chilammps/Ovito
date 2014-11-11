@@ -56,6 +56,7 @@
 #include <plugins/particles/modifier/analysis/strain/AtomicStrainModifier.h>
 #include <plugins/particles/modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/voronoi/VoronoiAnalysisModifier.h>
+#include <plugins/particles/modifier/analysis/diamond/IdentifyDiamondModifier.h>
 
 namespace Particles {
 
@@ -537,6 +538,42 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			.value("DIA", CommonNeighborAnalysisModifier::DIA)
 		;
 	}
+
+	{
+		scope s = ovito_class<IdentifyDiamondModifier, StructureIdentificationModifier>(
+				":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+				"This analysis modifier finds atoms that are arranged in a cubic or hexagonal diamond lattice."
+				"\n\n"
+				"The modifier stores its results as integer values in the ``\"Structure Type\"`` particle property. "
+				"The following constants are defined: "
+				"\n\n"
+				"   * ``IdentifyDiamondModifier.Type.OTHER`` (0)\n"
+				"   * ``IdentifyDiamondModifier.Type.CUBIC_DIAMOND`` (1)\n"
+				"   * ``IdentifyDiamondModifier.Type.HEX_DIAMOND`` (2)\n"
+				"\n"
+				"For example, to count the number of cubic diamond atoms in a system::"
+				"\n\n"
+				"   modifier = IdentifyDiamondModifier()\n"
+				"   node.modifiers.append(modifier)\n"
+				"   node.compute()\n"
+				"   print(modifier.counts[IdentifyDiamondModifier.Type.CUBIC_DIAMOND])\n"
+				"\n")
+			.add_property("structures", make_function(&IdentifyDiamondModifier::structureTypes, return_internal_reference<>()),
+					"A list of :py:class:`~ovito.data.ParticleType` instances managed by this modifier, one for each structural type. "
+					"You can adjust the color of structural types here as shown in the code example above.")
+			.add_property("counts", make_function(&IdentifyDiamondModifier::structureCounts, return_value_policy<copy_const_reference>()),
+					"A list of integers indicating the number of particles found for each structure type. "
+					"Note that accessing this output field is only possible after the modifier has computed its results. "
+					"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
+		;
+
+		enum_<IdentifyDiamondModifier::StructureType>("Type")
+			.value("OTHER", IdentifyDiamondModifier::OTHER)
+			.value("CUBIC_DIAMOND", IdentifyDiamondModifier::CUBIC_DIAMOND)
+			.value("HEX_DIAMOND", IdentifyDiamondModifier::HEX_DIAMOND)
+		;
+	}
+
 
 	{
 		scope s = ovito_class<CreateBondsModifier, AsynchronousParticleModifier>(

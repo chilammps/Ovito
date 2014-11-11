@@ -73,6 +73,10 @@
               <entry>Computes the histogram of a particle property.</entry>
             </row>
             <row>
+              <entry><link linkend="particles.modifiers.identify_diamond_structure">Identify diamond structure</link></entry>
+              <entry>Finds atoms that are arranged in a cubic or hexagonal diamond lattice.</entry>
+            </row>
+            <row>
               <entry><link linkend="particles.modifiers.scatter_plot">Scatter plot</link></entry>
               <entry>Generates a scatter plot of two particle properties.</entry>
             </row>
@@ -207,6 +211,8 @@
   <xi:include href="particles/freeze_property.docbook"/>
 
   <xi:include href="particles/histogram.docbook"/>
+  
+  <xi:include href="particles/identify_diamond.docbook"/>
 
   <xi:include href="particles/invert_selection.docbook"/>
 

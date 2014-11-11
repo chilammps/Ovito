@@ -46,6 +46,9 @@ class OVITO_PARTICLES_EXPORT CommonNeighborAnalysisModifier : public StructureId
 {
 public:
 
+	// The maximum number of neighbor atoms taken into account for the common neighbor analysis.
+	static constexpr int MAX_NEIGHBORS = 16;
+
 	/// The structure types recognized by the common neighbor analysis.
 	enum StructureType {
 		OTHER = 0,				//< Unidentified structure
@@ -111,6 +114,57 @@ public:
 
 	/// \brief Controls whether the cutoff radius should be determined adaptively for each particle.
 	void setAdaptiveMode(bool adaptive) { _adaptiveMode = adaptive; }
+
+public:
+
+	/// Pair of neighbor atoms that form a bond (bit-wise storage).
+	typedef unsigned int CNAPairBond;
+
+	/**
+	 * A bit-flag array indicating which pairs of neighbors are bonded
+	 * and which are not.
+	 */
+	struct NeighborBondArray
+	{
+		/// Two-dimensional bit array that stores the bonds between neighbors.
+		unsigned int neighborArray[MAX_NEIGHBORS];
+
+		/// Default constructor.
+		NeighborBondArray() {
+			memset(neighborArray, 0, sizeof(neighborArray));
+		}
+
+		/// Returns whether two nearest neighbors have a bond between them.
+		inline bool neighborBond(int neighborIndex1, int neighborIndex2) const {
+			OVITO_ASSERT(neighborIndex1 < MAX_NEIGHBORS);
+			OVITO_ASSERT(neighborIndex2 < MAX_NEIGHBORS);
+			return (neighborArray[neighborIndex1] & (1<<neighborIndex2));
+		}
+
+		/// Sets whether two nearest neighbors have a bond between them.
+		inline void setNeighborBond(int neighborIndex1, int neighborIndex2, bool bonded) {
+			OVITO_ASSERT(neighborIndex1 < MAX_NEIGHBORS);
+			OVITO_ASSERT(neighborIndex2 < MAX_NEIGHBORS);
+			if(bonded) {
+				neighborArray[neighborIndex1] |= (1<<neighborIndex2);
+				neighborArray[neighborIndex2] |= (1<<neighborIndex1);
+			}
+			else {
+				neighborArray[neighborIndex1] &= ~(1<<neighborIndex2);
+				neighborArray[neighborIndex2] &= ~(1<<neighborIndex1);
+			}
+		}
+	};
+
+	/// Find all atoms that are nearest neighbors of the given pair of atoms.
+	static int findCommonNeighbors(const NeighborBondArray& neighborArray, int neighborIndex, unsigned int& commonNeighbors, int numNeighbors);
+
+	/// Finds all bonds between common nearest neighbors.
+	static int findNeighborBonds(const NeighborBondArray& neighborArray, unsigned int commonNeighbors, int numNeighbors, CNAPairBond* neighborBonds);
+
+	/// Find all chains of bonds between common neighbors and determine the length
+	/// of the longest continuous chain.
+	static int calcMaxChainLength(CNAPairBond* neighborBonds, int numBonds);
 
 public:
 

@@ -20,8 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/viewport/Viewport.h>
-#include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
@@ -41,9 +39,6 @@ DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _adaptiveMode, "Adap
 SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _adaptiveMode, "Adaptive CNA");
 SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameterUnit);
-
-// The maximum number of neighbor atoms taken into account for the common neighbor analysis.
-#define CNA_MAX_PATTERN_NEIGHBORS 16
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -105,7 +100,7 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 	futureInterface.setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
-	TreeNeighborListBuilder neighborListBuilder(CNA_MAX_PATTERN_NEIGHBORS);
+	TreeNeighborListBuilder neighborListBuilder(MAX_NEIGHBORS);
 	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
 		return;
 
@@ -139,49 +134,10 @@ void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(
 	});
 }
 
-/// Pair of neighbor atoms that form a bond (bit-wise storage).
-typedef unsigned int CNAPairBond;
-
-/**
- * A bit-flag array indicating which pairs of neighbors are bonded
- * and which are not.
- */
-struct NeighborBondArray
-{
-	/// Default constructor.
-	NeighborBondArray() {
-		memset(neighborArray, 0, sizeof(neighborArray));
-	}
-
-	/// Two-dimensional bit array that stores the bonds between neighbors.
-	unsigned int neighborArray[CNA_MAX_PATTERN_NEIGHBORS];
-
-	/// Returns whether two nearest neighbors have a bond between them.
-	inline bool neighborBond(int neighborIndex1, int neighborIndex2) const {
-		OVITO_ASSERT(neighborIndex1 < CNA_MAX_PATTERN_NEIGHBORS);
-		OVITO_ASSERT(neighborIndex2 < CNA_MAX_PATTERN_NEIGHBORS);
-		return (neighborArray[neighborIndex1] & (1<<neighborIndex2));
-	}
-
-	/// Sets whether two nearest neighbors have a bond between them.
-	inline void setNeighborBond(int neighborIndex1, int neighborIndex2, bool bonded) {
-		OVITO_ASSERT(neighborIndex1 < CNA_MAX_PATTERN_NEIGHBORS);
-		OVITO_ASSERT(neighborIndex2 < CNA_MAX_PATTERN_NEIGHBORS);
-		if(bonded) {
-			neighborArray[neighborIndex1] |= (1<<neighborIndex2);
-			neighborArray[neighborIndex2] |= (1<<neighborIndex1);
-		}
-		else {
-			neighborArray[neighborIndex1] &= ~(1<<neighborIndex2);
-			neighborArray[neighborIndex2] &= ~(1<<neighborIndex1);
-		}
-	}
-};
-
 /******************************************************************************
 * Find all atoms that are nearest neighbors of the given pair of atoms.
 ******************************************************************************/
-static int findCommonNeighbors(const NeighborBondArray& neighborArray, int neighborIndex, unsigned int& commonNeighbors, int numNeighbors)
+int CommonNeighborAnalysisModifier::findCommonNeighbors(const NeighborBondArray& neighborArray, int neighborIndex, unsigned int& commonNeighbors, int numNeighbors)
 {
 	commonNeighbors = neighborArray.neighborArray[neighborIndex];
 #ifndef Q_CC_MSVC
@@ -198,11 +154,11 @@ static int findCommonNeighbors(const NeighborBondArray& neighborArray, int neigh
 /******************************************************************************
 * Finds all bonds between common nearest neighbors.
 ******************************************************************************/
-static int findNeighborBonds(const NeighborBondArray& neighborArray, unsigned int commonNeighbors, int numNeighbors, CNAPairBond* neighborBonds)
+int CommonNeighborAnalysisModifier::findNeighborBonds(const NeighborBondArray& neighborArray, unsigned int commonNeighbors, int numNeighbors, CNAPairBond* neighborBonds)
 {
 	int numBonds = 0;
 
-	unsigned int nib[CNA_MAX_PATTERN_NEIGHBORS];
+	unsigned int nib[MAX_NEIGHBORS];
 	int nibn = 0;
 	unsigned int ni1b = 1;
 	for(int ni1 = 0; ni1 < numNeighbors; ni1++, ni1b <<= 1) {
@@ -210,7 +166,7 @@ static int findNeighborBonds(const NeighborBondArray& neighborArray, unsigned in
 			unsigned int b = commonNeighbors & neighborArray.neighborArray[ni1];
 			for(int n = 0; n < nibn; n++) {
 				if(b & nib[n]) {
-					OVITO_ASSERT(numBonds < CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS);
+					OVITO_ASSERT(numBonds < MAX_NEIGHBORS*MAX_NEIGHBORS);
 					neighborBonds[numBonds++] = ni1b | nib[n];
 				}
 			}
@@ -224,14 +180,14 @@ static int findNeighborBonds(const NeighborBondArray& neighborArray, unsigned in
 /******************************************************************************
 * Find all chains of bonds.
 ******************************************************************************/
-static int getAdjacentBonds(unsigned int atom, CNAPairBond* bondsToProcess, int& numBonds, unsigned int& atomsToProcess, unsigned int& atomsProcessed)
+static int getAdjacentBonds(unsigned int atom, CommonNeighborAnalysisModifier::CNAPairBond* bondsToProcess, int& numBonds, unsigned int& atomsToProcess, unsigned int& atomsProcessed)
 {
     int adjacentBonds = 0;
 	for(int b = numBonds - 1; b >= 0; b--) {
 		if(atom & *bondsToProcess) {
             ++adjacentBonds;
    			atomsToProcess |= *bondsToProcess & (~atomsProcessed);
-   			memmove(bondsToProcess, bondsToProcess + 1, sizeof(CNAPairBond) * b);
+   			memmove(bondsToProcess, bondsToProcess + 1, sizeof(CommonNeighborAnalysisModifier::CNAPairBond) * b);
    			numBonds--;
 		}
 		else ++bondsToProcess;
@@ -243,7 +199,7 @@ static int getAdjacentBonds(unsigned int atom, CNAPairBond* bondsToProcess, int&
 * Find all chains of bonds between common neighbors and determine the length
 * of the longest continuous chain.
 ******************************************************************************/
-static int calcMaxChainLength(CNAPairBond* neighborBonds, int numBonds)
+int CommonNeighborAnalysisModifier::calcMaxChainLength(CNAPairBond* neighborBonds, int numBonds)
 {
     // Group the common bonds into clusters.
 	int maxChainLength = 0;
@@ -281,7 +237,7 @@ static int calcMaxChainLength(CNAPairBond* neighborBonds, int numBonds)
 CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureAdaptive(TreeNeighborListBuilder& neighList, size_t particleIndex)
 {
 	// Create neighbor list finder.
-	TreeNeighborListBuilder::Locator<CNA_MAX_PATTERN_NEIGHBORS> loc(neighList);
+	TreeNeighborListBuilder::Locator<MAX_NEIGHBORS> loc(neighList);
 
 	// Find N nearest neighbor of current atom.
 	loc.findNeighbors(neighList.particlePos(particleIndex));
@@ -323,7 +279,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 			break;
 
 		// Determine the number of bonds among the common neighbors.
-		CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+		CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
 		int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, nn, neighborBonds);
 		if(numNeighborBonds != 2 && numNeighborBonds != 5)
 			break;
@@ -381,7 +337,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 			break;
 
 		// Determine the number of bonds among the common neighbors.
-		CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+		CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
 		int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, nn, neighborBonds);
 		if(numNeighborBonds != 4 && numNeighborBonds != 6)
 			break;
@@ -435,7 +391,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 			break;
 
 		// Determine the number of bonds among the common neighbors.
-		CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+		CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
 		int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, nn, neighborBonds);
 		if(numNeighborBonds != 4 && numNeighborBonds != 6)
 			break;
@@ -461,9 +417,9 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 {
 	// Store neighbor vectors in a local array.
 	int numNeighbors = 0;
-	Vector3 neighborVectors[CNA_MAX_PATTERN_NEIGHBORS];
+	Vector3 neighborVectors[MAX_NEIGHBORS];
 	for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighList, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
-		if(numNeighbors == CNA_MAX_PATTERN_NEIGHBORS) return OTHER;
+		if(numNeighbors == MAX_NEIGHBORS) return OTHER;
 		neighborVectors[numNeighbors] = neighborIter.delta();
 		numNeighbors++;
 	}
@@ -492,7 +448,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 				return OTHER;
 
 			// Determine the number of bonds among the common neighbors.
-			CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+			CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
 			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, 12, neighborBonds);
 			if(numNeighborBonds != 2 && numNeighborBonds != 5)
 				break;
@@ -523,7 +479,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 				return OTHER;
 
 			// Determine the number of bonds among the common neighbors.
-			CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+			CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
 			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, 14, neighborBonds);
 			if(numNeighborBonds != 4 && numNeighborBonds != 6)
 				break;
@@ -548,7 +504,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 				return OTHER;
 
 			// Determine the number of bonds among the common neighbors.
-			CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+			CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
 			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, numNeighbors, neighborBonds);
 			if(numNeighborBonds != 4 && numNeighborBonds != 6)
 				break;

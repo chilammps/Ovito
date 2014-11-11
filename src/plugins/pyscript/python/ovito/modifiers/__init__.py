@@ -34,6 +34,7 @@ Class name                                     User interface name
 :py:class:`DeleteSelectedParticlesModifier`    :guilabel:`Delete selected particles`
 :py:class:`FreezePropertyModifier`             :guilabel:`Freeze property`
 :py:class:`HistogramModifier`                  :guilabel:`Histogram`
+:py:class:`IdentifyDiamondModifier`            :guilabel:`Identify diamond structure`
 :py:class:`InvertSelectionModifier`            :guilabel:`Invert selection`
 :py:class:`ManualSelectionModifier`            :guilabel:`Manual selection`
 :py:class:`ScatterPlotModifier`                :guilabel:`Scatter plot`

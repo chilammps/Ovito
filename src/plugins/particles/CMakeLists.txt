@@ -51,6 +51,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
+	modifier/analysis/diamond/IdentifyDiamondModifier.cpp	
 	modifier/analysis/bonds/CreateBondsModifier.cpp
 	modifier/analysis/voronoi/VoronoiAnalysisModifier.cpp
 	modifier/analysis/histogram/HistogramModifier.cpp
