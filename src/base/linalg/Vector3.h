@@ -276,6 +276,19 @@ Q_DECL_CONSTEXPR Vector_3<T> operator/(const Vector_3<T>& a, S s) {
 	return Vector_3<T>{ a.x() / s, a.y() / s, a.z() / s };
 }
 
+/// \brief Writes the vector to a text output stream.
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const Vector_3<T>& v) {
+	return os << "(" << v.x() << ", " << v.y()  << ", " << v.z() << ")";
+}
+
+/// \brief Writes the vector to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Vector_3<T>& v) {
+    dbg.nospace() << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+    return dbg.space();
+}
+
 /// \brief Writes a vector to a binary output stream.
 template<typename T>
 inline SaveStream& operator<<(SaveStream& stream, const Vector_3<T>& v) {

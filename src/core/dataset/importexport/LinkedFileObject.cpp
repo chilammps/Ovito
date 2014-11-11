@@ -205,6 +205,9 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, b
 		if(!_frames.empty() && importer->inspectNewFile(this) == false)
 			return false;
 
+		// Cancel any old load operation in progress.
+		cancelLoadOperation();
+
 		if(_adjustAnimationIntervalEnabled) {
 			// Adjust views to completely show the new object.
 			QPointer<DataSet> ds(dataset());
@@ -212,9 +215,6 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, b
 				if(ds) ds->viewportConfig()->zoomToSelectionExtents();
 			});
 		}
-
-		// Cancel any old load operation in progress.
-		cancelLoadOperation();
 
 		transaction.commit();
 		notifyDependents(ReferenceEvent::TitleChanged);
