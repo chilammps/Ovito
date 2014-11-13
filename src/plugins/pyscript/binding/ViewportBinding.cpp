@@ -101,6 +101,7 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 					"The camera direction is not changed.")
 			.def("zoomToSelectionExtents", &Viewport::zoomToSelectionExtents)
 			.def("zoomToBox", &Viewport::zoomToBox)
+			.add_property("overlays", make_function(&Viewport::overlays, return_internal_reference<>()))
 		;
 
 		enum_<Viewport::ViewType>("Type")

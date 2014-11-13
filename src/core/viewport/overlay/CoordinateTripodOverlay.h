@@ -43,7 +43,7 @@ public:
 
 private:
 
-	/// The corner of the viewport where the tripod is displayed.
+	/// The corner of the viewport where the tripod is shown in.
 	PropertyField<int> _alignment;
 
 	/// Controls the size of the tripod.

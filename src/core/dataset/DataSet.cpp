@@ -175,9 +175,8 @@ MainWindow* DataSet::mainWindow() const
 ******************************************************************************/
 void DataSet::clearScene()
 {
-	Q_FOREACH(SceneNode* node, sceneRoot()->children()) {
-		node->deleteNode();
-	}
+	while(!sceneRoot()->children().empty())
+		sceneRoot()->children().back()->deleteNode();
 }
 
 /******************************************************************************

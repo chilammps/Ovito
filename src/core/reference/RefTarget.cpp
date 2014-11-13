@@ -37,6 +37,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);
 void RefTarget::aboutToBeDeleted()
 {
 	OVITO_CHECK_OBJECT_POINTER(this);
+	OVITO_ASSERT(this->__isObjectAlive());
 	OVITO_CHECK_OBJECT_POINTER(dataset());
 
 	// Make sure undo recording is not active while deleting the object from memory.
@@ -72,6 +73,15 @@ void RefTarget::notifyDependents(ReferenceEvent& event)
 	OVITO_CHECK_OBJECT_POINTER(this);
 	OVITO_ASSERT_MSG(event.sender() == this, "RefTarget::notifyDependents()", "The notifying object is not the sender given in the event object.");
 
+	// If reference count is zero, then there cannot be any dependents.
+	if(objectReferenceCount() == 0) {
+		OVITO_ASSERT(dependents().empty());
+		return;
+	}
+
+	// Prevent this object from being deleted while iterating over the list of dependents.
+	OORef<RefTarget> this_(this);
+
 	// Be careful here: The list of dependents can change at any time while broadcasting
 	// the message.
 	for(int i = dependents().size() - 1; i >= 0; --i) {
@@ -81,6 +91,7 @@ void RefTarget::notifyDependents(ReferenceEvent& event)
 		dependents()[i]->handleReferenceEvent(this, &event);
 	}
 
+	OVITO_ASSERT(this->__isObjectAlive());
 #ifdef OVITO_DEBUG
 	if(event.type() == ReferenceEvent::TargetDeleted && !dependents().empty()) {
 		qDebug() << "Object being deleted:" << this;
@@ -113,6 +124,7 @@ bool RefTarget::handleReferenceEvent(RefTarget* source, ReferenceEvent* event)
 		OVITO_CHECK_OBJECT_POINTER(this);
 	}
 
+	OVITO_ASSERT(this->__isObjectAlive());
 	return true;
 }
 

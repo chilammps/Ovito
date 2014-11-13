@@ -131,7 +131,7 @@ class SelectParticleInputMode : public ViewportInputMode, ParticlePickingHelper
 public:
 
 	/// Constructor.
-	SelectParticleInputMode(ManualSelectionModifierEditor* editor) : _editor(editor) {}
+	SelectParticleInputMode(ManualSelectionModifierEditor* editor) : ViewportInputMode(editor), _editor(editor) {}
 
 	/// Handles the mouse up events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override {
@@ -160,7 +160,7 @@ class FenceParticleInputMode : public ViewportInputMode
 public:
 
 	/// Constructor.
-	FenceParticleInputMode(ManualSelectionModifierEditor* editor) : _editor(editor) {}
+	FenceParticleInputMode(ManualSelectionModifierEditor* editor) : ViewportInputMode(editor), _editor(editor) {}
 
 	/// Handles the mouse down events for a Viewport.
 	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override {

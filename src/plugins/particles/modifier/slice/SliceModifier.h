@@ -174,51 +174,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_applyToSelection);
 };
 
-class SliceModifierEditor;
-
-/******************************************************************************
-* The viewport input mode that lets the user select three particles
-* to define the slicing plane.
-******************************************************************************/
-class PickParticlePlaneInputMode : public ViewportInputMode, ParticlePickingHelper
-{
-public:
-
-	/// Constructor.
-	PickParticlePlaneInputMode(SliceModifierEditor* editor) : _editor(editor) {}
-
-	/// Handles the mouse events for a Viewport.
-	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
-
-	/// Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
-
-	/// Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
-	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer) override;
-
-	/// Indicates whether this input mode renders into the viewports.
-	virtual bool hasOverlay() override { return true; }
-
-protected:
-
-	/// This is called by the system after the input handler has become the active handler.
-	virtual void activated(bool temporary) override;
-
-	/// This is called by the system after the input handler is no longer the active handler.
-	virtual void deactivated(bool temporary) override;
-
-private:
-
-	/// Aligns the modifier's slicing plane to the three selected particles.
-	void alignPlane(SliceModifier* mod);
-
-	/// The list of particles picked by the user so far.
-	QVector<PickResult> _pickedParticles;
-
-	/// The properties editor of the Slice modifier.
-	SliceModifierEditor* _editor;
-};
-
+class PickParticlePlaneInputMode;
 
 /******************************************************************************
 * A properties editor for the SliceModifier class.
@@ -257,6 +213,50 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 };
+
+/******************************************************************************
+* The viewport input mode that lets the user select three particles
+* to define the slicing plane.
+******************************************************************************/
+class PickParticlePlaneInputMode : public ViewportInputMode, ParticlePickingHelper
+{
+public:
+
+	/// Constructor.
+	PickParticlePlaneInputMode(SliceModifierEditor* editor) : ViewportInputMode(editor), _editor(editor) {}
+
+	/// Handles the mouse events for a Viewport.
+	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
+
+	/// Lets the input mode render its overlay content in a viewport.
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
+
+	/// Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer) override;
+
+	/// Indicates whether this input mode renders into the viewports.
+	virtual bool hasOverlay() override { return true; }
+
+protected:
+
+	/// This is called by the system after the input handler has become the active handler.
+	virtual void activated(bool temporary) override;
+
+	/// This is called by the system after the input handler is no longer the active handler.
+	virtual void deactivated(bool temporary) override;
+
+private:
+
+	/// Aligns the modifier's slicing plane to the three selected particles.
+	void alignPlane(SliceModifier* mod);
+
+	/// The list of particles picked by the user so far.
+	QVector<PickResult> _pickedParticles;
+
+	/// The properties editor of the Slice modifier.
+	SliceModifierEditor* _editor;
+};
+
 
 };	// End of namespace
 
