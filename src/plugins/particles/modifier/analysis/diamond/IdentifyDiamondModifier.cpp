@@ -71,7 +71,7 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	futureInterface.setProgressText(tr("Finding nearest neighbors"));
 
 	// Prepare the neighbor list builder.
-	TreeNeighborListBuilder neighborListBuilder(5);
+	TreeNeighborListBuilder neighborListBuilder(4);
 	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
 		return;
 
@@ -80,17 +80,17 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		Vector3 vec;
 		int index;
 	};
-	std::vector<std::array<NeighborInfo,5>> neighLists(positions()->size());
+	std::vector<std::array<NeighborInfo,4>> neighLists(positions()->size());
 
 	// Determine four nearest neighbors of each atom and store vectors in the working array.
 	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, &neighLists](size_t index) {
-		TreeNeighborListBuilder::Locator<5> loc(neighborListBuilder);
+		TreeNeighborListBuilder::Locator<4> loc(neighborListBuilder);
 		loc.findNeighbors(neighborListBuilder.particlePos(index));
 		for(size_t i = 0; i < loc.results().size(); i++) {
 			neighLists[index][i].vec = loc.results()[i].delta;
 			neighLists[index][i].index = loc.results()[i].index;
 		}
-		for(size_t i = loc.results().size(); i < 5; i++) {
+		for(size_t i = loc.results().size(); i < 4; i++) {
 			neighLists[index][i].vec.setZero();
 			neighLists[index][i].index = -1;
 		}
@@ -101,44 +101,38 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 
 	// Perform structure identification.
 	futureInterface.setProgressText(tr("Identifying diamond structures"));
-	parallelFor(positions()->size(), futureInterface, [&neighLists, output](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighLists, output, this](size_t index) {
 		// Mark atom as 'other' by default.
 		output->setInt(index, OTHER);
 
-		const std::array<NeighborInfo,5>& nlist = neighLists[index];
-
-		// Compute local cutoff radius.
-		FloatType sum = 0;
-		for(size_t i = 0; i < 4; i++) {
-			if(nlist[i].index == -1) return;
-			sum += nlist[i].vec.squaredLength();
-		}
-		sum /= 4;
-		constexpr FloatType factor1 = 1.3164965809;   // = (4.0/sqrt(3.0)) * ((sqrt(3.0)/4.0 + sqrt(0.5)) / 2)
-		constexpr FloatType factor2 = 1.9711971193;   // = (4.0/sqrt(3.0)) * ((1.0 + sqrt(0.5)) / 2)
-		FloatType localCutoffSquared = sum * (factor2 * factor2);
-
-		// Make sure the fifth neighbor is beyond the first nearest neighbor shell.
-		if(nlist[4].index != -1 && nlist[4].vec.squaredLength() < sum * (factor1 * factor1))
-			return;
+		const std::array<NeighborInfo,4>& nlist = neighLists[index];
 
 		// Generate list of second nearest neighbors.
 		std::array<Vector3,12> secondNeighbors;
 		auto vout = secondNeighbors.begin();
 		for(size_t i = 0; i < 4; i++) {
+			if(nlist[i].index == -1) return;
 			const Vector3& v0 = nlist[i].vec;
-			const std::array<NeighborInfo,5>& nlist2 = neighLists[nlist[i].index];
+			const std::array<NeighborInfo,4>& nlist2 = neighLists[nlist[i].index];
 			for(size_t j = 0; j < 4; j++) {
 				Vector3 v = v0 + nlist2[j].vec;
-				if(v.isZero(1e-1f)) continue;
+				if(v.isZero(1e-2f)) continue;
 				if(vout == secondNeighbors.end()) return;
-				if(v.squaredLength() > localCutoffSquared) return;
 				*vout++ = v;
 			}
 			if(vout != secondNeighbors.begin() + i*3 + 3) return;
 		}
 
-		// Compute bonds between common neighbors.
+		// Compute a local CNA cutoff radius from the average distance of the 12 second nearest neighbors.
+		FloatType sum = 0;
+		for(const Vector3& v : secondNeighbors)
+			sum += v.length();
+		sum /= 12;
+		constexpr FloatType factor = 1.2071068;   // = sqrt(2.0) * ((1.0 + sqrt(0.5)) / 2)
+		FloatType localCutoff = sum * factor;
+		FloatType localCutoffSquared = localCutoff * localCutoff;
+
+		// Determine bonds between common neighbors using local cutoff.
 		CommonNeighborAnalysisModifier::NeighborBondArray neighborArray;
 		for(int ni1 = 0; ni1 < 12; ni1++) {
 			neighborArray.setNeighborBond(ni1, ni1, false);
@@ -171,13 +165,13 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		else if(n421 == 6 && n422 == 6) output->setInt(index, HEX_DIAMOND);
 	});
 
-	// Mark first neighbors.
+	// Mark first neighbors of crystalline atoms.
 	for(size_t index = 0; index < output->size(); index++) {
 		int ctype = output->getInt(index);
 		if(ctype != CUBIC_DIAMOND && ctype != HEX_DIAMOND)
 			continue;
 
-		const std::array<NeighborInfo,5>& nlist = neighLists[index];
+		const std::array<NeighborInfo,4>& nlist = neighLists[index];
 		for(size_t i = 0; i < 4; i++) {
 			OVITO_ASSERT(nlist[i].index != -1);
 			if(output->getInt(nlist[i].index) == OTHER) {
@@ -189,13 +183,13 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		}
 	}
 
-	// Mark second neighbors.
+	// Mark second neighbors of crystalline atoms.
 	for(size_t index = 0; index < output->size(); index++) {
 		int ctype = output->getInt(index);
 		if(ctype != CUBIC_DIAMOND_FIRST_NEIGH && ctype != HEX_DIAMOND_FIRST_NEIGH)
 			continue;
 
-		const std::array<NeighborInfo,5>& nlist = neighLists[index];
+		const std::array<NeighborInfo,4>& nlist = neighLists[index];
 		for(size_t i = 0; i < 4; i++) {
 			if(nlist[i].index != -1 && output->getInt(nlist[i].index) == OTHER) {
 				if(ctype == CUBIC_DIAMOND_FIRST_NEIGH)
