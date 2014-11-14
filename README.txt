@@ -14,6 +14,17 @@ See website for more information:
 Change Log 
 ****************************************************************************************
 
+Release 2.4.2 (14-Nov-14):
+
+ - The Color Coding modifier now supports user-defined color maps.
+ - Significantly improved performance of cutoff-based neighbor finding and k-nearest neighbor finding routines.
+   This code optimization speeds up many analysis algorithms in OVITO, in particluar for large datasets.
+ - Added the Identify Diamond Structure modifier, which finds atoms that form a cubic or hexagonal diamond lattice.
+ - The Color Legend overlay now provides an option to overwrite the numeric labels with a custom text.
+ - Dialog box asking to save changes is only shown when scene has already been saved before.
+ - Bug fix: Periodic boundary flags were not correctly updated when loading a new file using the 'Pick new local input file' button.
+ - Bug fix: Viewport.render() Python function throws exception when called without a RenderSettings object.
+ 
 Release 2.4.1 (01-Nov-14):
 
  - Introduced viewport overlay concept, which allows to include the coordinate system tripod and a color legend in the rendered image. 

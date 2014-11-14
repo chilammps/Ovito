@@ -47,8 +47,9 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
     connect(_newOverlayBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &OverlayCommandPage::onNewOverlay);
 
     _newOverlayBox->addItem(tr("Add overlay..."));
+    _newOverlayBox->insertSeparator(1);
 	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(ViewportOverlay::OOType)) {
-		_newOverlayBox->addItem(clazz->displayName(), qVariantFromValue(clazz));
+		_newOverlayBox->addItem(clazz->displayName(), QVariant::fromValue(clazz));
 	}
 
 	QSplitter* splitter = new QSplitter(Qt::Vertical);

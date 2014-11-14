@@ -75,11 +75,12 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
 		return;
 
-	// List of four neighbors for each atom.
+	// This data structure stores information about a single neighbor.
 	struct NeighborInfo {
 		Vector3 vec;
 		int index;
 	};
+	// This array will be filled with the four nearest neighbors of each atom.
 	std::vector<std::array<NeighborInfo,4>> neighLists(positions()->size());
 
 	// Determine four nearest neighbors of each atom and store vectors in the working array.
