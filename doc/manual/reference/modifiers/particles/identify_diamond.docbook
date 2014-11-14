@@ -15,8 +15,69 @@
   </para>
 
   <para>
-  
-    <informalfigure>
+  The modifier analyzes the local enviroment of each atom up to the second neighbor shell to determine the local structure type.
+  The results are stored in the <literal>Structure Type</literal> particle property, with the assigned type encoded as an integer value:
+  <informaltable>
+        <tgroup cols="3">
+          <colspec colname='id'/>
+          <colspec colname='name'/>
+          <colspec colname='descr'/>
+          <thead>
+            <row>
+              <entry>Type ID</entry>
+              <entry>Type name</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>0</entry>
+              <entry>Other</entry>
+              <entry>An atom with unknown coordination structure, which doesn't belong to any of the classes below.</entry>
+            </row>
+            <row>
+              <entry>1</entry>
+              <entry>Cubic diamond</entry>
+              <entry>An atom having all of its first and second nearest neighbors positioned on cubic diamond lattice sites</entry>
+            </row>
+            <row>
+              <entry>2</entry>
+              <entry>Cubic diamond (1st neighbor)</entry>
+              <entry>An atom being a first neighbor of an atom that was classified as <emphasis>cubic diamond</emphasis>. 
+              Its four neighbors are positioned on lattice sites, but at least one of its second nearest neighbors is not.</entry>
+            </row>          
+            <row>
+              <entry>3</entry>
+              <entry>Cubic diamond (2nd neighbor)</entry>
+              <entry>An atom being a second nearest neighbor of an atom that was classified as <emphasis>cubic diamond</emphasis>.
+              The atom itself is positioned on a lattice site, but at least one of its neighbors is missing or is not positioned on a lattice site.</entry>
+            </row>       
+            <row>
+              <entry>4</entry>
+              <entry>Hexagonal diamond</entry>
+              <entry>An atom having all of its first and second nearest neighbors positioned on hexagonal diamond lattice sites</entry>
+            </row>
+            <row>
+              <entry>5</entry>
+              <entry>Hexagonal diamond (1st neighbor)</entry>
+              <entry>An atom being a first neighbor of an atom that was classified as <emphasis>hexagonal diamond</emphasis>. 
+              Its four neighbors are positioned on lattice sites, but at least one of its second nearest neighbors is not.</entry>
+            </row>          
+            <row>
+              <entry>6</entry>
+              <entry>Hexagonal diamond (2nd neighbor)</entry>
+              <entry>An atom being a second nearest neighbor of an atom that was classified as <emphasis>hexagonal diamond</emphasis>.
+              The atom itself is positioned on a lattice site, but at least one of its neighbors is missing or is not positioned on a lattice site.</entry>
+            </row> 
+          </tbody>
+        </tgroup>
+    </informaltable>
+    </para>
+
+  <simplesect>
+    <title>How it works</title>
+    <para>
+     <informalfigure>
       <informaltable frame="none">
         <tgroup cols="2">
           <colspec colname="c1" />
@@ -61,42 +122,23 @@
         </tgroup>
       </informaltable>
     </informalfigure>
-  
-  The modifier analyzes the local enviroment of each atom and assigns a structure type to it.
-  The computation results are stored in the <literal>Structure Type</literal> particle property, and the structural type 
-  of each atom is encoded as an integer value:
-    <itemizedlist>
-    
-      <listitem>
-        <para>0 = Other, unknown coordination structure</para>
-      </listitem>
-    
-      <listitem>
-        <para>1 = Cubic diamond</para>
-      </listitem>
-
-      <listitem>
-        <para>2 = Hexagonal diamond</para>
-      </listitem>
-
-    </itemizedlist>
-  </para>
-
-  <para>
-  To classify a central atom, the structure identification method takes into account second nearest neighbors to 
-  discriminate between cubic and hexagonal diamond structures. The method, which is a new development, has not been published yet, and may be described
-  as an extended version of the popular <link linkend="particles.modifiers.common_neighbor_analysis">common neighbor analysis (CNA)</link>, which is often used to identify FCC, HCP, or BCC structures.
-  However, the conventional CNA is not suited for the diamond structure, because nearest neighbor atoms don't have common neighbors,
-  and the second and third nearest neighbor shells are not well separated in this structure. 
-  </para>
-  <para>
-  In the novel method implemented by this modifier, first the three nearest neighbors of each of the four nearest neighbors (a.k.a. the second nearest neighbors) are identified.
-  Then the CNA is performed on these 12 second nearest neighbors only (using an adaptive cutoff radius). If they are arranged in an FCC-like manner, then the central atom is classified as
-  cubic diamond. If they are arranged in an HCP structure, then the central atom is marked as an hexagonal diamond atom.
-  </para>
-  <para>
-  The described method has only recently been developed by the author of OVITO and is not published yet, i.e., it has not been written down in a citable form.
-  If you intend to use the method in your work, please contact the author.
-  </para>
+    To classify a central atom, this structure identification method takes into account second nearest neighbors to 
+    discriminate between cubic and hexagonal diamond structures. The method can be considered
+    an extended version of the popular <link linkend="particles.modifiers.common_neighbor_analysis">common neighbor analysis (CNA)</link>, which is typically used to identify FCC, HCP, or BCC structures.
+    However, the conventional CNA is not suited for diamond structures, because nearest neighbor atoms don't have common neighbors,
+    and the second and third nearest neighbor shells are not well separated. 
+    </para>
+    <para>
+    These problems are solved as follows: First, the nearest neighbors of an atom are identified. Then, for each of these four neighbors, their respective nearest neighbors are identified.
+    This yields the list of second nearest neighbors of the central atom.
+    Finally, the CNA fingerprint is computed for these 12 second nearest neighbors and the central atom.
+    If they are arranged on a FCC lattice, then the central atom is classified as
+    cubic diamond. If they form a HCP structure, then the central atom is marked as an hexagonal diamond atom.
+    </para>
+    <para>
+    Please note that the described method has only recently been developed and is not published yet, i.e., it has not been written down in a citable form.
+    If you intend to use the method in your work, please contact the author of OVITO.
+    </para>
+  </simplesect>
 
 </section>

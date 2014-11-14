@@ -549,7 +549,11 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"\n\n"
 				"   * ``IdentifyDiamondModifier.Type.OTHER`` (0)\n"
 				"   * ``IdentifyDiamondModifier.Type.CUBIC_DIAMOND`` (1)\n"
-				"   * ``IdentifyDiamondModifier.Type.HEX_DIAMOND`` (2)\n"
+				"   * ``IdentifyDiamondModifier.Type.CUBIC_DIAMOND_FIRST_NEIGHBOR`` (2)\n"
+				"   * ``IdentifyDiamondModifier.Type.CUBIC_DIAMOND_SECOND_NEIGHBOR`` (3)\n"
+				"   * ``IdentifyDiamondModifier.Type.HEX_DIAMOND`` (4)\n"
+				"   * ``IdentifyDiamondModifier.Type.HEX_DIAMOND_FIRST_NEIGHBOR`` (5)\n"
+				"   * ``IdentifyDiamondModifier.Type.HEX_DIAMOND_SECOND_NEIGHBOR`` (6)\n"
 				"\n"
 				"For example, to count the number of cubic diamond atoms in a system::"
 				"\n\n"
@@ -570,7 +574,11 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		enum_<IdentifyDiamondModifier::StructureType>("Type")
 			.value("OTHER", IdentifyDiamondModifier::OTHER)
 			.value("CUBIC_DIAMOND", IdentifyDiamondModifier::CUBIC_DIAMOND)
+			.value("CUBIC_DIAMOND_FIRST_NEIGHBOR", IdentifyDiamondModifier::CUBIC_DIAMOND_FIRST_NEIGH)
+			.value("CUBIC_DIAMOND_SECOND_NEIGHBOR", IdentifyDiamondModifier::CUBIC_DIAMOND_SECOND_NEIGH)
 			.value("HEX_DIAMOND", IdentifyDiamondModifier::HEX_DIAMOND)
+			.value("HEX_DIAMOND_FIRST_NEIGHBOR", IdentifyDiamondModifier::HEX_DIAMOND_FIRST_NEIGH)
+			.value("HEX_DIAMOND_SECOND_NEIGHBOR", IdentifyDiamondModifier::HEX_DIAMOND_SECOND_NEIGH)
 		;
 	}
 

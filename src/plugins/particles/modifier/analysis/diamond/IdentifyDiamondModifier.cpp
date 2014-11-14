@@ -39,8 +39,12 @@ IdentifyDiamondModifier::IdentifyDiamondModifier(DataSet* dataset) : StructureId
 {
 	// Create the structure types.
 	createStructureType(OTHER, tr("Other"));
-	createStructureType(CUBIC_DIAMOND, tr("Cubic diamond"), Color(0.2f, 0.95f, 0.8f));
-	createStructureType(HEX_DIAMOND, tr("Hexagonal diamond"), Color(0.95f, 0.8f, 0.2f));
+	createStructureType(CUBIC_DIAMOND, tr("Cubic diamond"), Color(19.0f/255.0f, 160.0f/255.0f, 254.0f/255.0f));
+	createStructureType(CUBIC_DIAMOND_FIRST_NEIGH, tr("Cubic diamond (1st neighbor)"), Color(0.0f/255.0f, 254.0f/255.0f, 245.0f/255.0f));
+	createStructureType(CUBIC_DIAMOND_SECOND_NEIGH, tr("Cubic diamond (2nd neighbor)"), Color(126.0f/255.0f, 254.0f/255.0f, 181.0f/255.0f));
+	createStructureType(HEX_DIAMOND, tr("Hexagonal diamond"), Color(254.0f/255.0f, 137.0f/255.0f, 0.0f/255.0f));
+	createStructureType(HEX_DIAMOND_FIRST_NEIGH, tr("Hexagonal diamond (1st neighbor)"), Color(254.0f/255.0f, 220.0f/255.0f, 0.0f/255.0f));
+	createStructureType(HEX_DIAMOND_SECOND_NEIGH, tr("Hexagonal diamond (2nd neighbor)"), Color(204.0f/255.0f, 229.0f/255.0f, 81.0f/255.0f));
 }
 
 /******************************************************************************
@@ -97,7 +101,7 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 
 	// Perform structure identification.
 	futureInterface.setProgressText(tr("Identifying diamond structures"));
-	parallelFor(positions()->size(), futureInterface, [&neighLists, output, this](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighLists, output](size_t index) {
 		// Mark atom as 'other' by default.
 		output->setInt(index, OTHER);
 
@@ -106,6 +110,7 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		// Compute local cutoff radius.
 		FloatType sum = 0;
 		for(size_t i = 0; i < 4; i++) {
+			if(nlist[i].index == -1) return;
 			sum += nlist[i].vec.squaredLength();
 		}
 		sum /= 4;
@@ -122,7 +127,6 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		auto vout = secondNeighbors.begin();
 		for(size_t i = 0; i < 4; i++) {
 			const Vector3& v0 = nlist[i].vec;
-			if(nlist[i].index == -1) return;
 			const std::array<NeighborInfo,5>& nlist2 = neighLists[nlist[i].index];
 			for(size_t j = 0; j < 4; j++) {
 				Vector3 v = v0 + nlist2[j].vec;
@@ -166,6 +170,41 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		if(n421 == 12) output->setInt(index, CUBIC_DIAMOND);
 		else if(n421 == 6 && n422 == 6) output->setInt(index, HEX_DIAMOND);
 	});
+
+	// Mark first neighbors.
+	for(size_t index = 0; index < output->size(); index++) {
+		int ctype = output->getInt(index);
+		if(ctype != CUBIC_DIAMOND && ctype != HEX_DIAMOND)
+			continue;
+
+		const std::array<NeighborInfo,5>& nlist = neighLists[index];
+		for(size_t i = 0; i < 4; i++) {
+			OVITO_ASSERT(nlist[i].index != -1);
+			if(output->getInt(nlist[i].index) == OTHER) {
+				if(ctype == CUBIC_DIAMOND)
+					output->setInt(nlist[i].index, CUBIC_DIAMOND_FIRST_NEIGH);
+				else
+					output->setInt(nlist[i].index, HEX_DIAMOND_FIRST_NEIGH);
+			}
+		}
+	}
+
+	// Mark second neighbors.
+	for(size_t index = 0; index < output->size(); index++) {
+		int ctype = output->getInt(index);
+		if(ctype != CUBIC_DIAMOND_FIRST_NEIGH && ctype != HEX_DIAMOND_FIRST_NEIGH)
+			continue;
+
+		const std::array<NeighborInfo,5>& nlist = neighLists[index];
+		for(size_t i = 0; i < 4; i++) {
+			if(nlist[i].index != -1 && output->getInt(nlist[i].index) == OTHER) {
+				if(ctype == CUBIC_DIAMOND_FIRST_NEIGH)
+					output->setInt(nlist[i].index, CUBIC_DIAMOND_SECOND_NEIGH);
+				else
+					output->setInt(nlist[i].index, HEX_DIAMOND_SECOND_NEIGH);
+			}
+		}
+	}
 }
 
 /******************************************************************************

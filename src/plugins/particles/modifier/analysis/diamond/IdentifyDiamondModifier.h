@@ -43,9 +43,13 @@ public:
 
 	/// The structure types recognized by the modifier.
 	enum StructureType {
-		OTHER = 0,				//< Unidentified structure
-		CUBIC_DIAMOND,			//< Cubic diamond structure
-		HEX_DIAMOND,			//< Hexagonal diamond structure
+		OTHER = 0,					//< Unidentified structure
+		CUBIC_DIAMOND,				//< Cubic diamond structure
+		CUBIC_DIAMOND_FIRST_NEIGH,	//< First neighbor of a cubic diamond atom
+		CUBIC_DIAMOND_SECOND_NEIGH,	//< Second neighbor of a cubic diamond atom
+		HEX_DIAMOND,				//< Hexagonal diamond structure
+		HEX_DIAMOND_FIRST_NEIGH,	//< First neighbor of a hexagonal diamond atom
+		HEX_DIAMOND_SECOND_NEIGH,	//< Second neighbor of a hexagonal diamond atom
 
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};
