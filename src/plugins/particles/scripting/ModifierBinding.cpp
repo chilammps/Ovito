@@ -122,6 +122,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					" * ``ColorCodingModifier.Hot()``\n"
 					" * ``ColorCodingModifier.Jet()``\n"
 					" * ``ColorCodingModifier.Custom(\"<image file>\")``\n"
+					"\n"
 					"The last color map constructor expects the path to an image file on disk, "
 					"which will be used to create a custom color gradient from a row of pixels in the image.")
 			.add_property("only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,

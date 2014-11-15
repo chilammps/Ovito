@@ -17,8 +17,8 @@ Change Log
 Release 2.4.2 (14-Nov-14):
 
  - The Color Coding modifier now supports user-defined color maps.
- - Significantly improved performance of cutoff-based neighbor finding and k-nearest neighbor finding routines.
-   This code optimization speeds up many analysis algorithms in OVITO, in particluar for large datasets.
+ - Significantly improved performance of cutoff-based neighbor finding and k-nearest neighbor search routines.
+   This code optimization speeds up many analysis algorithms in OVITO, in particular for large datasets.
  - Added the Identify Diamond Structure modifier, which finds atoms that form a cubic or hexagonal diamond lattice.
  - The Color Legend overlay now provides an option to overwrite the numeric labels with a custom text.
  - Dialog box asking to save changes is only shown when scene has already been saved before.

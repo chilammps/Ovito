@@ -100,12 +100,6 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ColorLegendOverlay.cpp
 )
 
-IF(OVITO_BUILD_PLUGIN_SCRIPTING)
-	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES
-		scripting/ParticlesBinding.cpp
-	)
-ENDIF()
-
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
 	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES 
 		scripting/PythonInterface.cpp
@@ -134,7 +128,7 @@ OVITO_PLUGIN(Particles
 	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot VoroPlusPlus ${OPENGL_gl_LIBRARY}
-	OPTIONAL_PLUGIN_DEPENDENCIES Scripting PyScript
+	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
 )
 
 # Add Boost include directories.

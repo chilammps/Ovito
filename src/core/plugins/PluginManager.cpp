@@ -129,6 +129,10 @@ void PluginManager::registerPlugins()
 			if(file == QStringLiteral("Viz.manifest.xml"))
 				continue;
 
+			// The Scripting plugin has deprecated as of Ovito 2.5.
+			if(file == QStringLiteral("Scripting.manifest.xml"))
+				continue;
+
 			QString filePath = pluginDir.absoluteFilePath(file);
 			try {
 				loadPluginManifest(filePath);
