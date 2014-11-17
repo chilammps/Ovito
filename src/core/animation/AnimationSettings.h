@@ -215,18 +215,6 @@ public:
 	///        is still being prepared for display of the new frame.
 	bool isTimeChanging() const { return _timeIsChanging != 0; }
 
-public:
-
-	Q_PROPERTY(TimePoint time READ time WRITE setTime);
-	Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame);
-	Q_PROPERTY(int firstFrame READ firstFrame WRITE setFirstFrame);
-	Q_PROPERTY(int lastFrame READ lastFrame WRITE setLastFrame);
-	Q_PROPERTY(int ticksPerFrame READ ticksPerFrame WRITE setTicksPerFrame);
-	Q_PROPERTY(TimeInterval animationInterval READ animationInterval WRITE setAnimationInterval);
-	Q_PROPERTY(int framesPerSecond READ framesPerSecond WRITE setFramesPerSecond);
-	Q_PROPERTY(int playbackSpeed READ playbackSpeed WRITE setPlaybackSpeed);
-	Q_PROPERTY(bool autoKeyMode READ autoKeyMode WRITE setAutoKeyMode);
-
 public Q_SLOTS:
 
 	/// \brief Enables or disables animation mode (i.e. automatic creation of animation keys).

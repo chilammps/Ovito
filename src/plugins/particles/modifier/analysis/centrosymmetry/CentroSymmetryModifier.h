@@ -56,10 +56,6 @@ public:
 	/// Sets the number of nearest neighbors to take into account when computing the CSP.
 	void setNumNeighbors(int count) { _numNeighbors = count; }
 
-public:
-
-	Q_PROPERTY(int numNeighbors READ numNeighbors WRITE setNumNeighbors)
-
 private:
 
 	/// Computes the modifier's results.

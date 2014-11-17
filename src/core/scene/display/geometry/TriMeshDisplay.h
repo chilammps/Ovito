@@ -68,11 +68,6 @@ public:
 	/// Sets the transparency parameter.
 	void setTransparency(FloatType t) { _transparency->setCurrentFloatValue(t); }
 
-public:
-
-	Q_PROPERTY(Ovito::Color color READ color WRITE setColor);
-	Q_PROPERTY(FloatType transparency READ transparency WRITE setTransparency);
-
 protected:
 
 	/// Controls the display color of the mesh.

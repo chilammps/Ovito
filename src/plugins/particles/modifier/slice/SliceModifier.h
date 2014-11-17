@@ -114,15 +114,6 @@ public:
 	/// Returns the slicing plane.
 	Plane3 slicingPlane(TimePoint time, TimeInterval& validityInterval);
 
-public:
-
-	Q_PROPERTY(FloatType distance READ distance WRITE setDistance);
-	Q_PROPERTY(Vector3 normal READ normal WRITE setNormal);
-	Q_PROPERTY(FloatType sliceWidth READ sliceWidth WRITE setSliceWidth);
-	Q_PROPERTY(bool inverse READ inverse WRITE setInverse);
-	Q_PROPERTY(bool createSelection READ createSelection WRITE setCreateSelection);
-	Q_PROPERTY(bool applyToSelection READ applyToSelection WRITE setApplyToSelection);
-
 protected:
 
 	/// Modifies the particle object.

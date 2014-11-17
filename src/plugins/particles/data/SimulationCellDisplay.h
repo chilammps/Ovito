@@ -91,12 +91,6 @@ public:
 	/// \brief Indicates whether this object should be surrounded by a selection marker in the viewports when it is selected.
 	virtual bool showSelectionMarker() override { return false; }
 
-public:
-
-	Q_PROPERTY(FloatType simulationCellLineWidth READ simulationCellLineWidth WRITE setSimulationCellLineWidth);
-	Q_PROPERTY(Color simulationCellRenderingColor READ simulationCellRenderingColor WRITE setSimulationCellRenderingColor);
-	Q_PROPERTY(bool renderSimulationCell READ renderSimulationCell WRITE setRenderSimulationCell);
-
 protected:
 
 	/// Renders the given simulation using wireframe mode.

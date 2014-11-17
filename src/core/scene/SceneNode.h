@@ -237,14 +237,6 @@ public:
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return _nodeName; }
 
-public:
-
-	Q_PROPERTY(bool isSelected READ isSelected);
-	Q_PROPERTY(SceneNode* lookatTargetNode READ lookatTargetNode WRITE setLookatTargetNode);
-	Q_PROPERTY(QString name READ name WRITE setName);
-	Q_PROPERTY(Color displayColor READ displayColor WRITE setDisplayColor);
-	Q_PROPERTY(Controller* transformationController READ transformationController WRITE setTransformationController);
-
 protected:
 
 	/// From RefMaker.

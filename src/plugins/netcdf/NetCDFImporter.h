@@ -85,11 +85,6 @@ public:
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent = nullptr);
 
-public:
-
-	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
-	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
-
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.

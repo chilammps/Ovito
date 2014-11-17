@@ -113,11 +113,6 @@ public:
 	/// \brief Returns the scene object that stores the generated bonds.
 	BondsObject* bondsObject() const { return _bondsObj; }
 
-public:
-
-	Q_PROPERTY(FloatType uniformCutoff READ uniformCutoff WRITE setUniformCutoff);
-	Q_PROPERTY(Particles::CreateBondsModifier::CutoffMode cutoffMode READ cutoffMode WRITE setCutoffMode);
-
 protected:
 
 	/// Saves the class' contents to the given stream.

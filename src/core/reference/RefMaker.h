@@ -305,10 +305,6 @@ public:
 	/// \brief Changes the dataset this object belongs to.
 	void setDataset(DataSet* dataset) { _dataset = dataset; }
 
-public:
-
-	Q_PROPERTY(DataSet* dataset READ dataset);
-
 protected:
 
 	/// \brief This method is called after the reference counter of this object has reached zero

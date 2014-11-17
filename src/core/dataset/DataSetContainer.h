@@ -177,14 +177,6 @@ protected Q_SLOTS:
 	/// This handler is invoked when the current animation settings of the current dataset have been replaced.
 	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
-#if 0
-	/// This handler is invoked when the current viewport configuration of the current dataset has been replaced.
-	void onViewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
-
-	/// This handler is invoked when the current render settings of the current dataset have been replaced.
-	void onRenderSettingsReplaced(RenderSettings* newRenderSettings);
-#endif
-
 private:
 
 	/// The window this dataset container is linked to (may be NULL).

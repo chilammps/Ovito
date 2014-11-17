@@ -84,11 +84,6 @@ public:
 	/// Asks the object for its validity interval at the given time.
 	virtual TimeInterval objectValidity(TimePoint time) override;
 
-public:
-
-	Q_PROPERTY(bool isTargetCamera READ isTargetCamera WRITE setIsTargetCamera);
-	Q_PROPERTY(bool isPerspective READ isPerspective WRITE setIsPerspective);
-
 private:
 
 	/// Determines if this camera uses a perspective projection.

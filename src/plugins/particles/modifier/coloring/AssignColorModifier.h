@@ -64,11 +64,6 @@ public:
 	/// If false, the selection is cleared by the modifier.
 	void setKeepSelection(bool keep) { _keepSelection = keep; }
 
-public:
-
-	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection);
-	Q_PROPERTY(Ovito::Color color READ color WRITE setColor);
-
 protected:
 
 	/// Modifies the particle object. The time interval passed

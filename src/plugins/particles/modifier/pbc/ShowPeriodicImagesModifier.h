@@ -90,16 +90,6 @@ public:
 	/// Sets whether the the modifier assigns unique identifiers to particle copies.
 	void setUniqueIdentifiers(bool uniqueIdentifiers) { _uniqueIdentifiers = uniqueIdentifiers; }
 
-public:
-
-	Q_PROPERTY(bool showImageX READ showImageX WRITE setShowImageX);
-	Q_PROPERTY(bool showImageY READ showImageY WRITE setShowImageY);
-	Q_PROPERTY(bool showImageZ READ showImageZ WRITE setShowImageZ);
-	Q_PROPERTY(int numImagesX READ numImagesX WRITE setNumImagesX);
-	Q_PROPERTY(int numImagesY READ numImagesY WRITE setNumImagesY);
-	Q_PROPERTY(int numImagesZ READ numImagesZ WRITE setNumImagesZ);
-	Q_PROPERTY(bool adjustBoxSize READ adjustBoxSize WRITE setAdjustBoxSize);
-
 protected:
 
 	/// Modifies the particle object. The time interval passed

@@ -508,12 +508,6 @@ public:
 	/// This helper method returns a specific user-defined particle property (if present) from the given pipeline state.
 	static ParticlePropertyObject* findInState(const PipelineFlowState& state, const QString& name);
 
-public:
-
-	Q_PROPERTY(QString name READ name WRITE setName);
-	Q_PROPERTY(size_t size READ size);
-	Q_PROPERTY(int dataType READ dataType);
-
 protected:
 
 	/// Saves the class' contents to the given stream.

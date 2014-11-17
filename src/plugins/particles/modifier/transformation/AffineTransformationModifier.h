@@ -95,16 +95,6 @@ public:
 	/// Sets whether the transformation is applied to a surface mesh.
 	void setApplyToSurfaceMesh(bool apply) { _applyToSurfaceMesh = apply; }
 
-public:
-
-	Q_PROPERTY(AffineTransformation transformation READ transformation WRITE setTransformation);
-	Q_PROPERTY(AffineTransformation targetCell READ targetCell WRITE setTargetCell);
-	Q_PROPERTY(bool relativeMode READ relativeMode WRITE setRelativeMode);
-	Q_PROPERTY(bool applyToSimulationBox READ applyToSimulationBox WRITE setApplyToSimulationBox);
-	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles);
-	Q_PROPERTY(bool applyToSurfaceMesh READ applyToSurfaceMesh WRITE setApplyToSurfaceMesh);
-	Q_PROPERTY(bool selectionOnly READ selectionOnly WRITE setSelectionOnly);
-
 protected:
 
 	/// Modifies the particle object.

@@ -130,21 +130,9 @@ public:
 	/// Sets the base number for filename generation when rendering an animation.
 	void setFileNumberBase(int n) { _fileNumberBase = n; }
 
-public:	
-	
-	Q_PROPERTY(int imageWidth READ outputImageWidth WRITE setOutputImageWidth);
-	Q_PROPERTY(int imageHeight READ outputImageHeight WRITE setOutputImageHeight);
-	Q_PROPERTY(FloatType imageAspectRatio READ outputImageAspectRatio);
-	Q_PROPERTY(QString filename READ imageFilename WRITE setImageFilename);
-	Q_PROPERTY(bool generateAlphaChannel READ generateAlphaChannel WRITE setGenerateAlphaChannel);
-	Q_PROPERTY(bool saveToFile READ saveToFile WRITE setSaveToFile);
-	Q_PROPERTY(bool skipExistingImages READ skipExistingImages WRITE setSkipExistingImages);
-	Q_PROPERTY(SceneRenderer* renderer READ renderer WRITE setRenderer);
-	Q_PROPERTY(RenderingRangeType renderingRangeType READ renderingRangeType WRITE setRenderingRangeType);
-	Q_PROPERTY(int customRangeStart READ customRangeStart WRITE setCustomRangeStart);
-	Q_PROPERTY(int customRangeEnd READ customRangeEnd WRITE setCustomRangeEnd);
-	Q_PROPERTY(int everyNthFrame READ everyNthFrame WRITE setEveryNthFrame);
-	Q_PROPERTY(int fileNumberBase READ fileNumberBase WRITE setFileNumberBase);
+public:
+
+	Q_PROPERTY(QString imageFilename READ imageFilename WRITE setImageFilename);
 
 protected:
 

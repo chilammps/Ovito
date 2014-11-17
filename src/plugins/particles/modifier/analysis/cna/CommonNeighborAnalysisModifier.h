@@ -166,11 +166,6 @@ public:
 	/// of the longest continuous chain.
 	static int calcMaxChainLength(CNAPairBond* neighborBonds, int numBonds);
 
-public:
-
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
-	Q_PROPERTY(bool adaptiveMode READ adaptiveMode WRITE setAdaptiveMode)
-
 protected:
 
 	/// Is called when the value of a property of this object has changed.

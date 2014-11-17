@@ -144,15 +144,6 @@ public:
 	/// Note that this method does NOT invoke setFilePath().
 	void saveToFile(const QString& filePath);
 
-public:
-
-	Q_PROPERTY(SceneRoot* sceneRoot READ sceneRoot);
-	Q_PROPERTY(RenderSettings* renderSettings READ renderSettings);
-	Q_PROPERTY(SelectionSet* selection READ selection);
-	Q_PROPERTY(ViewportConfiguration* viewportConfig READ viewportConfig);
-	Q_PROPERTY(AnimationSettings* animationSettings READ animationSettings);
-	Q_PROPERTY(QString filePath READ filePath WRITE setFilePath);
-
 Q_SIGNALS:
 
 	/// \brief This signal is emitted whenever the current viewport configuration of this dataset

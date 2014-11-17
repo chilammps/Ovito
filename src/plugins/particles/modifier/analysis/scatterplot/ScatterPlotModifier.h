@@ -119,17 +119,6 @@ public:
 	/// Returns the end value of the y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference xAxisProperty READ xAxisProperty WRITE setXAxisProperty);
-	Q_PROPERTY(Particles::ParticlePropertyReference yAxisProperty READ yAxisProperty WRITE setYAxisProperty);
-	Q_PROPERTY(bool selectXAxisInRange READ selectXAxisInRange WRITE setSelectXAxisInRange);
-	Q_PROPERTY(FloatType selectionXAxisRangeStart READ selectionXAxisRangeStart);
-	Q_PROPERTY(FloatType selectionXAxisRangeEnd READ selectionXAxisRangeEnd);
-	Q_PROPERTY(bool selectYAxisInRange READ selectYAxisInRange WRITE setSelectYAxisInRange);
-	Q_PROPERTY(FloatType selectionYAxisRangeStart READ selectionYAxisRangeStart);
-	Q_PROPERTY(FloatType selectionYAxisRangeEnd READ selectionYAxisRangeEnd);
-
 protected:
 
 	/// Modifies the particle object.

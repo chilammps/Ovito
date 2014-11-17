@@ -119,17 +119,6 @@ public:
 	/// Sets the number of AO samples to compute.
 	void setAmbientOcclusionSamples(int sampleCount) { _ambientOcclusionSamples = sampleCount; }
 
-public:
-
-	Q_PROPERTY(bool antialiasingEnabled READ antialiasingEnabled WRITE setAntialiasingEnabled);
-	Q_PROPERTY(int antialiasingSamples READ antialiasingSamples WRITE setAntialiasingSamples);
-	Q_PROPERTY(bool directLightSourceEnabled READ directLightSourceEnabled WRITE setDirectLightSourceEnabled);
-	Q_PROPERTY(bool shadowsEnabled READ shadowsEnabled WRITE setShadowsEnabled);
-	Q_PROPERTY(bool ambientOcclusionEnabled READ ambientOcclusionEnabled WRITE setAmbientOcclusionEnabled);
-	Q_PROPERTY(FloatType defaultLightSourceIntensity READ defaultLightSourceIntensity WRITE setDefaultLightSourceIntensity);
-	Q_PROPERTY(FloatType ambientOcclusionBrightness READ ambientOcclusionBrightness WRITE setAmbientOcclusionBrightness);
-	Q_PROPERTY(int ambientOcclusionSamples READ ambientOcclusionSamples WRITE setAmbientOcclusionSamples);
-
 private:
 
 	/// Creates a texture with the given color.

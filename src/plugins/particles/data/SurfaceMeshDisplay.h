@@ -91,11 +91,6 @@ public:
 	/// Sets the transparency of the surface cap mesh.
 	void setCapTransparency(FloatType transparency) { if(_capTransparency) _capTransparency->setCurrentFloatValue(transparency); }
 
-public:
-
-	Q_PROPERTY(Ovito::Color surfacecColor READ surfaceColor WRITE setSurfaceColor);
-	Q_PROPERTY(Ovito::Color capColor READ capColor WRITE setCapColor);
-
 protected:
 
 	/// Generates the final triangle mesh, which will be rendered.

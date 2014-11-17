@@ -77,15 +77,6 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType radius READ radius WRITE setRadius);
-	Q_PROPERTY(int smoothingLevel READ smoothingLevel WRITE setSmoothingLevel);
-	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles);
-	Q_PROPERTY(FloatType solidVolume READ solidVolume);
-	Q_PROPERTY(FloatType totalVolume READ totalVolume);
-	Q_PROPERTY(FloatType surfaceArea READ surfaceArea);
-
-public:
-
 	/// Computation engine that builds the surface mesh.
 	class ConstructSurfaceEngine : public AsynchronousParticleModifier::Engine
 	{

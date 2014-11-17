@@ -61,10 +61,6 @@ public:
 	/// \brief Returns a human-readable text listing the input variables.
 	const QString& inputVariableTable() const { return _variableTable; }
 
-public:
-
-	Q_PROPERTY(QString expression READ expression WRITE setExpression);
-
 protected:
 
 	/// Modifies the particle object.

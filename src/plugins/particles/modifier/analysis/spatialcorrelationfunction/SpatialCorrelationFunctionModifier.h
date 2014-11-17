@@ -145,18 +145,6 @@ public:
 	/// Returns the end value of the plotting y-axis.
 	FloatType propertyAxisRangeEnd() const { return _propertyAxisRangeEnd; }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty1 READ sourceProperty1 WRITE setSourceProperty1);
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty2 READ sourceProperty2 WRITE setSourceProperty2);
-	Q_PROPERTY(Particles::SpatialCorrelationFunctionModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
-	Q_PROPERTY(FloatType maxWaveVector READ maxWaveVector WRITE setMaxWaveVector);
-	Q_PROPERTY(bool radialAverage READ radialAverage);
-    Q_PROPERTY(int numberOfRadialBins READ numberOfRadialBins WRITE setNumberOfRadialBins);
-    Q_PROPERTY(bool fixPropertyAxisRange READ fixPropertyAxisRange WRITE setFixPropertyAxisRange);
-    Q_PROPERTY(FloatType propertyAxisRangeStart READ propertyAxisRangeStart);
-    Q_PROPERTY(FloatType propertyAxisRangeEnd READ propertyAxisRangeEnd);
-
 private:
 
     /// Computes the modifier's results.

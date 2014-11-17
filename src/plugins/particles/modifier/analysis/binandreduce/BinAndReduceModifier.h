@@ -142,15 +142,6 @@ public:
         return (d >> 2) & 3;
     }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
-    Q_PROPERTY(bool firstDerivative READ firstDerivative WRITE setFirstDerivative);
-	Q_PROPERTY(Particles::BinAndReduceModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
-	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
-	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
-
 protected:
 
 	/// Modifies the particle object.

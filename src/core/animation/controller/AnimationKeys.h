@@ -43,10 +43,6 @@ public:
 	/// Returns the animation time at which the key is set.
 	TimePoint time() const { return _time; }
 
-public:
-
-	Q_PROPERTY(int time READ time);
-
 private:
 
 	/// Changes the key's time position.
@@ -110,10 +106,6 @@ public:
 		INIT_PROPERTY_FIELD(FloatAnimationKey::_value);
 	}
 
-public:
-
-	Q_PROPERTY(FloatType value READ value);
-
 private:
 
 	Q_OBJECT
@@ -133,10 +125,6 @@ public:
 	Q_INVOKABLE IntegerAnimationKey(DataSet* dataset, TimePoint time = 0, int value = 0) : TypedAnimationKey<int>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(IntegerAnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(int value READ value);
 
 private:
 
@@ -158,10 +146,6 @@ public:
 		INIT_PROPERTY_FIELD(Vector3AnimationKey::_value);
 	}
 
-public:
-
-	Q_PROPERTY(Ovito::Vector3 value READ value);
-
 private:
 
 	Q_OBJECT
@@ -181,10 +165,6 @@ public:
 	Q_INVOKABLE PositionAnimationKey(DataSet* dataset, TimePoint time = 0, const Vector3& value = Vector3::Zero()) : TypedAnimationKey<Vector3, Vector3::Zero>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(PositionAnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Vector3 value READ value);
 
 private:
 
@@ -206,10 +186,6 @@ public:
 		INIT_PROPERTY_FIELD(RotationAnimationKey::_value);
 	}
 
-public:
-
-	Q_PROPERTY(Ovito::Rotation value READ value);
-
 private:
 
 	Q_OBJECT
@@ -229,10 +205,6 @@ public:
 	Q_INVOKABLE ScalingAnimationKey(DataSet* dataset, TimePoint time = 0, const Scaling& value = Scaling::Identity()) : TypedAnimationKey<Scaling, Scaling::Identity>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(ScalingAnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Scaling value READ value);
 
 private:
 

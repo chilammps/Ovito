@@ -89,13 +89,6 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return name(); }
 
-public:
-
-	Q_PROPERTY(int id READ id WRITE setId)
-	Q_PROPERTY(QString name READ name WRITE setName)
-	Q_PROPERTY(Color color READ color WRITE setColor)
-	Q_PROPERTY(FloatType radius READ radius WRITE setRadius)
-
 protected:
 
 	/// Stores the identifier of the particle type.

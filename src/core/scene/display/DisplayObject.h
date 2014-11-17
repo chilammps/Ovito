@@ -90,10 +90,6 @@ public:
 	/// \undoable
 	void setEnabled(bool enabled) { _isEnabled = enabled; }
 
-public:
-
-	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
-
 private:
 
 	/// Flag that indicates whether the modifier is enabled.

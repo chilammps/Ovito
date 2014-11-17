@@ -377,18 +377,6 @@ public:
 		_overlays.remove(index);
 	}
 
-public:
-
-	Q_PROPERTY(QString title READ viewportTitle);
-	Q_PROPERTY(ObjectNode* viewNode READ viewNode WRITE setViewNode);
-	Q_PROPERTY(Point3 cameraPosition READ cameraPosition WRITE setCameraPosition);
-	Q_PROPERTY(Vector3 cameraDirection READ cameraDirection WRITE setCameraDirection);
-	Q_PROPERTY(AffineTransformation cameraTransformation READ cameraTransformation WRITE setCameraTransformation);
-	Q_PROPERTY(FloatType fov READ fieldOfView WRITE setFieldOfView);
-	Q_PROPERTY(ViewType type READ viewType WRITE setViewType);
-	Q_PROPERTY(bool renderPreviewMode READ renderPreviewMode WRITE setRenderPreviewMode);
-	Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible);
-
 protected:
 
 	/// Is called when the value of a property field of this object has changed.

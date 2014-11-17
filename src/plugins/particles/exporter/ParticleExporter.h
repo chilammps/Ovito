@@ -117,16 +117,6 @@ public:
 	/// \brief Sets the interval between exported frames.
 	void setEveryNthFrame(int n) { _everyNthFrame = n; }
 
-public:
-
-	Q_PROPERTY(QString outputFilename READ outputFilename WRITE setOutputFilename);
-	Q_PROPERTY(bool exportAnimation READ exportAnimation WRITE setExportAnimation);
-	Q_PROPERTY(bool useWildcardFilename READ useWildcardFilename WRITE setUseWildcardFilename);
-	Q_PROPERTY(QString wildcardFilename READ wildcardFilename WRITE setWildcardFilename);
-	Q_PROPERTY(int startFrame READ startFrame WRITE setStartFrame);
-	Q_PROPERTY(int endFrame READ endFrame WRITE setEndFrame);
-	Q_PROPERTY(int everyNthFrame READ everyNthFrame WRITE setEveryNthFrame);
-
 protected:
 
 	class ProgressInterface {

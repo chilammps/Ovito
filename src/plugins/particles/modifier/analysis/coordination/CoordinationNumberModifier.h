@@ -56,10 +56,6 @@ public:
 	/// Returns the Y coordinates of the RDF data points.
 	const QVector<double>& rdfY() const { return _rdfY; }
 
-public:
-
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff);
-
 private:
 
 	/// Computes the modifier's results.

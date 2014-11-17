@@ -61,10 +61,6 @@ public:
 	/// file has been selected by the user.
 	virtual bool inspectNewFile(LinkedFileObject* obj) override;
 
-public:
-
-	Q_PROPERTY(bool isMultiTimestepFile READ isMultiTimestepFile WRITE setMultiTimestepFile);
-
 protected:
 
 	/// \brief Is called when the value of a property of this object has changed.

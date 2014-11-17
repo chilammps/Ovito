@@ -166,13 +166,6 @@ public Q_SLOTS:
 	/// \brief Displays the remote file selection dialog and lets the user select a new source URL.
 	void showURLSelectionDialog(QWidget* parent = nullptr);
 
-public:
-
-	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSource);
-	Q_PROPERTY(LinkedFileImporter* importer READ importer);
-	Q_PROPERTY(int numberOfFrames READ numberOfFrames);
-	Q_PROPERTY(bool adjustAnimationIntervalEnabled READ adjustAnimationIntervalEnabled WRITE setAdjustAnimationIntervalEnabled);
-
 protected Q_SLOTS:
 
 	/// \brief This is called when the background loading operation has finished.

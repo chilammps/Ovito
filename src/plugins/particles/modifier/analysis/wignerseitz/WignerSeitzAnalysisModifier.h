@@ -86,17 +86,6 @@ public:
 	/// Returns the number of interstitial atoms found during the last analysis run.
 	int interstitialCount() const { return _interstitialCount; }
 
-public:
-
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation);
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
-	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
-	Q_PROPERTY(int vacancyCount READ vacancyCount);
-	Q_PROPERTY(int interstitialCount READ interstitialCount);
-
 private:
 
 	/// Computes the modifier's results.

@@ -80,11 +80,6 @@ public:
 	/// \undoable
 	void setStoreResultsWithScene(bool on) { _saveResults = on; }
 
-public:
-
-	Q_PROPERTY(bool autoUpdateEnabled READ autoUpdateEnabled WRITE setAutoUpdateEnabled);
-	Q_PROPERTY(bool storeResultsWithScene READ storeResultsWithScene WRITE setStoreResultsWithScene);
-
 protected Q_SLOTS:
 
 	/// \brief This is called when the background job has finished.

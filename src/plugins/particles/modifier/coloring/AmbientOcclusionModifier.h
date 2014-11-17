@@ -106,12 +106,6 @@ public:
 	/// Sets the buffer resolution level.
 	void setBufferResolution(int res) { _bufferResolution = res; }
 
-public:
-
-	Q_PROPERTY(FloatType intensity READ intensity WRITE setIntensity);
-	Q_PROPERTY(int samplingCount READ samplingCount WRITE setSamplingCount);
-	Q_PROPERTY(int bufferResolution READ bufferResolution WRITE setBufferResolution);
-
 protected:
 
 	/// Is called when the value of a property of this object has changed.

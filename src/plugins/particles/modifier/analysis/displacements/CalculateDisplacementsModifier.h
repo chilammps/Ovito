@@ -87,17 +87,6 @@ public:
 	/// Returns the vector display object, which is responsible for rendering the computed displacement vectors.
 	VectorDisplay* vectorDisplay() const { return _vectorDisplay; }
 
-public:
-
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation);
-	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates);
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-	Q_PROPERTY(VectorDisplay* vectorDisplay READ vectorDisplay);
-	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
-	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
-
 protected:
 
 	/// Handles reference events sent by reference targets of this object.

@@ -172,7 +172,6 @@ public:
 public:
 
 	Q_PROPERTY(bool saveWithScene READ saveWithScene WRITE setSaveWithScene);
-	Q_PROPERTY(int revisionNumber READ revisionNumber);
 
 protected:
 

@@ -161,10 +161,6 @@ public:
 	/// This method is used to filter the list of available modifiers. The default implementation returns false.
 	virtual bool isApplicableTo(const PipelineFlowState& input) { return false; }
 
-public:
-
-	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
-
 private:
 
 	/// Flag that indicates whether the modifier is enabled.

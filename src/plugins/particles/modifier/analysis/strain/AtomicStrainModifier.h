@@ -142,26 +142,6 @@ public:
 	/// Sets the relative frame offset to use.
 	void setReferenceFrameOffset(int frameOffset) { _referenceFrameOffset = frameOffset; }
 
-public:
-
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
-	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
-	Q_PROPERTY(bool calculateDeformationGradients READ calculateDeformationGradients WRITE setCalculateDeformationGradients)
-	Q_PROPERTY(bool calculateStrainTensors READ calculateStrainTensors WRITE setCalculateStrainTensors)
-	Q_PROPERTY(bool calculateNonaffineSquaredDisplacements READ calculateNonaffineSquaredDisplacements WRITE setCalculateNonaffineSquaredDisplacements)
-	Q_PROPERTY(bool selectInvalidParticles READ selectInvalidParticles WRITE setSelectInvalidParticles)
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
-	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
-	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
-	Q_PROPERTY(int invalidParticleCount READ invalidParticleCount);
-
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-
 private:
 
 	/// Computes the modifier's results.

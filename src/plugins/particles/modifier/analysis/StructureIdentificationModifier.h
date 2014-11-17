@@ -90,10 +90,6 @@ public:
 	/// Returns the default color for a structure type.
 	static Color getDefaultStructureColor(const QString& structureName);
 
-public:
-
-	Q_PROPERTY(QList<int> structureCounts READ structureCounts);
-
 protected:
 
 	/// Saves the class' contents to the given stream.

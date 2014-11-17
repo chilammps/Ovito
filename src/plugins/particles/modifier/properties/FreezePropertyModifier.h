@@ -60,11 +60,6 @@ public:
 	/// Takes a snapshot of the source property.
 	void takePropertySnapshot(ModifierApplication* modApp, const PipelineFlowState& state);
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::ParticlePropertyReference destinationProperty READ destinationProperty WRITE setSourceProperty);
-
 protected:
 
 	/// Modifies the particle object.

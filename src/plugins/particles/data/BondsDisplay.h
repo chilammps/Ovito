@@ -91,9 +91,6 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType bondWidth READ bondWidth WRITE setBondWidth);
-	Q_PROPERTY(Ovito::Color bondColor READ bondColor WRITE setBondColor);
-	Q_PROPERTY(bool useParticleColors READ useParticleColors WRITE setUseParticleColors);
 	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
 	Q_PROPERTY(Ovito::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
 

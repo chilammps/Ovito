@@ -120,13 +120,6 @@ public:
 	/// \brief Returns a human-readable text listing the input variables.
 	const QString& inputVariableTable() const { return _inputVariableTable; }
 
-public:
-
-	Q_PROPERTY(QStringList expressions READ expressions WRITE setExpressions);
-	Q_PROPERTY(Particles::ParticlePropertyReference outputProperty READ outputProperty WRITE setOutputProperty);
-	Q_PROPERTY(int propertyComponentCount READ propertyComponentCount);
-	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles);
-
 protected:
 
 	/// \brief Allows the object to parse the serialized contents of a property field in a custom way.

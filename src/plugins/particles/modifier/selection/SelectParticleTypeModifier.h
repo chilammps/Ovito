@@ -63,10 +63,6 @@ public:
 	/// Sets a single particle type identifier to be selected.
 	void setSelectedParticleType(int type) { setSelectedParticleTypes(QSet<int>{type}); }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-
 protected:
 
 	/// Loads the class' contents from the given stream.

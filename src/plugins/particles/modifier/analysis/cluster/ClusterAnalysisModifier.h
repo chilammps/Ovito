@@ -51,11 +51,6 @@ public:
 	/// Returns the number of clusters found during the last successful evaluation of the modifier.
 	size_t clusterCount() const { return _numClusters; }
 
-public:
-
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff);
-	Q_PROPERTY(int clusterCount READ clusterCount);
-
 private:
 
 	/// Computes the modifier's results.

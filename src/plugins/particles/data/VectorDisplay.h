@@ -103,11 +103,6 @@ public:
 
 	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
 	Q_PROPERTY(Ovito::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
-	Q_PROPERTY(Ovito::Color arrowColor READ arrowColor WRITE setArrowColor);
-	Q_PROPERTY(FloatType arrowWidth READ arrowWidth WRITE setArrowWidth);
-	Q_PROPERTY(FloatType scalingFactor READ scalingFactor WRITE setScalingFactor);
-	Q_PROPERTY(bool flipVectors READ flipVectors WRITE setFlipVectors);
-	Q_PROPERTY(bool reverseArrowDirection READ reverseArrowDirection WRITE setReverseArrowDirection);
 
 protected:
 

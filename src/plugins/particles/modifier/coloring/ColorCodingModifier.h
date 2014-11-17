@@ -270,15 +270,6 @@ public Q_SLOTS:
 	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
 	bool adjustRange();
 
-public:
-
-	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue);
-	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue);
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient);
-	Q_PROPERTY(bool colorOnlySelected READ colorOnlySelected WRITE setColorOnlySelected);
-	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection);
-
 protected:
 
 	/// Saves the class' contents to the given stream.
