@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file Color.h 
- * \brief Contains the definition of the Ovito::ColorT and Ovito::ColorAT class templates.
+ * \file
+ * \brief Contains the definitions of the Ovito::Util::ColorT and Ovito::Util::ColorAT class templates.
  */
 
 #ifndef __OVITO_COLOR_H
@@ -32,52 +32,63 @@
 #include <base/io/LoadStream.h>
 #include <base/io/SaveStream.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 /**
- * \brief A color class with floating-point RGB values.
+ * \brief A color value with red, blue, and green components.
  * 
- * The Color class stores three floating-point values, one for the red
- * component, one for the green component, and one for the blue component.
+ * This class stores three floating-point values in the range 0 to 1.
+ * Note that the class derives from std::array, which provides additional methods and component-wise data access.
  * 
- * \author Alexander Stukowski
- * \sa ColorA
+ * The typedef ::Color instantiates the ColorT class template with the default floating-point type ::FloatType.
+ *
+ * \tparam T The value type of the color components.
+ *
+ * \sa Color
+ * \sa ColorAT
  */
 template<typename T>
 class ColorT : public std::array<T, 3>
 {
 public:
 
-	/// \brief Constructs a color structure without initializing its component.
-	/// \note All components are left uninitialized by this constructor and will therefore have an undefined value!
+	/// Default constructs a color without initializing its components.
+	/// The color components will therefore have an undefined value!
 	ColorT() {}
 	
-	/// \brief Initializes the color width the given red, green and blue components.
-	/// \param red The red value of the RGB color in the range 0 to 1.
-	/// \param green The green value of the RGB color in the range 0 to 1.
-	/// \param blue The blue value of the RGB color in the range 0 to 1.
-	Q_DECL_CONSTEXPR ColorT(T red, T green, T blue) : std::array<T, 3>{{red, green, blue}} {}
+	/// Initializes the color with the given red, green and blue values (in the range 0 to 1).
+	Q_DECL_CONSTEXPR ColorT(T red, T green, T blue)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 3>{{red, green, blue}}
+#endif
+		{}
 	
-	/// \brief Converts a vector to a color structure.
-	/// \param v The input vector. Its X, Y and Z components are taken as red, green and blue components 
-	///          respectively.
-	Q_DECL_CONSTEXPR explicit ColorT(const Vector_3<T>& v) : std::array<T, 3>{{v.x(), v.y(), v.z()}}  {}
+	/// Converts a 3-vector to a color.
+	/// The X, Y and Z vector components are used to initialize the red, green and blue components respectively.
+	Q_DECL_CONSTEXPR explicit ColorT(const Vector_3<T>& v)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 3>{{v.x(), v.y(), v.z()}}
+#endif
+		{}
 
-	/// \brief Conversion from a Qt color object.
-	/// \param c The Qt color to convert to a floating-point representation.
-	Q_DECL_CONSTEXPR ColorT(const QColor& c) : std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}} {}
-
-	/// \brief Initializes the color from an array.
+	/// Initializes the color from an array with three values.
 	Q_DECL_CONSTEXPR explicit ColorT(const std::array<T, 3>& c) : std::array<T, 3>(c) {}
 
-	/// \brief Sets all components to zero.
+	/// Conversion constructor from a Qt color.
+	Q_DECL_CONSTEXPR ColorT(const QColor& c)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}}
+#endif
+		{}
+
+	/// Sets all components of the color to zero.
 	void setBlack() { r() = g() = b() = T(0); }
-	
-	/// \brief Sets all components to one.
+
+	/// Sets all components of the color to one.
 	void setWhite() { r() = g() = b() = T(1); }
 
-	/// \brief Converts this color to a Qt color object.
-	/// \return A Qt color object. All color components are clamped to the [0,1] range before the conversion.
+	/// Conversion operator to a Qt color.
+	/// All components of the returned Qt color are clamped to the [0,1] range.
 	operator QColor() const {
 		return QColor::fromRgbF(
 				qMin(qMax(r(), T(0)), T(1)),
@@ -85,8 +96,7 @@ public:
 				qMin(qMax(b(), T(0)), T(1)));
 	}
 	
-	/// \brief Converts this color to a vector with three components.
-	/// \return A vector.
+	/// \brief Converts the color to a 3-vector with XYZ components.
 	explicit Q_DECL_CONSTEXPR operator const Vector_3<T>&() const { return reinterpret_cast<const Vector_3<T>&>(*this); }
 	
 	//////////////////////////// Component access //////////////////////////
@@ -190,123 +200,131 @@ public:
 	QString toString() const { return QString("(%1 %2 %3)").arg(r()).arg(g()).arg(b()); }
 };
 
-/// Multiplies all three components of a color with a scalar value.
+/// Multiplies the three components of a color \a c with a scalar value \a s.
+/// \relates ColorT
 template<typename T>
-Q_DECL_CONSTEXPR inline ColorT<T> operator*(T f, const ColorT<T>& c) {
-	return ColorT<T>(c.r()*f, c.g()*f, c.b()*f);
+Q_DECL_CONSTEXPR inline ColorT<T> operator*(T s, const ColorT<T>& c) {
+	return ColorT<T>(c.r()*s, c.g()*s, c.b()*s);
 }
 
-/// Multiplies all three components of a color with a scalar value.
+/// Multiplies the three components of a color \a c with a scalar value \a s.
+/// \relates ColorT
 template<typename T>
-Q_DECL_CONSTEXPR inline ColorT<T> operator*(const ColorT<T>& c, T f) {
-	return ColorT<T>(c.r()*f, c.g()*f, c.b()*f);
+Q_DECL_CONSTEXPR inline ColorT<T> operator*(const ColorT<T>& c, T s) {
+	return ColorT<T>(c.r()*s, c.g()*s, c.b()*s);
 }
 
-/// Computes the sum of each color component.
+/// Computes the component-wise sum of two colors \a c1 and \a c2.
+/// \relates ColorT
 template<typename T>
 Q_DECL_CONSTEXPR inline ColorT<T> operator+(const ColorT<T>& c1, const ColorT<T>& c2) {
 	return { c1.r()+c2.r(), c1.g()+c2.g(), c1.b()+c2.b() };
 }
 
-/// Computes the product of each color component.
+/// Computes the component-wise product of two colors \a c1 and \a c2.
+/// \relates ColorT
 template<typename T>
 Q_DECL_CONSTEXPR inline ColorT<T> operator*(const ColorT<T>& c1, const ColorT<T>& c2) {
 	return { c1.r()*c2.r(), c1.g()*c2.g(), c1.b()*c2.b() };
 }
 
-/// \brief Writes a color to a text output stream.
-/// \param os The destination stream.
-/// \param c The color to write.
-/// \return The destination stream \a os.
+/// Prints a color to a text output stream.
+/// \relates ColorT
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const ColorT<T>& c) {
 	return os << c.r() << ' ' << c.g()  << ' ' << c.b();
 }
 
-/// \brief Writes the color to the Qt debug stream.
+/// Prints a color to a Qt debug stream.
+/// \relates ColorT
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const ColorT<T>& c) {
     dbg.nospace() << "(" << c.r() << " " << c.g() << " " << c.b() << ")";
     return dbg.space();
 }
 
-/// \brief Writes a color to a binary output stream.
-/// \param stream The destination stream.
-/// \param c The color to write.
-/// \return The destination \a stream.
+/// Writes a color to a binary file stream.
+/// \relates ColorT
 template<typename T>
 inline SaveStream& operator<<(SaveStream& stream, const ColorT<T>& c) {
 	return stream << c.r() << c.g() << c.b();
 }
 
-/// \brief Reads a color from an input stream.
-/// \param stream The source stream.
-/// \param c[out] The destination variable.
-/// \return The source \a stream.
+/// Reads a color from a binary file stream.
+/// \relates ColorT
 template<typename T>
 inline LoadStream& operator>>(LoadStream& stream, ColorT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b();
 }
 
-/// \brief Writes a color to a Qt data stream.
+/// Writes a color to a Qt data stream.
+/// \relates ColorT
 template<typename T>
 inline QDataStream& operator<<(QDataStream& stream, const ColorT<T>& c) {
 	return stream << c.r() << c.g() << c.b();
 }
 
-/// \brief Reads a color from a Qt data stream.
+/// Reads a color from a Qt data stream.
+/// \relates ColorT
 template<typename T>
 inline QDataStream& operator>>(QDataStream& stream, ColorT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b();
 }
 
 /**
- * \brief A color class with floating-point RGBA values.
- * 
- * The ColorA class stores four floating-point values, one for the red
- * component, one for the green component, one for the blue component and
- * one for the alpha component which controls the opacity of the color.
- * 
- * \author Alexander Stukowski
- * \sa Color
+ * \brief A color value with red, blue, green, and alpha components.
+ *
+ * This class stores four floating-point values in the range 0 to 1. The fourth component (alpha) controls
+ * the opacity of the color.
+ * Note that the class derives from std::array, which provides additional methods and component-wise data access.
+ *
+ * The typedef ::ColorA instantiates the ColorAT class template with the default floating-point type ::FloatType.
+ *
+ * \tparam T The value type of the color components.
+ *
+ * \sa ColorA
+ * \sa ColorT
  */
 template<typename T>
 class ColorAT : public std::array<T, 4>
 {
 public:
 
-	/// \brief Constructs a color structure without initializing its component.
-	/// \note All components are left uninitialized by this constructor and will therefore have an undefined value!
+	/// \brief Default constructs a color without initializing its components. The components will therefore have an undefined value!
 	ColorAT() {}
 
-	/// \brief Initializes the color width the given red, green and blue components.
-	/// \param red The red value of the RGB color in the range 0 to 1.
-	/// \param green The green value of the RGB color in the range 0 to 1.
-	/// \param blue The blue value of the RGB color in the range 0 to 1.
-	Q_DECL_CONSTEXPR ColorAT(T red, T green, T blue, T alpha = 1) : std::array<T, 4>{{red, green, blue, alpha}} {}
+	/// \brief Initializes the color width the given red, green, blue, and alpha value.
+	Q_DECL_CONSTEXPR ColorAT(T red, T green, T blue, T alpha = T(1))
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 4>{{red, green, blue, alpha}}
+#endif
+		{}
 
-	/// \brief Converts a vector to a color structure.
-	/// \param v The input vector. Its X, Y and Z components are taken as red, green and blue components
-	///          respectively.
-	Q_DECL_CONSTEXPR explicit ColorAT(const Vector_4<T>& v) : std::array<T, 4>(v) {}
+	/// \brief Converts a 4-vector to a color.The X, Y, Z, and W vector components are taken as red, green, blue, and alpha components respectively.
+	Q_DECL_CONSTEXPR explicit ColorAT(const Vector_4<T>& v)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 4>(v)
+#endif
+		  {}
 
-	/// \brief Conversion from a Qt color object.
-	/// \param c The Qt color to convert to a floating-point representation.
-	Q_DECL_CONSTEXPR ColorAT(const QColor& c) : std::array<T, 4>{{c.redF(), c.greenF(), c.blueF(), c.alphaF()}} {}
+	/// \brief Conversion from a Qt color value.
+	Q_DECL_CONSTEXPR ColorAT(const QColor& c)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 4>{{c.redF(), c.greenF(), c.blueF(), c.alphaF()}}
+#endif
+		{}
 
-	/// \brief Converts a RGB color to an RGBA color.
-	/// \param c The RGB color.
-	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c) : std::array<T, 4>{{c.r(), c.g(), c.b(), T(1)}} {}
+	/// \brief Converts a color without alpha component to a color with alpha component.
+	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c, T alpha = T(1))
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 4>{{c.r(), c.g(), c.b(), alpha}}
+#endif
+		{}
 
-	/// \brief Converts a RGB color to an RGBA color.
-	/// \param c The RGB color.
-	/// \param alpha The opaqueness.
-	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c, T alpha) : std::array<T, 4>{{c.r(), c.g(), c.b(), alpha}} {}
-
-	/// \brief Initializes the color from an array.
+	/// \brief Initializes the color components from an array of four values.
 	Q_DECL_CONSTEXPR explicit ColorAT(const std::array<T, 4>& c) : std::array<T, 4>(c) {}
 
-	/// \brief Sets all components to zero.
+	/// \brief Sets the red, green, and blue components to zero and alpha to one.
 	void setBlack() { r() = g() = b() = T(0); a() = T(1); }
 
 	/// \brief Sets all components to one.
@@ -316,8 +334,7 @@ public:
 	/// \return A vector.
 	explicit Q_DECL_CONSTEXPR operator const Vector_4<T>&() const { return reinterpret_cast<const Vector_4<T>&>(*this); }
 
-	/// \brief Converts this color to a Qt color object.
-	/// \return A Qt color object. All color components are clamped to the [0,1] range before the conversion.
+	/// \brief Conversion operator to a Qt color. All components of the returned Qt color are clamped to the [0,1] range.
 	operator QColor() const {
 		return QColor::fromRgbF(
 				qMin(qMax(r(), T(0)), T(1)),
@@ -401,85 +418,84 @@ public:
 	QString toString() const { return QString("(%1 %2 %3 %4)").arg(r()).arg(g()).arg(b()).arg(a()); }
 };
 
-/// Multiplies all three components of a color with a scalar value.
+/// Multiplies the four components of the color \a c with a scalar value \a s.
+/// \relates ColorAT
 template<typename T>
-Q_DECL_CONSTEXPR inline ColorAT<T> operator*(T f, const ColorAT<T>& c) {
-	return ColorAT<T>(c.r()*f, c.g()*f, c.b()*f, c.a()*f);
+Q_DECL_CONSTEXPR inline ColorAT<T> operator*(T s, const ColorAT<T>& c) {
+	return ColorAT<T>(c.r()*s, c.g()*s, c.b()*s, c.a()*s);
 }
 
-/// Multiplies all three components of a color with a scalar value.
+/// Multiplies the four components of the color \a c with a scalar value \a s.
+/// \relates ColorAT
 template<typename T>
-Q_DECL_CONSTEXPR inline ColorAT<T> operator*(const ColorAT<T>& c, T f) {
-	return ColorAT<T>(c.r()*f, c.g()*f, c.b()*f, c.a()*f);
+Q_DECL_CONSTEXPR inline ColorAT<T> operator*(const ColorAT<T>& c, T s) {
+	return ColorAT<T>(c.r()*s, c.g()*s, c.b()*s, c.a()*s);
 }
 
-/// Computes the sum of each color component.
+/// Computes the component-wise sum of two colors.
+/// \relates ColorAT
 template<typename T>
 Q_DECL_CONSTEXPR inline ColorAT<T> operator+(const ColorAT<T>& c1, const ColorAT<T>& c2) {
 	return { c1.r()+c2.r(), c1.g()+c2.g(), c1.b()+c2.b(), c1.a()+c2.a() };
 }
 
-/// Computes the product of each color component.
+/// Computes the component-wise product of two colors.
+/// \relates ColorAT
 template<typename T>
 Q_DECL_CONSTEXPR inline ColorAT<T> operator*(const ColorAT<T>& c1, const ColorAT<T>& c2) {
 	return { c1.r()*c2.r(), c1.g()*c2.g(), c1.b()*c2.b(), c1.a()*c2.a() };
 }
 
-/// \brief Writes a color to a text output stream.
-/// \param os The destination stream.
-/// \param c The color to write.
-/// \return The destination stream \a os.
+/// Prints a color to a text output stream.
+/// \relates ColorAT
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const ColorAT<T>& c) {
 	return os << c.r() << ' ' << c.g()  << ' ' << c.b() << ' ' << c.a();
 }
 
-/// \brief Writes the color to the Qt debug stream.
+/// Prints a color to a Qt debug stream.
+/// \relates ColorAT
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const ColorAT<T>& c) {
     dbg.nospace() << "(" << c.r() << " " << c.g() << " " << c.b() << " " << c.a() << ")";
     return dbg.space();
 }
 
-/// \brief Writes a color to a binary output stream.
-/// \param stream The destination stream.
-/// \param c The color to write.
-/// \return The destination \a stream.
+/// Writes a color to a binary output stream.
+/// \relates ColorAT
 template<typename T>
 inline SaveStream& operator<<(SaveStream& stream, const ColorAT<T>& c) {
 	return stream << c.r() << c.g() << c.b() << c.a();
 }
 
-/// \brief Reads a color from an input stream.
-/// \param stream The source stream.
-/// \param c[out] The destination variable.
-/// \return The source \a stream.
+/// Reads a color from a binary input stream.
+/// \relates ColorAT
 template<typename T>
 inline LoadStream& operator>>(LoadStream& stream, ColorAT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b() >> c.a();
 }
 
-/// \brief Writes a color to a Qt data stream.
+/// Writes a color to a Qt data stream.
+/// \relates ColorAT
 template<typename T>
 inline QDataStream& operator<<(QDataStream& stream, const ColorAT<T>& c) {
 	return stream << c.r() << c.g() << c.b() << c.a();
 }
 
-/// \brief Reads a color from a Qt data stream.
+/// Reads a color from a Qt data stream.
+/// \relates ColorAT
 template<typename T>
 inline QDataStream& operator>>(QDataStream& stream, ColorAT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b() >> c.a();
 }
 
 /**
- * \fn typedef Color
- * \brief Template class instance of the ColorT template.
+ * \brief Instantiation of the ColorT class template with the default floating-point type.
  */
 typedef ColorT<FloatType>	Color;
 
 /**
- * \fn typedef ColorA
- * \brief Template class instance of the ColorAT template.
+ * \brief Instantiation of the ColorAT class template with the default floating-point type.
  */
 typedef ColorAT<FloatType>	ColorA;
 
@@ -489,15 +505,15 @@ inline void glColor3(const ColorT<GLfloat>& c) { glColor3fv(c.data()); }
 inline void glColor4(const ColorAT<GLdouble>& c) { glColor4dv(c.data()); }
 inline void glColor4(const ColorAT<GLfloat>& c) { glColor4fv(c.data()); }
 
-};	// End of namespace
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Color);
-Q_DECLARE_METATYPE(Ovito::ColorA);
-Q_DECLARE_METATYPE(Ovito::Color*);
-Q_DECLARE_METATYPE(Ovito::ColorA*);
-Q_DECLARE_TYPEINFO(Ovito::Color, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ColorA, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Color*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ColorA*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Color);
+Q_DECLARE_METATYPE(Ovito::Util::ColorA);
+Q_DECLARE_METATYPE(Ovito::Util::Color*);
+Q_DECLARE_METATYPE(Ovito::Util::ColorA*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Color, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::ColorA, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Color*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::ColorA*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_COLOR_H

@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file LoadStream.h 
- * \brief Contains definition of the Ovito::LoadStream class.
+ * \file
+ * \brief Contains the definition of the Ovito::Util::LoadStream class.
  */
 
 #ifndef __OVITO_LOADSTREAM_H
@@ -29,7 +29,7 @@
 
 #include <base/Base.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 /**
  * \brief An input stream that is used to parse binary data from a file in a platform-independent way.
@@ -220,11 +220,11 @@ namespace detail {
 
 	/// This reads a non-enum value.
 	template<typename T>
-	void loadFromLoadStream(Ovito::LoadStream& stream, T& v, const std::false_type&) { stream.dataStream() >> v; }
+	void loadFromLoadStream(LoadStream& stream, T& v, const std::false_type&) { stream.dataStream() >> v; }
 
 	/// This reads an enum value.
 	template<typename T>
-	void loadFromLoadStream(Ovito::LoadStream& stream, T& v, const std::true_type&) { stream.readEnum(v); }
+	void loadFromLoadStream(LoadStream& stream, T& v, const std::true_type&) { stream.readEnum(v); }
 };
 
 
@@ -288,6 +288,6 @@ inline LoadStream& operator>>(LoadStream& stream, FloatType& v)
 	return stream;
 }
 
-};	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_LOADSTREAM_H

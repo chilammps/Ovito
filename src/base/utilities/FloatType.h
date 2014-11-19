@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file FloatType.h
- * \brief This header file defines the floating-point data type used throughout the program.
+ * \file
+ * \brief This header file defines the default floating-point type and numeric constants used throughout the program.
  */
 
 #ifndef __OVITO_FLOATTYPE_H
@@ -29,25 +29,28 @@
 
 namespace Ovito {
 
-// Use single precision (32-bit) float as default floating point type.
+/// The default floating-point type used by OVITO.
+///
 typedef float FloatType;
 
-#define FLOATTYPE_FLOAT		// This tells the program that we're using 32-bit floating point.
+#define FLOATTYPE_FLOAT		// This tells the program that we're using 32-bit floating-point numbers.
 
-/// A small epsilon value for the FloatType.
+/// A small epsilon, which is used in OVITO when testing if a number is (almost) zero.
 #define FLOATTYPE_EPSILON	1e-6f
 
-/// The maximum value for floating point variables.
+/// The maximum value for floating-point variables of type Ovito::FloatType.
 #define FLOATTYPE_MAX	(std::numeric_limits<FloatType>::max())
+
+/// The constant PI.
 #define FLOATTYPE_PI	Ovito::FloatType(3.14159265358979323846)
 
-/// The placeholder passed to the sscanf() function to parse a floating-point number.
+/// The format specifier to be passed to the sscanf() function to parse a floating-point number of type Ovito::FloatType.
 #define FLOATTYPE_SCANF_STRING 		"%g"
 
 // Type-specific OpenGL functions:
 inline void glVertex3(FloatType x, FloatType y, FloatType z) { glVertex3f(x,y,z); }
 inline void glColor3(FloatType r, FloatType g, FloatType b) { glColor3f(r,g,b); }
 
-};
+}	// End of namespace
 
 #endif // __OVITO_FLOATTYPE_H

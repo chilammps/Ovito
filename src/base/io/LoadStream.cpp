@@ -23,7 +23,7 @@
 #include <base/io/LoadStream.h>
 #include <base/utilities/Exception.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 using namespace std;
 
@@ -214,5 +214,5 @@ void LoadStream::resolvePointer(quint64 id, void* pointer)
 	_backpatchPointers.erase(first, last);
 }
 
-};	// End of namespace
+}}	// End of namespace
 

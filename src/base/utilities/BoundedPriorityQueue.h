@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file BoundedPriorityQueue.h
- * \brief Contains the definition of the Ovito::BoundedPriorityQueue template class.
+ * \file
+ * \brief Contains the definition of the Ovito::Util::BoundedPriorityQueue class template.
  */
 
 #ifndef __OVITO_BOUNDED_PRIORITY_QUEUE_H
@@ -29,16 +29,20 @@
 
 #include <base/Base.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 /**
- * A priority queue with a fixed compile-time maximum capacity and a variable run-time capacity.
+ * \brief A container class implementing a priority queue with a fixed compile-time maximum capacity and a variable run-time capacity.
+ *
+ * \tparam T The type of the queue's elements.
+ * \tparam Compare The functor type defining the priority order of elements in the queue.
+ * \tparam QUEUE_SIZE_LIMIT The compile-time maximum capacity of the queue.
  *
  * While the queue has not reached its maximum capacity, elements are
  * inserted as they will be in a heap, the root (top()) being such that
- * Compare(top(),x)=false for any x in the queue.
+ * Compare(top(),x)==false for any x in the queue.
  * Once the queue is full, trying to insert x in the queue will have no effect if
- * Compare(x,top())=false. Otherwise, the element at the root of the heap is removed
+ * Compare(x,top())==false. Otherwise, the element at the root of the heap is removed
  * and x is inserted so as to keep the heap property.
  */
 template<typename T, typename Compare = std::less<T>, int QUEUE_SIZE_LIMIT = 32>
@@ -69,8 +73,7 @@ public:
 	const value_type& top() const { return _data[0]; }
 
 	/// Inserts a new element into the priority queue.
-	void insert(const value_type& x)
-	{
+	void insert(const value_type& x) {
 		value_type* data1 = (&_data[0]-1);
 		if(full()) {
 			if(_comp(x, top())) {
@@ -121,7 +124,7 @@ protected:
 	Compare _comp;
 };
 
-}; // End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_BOUNDED_PRIORITY_QUEUE_H
 

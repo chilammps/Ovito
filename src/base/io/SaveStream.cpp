@@ -23,7 +23,7 @@
 #include <base/io/SaveStream.h>
 #include <base/utilities/Exception.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 using namespace std;
 
@@ -146,4 +146,4 @@ quint64 SaveStream::pointerID(void* pointer) const
 	return iter->second;
 }
 
-};	// End of namespace Base
+}}	// End of namespace

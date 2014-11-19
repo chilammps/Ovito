@@ -93,7 +93,7 @@ IF(OVITO_BUILD_DOCUMENTATION)
 ENDIF(OVITO_BUILD_DOCUMENTATION)
 
 # Controls the generation of the API docs.
-OPTION(OVITO_BUILD_API_DOCS "Generate developer documentation from C++ source code comments (requires Doxygen)" "OFF")
+OPTION(OVITO_BUILD_API_DOCS "Creates the 'apidocs' make target, which generates developer documentation from C++ source code comments (requires Doxygen)" "OFF")
 
 IF(OVITO_BUILD_API_DOCS)
 
@@ -101,8 +101,8 @@ IF(OVITO_BUILD_API_DOCS)
 	FIND_PACKAGE(Doxygen REQUIRED)
 	
 	# Generate API documentation files.
-	ADD_CUSTOM_TARGET(apidocs ALL
-					COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+	ADD_CUSTOM_TARGET(apidocs
+					COMMAND "env" "OVITO_VERSION_STRING=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}.${OVITO_VERSION_REVISION}" ${DOXYGEN_EXECUTABLE} Doxyfile
 					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/develop/"
 					COMMENT "Generating C++ API documentation")
 	

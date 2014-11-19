@@ -22,7 +22,7 @@
 #include <base/Base.h>
 #include <base/utilities/Exception.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 /// The exception handler for displaying error messages.
 Exception::ExceptionHandler Exception::exceptionHandler = NULL;
@@ -67,4 +67,4 @@ void Exception::showError() const
 	exceptionHandler(*this);
 }
 
-};	// End of namespace Base
+}}	// End of namespace

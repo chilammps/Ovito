@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file SaveStream.h 
- * \brief Contains definition of the Ovito::SaveStream class.
+ * \file
+ * \brief Contains the definition of the Ovito::Util::SaveStream class.
  */
 
 #ifndef __OVITO_SAVESTREAM_H
@@ -29,7 +29,7 @@
 
 #include <base/Base.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 /**
  * \brief An output stream that is used to write binary data to a file in a platform-independent way.
@@ -45,7 +45,6 @@ namespace Ovito {
  * needed to match the architecture present on the actual computer.
  * 
  * \sa LoadStream
- * \author Alexander Stukowski
  */
 class OVITO_BASE_EXPORT SaveStream : public QObject
 {
@@ -149,11 +148,11 @@ namespace detail {
 
 	/// This writes a non-enum value.
 	template<typename T>
-	void saveToSaveStream(Ovito::SaveStream& stream, const T& v, const std::false_type&) { stream.dataStream() << v; }
+	void saveToSaveStream(SaveStream& stream, const T& v, const std::false_type&) { stream.dataStream() << v; }
 
 	/// This writes an enum value.
 	template<typename T>
-	void saveToSaveStream(Ovito::SaveStream& stream, const T& v, const std::true_type&) { stream.dataStream() << (qint32)v; }
+	void saveToSaveStream(SaveStream& stream, const T& v, const std::true_type&) { stream.dataStream() << (qint32)v; }
 };
 
 
@@ -214,6 +213,6 @@ inline SaveStream& operator<<(SaveStream& stream, const FloatType& v)
 	return stream;
 }
 
-};	// End of namespace Base
+}}	// End of namespace
 
 #endif // __OVITO_SAVESTREAM_H

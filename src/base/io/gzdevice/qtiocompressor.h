@@ -49,7 +49,7 @@
 
 #include <base/Base.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 class QtIOCompressorPrivate;
 
@@ -92,6 +92,6 @@ private:
     Q_DISABLE_COPY(QtIOCompressor);
 };
 
-};
+}} // End of namespace
 
 #endif

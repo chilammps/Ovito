@@ -38,8 +38,8 @@ namespace NetCDF {
 using namespace Ovito;
 using namespace Particles;
 
-/**
- * \brief File parser for text-based NetCDF dump simulation files.
+/*
+ * File parser for text-based NetCDF dump simulation files.
  */
 class OVITO_NETCDF_EXPORT NetCDFImporter : public ParticleImporter
 {
@@ -172,8 +172,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_useCustomColumnMapping);
 };
 
-/**
- * \brief A properties editor for the NetCDFImporter class.
+/*
+ * A properties editor for the NetCDFImporter class.
  */
 class OVITO_NETCDF_EXPORT NetCDFImporterEditor : public PropertiesEditor
 {

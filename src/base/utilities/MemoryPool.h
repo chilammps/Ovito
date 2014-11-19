@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file MemoryPool.h
- * \brief Contains the definition of the Ovito::MemoryPool template class.
+ * \file
+ * \brief Contains the definition of the Ovito::Util::MemoryPool class template.
  */
 
 #ifndef __OVITO_MEMORY_POOL_H
@@ -29,34 +29,41 @@
 
 #include <base/Base.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 /**
- * Template class that provides a memory pool for efficient allocation of object instances.
+ * \brief A simple memory pool for the efficient allocation of a large number of object instances.
  *
- * Instances of a certain class/struct can be allocated by this class very efficiently.
- * A restriction is that all instances can only be destroyed at once.
+ * \tparam T The type of object to be allocated by the memory pool.
+ *
+ * New object instances can be dynamically allocated via #construct().
+ * A restriction is that all instances belonging to the memory can only be destroyed at once using the
+ * #clear() method. This memory pool provides no way to free the memory of individual object instances.
+ *
  */
 template<typename T>
 class MemoryPool
 {
 public:
 
-	/// Constructor.
-	MemoryPool(size_t _pageSize = 1024) : lastPageNumber(_pageSize), pageSize(_pageSize) {}
+	/// Constructs a new memory pool.
+	/// \param pageSize Controls the number of objects per memory page allocated by this pool.
+	MemoryPool(size_t pageSize = 1024) : lastPageNumber(pageSize), _pageSize(pageSize) {}
 
-	/// Destructor.
+	/// Releases the memory reserved by this pool and destroys all allocated object instances.
 	~MemoryPool() { clear(); }
 
-	/// Allocates and constructs a new object instance.
-	template<class... Types>
-	inline T* construct(const Types&... args) {
+	/// Allocates, constructs, and returns a new object instance.
+	/// Any arguments passed to this method are forwarded to the class constructor.
+	template<class... Args>
+	inline T* construct(Args&&... args) {
 		T* p = malloc();
-		alloc.construct(p, args...);
+		alloc.construct(p, std::forward<Args>(args)...);
 		return p;
 	}
 
-	/// Destroys all object instances.
+	/// Destroys all object instances belonging to the memory pool
+	/// and releases the memory pages allocated by the pool.
 	inline void clear(bool keepPageReserved = false) {
 		for(auto i = pages.cbegin(); i != pages.cend(); ++i) {
 			T* p = *i;
@@ -78,10 +85,12 @@ public:
 		}
 	}
 
+	/// Returns the number of bytes currently reserved by this memory pool.
 	size_t memoryUsage() const {
 		return pages.size() * pageSize * sizeof(T);
 	}
 
+	/// Swaps this memory pool with another pool instance.
 	void swap(MemoryPool<T>& other) {
 		pages.swap(other.pages);
 		std::swap(lastPageNumber, other.lastPageNumber);
@@ -107,11 +116,11 @@ private:
 
 	std::vector<T*> pages;
 	size_t lastPageNumber;
-	size_t pageSize;
+	size_t _pageSize;
 	std::allocator<T> alloc;
 };
 
-}; // End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_MEMORY_POOL_H
 

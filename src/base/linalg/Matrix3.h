@@ -21,7 +21,7 @@
 
 /** 
  * \file Matrix3.h 
- * \brief Contains the definition of the Ovito::Matrix_3 class template.
+ * \brief Contains the definition of the Ovito::Math::Matrix_3 class template.
  */
  
 #ifndef __OVITO_MATRIX3_H
@@ -32,14 +32,14 @@
 #include "Vector3.h"
 #include "Point3.h"
 
-namespace Ovito {
+namespace Ovito { namespace Math {
 
 template<typename T> class RotationT;
 template<typename T> class QuaternionT;
 template<typename T> class ScalingT;
 
 /**
- * \brief A 3x3 matrix class.
+ * \brief A 3x3 transformation matrix.
  */
 template<typename T>
 class Matrix_3
@@ -662,11 +662,11 @@ inline QDataStream& operator>>(QDataStream& stream, Matrix_3<T>& m) {
 typedef Matrix_3<FloatType>		Matrix3;
 
 
-};	// End of namespace
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Matrix3);
-Q_DECLARE_METATYPE(Ovito::Matrix3*);
-Q_DECLARE_TYPEINFO(Ovito::Matrix3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Matrix3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Math::Matrix3);
+Q_DECLARE_METATYPE(Ovito::Math::Matrix3*);
+Q_DECLARE_TYPEINFO(Ovito::Math::Matrix3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Math::Matrix3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX3_H

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file Base.h
- * \brief This header file includes the standard system headers used by the basic classes.
+ * \file
+ * \brief This file includes STL and third-party library headers required by OVITO.
  */
 
 #ifndef __OVITO_BASE_H
@@ -75,8 +75,8 @@
 #include <QtNetwork>
 #include <qopengl.h>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
-#  error "OVITO requires at least Qt version 5.2"
+#if QT_VERSION < QT_VERSION_CHECK(5, 2, 0)
+#  error "OVITO requires at least Qt 5.2"
 #endif
 
 #ifdef OVITO_BASE_LIBRARY
@@ -85,7 +85,27 @@
 #  define OVITO_BASE_EXPORT Q_DECL_IMPORT
 #endif
 
-// Defines the number type used for numerical computations.
+/*! \namespace Ovito
+    \brief The root namespace of OVITO.
+*/
+/*! \namespace Ovito::Util
+    \brief This namespace contains utility classes and typedefs used throughout OVITO's codebase.
+*/
+/*! \namespace Ovito::Math
+    \brief This namespace contains classes related to linear algebra and geometry (vectors, transformation matrices, etc).
+*/
+
+// Pull all sub-namespaces into the root Ovito namespace.
+namespace Ovito {
+	namespace Util {}
+	namespace Math {}
+	using namespace Util;
+	using namespace Math;
+}
+
+/******************************************************************************
+* Our own basic headers
+******************************************************************************/
 #include "utilities/Debugging.h"
 #include "utilities/FloatType.h"
 #include "utilities/Exception.h"

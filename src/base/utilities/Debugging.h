@@ -20,8 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
-* Defines macros for debugging purposes.
+*
 ******************************************************************************/
+/**
+ * \file
+ * \brief Defines several macros for debugging purposes.
+ */
 
 #ifndef __OVITO_DEBUGGING_H
 #define __OVITO_DEBUGGING_H
@@ -58,6 +62,6 @@ namespace Ovito {
 ******************************************************************************/
 #define OVITO_CHECK_POINTER(pointer) OVITO_ASSERT_MSG((pointer), "OVITO_CHECK_POINTER", "Invalid object pointer.");
 
-};	// End of namespace Base
+}	// End of namespace
 
 #endif // __OVITO_DEBUGGING_H

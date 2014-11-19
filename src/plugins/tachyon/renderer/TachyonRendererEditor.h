@@ -30,8 +30,8 @@ namespace TachyonPlugin {
 
 using namespace Ovito;
 	
-/**
- * The editor component for the TachyonRenderer class.
+/*
+ * The UI component for the TachyonRenderer class.
  */
 class TachyonRendererEditor : public PropertiesEditor
 {

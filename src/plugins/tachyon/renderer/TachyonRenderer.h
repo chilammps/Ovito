@@ -27,9 +27,11 @@
 #define TACHYON_INTERNAL 1
 #include <tachyon/tachyon.h>
 
+namespace Ovito {
 namespace TachyonPlugin {
 
-using namespace Ovito;
+using namespace Ovito::Base;
+using namespace Ovito::Core;
 
 /*
  * A scene renderer that is based on the Tachyon open source ray-tracing engine

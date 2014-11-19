@@ -48,7 +48,7 @@
 #include "qtiocompressor.h"
 #include <zlib.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util {
 
 typedef Bytef ZlibByte;
 typedef uInt ZlibSize;
@@ -661,5 +661,5 @@ bool QtIOCompressor::checkGzipSupport(const char * const versionString)
     return true;
 }
 
-};
+}};  // End of namespace
 
