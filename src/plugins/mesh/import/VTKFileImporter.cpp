@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/mesh/Mesh.h>
-#include <core/utilities/io/CompressedTextParserStream.h>
+#include <core/utilities/io/CompressedTextReader.h>
 #include "VTKFileImporter.h"
 
 namespace Mesh {
@@ -33,7 +33,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Mesh, VTKFileImporter, LinkedFileImporter);
 bool VTKFileImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first line.
 	stream.readLine(24);
@@ -48,7 +48,7 @@ bool VTKFileImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLoca
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading VTK file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

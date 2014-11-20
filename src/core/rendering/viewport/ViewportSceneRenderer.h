@@ -19,16 +19,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportSceneRenderer.h
- * \brief Contains the definition of the Ovito::ViewportSceneRenderer class.
- */
 #ifndef __OVITO_VIEWPORT_SCENE_RENDERER_H
 #define __OVITO_VIEWPORT_SCENE_RENDERER_H
 
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
-#include <base/utilities/Color.h>
 #include "OpenGLHelpers.h"
 
 #include <QOpenGLFunctions_1_4>
@@ -36,7 +31,7 @@
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief This is the default scene renderer used to render the contents
@@ -259,6 +254,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_SCENE_RENDERER_H

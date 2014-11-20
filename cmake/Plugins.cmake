@@ -99,8 +99,8 @@ MACRO(OVITO_PLUGIN target_name)
 	STRING(TOUPPER "${target_name}" uppercase_target_name)
 	TARGET_COMPILE_DEFINITIONS(${target_name} PRIVATE "-DMAKING_MODULE_${uppercase_target_name}")
 
-	# Link mandatory OVITO libraries.
-	TARGET_LINK_LIBRARIES(${target_name} PUBLIC Base Core)
+	# Link to OVITO's core library.
+	TARGET_LINK_LIBRARIES(${target_name} PUBLIC Core)
 
 	# Link other required libraries.
 	TARGET_LINK_LIBRARIES(${target_name} PUBLIC ${lib_dependencies})

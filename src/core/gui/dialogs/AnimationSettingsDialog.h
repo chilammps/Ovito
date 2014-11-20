@@ -26,11 +26,11 @@
 #include <core/dataset/UndoStack.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-/******************************************************************************
-* This dialog box lets the user manage the animation settings.
-******************************************************************************/
+/**
+ * This dialog box lets the user manage the animation settings.
+ */
 class OVITO_CORE_EXPORT AnimationSettingsDialog : public QDialog, private UndoableTransaction
 {
 	Q_OBJECT
@@ -71,6 +71,6 @@ private:
 	QComboBox* playbackSpeedBox;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ANIM_SETTINGS_DIALOG_H

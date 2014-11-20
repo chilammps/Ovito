@@ -26,7 +26,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, ColorParameterUI, PropertyParameterUI);
@@ -135,5 +135,4 @@ void ColorParameterUI::onColorPickerChanged()
 	}
 }
 
-};
-
+}}}	// End of namespace

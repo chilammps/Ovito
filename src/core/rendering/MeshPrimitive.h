@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file MeshPrimitive.h
- * \brief Contains the definition of the Ovito::MeshPrimitive class.
- */
-
 #ifndef __OVITO_MESH_PRIMITIVE_H
 #define __OVITO_MESH_PRIMITIVE_H
 
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Abstract base class for rendering triangle meshes.
@@ -46,6 +41,6 @@ public:
 	virtual int faceCount() = 0;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_MESH_PRIMITIVE_H

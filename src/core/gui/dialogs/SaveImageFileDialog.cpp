@@ -21,11 +21,11 @@
 
 #include <core/Core.h>
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <3rdparty/video/VideoEncoder.h>
+	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 #include "SaveImageFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -99,4 +99,4 @@ void SaveImageFileDialog::onFileSelected(const QString& file)
 		_imageInfo.setFormat(_formatList[index]);
 }
 
-};
+}}	// End of namespace

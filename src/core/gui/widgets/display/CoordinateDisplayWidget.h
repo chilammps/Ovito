@@ -19,22 +19,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file CoordinateDisplayWidget.h
- * \brief Contains the definition of the Ovito::CoordinateDisplayWidget class.
- */
-
 #ifndef __OVITO_COORDINATE_DISPLAY_WIDGET_H
 #define __OVITO_COORDINATE_DISPLAY_WIDGET_H
 
 #include <core/Core.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief The coordinate display widget at the bottom of the main window,
- *        which displays the current mouse coordinates and the transform of the selected object.
+ * The coordinate display widget at the bottom of the main window,
+ * which displays the current mouse coordinates and the transform of the selected object.
  */
 class OVITO_CORE_EXPORT CoordinateDisplayWidget : public QFrame
 {
@@ -99,6 +94,6 @@ private:
 	QString _undoOperationName;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_COORDINATE_DISPLAY_WIDGET_H

@@ -28,7 +28,7 @@
 #define __OVITO_SCENE_NODE_H
 
 #include <core/Core.h>
-#include <base/utilities/Color.h>
+#include <core/utilities/Color.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>

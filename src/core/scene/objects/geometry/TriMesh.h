@@ -57,7 +57,7 @@ public:
 		EDGES13 = EDGE1 | EDGE3,	//< First and third edge visible
 		EDGES123 = EDGE1 | EDGE2 | EDGE3,	//< All edges Visible
 	};
-	Q_DECLARE_FLAGS(MeshFaceFlags, MeshFaceFlag)
+	Q_DECLARE_FLAGS(MeshFaceFlags, MeshFaceFlag);
 
 public:
 

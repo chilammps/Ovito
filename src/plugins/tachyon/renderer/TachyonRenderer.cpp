@@ -41,7 +41,7 @@ extern "C" {
 	#error "The OVITO Tachyon plugin requires version 0.99 or newer of the Tachyon library."
 #endif
 
-namespace TachyonPlugin {
+namespace Ovito { namespace Rendering { namespace Tachyon {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
@@ -559,5 +559,5 @@ void* TachyonRenderer::getTachyonTexture(FloatType r, FloatType g, FloatType b, 
 	return rt_texture(_rtscene, &tex);
 }
 
-};
+}}}	// End of namespace
 

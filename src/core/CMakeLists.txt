@@ -20,6 +20,11 @@
 ###############################################################################
 
 SET(OVITO_CORE_SOURCE_FILES 
+	utilities/Exception.cpp
+	utilities/linalg/AffineDecomposition.cpp
+	utilities/io/SaveStream.cpp
+	utilities/io/LoadStream.cpp
+	utilities/io/gzdevice/qtiocompressor.cpp
 	object/OvitoObject.cpp
 	object/OvitoObjectType.cpp
 	object/NativeOvitoObjectType.cpp
@@ -27,6 +32,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	plugins/NativePlugin.cpp
 	plugins/PluginManager.cpp
 	plugins/autostart/AutoStartObject.cpp
+	plugins/utility/UtilityApplet.cpp
 	reference/CloneHelper.cpp
 	reference/PropertyFieldDescriptor.cpp
 	reference/PropertyField.cpp
@@ -75,7 +81,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/ModificationListItem.cpp
 	gui/mainwin/cmdpanel/ModifierListBox.cpp
 	gui/mainwin/cmdpanel/UtilityCommandPage.cpp
-	gui/mainwin/cmdpanel/UtilityApplet.cpp
 	gui/mainwin/cmdpanel/OverlayCommandPage.cpp
 	gui/dialogs/AdjustCameraDialog.cpp
 	gui/dialogs/AnimationSettingsDialog.cpp
@@ -135,8 +140,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/ObjectLoadStream.cpp
 	utilities/io/FileManager.cpp
 	utilities/io/SftpJob.cpp
-	utilities/io/CompressedTextParserStream.cpp
-	utilities/io/CompressedTextWriterStream.cpp
+	utilities/io/CompressedTextReader.cpp
+	utilities/io/CompressedTextWriter.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/TaskManager.cpp
 	rendering/SceneRenderer.cpp
@@ -174,18 +179,37 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/overlay/CoordinateTripodOverlay.cpp
 )
 
+# Include video encoder interface code.
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	LIST(APPEND OVITO_CORE_SOURCE_FILES utilities/io/video/VideoEncoder.cpp)
+ENDIF()
+
 # Compile resources.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
 # Build library
 ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
-TARGET_LINK_LIBRARIES(Core Base QSsh)
+TARGET_LINK_LIBRARIES(Core QSsh)
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
 
+# Link to ZLib library.
+TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
+TARGET_INCLUDE_DIRECTORIES(Core PRIVATE "${ZLIB_INCLUDE_DIRS}")
+
+# Add Boost include directories.
+TARGET_INCLUDE_DIRECTORIES(Core PUBLIC ${Boost_INCLUDE_DIRS})
+
 # Link Qt5.
 QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
+
+# Link video encoding lib.
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
+	TARGET_LINK_LIBRARIES(Core ${FFMPEG_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${FFMPEG_INCLUDE_DIR})
+ENDIF()
 
 # This will let the source code export symbols when building a DLL.
 TARGET_COMPILE_DEFINITIONS(Core PRIVATE OVITO_CORE_LIBRARY)
@@ -194,11 +218,6 @@ IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
 	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
 ENDIF(APPLE)
-
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_LINK_LIBRARIES(Core Video)
-ENDIF()
 
 OVITO_FIXUP_BUILD_OBJECT(Core)
 

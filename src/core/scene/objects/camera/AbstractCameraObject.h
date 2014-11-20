@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file AbstractCameraObject.h 
- * \brief Contains the definition of the Ovito::AbstractCameraObject class.
- */
-
 #ifndef __OVITO_ABSTRACT_CAMERA_OBJECT_H
 #define __OVITO_ABSTRACT_CAMERA_OBJECT_H
 
@@ -31,8 +26,6 @@
 #include <core/scene/objects/SceneObject.h>
 
 namespace Ovito {
-	
-struct ViewProjectionParameters;	// defined in Viewport.h
 
 /**
  * \brief Abstract base class for camera scene objects.

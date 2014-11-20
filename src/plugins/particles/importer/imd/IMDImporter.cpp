@@ -33,7 +33,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IMDImporter, ParticleImporter);
 bool IMDImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first header line.
 	stream.readLine(1024);
@@ -45,7 +45,7 @@ bool IMDImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading IMD file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

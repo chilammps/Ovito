@@ -23,9 +23,9 @@
 #include <core/viewport/ViewportWindow.h>
 #include "GeneralSettingsPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-IMPLEMENT_OVITO_OBJECT(Core, GeneralSettingsPage, ApplicationSettingsPage);
+IMPLEMENT_OVITO_OBJECT(Core, GeneralSettingsPage, ApplicationSettingsDialogPage);
 
 /******************************************************************************
 * Creates the widget that contains the plugin specific setting controls.
@@ -160,4 +160,4 @@ bool GeneralSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog, 
 	return true;
 }
 
-};
+}}}	// End of namespace

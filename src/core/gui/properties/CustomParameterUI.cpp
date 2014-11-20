@@ -23,7 +23,7 @@
 #include <core/gui/properties/CustomParameterUI.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, CustomParameterUI, PropertyParameterUI);
@@ -133,5 +133,4 @@ void CustomParameterUI::updatePropertyValue()
 	}
 }
 
-};
-
+}}}	// End of namespace

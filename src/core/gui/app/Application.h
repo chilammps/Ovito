@@ -28,11 +28,9 @@
 #define __OVITO_APPLICATION_H
 
 #include <core/Core.h>
-#include <base/utilities/Exception.h>
+#include <core/utilities/Exception.h>
 
-namespace Ovito {
-
-class AutoStartObject;		// defined in AutoStartObject.h
+namespace Ovito { namespace Gui {
 
 /**
  * \brief The main application.
@@ -163,6 +161,6 @@ private:
 	static Application _instance;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_APPLICATION_H

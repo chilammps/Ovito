@@ -28,7 +28,7 @@
 #include <core/gui/app/Application.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
 SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor);
@@ -134,7 +134,7 @@ void RenderSettings::loadFromStream(ObjectLoadStream& stream)
 	if(fileVersion == 0) {
 		bool generateAlphaChannel;
 		RenderingRangeType renderingRange;
-		stream.readEnum(renderingRange);
+		stream >> renderingRange;
 		stream >> _imageInfo;
 		stream >> generateAlphaChannel;
 		_generateAlphaChannel = generateAlphaChannel;
@@ -162,4 +162,4 @@ OORef<RefTarget> RenderSettings::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-};
+}}	// End of namespace

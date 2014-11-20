@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -27,7 +27,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
 
 /******************************************************************************
 * Opens the stream for reading.
@@ -79,7 +79,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			propFieldEntry.definingClass = OvitoObjectType::deserializeRTTI(*this);
 			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false)
 				throw Exception(tr("The class hierarchy stored in the file differs from the class hierarchy of the program."));
-			this->readEnum(propFieldEntry.flags);
+			*this >> propFieldEntry.flags;
 			*this >> propFieldEntry.isReferenceField;
 			if(propFieldEntry.isReferenceField)
 				propFieldEntry.targetClass = OvitoObjectType::deserializeRTTI(*this);
@@ -198,4 +198,4 @@ void ObjectLoadStream::close()
 	LoadStream::close();
 }
 
-};
+}}}	// End of namespace

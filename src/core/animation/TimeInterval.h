@@ -19,19 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file TimeInterval.h 
- * \brief Contains definition of the Ovito::TimeInterval structure.
- */
- 
 #ifndef __OVITO_TIME_INTERVAL_H
 #define __OVITO_TIME_INTERVAL_H
 
 #include <core/Core.h>
-#include <base/io/SaveStream.h>
-#include <base/io/LoadStream.h>
+#include <core/utilities/io/SaveStream.h>
+#include <core/utilities/io/LoadStream.h>
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /** 
  * \fn typedef TimePoint
@@ -229,7 +224,7 @@ inline QDebug operator<<(QDebug stream, const TimeInterval& iv)
 	return stream.space();
 }
 
-};
+}}	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::TimeInterval);
 Q_DECLARE_TYPEINFO(Ovito::TimeInterval, Q_MOVABLE_TYPE);

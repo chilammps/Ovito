@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "OpenGLSharedResource.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 class OpenGLContextInfo
 {
@@ -189,4 +189,4 @@ void OpenGLSharedResource::destroyOpenGLResources()
 	}
 }
 
-};
+}}}	// End of namespace

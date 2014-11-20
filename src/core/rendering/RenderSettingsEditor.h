@@ -27,11 +27,11 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
-/******************************************************************************
-* The editor component for the RenderSettings object class.
-******************************************************************************/
+/**
+ * The editor component for the RenderSettings class.
+ */
 class RenderSettingsEditor : public PropertiesEditor
 {
 public:
@@ -63,6 +63,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_RENDER_SETTINGS_EDITOR_H

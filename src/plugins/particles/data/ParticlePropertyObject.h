@@ -629,7 +629,7 @@ private:
 /// Writes a ParticlePropertyReference to an output stream.
 inline SaveStream& operator<<(SaveStream& stream, const ParticlePropertyReference& r)
 {
-	stream.writeEnum(r.type());
+	stream << r.type();
 	stream << r.name();
 	stream << r.vectorComponent();
 	return stream;
@@ -640,7 +640,7 @@ inline LoadStream& operator>>(LoadStream& stream, ParticlePropertyReference& r)
 {
 	ParticleProperty::Type type;
 	QString name;
-	stream.readEnum(type);
+	stream >> type;
 	stream >> name;
 	int vecComponent;
 	stream >> vecComponent;

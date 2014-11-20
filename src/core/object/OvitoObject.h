@@ -33,9 +33,6 @@
 
 namespace Ovito {
 
-class ObjectSaveStream;		// defined in ObjectSaveStream.h
-class ObjectLoadStream;		// defined in ObjectLoadStream.h
-
 #ifdef OVITO_DEBUG
 	/// Checks whether a pointer to an OvitoObject is valid.
 	#define OVITO_CHECK_OBJECT_POINTER(object) { OVITO_CHECK_POINTER(object); OVITO_ASSERT_MSG((object)->__isObjectAlive(), "OVITO_CHECK_OBJECT_POINTER", "OvitoObject pointer is invalid. Object has been deleted."); }
@@ -192,8 +189,8 @@ private:
 	friend class SingleReferenceFieldBase;
 
 	// These classes need to access the protected serialization functions.
-	friend class ObjectSaveStream;
-	friend class ObjectLoadStream;
+	friend class Ovito::Util::IO::ObjectSaveStream;
+	friend class Ovito::Util::IO::ObjectLoadStream;
 };
 
 /// \brief Dynamic cast operator for subclasses of OvitoObject.

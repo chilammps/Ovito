@@ -26,9 +26,7 @@
 #include <core/gui/widgets/general/SpinnerWidget.h>
 #include "ParameterUI.h"
 
-namespace Ovito {
-
-class ParameterUnit;	// defined in ParameterUnit.h
+namespace Ovito { namespace Gui { namespace Params {
 
 /******************************************************************************
 * Base class for UI components that allow the user to edit a numerical
@@ -134,6 +132,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_NUMERICAL_PARAMETER_UI_H

@@ -19,29 +19,24 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file ApplicationSettingsDialog.h
- * \brief Contains the definition of the Ovito::ApplicationSettingsDialog class.
- */
-
 #ifndef __OVITO_APPLICATION_SETTINGS_DIALOG_H
 #define __OVITO_APPLICATION_SETTINGS_DIALOG_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 	
 class ApplicationSettingsDialog;		// defined below.
 
 /**
  * \brief Abstract base class for tab providers for the application's settings dialog.
  */
-class OVITO_CORE_EXPORT ApplicationSettingsPage : public OvitoObject
+class OVITO_CORE_EXPORT ApplicationSettingsDialogPage : public OvitoObject
 {
 protected:
 
 	/// Base class constructor.
-	ApplicationSettingsPage() {}
+	ApplicationSettingsDialogPage() {}
 
 public:
 
@@ -65,7 +60,7 @@ private:
  * \brief The dialog window that lets the user change the global application settings.
  * 
  * Plugins can add additional pages to this dialog by deriving new classes from
- * the ApplicationSettingsPage class.
+ * the ApplicationSettingsDialogPage class.
  */
 class OVITO_CORE_EXPORT ApplicationSettingsDialog : public QDialog
 {
@@ -85,10 +80,10 @@ protected Q_SLOTS:
 
 private:
 
-	QVector<OORef<ApplicationSettingsPage>> _pages;
+	QVector<OORef<ApplicationSettingsDialogPage>> _pages;
 	QTabWidget* _tabWidget;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_APPLICATION_SETTINGS_DIALOG_H

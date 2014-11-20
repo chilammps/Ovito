@@ -86,7 +86,7 @@ private:
 inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 {
 	stream.beginChunk(0x02);
-	stream.writeEnum(s._type);
+	stream << s._type;
 	stream << s._text;
 	stream.endChunk();
 	return stream;
@@ -99,7 +99,7 @@ inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 inline LoadStream& operator>>(LoadStream& stream, PipelineStatus& s)
 {
 	quint32 version = stream.expectChunkRange(0x0, 0x02);
-	stream.readEnum(s._type);
+	stream >> s._type;
 	stream >> s._text;
 	if(version <= 0x01)
 		stream >> s._text;

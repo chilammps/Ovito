@@ -27,7 +27,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/gui/mainwin/MainWindow.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /// The vendor of the OpenGL implementation in use.
 QByteArray ViewportWindow::_openGLVendor;
@@ -343,4 +343,4 @@ void ViewportWindow::renderNow()
 	_context->doneCurrent();
 }
 
-};
+}}}	// End of namespace

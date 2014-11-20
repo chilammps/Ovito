@@ -40,7 +40,7 @@ SET_PROPERTY_FIELD_LABEL(LAMMPSDataImporter, _atomStyle, "Atom style");
 bool LAMMPSDataImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first comment line.
 	stream.readLine(1024);
@@ -132,7 +132,7 @@ bool LAMMPSDataImporter::showAtomStyleDialog(QWidget* parent)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	using namespace std;
 

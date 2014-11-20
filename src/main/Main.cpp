@@ -22,19 +22,16 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	#ifdef Q_OS_LINUX
-		Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
-	#endif
+#if defined(OVITO_MONOLITHIC_BUILD) && defined(Q_OS_LINUX)
+	Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
 #endif
 
 int main(int argc, char** argv)
 {
-
 #ifdef OVITO_MONOLITHIC_BUILD
-	// If we build a monolithic executable with static libraries then
-	// the core's resources are not automatically initialized. Therefore
-	// it needs to be explicitly done here.
+	// If we build a monolithic executable with statically linked libraries, then
+	// the core library's resources don't get automatically initialized.
+	// Therefore it needs to be explicitly done here.
 	Q_INIT_RESOURCE(core);
 #endif
 
@@ -45,7 +42,7 @@ int main(int argc, char** argv)
 	// Enter event loop.
 	int result = Ovito::Application().instance().runApplication();
 
-	// Shutdown application.
+	// Shut application down.
 	Ovito::Application().instance().shutdown();
 
 	return result;

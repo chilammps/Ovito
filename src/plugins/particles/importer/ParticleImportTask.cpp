@@ -51,7 +51,7 @@ void ParticleImportTask::load(DataSetContainer& container, FutureInterfaceBase& 
 
 	// Open file.
 	QFile file(fetchFileFuture.result());
-	CompressedTextParserStream stream(file, frame().sourceFile.path());
+	CompressedTextReader stream(file, frame().sourceFile.path());
 
 	// Jump to requested file byte offset.
 	if(frame().byteOffset != 0)

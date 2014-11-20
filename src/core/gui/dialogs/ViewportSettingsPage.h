@@ -26,17 +26,17 @@
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
 #include <core/viewport/ViewportSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief Page of the application settings dialog, which hosts viewport-related program options.
+ * Page of the application settings dialog, which hosts viewport-related program options.
  */
-class OVITO_CORE_EXPORT ViewportSettingsPage : public ApplicationSettingsPage
+class OVITO_CORE_EXPORT ViewportSettingsPage : public ApplicationSettingsDialogPage
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ViewportSettingsPage() : ApplicationSettingsPage() {}
+	Q_INVOKABLE ViewportSettingsPage() : ApplicationSettingsDialogPage() {}
 
 	/// \brief Creates the widget.
 	virtual void insertSettingsDialogPage(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget) override;
@@ -58,6 +58,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_SETTINGS_PAGE_H

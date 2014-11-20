@@ -23,7 +23,7 @@
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, BooleanRadioButtonParameterUI, PropertyParameterUI);
@@ -148,5 +148,4 @@ void BooleanRadioButtonParameterUI::updatePropertyValue()
 	}
 }
 
-};
-
+}}}	// End of namespace

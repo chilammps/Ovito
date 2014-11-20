@@ -110,7 +110,7 @@ private:
 	/// The singleton instance of this class.
 	static FileManager* _instance;
 
-	friend class Application;
+	friend class Ovito::Gui::Application;
 	friend class SftpDownloadJob;
 };
 

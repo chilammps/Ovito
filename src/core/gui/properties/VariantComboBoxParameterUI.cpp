@@ -23,7 +23,7 @@
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI);
@@ -131,5 +131,5 @@ void VariantComboBoxParameterUI::updatePropertyValue()
 	}
 }
 
-};
+}}}	// End of namespace
 

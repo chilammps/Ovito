@@ -121,7 +121,7 @@ bool ParcasFileImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceL
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& textStream)
+void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& textStream)
 {
 	futureInterface.setProgressText(tr("Reading Parcas file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

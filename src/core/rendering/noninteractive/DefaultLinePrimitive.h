@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DefaultLinePrimitive.h
- * \brief Contains the definition of the Ovito::DefaultLinePrimitive class.
- */
-
 #ifndef __OVITO_DEFAULT_LINE_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_LINE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
 #include <core/rendering/LinePrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Buffer object that stores line geometry to be rendered by a non-interactive renderer.
@@ -89,6 +84,6 @@ private:
 
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DEFAULT_LINE_GEOMETRY_BUFFER_H

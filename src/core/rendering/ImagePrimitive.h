@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ImagePrimitive.h
- * \brief Contains the definition of the Ovito::ImagePrimitive class.
- */
-
 #ifndef __OVITO_IMAGE_PRIMITIVE_H
 #define __OVITO_IMAGE_PRIMITIVE_H
 
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Abstract base class for drawing bitmaps.
@@ -60,6 +55,6 @@ private:
 	QImage _image;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_IMAGE_PRIMITIVE_H

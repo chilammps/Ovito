@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "NumericalParameterUI.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 /******************************************************************************
 * A parameter UI for floating-point properties.
@@ -74,6 +74,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_FLOAT_PARAMETER_UI_H

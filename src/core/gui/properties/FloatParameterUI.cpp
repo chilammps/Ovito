@@ -25,7 +25,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, FloatParameterUI, NumericalParameterUI);
@@ -140,5 +140,4 @@ void FloatParameterUI::setMaxValue(FloatType maxValue)
 	if(spinner()) spinner()->setMaxValue(maxValue);
 }
 
-};
-
+}}}	// End of namespace

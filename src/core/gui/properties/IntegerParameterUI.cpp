@@ -25,10 +25,10 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, IntegerParameterUI, NumericalParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, IntegerParameterUI, NumericalParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
@@ -138,5 +138,4 @@ void IntegerParameterUI::setMaxValue(int maxValue)
 	if(spinner()) spinner()->setMaxValue(maxValue);
 }
 
-};
-
+}}}	// End of namespace

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/FilenameParameterUI.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, FilenameParameterUI, PropertyParameterUI);
@@ -112,5 +112,4 @@ void FilenameParameterUI::setEnabled(bool enabled)
 	if(selectorWidget()) selectorWidget()->setEnabled(editObject() && isEnabled());
 }
 
-};
-
+}}}	// End of namespace

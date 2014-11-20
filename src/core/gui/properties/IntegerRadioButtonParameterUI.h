@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "ParameterUI.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 /******************************************************************************
 * This UI lets the user change an integer-value property of the object 
@@ -93,6 +93,6 @@ protected:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_INTEGER_RADIO_BUTTON_PARAMETER_UI_H

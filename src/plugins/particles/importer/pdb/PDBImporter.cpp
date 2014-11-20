@@ -35,7 +35,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, PDBImporter, ParticleImporter);
 bool PDBImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read the first line.
 	stream.readLine(100);
@@ -53,7 +53,7 @@ bool PDBImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading PDB file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

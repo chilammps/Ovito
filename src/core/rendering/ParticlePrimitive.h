@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ParticlePrimitive.h
- * \brief Contains the definition of the Ovito::ParticlePrimitive class.
- */
-
 #ifndef __OVITO_PARTICLE_PRIMITIVE_H
 #define __OVITO_PARTICLE_PRIMITIVE_H
 
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Abstract base class for particle drawing primitives.
@@ -125,7 +120,7 @@ private:
 	ParticleShape _particleShape;
 };
 
-};
+}}	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ShadingMode);
 Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::RenderingQuality);

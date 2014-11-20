@@ -31,7 +31,7 @@
 #include <core/rendering/TextPrimitive.h>
 #include "OpenGLTexture.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief Buffer object that stores a text string to be rendered in the viewports.
@@ -104,6 +104,6 @@ private:
 	bool _needTextureUpdate;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_TEXT_PRIMITIVE_H

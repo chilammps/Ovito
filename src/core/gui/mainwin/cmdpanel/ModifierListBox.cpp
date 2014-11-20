@@ -29,7 +29,7 @@
 #include "ModifierListBox.h"
 #include "ModificationListModel.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the widget.
@@ -182,4 +182,4 @@ void ModifierListBox::updateAvailableModifiers()
     setMaxVisibleItems(count());
 }
 
-};
+}}}	// End of namespace

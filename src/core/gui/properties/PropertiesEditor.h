@@ -32,7 +32,7 @@
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include "PropertiesPanel.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 /**
  * \brief Base class for property editors for RefTarget derived objects.
@@ -154,6 +154,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_editObject);
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_PROPERTIES_EDITOR_H

@@ -27,9 +27,9 @@
 #include <core/reference/RefTarget.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-/*
+/**
  * An item of the ModificationListModel.
  *
  * Holds a reference to an object/modifier.
@@ -106,6 +106,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_modApps);
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_MODIFICATION_LIST_ITEM_H

@@ -34,7 +34,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor);
 
@@ -263,5 +263,4 @@ void RenderSettingsEditor::onChangeRenderer()
 	}
 }
 
-
-};
+}}}	// End of namespace

@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file TreeNeighborListBuilder.h
+ * \file
  * \brief Contains the definition of the Particles::TreeNeighborListBuilder class.
  */
 
@@ -28,8 +28,8 @@
 #define __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 
 #include <core/Core.h>
-#include <base/utilities/BoundedPriorityQueue.h>
-#include <base/utilities/MemoryPool.h>
+#include <core/utilities/BoundedPriorityQueue.h>
+#include <core/utilities/MemoryPool.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/SimulationCellData.h>
 

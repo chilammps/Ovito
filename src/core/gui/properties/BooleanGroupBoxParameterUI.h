@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "ParameterUI.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 /******************************************************************************
 * Allows the user to edit a boolean parameter.
@@ -90,6 +90,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_BOOLEAN_GROUP_BOX_PARAMETER_UI_H

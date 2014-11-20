@@ -34,8 +34,6 @@ namespace Ovito {
 
 class OvitoObject;					// defined in OvitoObject.h
 class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
-class ObjectSaveStream;				// defined in ObjectSaveStream.h
-class ObjectLoadStream;				// defined in ObjectLoadStream.h
 
 /**
  * \brief Stores meta-information about a class in OVITO's object system.

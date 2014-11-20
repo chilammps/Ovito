@@ -25,17 +25,17 @@
 #include <core/Core.h>
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief Page of the application settings dialog, which hosts general program options.
+ * Page of the application settings dialog, which hosts general program options.
  */
-class OVITO_CORE_EXPORT GeneralSettingsPage : public ApplicationSettingsPage
+class OVITO_CORE_EXPORT GeneralSettingsPage : public ApplicationSettingsDialogPage
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE GeneralSettingsPage() : ApplicationSettingsPage() {}
+	Q_INVOKABLE GeneralSettingsPage() : ApplicationSettingsDialogPage() {}
 
 	/// \brief Creates the widget.
 	virtual void insertSettingsDialogPage(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget) override;
@@ -60,6 +60,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_GENERAL_SETTINGS_PAGE_H

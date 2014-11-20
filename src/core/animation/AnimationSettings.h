@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file AnimationSettings.h 
- * \brief Contains the definition of the Ovito::AnimationSettings class.
- */
- 
 #ifndef __OVITO_ANIMATION_SETTINGS_H
 #define __OVITO_ANIMATION_SETTINGS_H
 
@@ -31,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "TimeInterval.h"
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /**
  * \brief This class stores the animation settings of a scene.
@@ -346,6 +341,6 @@ private:
 	AnimationSettings& _animSettings;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_ANIMATION_SETTINGS_H

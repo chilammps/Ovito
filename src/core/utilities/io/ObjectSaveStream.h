@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,23 +19,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file ObjectSaveStream.h 
- * \brief Contains definition of the Ovito::ObjectSaveStream class.
- */
-
 #ifndef __OVITO_OBJECT_SAVESTREAM_H
 #define __OVITO_OBJECT_SAVESTREAM_H
 
 #include <core/Core.h>
-#include <base/io/SaveStream.h>
+#include "SaveStream.h"
 
-namespace Ovito {
-
-class OvitoObject;		// defined in OvitoObject.h
+namespace Ovito { namespace Util { namespace IO {
 
 /**
- * \brief An output stream that can serialize a graph of OvitoObject instances to a file.
+ * \brief An output stream that can serialize an OvitoObject graph a file.
+ *
+ * This class is used to write OVITO scene files, which are on-disk representations of
+ * OvitoObject graphs. The object graph can be read back from the file using ObjectLoadStream.
+ *
+ * \note All objects written to a stream must belong to the same DataSet.
+ *
+ * \sa ObjectLoadStream
  */
 class OVITO_CORE_EXPORT ObjectSaveStream : public SaveStream
 {
@@ -43,23 +43,25 @@ class OVITO_CORE_EXPORT ObjectSaveStream : public SaveStream
 
 public:
 
-	/// \brief Opens the stream for writing.
-	/// \param destination The data stream to which the binary data is written. This must be 
+	/// \brief Constructs the object.
+	/// \param destination The Qt data stream to which the objects will be written. This must be a
 	///                    stream that supports random access.
-	/// \throw Exception when the given data stream does only support sequential access. 
+	/// \throw Exception if the underlying data stream only supports sequential access.
 	ObjectSaveStream(QDataStream& destination) : SaveStream(destination), _dataset(nullptr) {}
 
-	/// \brief The destructor closes the stream.
+	// Calls close() to close the ObjectSaveStream.
 	virtual ~ObjectSaveStream();
 
-	/// \brief Closes the stream.
-	/// \note The underlying data stream is not closed by this method.
+	/// \brief Closes this ObjectSaveStream, but not the underlying QDataStream passed to the constructor.
+	/// \throw Exception if an I/O error has occurred.
 	virtual void close() override;
 
-	/// \brief Saves an object with runtime type information to the stream.
+	/// \brief Serializes an object and writes its data to the output stream.
+	/// \throw Exception if an I/O error has occurred.
+	/// \sa ObjectLoadStream::loadObject()
 	void saveObject(OvitoObject* object);
 
-protected:
+private:
 
 	/// Contains all objects stored so far and their IDs.
 	std::map<OvitoObject*, quint32> _objectMap;
@@ -71,6 +73,6 @@ protected:
 	DataSet* _dataset;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OBJECT_SAVESTREAM_H

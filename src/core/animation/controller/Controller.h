@@ -32,7 +32,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /**
  * \brief Base class for all animation controllers.
@@ -348,9 +348,9 @@ private:
 	/// The singleton instance of this class.
 	static ControllerManager* _instance;
 
-	friend class Application;
+	friend class Ovito::Gui::Application;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_CONTROLLER_H

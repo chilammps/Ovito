@@ -26,7 +26,7 @@
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, IntegerRadioButtonParameterUI, PropertyParameterUI);
@@ -174,5 +174,4 @@ void IntegerRadioButtonParameterUI::updatePropertyValue()
 	}
 }
 
-};
-
+}}}	// End of namespace

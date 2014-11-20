@@ -42,7 +42,7 @@ void TriMeshImportData::load(DataSetContainer& container, FutureInterfaceBase& f
 
 	// Open file for reading.
 	QFile file(fetchFileFuture.result());
-	CompressedTextParserStream stream(file, frame().sourceFile.path());
+	CompressedTextReader stream(file, frame().sourceFile.path());
 
 	// Jump to requested byte offset.
 	if(frame().byteOffset != 0)

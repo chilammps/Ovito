@@ -29,13 +29,9 @@
 #include <core/scene/SceneNode.h>
 #include "ModificationListItem.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-class SceneObject;			// defined in SceneObject.h
-class Modifier;				// defined in Modifier.h
-class DataSetContainer;		// defined in DataSetContainer.h
-
-/*
+/**
  * This Qt model class is used to populate the QListView widget.
  */
 class ModificationListModel : public QAbstractListModel
@@ -163,6 +159,6 @@ private:
 	DataSetContainer& _datasetContainer;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_MODIFICATION_LIST_MODEL_H

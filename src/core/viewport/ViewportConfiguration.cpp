@@ -27,7 +27,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito {
+namespace Ovito { namespace View {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportConfiguration, RefTarget);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ViewportConfiguration, _viewports, "Viewports", Viewport, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_ALWAYS_CLONE);
@@ -170,4 +170,4 @@ Point3 ViewportConfiguration::orbitCenter()
 	return Point3::Origin();
 }
 
-};
+}}	// End of namespace

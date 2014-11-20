@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportConfiguration.h
- * \brief Contains the definition of the Ovito::ViewportConfiguration class.
- */
-
 #ifndef __OVITO_VIEWPORT_CONFIGURATION_H
 #define __OVITO_VIEWPORT_CONFIGURATION_H
 
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito {
+namespace Ovito { namespace View {
 
 /**
  * \brief This class holds a collection of Viewport objects.
@@ -235,6 +230,6 @@ private:
 	ViewportConfiguration& _vpconf;
 };
 
-};
+}}	// End of namespace
 
 #endif		// __OVITO_VIEWPORT_CONFIGURATION_H

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file MainWindow.h
- * \brief Contains the definition of the Ovito::MainWindow class.
- */
- 
 #ifndef __OVITO_MAIN_WINDOW_H
 #define __OVITO_MAIN_WINDOW_H
 
@@ -31,15 +26,13 @@
 #include <core/gui/app/Application.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito {
-
-class CommandPanel;				// defined in CommandPanel.h
-class FrameBufferWindow;		// defined in FrameBufferWindow.h
-class ActionManager;			// defined in ActionManager.h
-class CoordinateDisplayWidget;	// defined in CoordinateDisplayWidget.h
+namespace Ovito { namespace Gui {
 
 /**
  * \brief The main window of the application.
+ *
+ * Note that is is possible to open multiple main windows per
+ * application instance to edit multiple datasets simultaneously.
  */
 class OVITO_CORE_EXPORT MainWindow : public QMainWindow
 {
@@ -146,6 +139,6 @@ private:
 	QPointer<QOpenGLContext> _glcontext;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_MAIN_WINDOW_H

@@ -23,7 +23,7 @@
 #include "OpenGLLinePrimitive.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -246,5 +246,4 @@ void OpenGLLinePrimitive::renderThickLines(ViewportSceneRenderer* renderer)
 	OVITO_CHECK_OPENGL();
 }
 
-
-};
+}}}	// End of namespace

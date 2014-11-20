@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DefaultImagePrimitive.h
- * \brief Contains the definition of the Ovito::DefaultImagePrimitive class.
- */
-
 #ifndef __OVITO_DEFAULT_IMAGE_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_IMAGE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
 #include <core/rendering/ImagePrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Buffer object that stores an image to be rendered by a non-interactive renderer.
@@ -53,6 +48,6 @@ public:
 
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DEFAULT_IMAGE_GEOMETRY_BUFFER_H

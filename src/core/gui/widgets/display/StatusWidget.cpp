@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "StatusWidget.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /******************************************************************************
 * Constructor.
@@ -91,4 +91,4 @@ QSize StatusWidget::sizeHint() const
 			frameWidth()*2 + widgetHeight);
 }
 
-};
+}}}	// End of namespace

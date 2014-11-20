@@ -60,7 +60,7 @@ void CAImporter::propertyChanged(const PropertyFieldDescriptor& field)
 bool CAImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first line.
 	stream.readLine(20);
@@ -75,7 +75,7 @@ bool CAImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading crystal analysis file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

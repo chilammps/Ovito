@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportInputMode.h
- * \brief Contains the definition of the Ovito::ViewportInputMode.
- */
-
 #ifndef __OVITO_VIEWPORT_INPUT_MODE_H
 #define __OVITO_VIEWPORT_INPUT_MODE_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace View {
 
 /**
  * \brief Abstract base class for viewport input modes that handle mouse input
@@ -199,6 +194,6 @@ private:
 	friend class ViewportInputManager;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_INPUT_MODE_H

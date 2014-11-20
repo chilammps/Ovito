@@ -37,7 +37,7 @@ struct CFGHeader {
 	bool containsVelocities;
 	QStringList auxiliaryFields;
 
-	void parse(CompressedTextParserStream& stream);
+	void parse(CompressedTextReader& stream);
 };
 
 /******************************************************************************
@@ -46,7 +46,7 @@ struct CFGHeader {
 bool CFGImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first line.
 	stream.readLine(20);
@@ -61,7 +61,7 @@ bool CFGImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 /******************************************************************************
 * Parses the header of a CFG file.
 ******************************************************************************/
-void CFGHeader::parse(CompressedTextParserStream& stream)
+void CFGHeader::parse(CompressedTextReader& stream)
 {
 	using namespace std;
 
@@ -152,7 +152,7 @@ void CFGHeader::parse(CompressedTextParserStream& stream)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading CFG file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

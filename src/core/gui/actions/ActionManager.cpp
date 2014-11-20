@@ -32,7 +32,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * This viewport mode plays the animation while it is active.
@@ -258,4 +258,4 @@ void ActionManager::on_EditDelete_triggered()
 	});
 }
 
-};
+}}	// End of namespace

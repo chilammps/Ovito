@@ -81,7 +81,7 @@ void TriMesh::saveToStream(SaveStream& stream)
 	// Save faces.
 	stream << (int)faceCount();
 	for(auto face = faces().constBegin(); face != faces().constEnd(); ++face) {
-		stream.writeEnum(face->_flags);
+		stream << face->_flags;
 		stream << face->_vertices[0];
 		stream << face->_vertices[1];
 		stream << face->_vertices[2];
@@ -115,7 +115,7 @@ void TriMesh::loadFromStream(LoadStream& stream)
 	stream >> nFaces;
 	_faces.resize(nFaces);
 	for(auto face = faces().begin(); face != faces().end(); ++face) {
-		stream.readEnum(face->_flags);
+		stream >> face->_flags;
 		stream >> face->_vertices[0];
 		stream >> face->_vertices[1];
 		stream >> face->_vertices[2];

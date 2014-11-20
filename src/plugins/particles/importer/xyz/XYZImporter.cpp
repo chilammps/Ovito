@@ -67,7 +67,7 @@ void XYZImporter::setColumnMapping(const InputColumnMapping& mapping)
 bool XYZImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first line.
 	stream.readLine(20);
@@ -170,7 +170,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
+void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Scanning XYZ file %1").arg(stream.filename()));
 	futureInterface.setProgressRange(stream.underlyingSize() / 1000);
@@ -290,7 +290,7 @@ inline bool parseBool(const char* s, int& d)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(
 			tr("Reading XYZ file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));

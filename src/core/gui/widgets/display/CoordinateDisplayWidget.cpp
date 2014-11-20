@@ -27,7 +27,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include "CoordinateDisplayWidget.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -163,4 +163,4 @@ void CoordinateDisplayWidget::onSpinnerDragAbort()
 	}
 }
 
-};
+}}}	// End of namespace

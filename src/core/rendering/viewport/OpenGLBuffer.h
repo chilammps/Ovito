@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OpenGLBuffer.h
- * \brief Contains the definition of the Ovito::OpenGLBuffer class.
- */
-
 #ifndef __OVITO_OPENGL_BUFFER_H
 #define __OVITO_OPENGL_BUFFER_H
 
@@ -31,7 +26,7 @@
 #include "OpenGLHelpers.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief A wrapper for the QOpenGLBuffer class, which adds more features.
@@ -284,6 +279,6 @@ private:
 	int _verticesPerElement;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_BUFFER_H

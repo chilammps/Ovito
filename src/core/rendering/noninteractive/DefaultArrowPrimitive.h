@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DefaultArrowPrimitive.h
- * \brief Contains the definition of the Ovito::DefaultArrowPrimitive class.
- */
-
 #ifndef __OVITO_DEFAULT_ARROW_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_ARROW_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
 #include <core/rendering/ArrowPrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Buffer object that stores a set of arrows to be rendered by a non-interactive renderer.
@@ -84,6 +79,6 @@ private:
 
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H

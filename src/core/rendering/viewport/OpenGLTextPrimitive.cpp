@@ -25,7 +25,7 @@
 
 #include <QGLWidget>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -211,4 +211,4 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 	OVITO_CHECK_OPENGL();
 }
 
-};
+}}}	// End of namespace

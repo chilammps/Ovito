@@ -25,7 +25,7 @@
 
 #include <QGLWidget>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -179,4 +179,4 @@ void OpenGLImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& p
 		glDisable(GL_TEXTURE_2D);
 }
 
-};
+}}}	// End of namespace

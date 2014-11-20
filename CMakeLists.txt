@@ -174,6 +174,13 @@ ENDIF()
 
 # Controls compilation of the video encoding feature.
 OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	# Find FFmpeg library.
+	FIND_PACKAGE(FFmpeg REQUIRED)
+	IF(NOT FFMPEG_FOUND)
+		MESSAGE(FATAL_ERROR "FFmpeg library not found.")
+	ENDIF()
+ENDIF()
 
 # This macro installs a required third-party DLL in the OVITO directory
 # so that it can be distributed together with the program.
@@ -291,6 +298,12 @@ IF(WIN32)
 			OVITO_INSTALL_DLL("${FFMPEG_LIBRARY_DIR}/../bin/${dll}")
 		ENDFOREACH()
 	ENDIF()
+ENDIF()
+
+################# OpenGL test program ####################
+OPTION(OVITO_BUILD_OPENGLTEST "Build the OpenGL test program." "OFF")
+IF(OVITO_BUILD_OPENGLTEST)
+	ADD_SUBDIRECTORY(tests/opengltest)
 ENDIF()
 
 ################## Build documentation #####################

@@ -22,11 +22,11 @@
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-/******************************************************************************
-* The command panel page lets user render the scene.
-******************************************************************************/
+/**
+ * The command panel page lets user render the scene.
+ */
 class OVITO_CORE_EXPORT RenderCommandPage : public QWidget
 {
 	Q_OBJECT
@@ -52,5 +52,4 @@ private:
 	QMetaObject::Connection _renderSettingsReplacedConnection;
 };
 
-
-};
+}}}	// End of namespace

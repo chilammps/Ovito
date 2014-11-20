@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 class OpenGLContextInfo;
 class OpenGLContextManager;
@@ -61,6 +61,6 @@ private:
     friend class OpenGLContextInfo;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SHARED_OPENGL_RESOURCE_H

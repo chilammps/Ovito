@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "LinearInterpolationControllers.h"
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearFloatController, KeyframeController);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearIntegerController, KeyframeController);
@@ -31,4 +31,4 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearPositionController, KeyframeCont
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearRotationController, KeyframeController);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearScalingController, KeyframeController);
 
-};
+}}	// End of namespace

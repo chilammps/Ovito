@@ -67,7 +67,7 @@ protected:
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
+		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
 	};
 
 protected:

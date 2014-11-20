@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 class RolloutContainer;		// defined below
 
@@ -241,6 +241,6 @@ public Q_SLOTS:
 
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ROLLOUT_CONTAINER_H

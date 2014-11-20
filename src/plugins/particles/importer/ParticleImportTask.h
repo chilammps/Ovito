@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
-#include <core/utilities/io/CompressedTextParserStream.h>
+#include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include <plugins/particles/data/SimulationCellData.h>
@@ -155,7 +155,7 @@ public:
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) = 0;
+	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) = 0;
 
 	/// Inserts the stores particle types into the given destination object.
 	void insertParticleTypes(ParticlePropertyObject* propertyObj);

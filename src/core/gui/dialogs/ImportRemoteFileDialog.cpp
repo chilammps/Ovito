@@ -24,7 +24,7 @@
 #include <core/utilities/io/FileManager.h>
 #include "ImportRemoteFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -151,4 +151,4 @@ const FileImporterDescription* ImportRemoteFileDialog::selectedFileImporterType(
 		return nullptr;
 }
 
-};
+}}}	// End of namespace

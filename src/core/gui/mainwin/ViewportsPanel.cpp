@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -30,7 +30,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "ViewportsPanel.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * The constructor of the viewports panel class.
@@ -210,5 +210,4 @@ void ViewportsPanel::layoutViewports()
 		update();
 }
 
-
-};
+}}}	// End of namespace

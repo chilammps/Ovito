@@ -108,7 +108,7 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 /******************************************************************************
  * Writes the data record for a single atom to the output stream.
  *****************************************************************************/
-void OutputColumnWriter::writeParticle(size_t particleIndex, CompressedTextWriterStream& stream)
+void OutputColumnWriter::writeParticle(size_t particleIndex, CompressedTextWriter& stream)
 {
 	QVector<ParticlePropertyObject*>::const_iterator property = _properties.constBegin();
 	QVector<int>::const_iterator vcomp = _vectorComponents.constBegin();

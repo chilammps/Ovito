@@ -19,21 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file ImportRemoteFileDialog.h
- * \brief Contains the definition of the Ovito::ImportRemoteFileDialog class.
- */
-
 #ifndef __OVITO_IMPORT_REMOTE_FILE_DIALOG_H
 #define __OVITO_IMPORT_REMOTE_FILE_DIALOG_H
 
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief This dialog lets the user select a remote file to be imported.
+ * This dialog lets the user select a remote file to be imported.
  */
 class OVITO_CORE_EXPORT ImportRemoteFileDialog : public QDialog
 {
@@ -71,6 +66,6 @@ private:
 	QComboBox* _formatSelector;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_IMPORT_REMOTE_FILE_DIALOG_H

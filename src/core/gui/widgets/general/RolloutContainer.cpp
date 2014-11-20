@@ -23,7 +23,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "RolloutContainer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /******************************************************************************
 * Constructs the container.
@@ -224,4 +224,4 @@ void Rollout::onHelpButton()
 		mainWindow->openHelpTopic(_helpPage);
 }
 
-};
+}}}	// End of namespace

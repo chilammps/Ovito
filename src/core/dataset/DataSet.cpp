@@ -32,7 +32,7 @@
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/gui/mainwin/MainWindow.h>
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <3rdparty/video/VideoEncoder.h>
+	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
 namespace Ovito {

@@ -23,7 +23,7 @@
 #define __OVITO_TRIMESH_IMPORT_DATA_H
 
 #include <core/dataset/importexport/LinkedFileImporter.h>
-#include <core/utilities/io/CompressedTextParserStream.h>
+#include <core/utilities/io/CompressedTextReader.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <plugins/mesh/Mesh.h>
 
@@ -57,7 +57,7 @@ public:
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) = 0;
+	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) = 0;
 
 private:
 

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OpenGLLinePrimitive.h
- * \brief Contains the definition of the Ovito::OpenGLLinePrimitive class.
- */
-
 #ifndef __OVITO_OPENGL_LINE_PRIMITIVE_H
 #define __OVITO_OPENGL_LINE_PRIMITIVE_H
 
@@ -31,7 +26,7 @@
 #include <core/rendering/LinePrimitive.h>
 #include "OpenGLBuffer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief This class is responsible for rendering line primitives using OpenGL.
@@ -111,6 +106,6 @@ private:
 	bool _useIndexVBO;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_LINE_PRIMITIVE_H

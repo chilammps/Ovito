@@ -23,7 +23,7 @@
 #include "OpenGLArrowPrimitive.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -696,4 +696,4 @@ void OpenGLArrowPrimitive::renderFlat(ViewportSceneRenderer* renderer)
 	shader->release();
 }
 
-};
+}}}	// End of namespace

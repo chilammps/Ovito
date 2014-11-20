@@ -27,7 +27,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "AnimationTrackBar.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 using namespace std;
 
@@ -506,5 +506,4 @@ void AnimationTrackBar::onDeleteSelectedKeys()
 	});
 }
 
-
-};
+}}}	// End of namespace

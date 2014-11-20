@@ -68,7 +68,7 @@ void LAMMPSTextDumpImporter::setCustomColumnMapping(const InputColumnMapping& ma
 bool LAMMPSTextDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Read first line.
 	stream.readLine(15);
@@ -81,7 +81,7 @@ bool LAMMPSTextDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& sou
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
+void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Scanning LAMMPS dump file %1").arg(stream.filename()));
 	futureInterface.setProgressRange(stream.underlyingSize() / 1000);
@@ -154,7 +154,7 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

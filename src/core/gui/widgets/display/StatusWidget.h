@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file StatusWidget.h
- * \brief Contains the definition of the Ovito::StatusWidget class.
- */
-
 #ifndef __OVITO_STATUS_WIDGET_H
 #define __OVITO_STATUS_WIDGET_H
 
 #include <core/Core.h>
 #include <core/scene/pipeline/PipelineStatus.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /**
  * \brief A widget that displays information from the PipelineStatus class.
@@ -78,6 +73,6 @@ private:
 	QPixmap _statusErrorIcon;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_STATUS_WIDGET_H

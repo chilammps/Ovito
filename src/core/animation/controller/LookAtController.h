@@ -31,7 +31,7 @@
 #include "Controller.h"
 #include <core/scene/SceneNode.h>
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /**
  * \brief Rotation controller that lets an object always "look" at another scene object.
@@ -112,6 +112,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_targetNode);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_LOOKAT_CONTROLLER_H

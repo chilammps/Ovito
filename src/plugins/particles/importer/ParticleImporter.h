@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
-#include <core/utilities/io/CompressedTextParserStream.h>
+#include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include "ParticleImportTask.h"
 
@@ -67,7 +67,7 @@ protected:
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
 	/// \brief Scans the given input file to find all contained simulation frames.
-	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream);
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream);
 
 	/// Retrieves the given file in the background and scans it for simulation timesteps.
 	virtual QVector<LinkedFileImporter::FrameSourceInformation> scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl);

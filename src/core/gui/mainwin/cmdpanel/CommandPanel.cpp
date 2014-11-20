@@ -26,7 +26,7 @@
 #include "OverlayCommandPage.h"
 #include "UtilityCommandPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * The constructor of the command panel class.
@@ -53,4 +53,4 @@ CommandPanel::CommandPanel(MainWindow* mainWindow, QWidget* parent) : QWidget(pa
 	setCurrentPage(MODIFY_PAGE);
 }
 
-};
+}}}	// End of namespace

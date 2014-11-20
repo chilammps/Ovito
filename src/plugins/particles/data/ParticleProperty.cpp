@@ -170,7 +170,7 @@ void ParticleProperty::saveToStream(SaveStream& stream, bool onlyMetadata) const
 {
 	stream.beginChunk(0x01);
 	stream << _name;
-	stream.writeEnum(_type);
+	stream << _type;
 	stream << QByteArray(QMetaType::typeName(_dataType));
 	stream.writeSizeT(_dataTypeSize);
 	stream.writeSizeT(_stride);
@@ -193,7 +193,7 @@ void ParticleProperty::loadFromStream(LoadStream& stream)
 {
 	stream.expectChunk(0x01);
 	stream >> _name;
-	stream.readEnum(_type);
+	stream >> _type;
 	QByteArray dataTypeName;
 	stream >> dataTypeName;
 	_dataType = QMetaType::type(dataTypeName.constData());

@@ -22,10 +22,10 @@
 #include <core/Core.h>
 #include <core/rendering/FrameBuffer.h>
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <3rdparty/video/VideoEncoder.h>
+	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 #define IMAGE_FORMAT_FILE_FORMAT_VERSION		1
 
@@ -99,4 +99,4 @@ LoadStream& operator>>(LoadStream& stream, ImageInfo& i)
 	return stream;
 }
 
-};
+}}	// End of namespace

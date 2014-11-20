@@ -26,9 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/scene/pipeline/PipelineStatus.h>
 
-namespace Ovito {
-
-struct ViewProjectionParameters;		// defined in Viewport.h
+namespace Ovito { namespace View {
 
 /**
  * \brief Abstract base class for all viewport overlays.
@@ -57,6 +55,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_OVERLAY_H

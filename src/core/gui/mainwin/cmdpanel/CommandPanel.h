@@ -24,19 +24,11 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-class RefTarget;			// defined in RefTarget.h
-class DataSetContainer;		// defined in DataSetContainer.h
-class ModifyCommandPage;	// defined in ModifyCommandPage.h
-class RenderCommandPage;	// defined in RenderCommandPage.h
-class UtilityCommandPage;	// defined in UtilityCommandPage.h
-class OverlayCommandPage;	// defined in OverlayCommandPage.h
-class MainWindow;			// defined in MainWindow.h
-
-/******************************************************************************
-* The command panel in the main window.
-******************************************************************************/
+/**
+ * The command panel in the main window.
+ */
 class OVITO_CORE_EXPORT CommandPanel : public QWidget
 {
 	Q_OBJECT
@@ -89,6 +81,6 @@ private:
 	UtilityCommandPage* _utilityPage;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_COMMAND_PANEL_H

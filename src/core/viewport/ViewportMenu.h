@@ -22,7 +22,7 @@
 #include <core/viewport/Viewport.h>
 #include "ViewportWindow.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
  * \brief The context menu of the viewports.
@@ -63,5 +63,4 @@ private:
 	QMenu* _viewTypeMenu;
 };
 
-
-};
+}}}	// End of namespace

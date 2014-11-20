@@ -32,7 +32,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * This is called by the system after the input handler has
@@ -484,4 +484,4 @@ Box3 PickOrbitCenterMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer
 	return inputManager()->orbitMode()->overlayBoundingBox(vp, renderer);
 }
 
-};
+}}}	// End of namespace

@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /**
  * \brief A line edit widget that provides auto-completion of words.
@@ -71,6 +71,6 @@ protected:
 	QRegularExpression _wordSplitter;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_AUTOCOMPLETE_LINE_EDIT_H

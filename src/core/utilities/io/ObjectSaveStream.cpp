@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -25,7 +25,7 @@
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
 
 using namespace std;
 
@@ -108,7 +108,7 @@ void ObjectSaveStream::close()
 						*this << QByteArray::fromRawData(field->identifier(), qstrlen(field->identifier()));
 						OVITO_ASSERT(field->definingClass() == clazz);
 						OvitoObjectType::serializeRTTI(*this, field->definingClass());
-						this->writeEnum(field->flags());
+						*this << field->flags();
 						*this << field->isReferenceField();
 						if(field->isReferenceField()) {
 							OvitoObjectType::serializeRTTI(*this, field->targetClass());
@@ -148,4 +148,4 @@ void ObjectSaveStream::close()
 	SaveStream::close();
 }
 
-};
+}}}	// End of namespace

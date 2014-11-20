@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/dataset/importexport/FileExporter.h>
-#include <core/utilities/io/CompressedTextWriterStream.h>
+#include <core/utilities/io/CompressedTextWriter.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
 namespace Particles {
@@ -158,7 +158,7 @@ protected:
 	QFile& outputFile() { return _outputFile; }
 
 	/// Returns the text stream used to write into the current output file.
-	CompressedTextWriterStream& textStream() { return *_outputStream; }
+	CompressedTextWriter& textStream() { return *_outputStream; }
 
 private:
 
@@ -187,7 +187,7 @@ private:
 	QFile _outputFile;
 
 	/// The stream object used to write into the output file.
-	std::unique_ptr<CompressedTextWriterStream> _outputStream;
+	std::unique_ptr<CompressedTextWriter> _outputStream;
 
 private:
 

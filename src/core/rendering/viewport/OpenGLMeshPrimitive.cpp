@@ -23,7 +23,7 @@
 #include "OpenGLMeshPrimitive.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -250,4 +250,4 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 	OVITO_CHECK_OPENGL();
 }
 
-};
+}}}	// End of namespace

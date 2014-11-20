@@ -24,11 +24,11 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
-/******************************************************************************
-* An action that activates a ViewportInputMode.
-******************************************************************************/
+/**
+ * An Qt action that activates a ViewportInputMode.
+ */
 class OVITO_CORE_EXPORT ViewportModeAction : public QAction
 {
 	Q_OBJECT
@@ -70,6 +70,6 @@ private:
 	ViewportInputManager& _viewportInputManager;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_MODE_ACTION_H

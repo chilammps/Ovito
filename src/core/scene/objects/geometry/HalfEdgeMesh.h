@@ -23,7 +23,7 @@
 #define __OVITO_HALF_EDGE_MESH_H
 
 #include <core/Core.h>
-#include <base/utilities/MemoryPool.h>
+#include <core/utilities/MemoryPool.h>
 
 namespace Ovito {
 

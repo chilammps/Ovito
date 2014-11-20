@@ -38,7 +38,7 @@ bool POSCARImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocat
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
 
 	// Open input file.
-	CompressedTextParserStream stream(input, sourceLocation.path());
+	CompressedTextReader stream(input, sourceLocation.path());
 
 	// Skip comment line
 	stream.readLine();
@@ -82,7 +82,7 @@ bool POSCARImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocat
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Reading POSCAR file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

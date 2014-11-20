@@ -34,7 +34,6 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <base/utilities/Color.h>
 
 #include "SimulationCell.h"
 

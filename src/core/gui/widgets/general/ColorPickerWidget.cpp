@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ColorPickerWidget.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /******************************************************************************
 * Constructs the control.
@@ -96,4 +96,4 @@ void ColorPickerWidget::activateColorPicker()
 	}
 }
 
-};
+}}}	// End of namespace

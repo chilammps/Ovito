@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file SpinnerWidget.h 
- * \brief Contains the definition of the Ovito::SpinnerWidget class.
- */
-
 #ifndef __OVITO_SPINNER_WIDGET_H
 #define __OVITO_SPINNER_WIDGET_H
 
 #include <core/Core.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /**
  * \brief A spinner control for editing a numeric value.
@@ -207,6 +202,6 @@ protected:
 	virtual void changeEvent(QEvent* event) override;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SPINNER_WIDGET_H

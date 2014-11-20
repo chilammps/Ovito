@@ -25,11 +25,11 @@
 #include <core/scene/pipeline/Modifier.h>
 #include "ModificationListItem.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(ModificationListItem, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModificationListItem, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF)
+IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefMaker);
+DEFINE_FLAGS_REFERENCE_FIELD(ModificationListItem, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModificationListItem, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF);
 
 /******************************************************************************
 * Constructor.
@@ -97,4 +97,4 @@ ModificationListItem::Status ModificationListItem::status() const
 	return None;
 }
 
-};
+}}}	// End of namespace

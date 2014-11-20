@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportWindow.h
- * \brief Contains the definition of the Ovito::ViewportWindow class.
- */
-
 #ifndef __OVITO_VIEWPORT_WINDOW_H
 #define __OVITO_VIEWPORT_WINDOW_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
  * \brief An internal render window class used by Viewport.
@@ -120,6 +115,6 @@ private:
 	Q_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_WINDOW_H

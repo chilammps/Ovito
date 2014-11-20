@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DefaultTextPrimitive.h
- * \brief Contains the definition of the Ovito::DefaultTextPrimitive class.
- */
-
 #ifndef __OVITO_DEFAULT_TEXT_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_TEXT_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
 #include <core/rendering/TextPrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Buffer object that stores a text string to be rendered by a non-interactive renderer.
@@ -52,6 +47,6 @@ public:
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) override;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DEFAULT_TEXT_GEOMETRY_BUFFER_H

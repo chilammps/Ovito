@@ -26,11 +26,11 @@
 #include <core/rendering/FrameBuffer.h>
 #include "FrameBufferWidget.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
-/******************************************************************************
-* This window displays the contents of a FrameBuffer.
-******************************************************************************/
+/**
+ * This window displays the contents of a FrameBuffer.
+ */
 class OVITO_CORE_EXPORT FrameBufferWindow : public QMainWindow
 {
 public:
@@ -66,6 +66,6 @@ private:
 	Q_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_FRAME_BUFFER_WINDOW_H

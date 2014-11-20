@@ -37,9 +37,9 @@ void InputColumnMapping::saveToStream(SaveStream& stream) const
 	stream << (int)size();
 	for(const InputColumnInfo& col : *this) {
 		stream << col.columnName;
-		stream.writeEnum(col.property.type());
+		stream << col.property.type();
 		stream << col.property.name();
-		stream.writeEnum(col.dataType);
+		stream << col.dataType;
 		stream << col.property.vectorComponent();
 	}
 	stream.endChunk();
@@ -57,10 +57,10 @@ void InputColumnMapping::loadFromStream(LoadStream& stream)
 	for(InputColumnInfo& col : *this) {
 		stream >> col.columnName;
 		ParticleProperty::Type propertyType;
-		stream.readEnum(propertyType);
+		stream >> propertyType;
 		QString propertyName;
 		stream >> propertyName;
-		stream.readEnum(col.dataType);
+		stream >> col.dataType;
 		if(col.dataType == qMetaTypeId<float>() || col.dataType == qMetaTypeId<double>())
 			col.dataType = qMetaTypeId<FloatType>();
 		int vectorComponent;

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportInputManager.h
- * \brief Contains the definition of the Ovito::ViewportInputManager class.
- */
-
 #ifndef __OVITO_VIEWPORT_INPUT_MANAGER_H
 #define __OVITO_VIEWPORT_INPUT_MANAGER_H
 
@@ -32,7 +27,7 @@
 #include "NavigationModes.h"
 #include "XFormModes.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace View {
 
 /**
  * \brief Manages a stack of viewport input handlers.
@@ -141,6 +136,6 @@ private:
 	RotateMode* _rotateMode;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_INPUT_MANAGER_H

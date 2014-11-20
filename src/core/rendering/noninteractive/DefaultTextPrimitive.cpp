@@ -23,7 +23,7 @@
 #include "DefaultTextPrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /******************************************************************************
 * Returns true if the buffer is filled and can be rendered with the given renderer.
@@ -57,4 +57,4 @@ void DefaultTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& p
 	niRenderer->renderText(*this, pos, alignment);
 }
 
-};
+}}	// End of namespace

@@ -1,6 +1,6 @@
 ###############################################################################
 # 
-#  Copyright (2013) Alexander Stukowski
+#  Copyright (2014) Alexander Stukowski
 #
 #  This file is part of OVITO (Open Visualization Tool).
 #
@@ -29,71 +29,23 @@ ADD_SUBDIRECTORY(3rdparty/qssh)
 ADD_SUBDIRECTORY(3rdparty/muparser)
 ADD_SUBDIRECTORY(3rdparty/qcustomplot)
 ADD_SUBDIRECTORY(3rdparty/voro++)
-
-################# Core libraries  ####################
-
-ADD_SUBDIRECTORY(base)
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	ADD_SUBDIRECTORY(3rdparty/video)
+IF(OVITO_BUILD_PLUGIN_TACHYON)
+	ADD_SUBDIRECTORY(3rdparty/tachyon)
 ENDIF()
+
+################# Core library  ####################
+
 ADD_SUBDIRECTORY(core)
 
 ################# Plugins ####################
 
-# Place all plugin libraries into the plugins directory.
-FILE(MAKE_DIRECTORY ${OVITO_PLUGINS_DIRECTORY})
-INSTALL(DIRECTORY DESTINATION ${OVITO_RELATIVE_PLUGINS_DIRECTORY})
-SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
-
-IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	ADD_SUBDIRECTORY(plugins/pyscript)
-ELSE()
-	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/PyScript.manifest.xml)
-ENDIF()
-
-IF(OVITO_BUILD_PLUGIN_PARTICLES)
-	ADD_SUBDIRECTORY(plugins/particles)
-ELSE()
-	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/Particles.manifest.xml)
-ENDIF()
-
-IF(OVITO_BUILD_PLUGIN_TACHYON)
-	ADD_SUBDIRECTORY(3rdparty/tachyon)
-	ADD_SUBDIRECTORY(plugins/tachyon)
-ELSE()
-	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/Tachyon.manifest.xml)
-ENDIF()
-
-IF(OVITO_BUILD_PLUGIN_MESH)
-	ADD_SUBDIRECTORY(plugins/mesh)
-ELSE()
-	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/Mesh.manifest.xml)
-ENDIF()
-
-IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
-	ADD_SUBDIRECTORY(plugins/crystalanalysis)
-ELSE()
-	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/CrystalAnalysis.manifest.xml)
-ENDIF()
-
-IF(OVITO_BUILD_PLUGIN_NETCDF)
-	ADD_SUBDIRECTORY(plugins/netcdf)
-ELSE()
-        FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/NetCDF.manifest.xml)
-ENDIF()
+ADD_SUBDIRECTORY(plugins)
 
 ################# Main executable ####################
 
 # Place the executable into the "bin" output directory.
 SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
-
 ADD_SUBDIRECTORY(main)
-
-################# OpenGL test program ####################
-OPTION(OVITO_BUILD_OPENGLTEST "Build the OpenGL test program." "OFF")
-IF(OVITO_BUILD_OPENGLTEST)
-	ADD_SUBDIRECTORY(opengltest)
-ENDIF()
 
 # Propagate the plugin list to the parent scope.
 SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)

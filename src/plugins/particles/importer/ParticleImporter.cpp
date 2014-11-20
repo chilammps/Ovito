@@ -81,7 +81,7 @@ QVector<LinkedFileImporter::FrameSourceInformation> ParticleImporter::scanMultiT
 
 	// Open file.
 	QFile file(fetchFileFuture.result());
-	CompressedTextParserStream stream(file, sourceUrl.path());
+	CompressedTextReader stream(file, sourceUrl.path());
 
 	// Scan file.
 	try {
@@ -102,7 +102,7 @@ QVector<LinkedFileImporter::FrameSourceInformation> ParticleImporter::scanMultiT
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void ParticleImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
+void ParticleImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	// By default, register a single frame.
 	QFileInfo fileInfo(stream.filename());

@@ -246,7 +246,7 @@ bool ParticleExporter::openOutputFile(const QString& filePath, int numberOfFrame
 	OVITO_ASSERT(!_outputStream);
 
 	_outputFile.setFileName(filePath);
-	_outputStream.reset(new CompressedTextWriterStream(_outputFile));
+	_outputStream.reset(new CompressedTextWriter(_outputFile));
 
 	return true;
 }

@@ -26,9 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/reference/RefTarget.h>
 
-namespace TachyonPlugin {
-
-using namespace Ovito;
+namespace Ovito { namespace Rendering { namespace Tachyon {
 	
 /*
  * The UI component for the TachyonRenderer class.
@@ -51,6 +49,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_TACHYON_RENDERER_EDITOR_H

@@ -23,20 +23,20 @@
 #include <core/animation/controller/PRSTransformationController.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/animation/TimeInterval.h>
-#include <base/linalg/AffineDecomposition.h>
+#include <core/utilities/linalg/AffineDecomposition.h>
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PRSTransformationController, Controller)
-DEFINE_REFERENCE_FIELD(PRSTransformationController, _position, "Position", Controller)
-DEFINE_REFERENCE_FIELD(PRSTransformationController, _rotation, "Rotation", Controller)
-DEFINE_REFERENCE_FIELD(PRSTransformationController, _scaling, "Scaling", Controller)
-SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _position, "Position")
-SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _rotation, "Rotation")
-SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _scaling, "Scaling")
-SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _position, WorldParameterUnit)
-SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _rotation, AngleParameterUnit)
-SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _scaling, PercentParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PRSTransformationController, Controller);
+DEFINE_REFERENCE_FIELD(PRSTransformationController, _position, "Position", Controller);
+DEFINE_REFERENCE_FIELD(PRSTransformationController, _rotation, "Rotation", Controller);
+DEFINE_REFERENCE_FIELD(PRSTransformationController, _scaling, "Scaling", Controller);
+SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _position, "Position");
+SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _rotation, "Rotation");
+SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _scaling, "Scaling");
+SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _position, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _rotation, AngleParameterUnit);
+SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _scaling, PercentParameterUnit);
 
 /******************************************************************************
 * Default constructor.
@@ -95,5 +95,4 @@ TimeInterval PRSTransformationController::validityInterval(TimePoint time)
 	return iv;
 }
 
-
-};
+}}	// End of namespace

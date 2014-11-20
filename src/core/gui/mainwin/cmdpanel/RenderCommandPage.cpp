@@ -26,7 +26,7 @@
 #include <core/rendering/RenderSettings.h>
 #include "RenderCommandPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the command panel page.
@@ -73,4 +73,4 @@ void RenderCommandPage::onRenderSettingsReplaced(RenderSettings* newRenderSettin
 	propertiesPanel->setEditObject(newRenderSettings);
 }
 
-};
+}}}	// End of namespace

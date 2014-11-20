@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "Controller.h"
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /**
  * \brief Base class for animation keys.
@@ -393,6 +393,6 @@ struct SplineValueInterpolator<Scaling> {
 	}
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_KEYED_CONTROLLERS_H

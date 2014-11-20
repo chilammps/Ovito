@@ -23,7 +23,7 @@
 #include "DefaultLinePrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
@@ -46,4 +46,4 @@ void DefaultLinePrimitive::render(SceneRenderer* renderer)
 	niRenderer->renderLines(*this);
 }
 
-};
+}}	// End of namespace

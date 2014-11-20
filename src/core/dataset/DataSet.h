@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DataSet.h
- * \brief Contains definition of the Ovito::DataSet class.
- */
-
 #ifndef __OVITO_DATASET_H
 #define __OVITO_DATASET_H
 

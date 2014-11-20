@@ -30,11 +30,11 @@
 #include "FrameBuffer.h"
 #include "SceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
-/******************************************************************************
-* Stores the general settings for rendering output.
-******************************************************************************/
+/**
+ * Stores general settings for rendering pictures and movies.
+ */
 class OVITO_CORE_EXPORT RenderSettings : public RefTarget
 {
 public:
@@ -205,6 +205,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_fileNumberBase);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_RENDER_SETTINGS_H

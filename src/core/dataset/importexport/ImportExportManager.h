@@ -89,7 +89,7 @@ private:
 
 	Q_OBJECT
 
-	friend class Application;
+	friend class Ovito::Gui::Application;
 };
 
 };

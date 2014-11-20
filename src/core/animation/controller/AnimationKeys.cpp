@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "AnimationKeys.h"
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AnimationKey, RefTarget);
 DEFINE_PROPERTY_FIELD(AnimationKey, _time, "Time");
@@ -53,4 +53,4 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ScalingAnimationKey, AnimationKey);
 DEFINE_PROPERTY_FIELD(ScalingAnimationKey, _value, "Value");
 SET_PROPERTY_FIELD_LABEL(ScalingAnimationKey, _value, "Value");
 
-};
+}}	// End of namespace

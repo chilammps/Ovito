@@ -26,7 +26,7 @@
 #include "ParameterUI.h"
 #include "PropertiesEditor.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 /******************************************************************************
 * A list view that shows the RefTarget items contained in a vector reference field.
@@ -201,6 +201,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_targets);
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_REFTARGET_LIST_PARAMETER_UI_H

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "AnimationSettings.h"
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AnimationSettings, RefTarget);
 DEFINE_PROPERTY_FIELD(AnimationSettings, _time, "Time");
@@ -235,4 +235,4 @@ void AnimationSettings::onPlaybackTimer()
 	});
 }
 
-};
+}}	// End of namespace

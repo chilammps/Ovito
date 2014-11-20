@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file TextPrimitive.h
- * \brief Contains the definition of the Ovito::TextPrimitive class.
- */
-
 #ifndef __OVITO_TEXT_PRIMITIVE_H
 #define __OVITO_TEXT_PRIMITIVE_H
 
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Abstract base class rendering of text primitives.
@@ -90,6 +85,6 @@ private:
 	QFont _font;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_TEXT_PRIMITIVE_H

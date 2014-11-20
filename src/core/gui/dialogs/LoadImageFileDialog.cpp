@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "LoadImageFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -45,4 +45,4 @@ void LoadImageFileDialog::onFileSelected(const QString& file)
 	_imageInfo.setFilename(file);
 }
 
-};
+}}	// End of namespace

@@ -151,7 +151,7 @@ STRIP_FROM_PATH        =
 # specify the list of include paths that are normally passed to the compiler
 # using the -I flag.
 
-STRIP_FROM_INC_PATH    =
+STRIP_FROM_INC_PATH    = $(OVITO_INCLUDE_PATH)
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter (but
 # less readable) file names. This can be useful is your file systems doesn't
@@ -773,7 +773,7 @@ EXCLUDE                = ../../src/plugins/particles/util/polytess/  \
 						../../src/plugins/mesh/  \
 						../../src/plugins/pyscript/  \
 						../../src/opengltest/ \
-						../../src/base/io/gzdevice/
+						../../src/core/utilities/io/gzdevice/
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -800,7 +800,9 @@ EXCLUDE_PATTERNS       = */3rdparty/*
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = Ovito::Gui::Internal Ovito::Gui::Internal::* \
+						 Ovito::Rendering::Internal Ovito::Rendering::Internal::* \
+						 Ovito::View::Internal Ovito::View::Internal::*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include

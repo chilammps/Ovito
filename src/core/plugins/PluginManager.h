@@ -117,8 +117,8 @@ private:
 	/// The singleton instance of this class.
 	static PluginManager* _instance;
 
-	friend class Application;
-	friend class Plugin;
+	friend class Ovito::Gui::Application;
+	friend class Ovito::Plugin;
 };
 
 };

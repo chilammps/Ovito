@@ -39,7 +39,7 @@
 #include "OpenGLArrowPrimitive.h"
 #include "OpenGLMeshPrimitive.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
 
@@ -239,19 +239,6 @@ void ViewportSceneRenderer::setWorldTransform(const AffineTransformation& tm)
 {
 	_modelWorldTM = tm;
 	_modelViewTM = projParams().viewMatrix * tm;
-}
-
-/******************************************************************************
-* Reports OpenGL error status codes.
-******************************************************************************/
-void checkOpenGLErrorStatus(const char* command, const char* sourceFile, int sourceLine)
-{
-	GLenum error;
-	while((error = ::glGetError()) != GL_NO_ERROR) {
-		qDebug() << "WARNING: OpenGL call" << command << "failed "
-				"in line" << sourceLine << "of file" << sourceFile
-				<< "with error" << ViewportSceneRenderer::openglErrorString(error);
-	}
 }
 
 /******************************************************************************
@@ -740,4 +727,21 @@ void ViewportSceneRenderer::renderGrid()
 	_constructionGridGeometry->render(this);
 }
 
-};
+namespace Internal {
+
+/******************************************************************************
+* Reports OpenGL error status codes.
+******************************************************************************/
+void checkOpenGLErrorStatus(const char* command, const char* sourceFile, int sourceLine)
+{
+	GLenum error;
+	while((error = ::glGetError()) != GL_NO_ERROR) {
+		qDebug() << "WARNING: OpenGL call" << command << "failed "
+				"in line" << sourceLine << "of file" << sourceFile
+				<< "with error" << ViewportSceneRenderer::openglErrorString(error);
+	}
+}
+
+}	// End of namespace
+
+}}	// End of namespace

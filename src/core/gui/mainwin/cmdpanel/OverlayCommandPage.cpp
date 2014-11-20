@@ -27,7 +27,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "OverlayCommandPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the command panel page.
@@ -234,4 +234,4 @@ void OverlayCommandPage::onDeleteOverlay()
 	});
 }
 
-};
+}}}	// End of namespace

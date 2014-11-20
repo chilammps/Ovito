@@ -38,8 +38,8 @@ ENDIF()
 # Builds the main executable of the application
 ADD_EXECUTABLE(${PROJECT_NAME} ${OVITO_WIN32_EXECUTABLE} MACOSX_BUNDLE Main.cpp ${WINDOWS_RESOURCES})
 
-# The executable directly depends on the core modules.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} Base Core)
+# The executable depends on the core module of course.
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} Core)
 
 # Set name of executable.
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ovito")

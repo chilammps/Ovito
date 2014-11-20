@@ -23,7 +23,7 @@
 #include <core/dataset/importexport/ImportExportManager.h>
 #include "ImportFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -98,4 +98,4 @@ const FileImporterDescription* ImportFileDialog::selectedFileImporterType() cons
 		return nullptr;
 }
 
-};
+}}}	// End of namespace
