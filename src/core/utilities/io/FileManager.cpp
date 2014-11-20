@@ -28,7 +28,9 @@
 #include "FileManager.h"
 #include "SftpJob.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
+
+using namespace Internal;
 
 /// The singleton instance of the class.
 FileManager* FileManager::_instance = nullptr;
@@ -171,5 +173,4 @@ QUrl FileManager::urlFromUserInput(const QString& path)
 		return QUrl::fromLocalFile(path);
 }
 
-
-};
+}}}	// End of namespace

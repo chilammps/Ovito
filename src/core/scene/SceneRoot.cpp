@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/scene/SceneRoot.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRoot, SceneNode);
 
@@ -89,4 +89,4 @@ Box3 SceneRoot::localBoundingBox(TimePoint time)
 	return myBox;
 }
 
-};
+}}}	// End of namespace

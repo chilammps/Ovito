@@ -21,14 +21,14 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/ModifierApplication.h>
-#include <plugins/particles/data/ParticleDisplay.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/BondsObject.h>
+#include <plugins/particles/objects/ParticleDisplay.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/BondsObject.h>
 #include "ParticleModifier.h"
 
 #include <QtConcurrent>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor);
@@ -537,5 +537,5 @@ StatusWidget* ParticleModifierEditor::statusLabel()
 	return _statusLabel;
 }
 
-};	// End of namespace
+}}}}	// End of namespace
 

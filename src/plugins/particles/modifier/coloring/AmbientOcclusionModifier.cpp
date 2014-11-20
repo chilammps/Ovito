@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -24,17 +24,18 @@
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/app/Application.h>
-#include <plugins/particles/data/ParticleDisplay.h>
+#include <plugins/particles/objects/ParticleDisplay.h>
 #include "AmbientOcclusionModifier.h"
 #include "AmbientOcclusionRenderer.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
-enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
+}
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, Internal::AmbientOcclusionModifierEditor);
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity");
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount");
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution");
@@ -42,6 +43,8 @@ SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Shading intensit
 SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of exposure samples");
 SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution");
 SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit);
+
+enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -96,7 +99,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
 	OORef<DataSet> dataset(new DataSet());
 	// Create the AmbientOcclusionRenderer instance.
-	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset, QSize(_resolution, _resolution), _offscreenSurface));
+	OORef<Internal::AmbientOcclusionRenderer> renderer(new Internal::AmbientOcclusionRenderer(dataset, QSize(_resolution, _resolution), _offscreenSurface));
 
 	renderer->startRender(nullptr, nullptr);
 	try {
@@ -249,6 +252,8 @@ void AmbientOcclusionModifier::propertyChanged(const PropertyFieldDescriptor& fi
 	AsynchronousParticleModifier::propertyChanged(field);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -294,5 +299,6 @@ void AmbientOcclusionModifierEditor::createUI(const RolloutInsertionParameters& 
 	layout1->addWidget(statusLabel());
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

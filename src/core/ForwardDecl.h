@@ -29,34 +29,20 @@
 
 namespace Ovito {
 
-	class CloneHelper;
-	class DataSet;
-	class DataSetContainer;
-	class DisplayObject;
-	class GroupNode;
-	class LinkedFileObject;
-	class LinkedFileImporter;
-	class Modifier;
-	class ModifierApplication;
-	class ObjectNode;
-	class ParameterUnit;
-	class PipelineFlowState;
-	class PipelineObject;
-	class Plugin;
-	class RefMaker;
-	class RefTarget;
-	class SceneNode;
-	class SceneObject;
-	class SceneRoot;
-	class SelectionSet;
-	class TriMesh;
-	class VideoEncoder;
-	class AutoStartObject;
-
 	namespace Util {
 		namespace IO {
 			class ObjectSaveStream;
 			class ObjectLoadStream;
+			namespace Internal {
+				class VideoEncoder;
+				class SftpDownloadJob;
+			}
+		}
+		namespace Concurrency {
+		}
+		namespace Mesh {
+			class TriMesh;
+			class HalfEdgeMesh;
 		}
 	}
 	namespace Math {
@@ -65,6 +51,55 @@ namespace Ovito {
 	namespace Anim {
 		class AnimationSettings;
 		class LookAtController;
+	}
+	namespace PluginSystem {
+		class Plugin;
+		class PluginManager;
+		class AutoStartObject;
+		class UtilityApplet;
+		namespace Internal {
+			class NativePlugin;
+		}
+		using namespace Internal;
+	}
+	namespace ObjectSystem {
+		class OvitoObject;
+		class OvitoObjectType;
+		class CloneHelper;
+		class RefMaker;
+		class RefTarget;
+		class PropertyFieldDescriptor;
+		class DataSet;
+		class DataSetContainer;
+		namespace Units {
+			class ParameterUnit;
+		}
+		namespace Undo {
+			class UndoStack;
+			class UndoableOperation;
+		}
+		namespace Scene {
+			class SceneNode;
+			class SceneObject;
+			class SceneRoot;
+			class SelectionSet;
+			class Modifier;
+			class ModifierApplication;
+			class ObjectNode;
+			class PipelineFlowState;
+			class PipelineObject;
+			class DisplayObject;
+			namespace StdObj {
+			}
+			using namespace StdObj;
+		}
+		namespace Internal {
+			class NativeOvitoObjectType;
+		}
+		using namespace Units;
+		using namespace Undo;
+		using namespace Scene;
+		using namespace Internal;
 	}
 	namespace Rendering {
 		class SceneRenderer;
@@ -87,12 +122,14 @@ namespace Ovito {
 		}
 		using namespace Internal;
 	}
+	namespace DataIO {
+		class LinkedFileObject;
+		class LinkedFileImporter;
+	}
 	namespace Gui {
 		class MainWindow;
 		class Application;
 		class ActionManager;
-		class FrameBufferWindow;
-		class ViewportModeAction;
 		namespace Widgets {
 			class PropertiesPanel;
 			class SpinnerWidget;
@@ -105,8 +142,12 @@ namespace Ovito {
 		namespace View {
 			class ViewportInputManager;
 			class ViewportInputMode;
+			class ViewportModeAction;
+		}
+		namespace Dialogs {
 		}
 		namespace Internal {
+			class FrameBufferWindow;
 			class FrameBufferWidget;
 			class CoordinateDisplayWidget;
 			class CommandPanel;
@@ -120,16 +161,25 @@ namespace Ovito {
 		using namespace Gui::Widgets;
 		using namespace Gui::Params;
 		using namespace Gui::View;
+		using namespace Gui::Dialogs;
 		using namespace Gui::Internal;
 	}
 
 	// Pull all sub-namespaces into the root Ovito namespace.
 	using namespace Util;
 	using namespace Util::IO;
+	using namespace Util::Concurrency;
+	using namespace Util::Mesh;
 	using namespace Math;
 	using namespace Rendering;
 	using namespace Anim;
 	using namespace View;
+	using namespace ObjectSystem;
+	using namespace ObjectSystem::Undo;
+	using namespace ObjectSystem::Scene;
+	using namespace ObjectSystem::Scene::StdObj;
+	using namespace PluginSystem;
+	using namespace DataIO;
 	using namespace Gui;
 	using namespace Gui::Widgets;
 	using namespace Gui::Params;

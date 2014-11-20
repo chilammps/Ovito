@@ -24,7 +24,7 @@
 #include "OvitoObject.h"
 #include "OvitoObjectType.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 const NativeOvitoObjectType OvitoObject::OOType("OvitoObject", "Core", nullptr, &OvitoObject::staticMetaObject, true);
 
@@ -36,4 +36,4 @@ bool OvitoObject::isBeingLoaded() const
 	return (qobject_cast<ObjectLoadStream*>(parent()) != nullptr);
 }
 
-};
+}}	// End of namespace

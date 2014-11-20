@@ -30,7 +30,7 @@
 #include <core/reference/CloneHelper.h>
 #include <core/scene/SelectionSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneNode, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", Controller, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
@@ -398,4 +398,4 @@ OORef<RefTarget> SceneNode::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-};
+}}}	// End of namespace

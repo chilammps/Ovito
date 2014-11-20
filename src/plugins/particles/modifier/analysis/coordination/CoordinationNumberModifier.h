@@ -29,7 +29,7 @@
 
 class QCustomPlot;
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /*
  * This modifier determines the coordination number of each particle.
@@ -133,9 +133,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_cutoff)
 };
 
-/******************************************************************************
-* A properties editor for the CoordinationNumberModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the CoordinationNumberModifier class.
+ */
 class CoordinationNumberModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -168,6 +170,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_COORDINATION_NUMBER_MODIFIER_H

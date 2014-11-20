@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file SceneNode.h
- * \brief Contains the definition of the Ovito::SceneNode class.
- */
-
 #ifndef __OVITO_SCENE_NODE_H
 #define __OVITO_SCENE_NODE_H
 
@@ -33,8 +28,7 @@
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>
 
-namespace Ovito {
-
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Tree node in the scene hierarchy.
@@ -317,6 +311,6 @@ private:
 	friend class SceneRoot;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SCENE_NODE_H

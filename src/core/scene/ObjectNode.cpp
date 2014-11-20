@@ -26,7 +26,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode);
 DEFINE_REFERENCE_FIELD(ObjectNode, _dataProvider, "SceneObject", SceneObject);
@@ -247,4 +247,4 @@ bool ObjectNode::waitUntilReady(TimePoint time, const QString& message, QProgres
 	}, message, progressDialog);
 }
 
-};
+}}}	// End of namespace

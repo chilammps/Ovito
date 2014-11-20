@@ -28,7 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "LinkedFileObjectEditor.h"
 
-namespace Ovito {
+namespace Ovito { namespace DataIO { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
 
@@ -361,4 +361,4 @@ bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* e
 	return PropertiesEditor::referenceEvent(source, event);
 }
 
-};
+}}}	// End of namespace

@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <core/rendering/MeshPrimitive.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/utilities/mesh/TriMesh.h>
 
 namespace Ovito { namespace Rendering {
 

@@ -24,7 +24,7 @@
 
 #define MAX_DIRECTORY_HISTORY_SIZE	5
 
-namespace Ovito { namespace Gui {
+namespace Ovito { namespace Gui { namespace Dialogs {
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -91,4 +91,4 @@ void HistoryFileDialog::saveDirHistory(const QStringList& list) const
 	settings.setValue("history", QVariant::fromValue(list));
 }
 
-}}	// End of namespace
+}}}	// End of namespace

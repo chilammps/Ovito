@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PipelineObject.h
- * \brief Contains the definition of the Ovito::PipelineObject class.
- */
-
 #ifndef __OVITO_PIPELINE_OBJECT_H
 #define __OVITO_PIPELINE_OBJECT_H
 
@@ -31,7 +26,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include "ModifierApplication.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief This is a data flow pipeline. It has a source object, which provides the input data,
@@ -145,6 +140,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_modApps);
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_PIPELINE_OBJECT_H

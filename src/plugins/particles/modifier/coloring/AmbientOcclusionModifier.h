@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file AmbientOcclusionModifier.h
- * \brief Contains the definition of the Particles::AmbientOcclusionModifier class.
- */
-
 #ifndef __OVITO_AMBIENT_OCCLUSION_MODIFIER_H
 #define __OVITO_AMBIENT_OCCLUSION_MODIFIER_H
 
@@ -32,9 +27,7 @@
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
 /**
  * \brief Calculates ambient occlusion lighting for particles.
@@ -147,6 +140,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_bufferResolution);
 };
 
+namespace Internal {
+
 /**
  * \brief A properties editor for the AmbientOcclusionModifier class.
  */
@@ -166,7 +161,8 @@ protected:
 	OVITO_OBJECT
 };
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace
 
 #endif // __OVITO_AMBIENT_OCCLUSION_MODIFIER_H

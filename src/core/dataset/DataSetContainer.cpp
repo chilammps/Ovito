@@ -39,7 +39,7 @@
 	#include <signal.h>
 #endif
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker);
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO);
@@ -378,4 +378,4 @@ bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QS
 	return true;
 }
 
-};
+}}	// End of namespace

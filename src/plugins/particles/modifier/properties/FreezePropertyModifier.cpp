@@ -25,19 +25,23 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "FreezePropertyModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, FreezePropertyModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, FreezePropertyModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(FreezePropertyModifier, FreezePropertyModifierEditor);
+SET_OVITO_OBJECT_EDITOR(FreezePropertyModifier, Internal::FreezePropertyModifierEditor);
 DEFINE_PROPERTY_FIELD(FreezePropertyModifier, _sourceProperty, "SourceProperty");
 DEFINE_PROPERTY_FIELD(FreezePropertyModifier, _destinationProperty, "DestinationProperty");
 SET_PROPERTY_FIELD_LABEL(FreezePropertyModifier, _sourceProperty, "Property");
 SET_PROPERTY_FIELD_LABEL(FreezePropertyModifier, _destinationProperty, "Destination property");
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SavedParticleProperty, RefTarget);
-DEFINE_REFERENCE_FIELD(SavedParticleProperty, _property, "Property", ParticlePropertyObject);
-DEFINE_REFERENCE_FIELD(SavedParticleProperty, _identifiers, "Identifiers", ParticlePropertyObject);
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, FreezePropertyModifierEditor, ParticleModifierEditor);
+	IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SavedParticleProperty, RefTarget);
+	DEFINE_REFERENCE_FIELD(SavedParticleProperty, _property, "Property", ParticlePropertyObject);
+	DEFINE_REFERENCE_FIELD(SavedParticleProperty, _identifiers, "Identifiers", ParticlePropertyObject);
+}
+
+using namespace Internal;
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -178,6 +182,8 @@ void FreezePropertyModifier::takePropertySnapshot(ModifierApplication* modApp, c
 	modApp->setModifierData(nullptr);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Makes a copy of the given source property and, optionally, of the provided
 * particle identifier list, which will allow to restore the saved property
@@ -255,5 +261,6 @@ void FreezePropertyModifierEditor::onSourcePropertyChanged()
 	});
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

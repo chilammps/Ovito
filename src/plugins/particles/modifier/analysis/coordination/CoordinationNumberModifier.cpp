@@ -26,14 +26,17 @@
 #include <qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CoordinationNumberModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, Internal::CoordinationNumberModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(CoordinationNumberModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -172,6 +175,8 @@ void CoordinationNumberModifier::propertyChanged(const PropertyFieldDescriptor& 
 	AsynchronousParticleModifier::propertyChanged(field);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -292,6 +297,6 @@ void CoordinationNumberModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-
-};	// End of namespace
+}}}}}	// End of namespace

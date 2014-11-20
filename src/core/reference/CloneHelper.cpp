@@ -23,7 +23,7 @@
 #include "CloneHelper.h"
 #include "RefTarget.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /******************************************************************************
 * This creates a copy of the RefTarget. 
@@ -51,4 +51,4 @@ OORef<RefTarget> CloneHelper::cloneObjectImpl(RefTarget* obj, bool deepCopy)
 	return copy;	
 }
 
-};
+}}	// End of namespace

@@ -22,9 +22,9 @@
 #include <core/Core.h>
 #include "TreeNeighborListBuilder.h"
 
-#define TREE_DEPTH_LIMIT 		17
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
-namespace Particles {
+#define TREE_DEPTH_LIMIT 		17
 
 /******************************************************************************
 * Prepares the neighbor list builder.
@@ -199,4 +199,4 @@ void TreeNeighborListBuilder::splitLeafNode(TreeNode* node, int splitDim)
 	numLeafNodes++;
 }
 
-}; // End of namespace
+}}}} // End of namespace

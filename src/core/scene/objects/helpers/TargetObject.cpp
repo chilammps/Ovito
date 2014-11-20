@@ -24,7 +24,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include "TargetObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TargetObject, SceneObject);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TargetDisplayObject, DisplayObject);
@@ -123,4 +123,4 @@ void TargetDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	renderer->endPickObject();
 }
 
-};
+}}}}	// End of namespace

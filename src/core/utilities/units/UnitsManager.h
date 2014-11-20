@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file UnitsManager.h
- * \brief Contains the definition of the Ovito::UnitsManager class.
- */
-
 #ifndef __OVITO_UNITS_MANAGER_H
 #define __OVITO_UNITS_MANAGER_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Units {
 
 /**
  * \brief Base class for parameter unit conversion services. 
@@ -415,6 +410,6 @@ private:
 	WorldParameterUnit* _worldUnit;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_UNITS_MANAGER_H

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file TaskManager.h
- * \brief Contains the definition of the Ovito::TaskManager class.
- */
- 
 #ifndef __OVITO_PROGRESS_MANAGER_H
 #define __OVITO_PROGRESS_MANAGER_H
 
@@ -31,9 +26,9 @@
 #include "Future.h"
 #include "Task.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
-typedef std::shared_ptr<Ovito::FutureInterfaceBase> FutureInterfacePointer;
+typedef std::shared_ptr<FutureInterfaceBase> FutureInterfacePointer;
 
 /**
  * \brief Manages the background tasks.
@@ -153,8 +148,8 @@ private:
 	bool _indicatorVisible;
 };
 
-};
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::FutureInterfacePointer);
+Q_DECLARE_METATYPE(Ovito::Util::Concurrency::FutureInterfacePointer);
 
 #endif // __OVITO_PROGRESS_MANAGER_H

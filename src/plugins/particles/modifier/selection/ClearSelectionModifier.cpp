@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "ClearSelectionModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClearSelectionModifier, ParticleModifier);
 
@@ -37,4 +37,4 @@ PipelineStatus ClearSelectionModifier::modifyParticles(TimePoint time, TimeInter
 	return PipelineStatus::Success;
 }
 
-};	// End of namespace
+}}}}}	// End of namespace

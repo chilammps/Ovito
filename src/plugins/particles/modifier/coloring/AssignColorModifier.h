@@ -27,13 +27,11 @@
 #include <core/animation/AnimationSettings.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
-using namespace Ovito;
-
-/******************************************************************************
-* This modifier assigns a single color to the selected atoms of the input object.
-******************************************************************************/
+/**
+ * This modifier assigns a certain color to all selected particles.
+ */
 class OVITO_PARTICLES_EXPORT AssignColorModifier : public ParticleModifier
 {
 public:
@@ -89,6 +87,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_keepSelection);
 };
 
+namespace Internal {
+
 /******************************************************************************
 * A properties editor for the AssignColorModifier class.
 ******************************************************************************/
@@ -110,6 +110,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_ASSIGN_COLOR_MODIFIER_H

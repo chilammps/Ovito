@@ -29,7 +29,7 @@
 #include <core/reference/ReferenceEvent.h>
 #include <core/plugins/Plugin.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /******************************************************************************
 * RefMaker derived classes use this helper class to store their properties.
@@ -145,8 +145,8 @@ private:
 			generateTargetChangedEvent((ReferenceEvent::Type)additionalChangeMessage);
 	}
 
-	/// This undo class records a change to the property value.
-	class PropertyChangeOperation : public UndoableOperation {
+	// This undo class records a change to the property value.
+	class PropertyChangeOperation : public Ovito::ObjectSystem::Undo::UndoableOperation {
 	public:
 		PropertyChangeOperation(PropertyField& field) : _field(field), _owner(field.owner() != field.owner()->dataset() ? field.owner() : nullptr) {
 			// Make a copy of the current property value.
@@ -211,7 +211,7 @@ protected:
 
 protected:
 
-	class SetReferenceOperation : public UndoableOperation
+	class SetReferenceOperation : public Ovito::ObjectSystem::Undo::UndoableOperation
 	{
 	private:
 		/// The reference target that is currently not assigned to the reference field.
@@ -334,7 +334,7 @@ protected:
 
 protected:
 
-	class InsertReferenceOperation : public UndoableOperation
+	class InsertReferenceOperation : public Ovito::ObjectSystem::Undo::UndoableOperation
 	{
 	public:
     	InsertReferenceOperation(RefTarget* target, VectorReferenceFieldBase& reffield, int index);
@@ -362,7 +362,7 @@ protected:
 		int _index;
 	};
 
-	class RemoveReferenceOperation : public UndoableOperation
+	class RemoveReferenceOperation : public Ovito::ObjectSystem::Undo::UndoableOperation
 	{
 	public:
     	RemoveReferenceOperation(VectorReferenceFieldBase& reffield, int index);
@@ -478,7 +478,7 @@ public:
 	const RefTargetVector& targets() const { return reinterpret_cast<const RefTargetVector&>(pointers); }
 };
 
-};	// End of namespace
+}}	// End of namespace
 
 #include <core/dataset/DataSet.h>
 

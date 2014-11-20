@@ -19,19 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file AmbientOcclusionRenderer.h
- * \brief Contains the definition of the Particles::AmbientOcclusionRenderer class.
- */
 #ifndef __OVITO_AMBIENT_OCCLUSION_RENDERER_H
 #define __OVITO_AMBIENT_OCCLUSION_RENDERER_H
 
 #include <plugins/particles/Particles.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring { namespace Internal {
 
 /**
  * \brief A renderer used to compute ambient occlusion lighting.
@@ -90,6 +84,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}}}}	// End of namespace
 
 #endif // __OVITO_AMBIENT_OCCLUSION_RENDERER_H

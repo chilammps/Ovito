@@ -26,7 +26,7 @@
 #include <core/reference/RefMaker.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /**
  * \brief Abstract base class for utility applets.
@@ -57,6 +57,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_UTILITY_APPLET_H

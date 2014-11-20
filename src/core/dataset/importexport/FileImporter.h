@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file FileImporter.h
- * \brief Contains the definition of the Ovito::FileImporter class.
- */
-
 #ifndef __OVITO_FILE_IMPORTER_H
 #define __OVITO_FILE_IMPORTER_H
 
@@ -31,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
 
 /**
  * \brief Abstract base class for file import services.
@@ -125,9 +120,9 @@ private:
 	Q_OBJECT
 };
 
-};
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::FileImporter::ImportMode);
-Q_DECLARE_TYPEINFO(Ovito::FileImporter::ImportMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::DataIO::FileImporter::ImportMode);
+Q_DECLARE_TYPEINFO(Ovito::DataIO::FileImporter::ImportMode, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_FILE_IMPORTER_H

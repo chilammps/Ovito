@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OvitoObject.h
- * \brief Contains the definition of the Ovito::OvitoObject class.
- */
-
 #ifndef __OVITO_OBJECT_H
 #define __OVITO_OBJECT_H
 
@@ -31,7 +26,7 @@
 #include "OvitoObjectReference.h"
 #include "NativeOvitoObjectType.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 #ifdef OVITO_DEBUG
 	/// Checks whether a pointer to an OvitoObject is valid.
@@ -253,9 +248,9 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 	return static_pointer_cast<T>(obj);
 }
 
-};	// End of namespace Ovito
+}}	// End of namespace
 
-Q_DECLARE_SMART_POINTER_METATYPE(Ovito::OORef);
+Q_DECLARE_SMART_POINTER_METATYPE(Ovito::ObjectSystem::OORef);
 
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>

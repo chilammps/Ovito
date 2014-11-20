@@ -23,7 +23,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /******************************************************************************
 * Constructor for the Plugin class.
@@ -190,5 +190,5 @@ QSet<Plugin*> Plugin::dependencies() const
 	return dep;
 }
 
-};
+}}	// End of namespace
 

@@ -20,12 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCell.h>
 #include <plugins/crystalanalysis/util/DelaunayTessellation.h>
 #include "ConstructSurfaceModifier.h"
 

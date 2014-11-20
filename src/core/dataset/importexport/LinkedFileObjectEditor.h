@@ -30,7 +30,7 @@
 
 #include "LinkedFileObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace DataIO { namespace Internal {
 
 /**
  * A properties editor for the LinkedFileObject class.
@@ -93,6 +93,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_LINKED_FILE_OBJECT_EDITOR_H

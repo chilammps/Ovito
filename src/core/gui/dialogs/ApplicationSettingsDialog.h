@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { namespace Gui { namespace Dialogs {
 	
 class ApplicationSettingsDialog;		// defined below.
 
@@ -84,6 +84,6 @@ private:
 	QTabWidget* _tabWidget;
 };
 
-}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_APPLICATION_SETTINGS_DIALOG_H

@@ -20,11 +20,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/geometry/TriMeshObject.h>
+#include "TriMeshObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, SceneObject);
 
 /******************************************************************************
 * Default constructor.
@@ -69,4 +69,4 @@ OORef<RefTarget> TriMeshObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-};
+}}}}	// End of namespace

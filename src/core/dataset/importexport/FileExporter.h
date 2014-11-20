@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file FileExporter.h
- * \brief Contains the definition of the Ovito::FileExporter class.
- */
-
 #ifndef __OVITO_FILE_EXPORTER_H
 #define __OVITO_FILE_EXPORTER_H
 
@@ -31,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
 
 /**
  * \brief Abstract base class for file export services.
@@ -109,6 +104,6 @@ private:
 	Q_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_FILE_EXPORTER_H

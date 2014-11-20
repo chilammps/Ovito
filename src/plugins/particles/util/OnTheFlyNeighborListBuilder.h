@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OnTheFlyNeighborList.h
- * \brief Contains the definition of the Particles::OnTheFlyNeighborList class.
- */
-
 #ifndef __OVITO_ONTHEFLY_NEIGHBOR_LIST_H
 #define __OVITO_ONTHEFLY_NEIGHBOR_LIST_H
 
@@ -31,9 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/SimulationCellData.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
  * \brief This class returns the list of neighbors within a given cutoff radius for a particle.
@@ -149,6 +142,6 @@ private:
 	std::vector<Vector3I> stencil;
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_ONTHEFLY_NEIGHBOR_LIST_H

@@ -24,7 +24,7 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include <plugins/particles/data/SurfaceMeshDisplay.h>
 
 namespace CrystalAnalysis {

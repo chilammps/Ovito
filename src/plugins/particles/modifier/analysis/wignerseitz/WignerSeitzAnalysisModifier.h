@@ -27,7 +27,7 @@
 #include <plugins/particles/util/TreeNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /*
  * Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
@@ -193,9 +193,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
-/******************************************************************************
-* A properties editor for the WignerSeitzAnalysisModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the WignerSeitzAnalysisModifier class.
+ */
 class WignerSeitzAnalysisModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -214,6 +216,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_WIGNER_SEITZ_ANALYSIS_MODIFIER_H

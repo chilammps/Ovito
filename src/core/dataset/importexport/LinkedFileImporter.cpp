@@ -31,7 +31,7 @@
 #include "LinkedFileImporter.h"
 #include "LinkedFileObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter);
 
@@ -399,4 +399,4 @@ Future<LinkedFileImporter::ImportTaskPtr> LinkedFileImporter::load(const LinkedF
 	});
 }
 
-};
+}}	// End of namespace

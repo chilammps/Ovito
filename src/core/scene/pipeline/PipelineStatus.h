@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PipelineStatus.h
- * \brief Contains the definition of the Ovito::PipelineStatus class.
- */
-
 #ifndef __OVITO_PIPELINE_STATUS_H
 #define __OVITO_PIPELINE_STATUS_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Stores status information associated with an evaluation of the modification pipeline.
@@ -121,6 +116,6 @@ inline QDebug operator<<(QDebug debug, const PipelineStatus& s)
 	return debug;
 }
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_PIPELINE_STATUS_H

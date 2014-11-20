@@ -24,7 +24,7 @@
 
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/utilities/io/CompressedTextReader.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/utilities/mesh/TriMesh.h>
 #include <plugins/mesh/Mesh.h>
 
 namespace Mesh {

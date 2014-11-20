@@ -23,16 +23,19 @@
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
 #include <plugins/particles/modifier/ParticleModifier.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 #include <plugins/particles/modifier/coloring/AssignColorModifier.h>
 #include <plugins/particles/modifier/coloring/ColorCodingModifier.h>
 #include <plugins/particles/modifier/coloring/AmbientOcclusionModifier.h>
-#include <plugins/particles/modifier/delete/DeleteParticlesModifier.h>
-#include <plugins/particles/modifier/pbc/ShowPeriodicImagesModifier.h>
-#include <plugins/particles/modifier/pbc/WrapPeriodicImagesModifier.h>
+#include <plugins/particles/modifier/modify/DeleteParticlesModifier.h>
+#include <plugins/particles/modifier/modify/ShowPeriodicImagesModifier.h>
+#include <plugins/particles/modifier/modify/WrapPeriodicImagesModifier.h>
+#include <plugins/particles/modifier/modify/SliceModifier.h>
+#include <plugins/particles/modifier/modify/AffineTransformationModifier.h>
+#include <plugins/particles/modifier/modify/CreateBondsModifier.h>
 #include <plugins/particles/modifier/properties/CreateExpressionPropertyModifier.h>
 #include <plugins/particles/modifier/properties/FreezePropertyModifier.h>
 #include <plugins/particles/modifier/selection/ClearSelectionModifier.h>
@@ -40,13 +43,10 @@
 #include <plugins/particles/modifier/selection/ManualSelectionModifier.h>
 #include <plugins/particles/modifier/selection/SelectExpressionModifier.h>
 #include <plugins/particles/modifier/selection/SelectParticleTypeModifier.h>
-#include <plugins/particles/modifier/slice/SliceModifier.h>
-#include <plugins/particles/modifier/transformation/AffineTransformationModifier.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 #include <plugins/particles/modifier/analysis/binandreduce/BinAndReduceModifier.h>
 #include <plugins/particles/modifier/analysis/bondangle/BondAngleAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/cna/CommonNeighborAnalysisModifier.h>
-#include <plugins/particles/modifier/analysis/bonds/CreateBondsModifier.h>
 #include <plugins/particles/modifier/analysis/centrosymmetry/CentroSymmetryModifier.h>
 #include <plugins/particles/modifier/analysis/cluster/ClusterAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/coordination/CoordinationNumberModifier.h>
@@ -58,11 +58,15 @@
 #include <plugins/particles/modifier/analysis/voronoi/VoronoiAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/diamond/IdentifyDiamondModifier.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
+using namespace Particles::Modifiers::Modify;
+using namespace Particles::Modifiers::Selection;
+using namespace Particles::Modifiers::Coloring;
+using namespace Particles::Modifiers::Analysis;
+using namespace Particles::Modifiers::Properties;
 
 BOOST_PYTHON_MODULE(ParticlesModify)
 {
@@ -902,4 +906,4 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesModify);
 
-};
+}}}}	// End of namespace

@@ -25,7 +25,7 @@
 #include <core/scene/ObjectNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/dataset/DataSet.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/rendering/RenderSettings.h>

@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCell.h>
 #include "SmoothSurfaceModifier.h"
 
 namespace CrystalAnalysis {

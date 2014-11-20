@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file CommonNeighborAnalysisModifier.h
- * \brief Contains the definition of the Particles::CommonNeighborAnalysisModifier class.
- */
-
 #ifndef __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
 #define __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
 
@@ -31,12 +26,7 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
-
-class OnTheFlyNeighborListBuilder;
-class TreeNeighborListBuilder;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief A modifier that performs the common neighbor analysis (CNA) to identify
@@ -198,6 +188,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_adaptiveMode);
 };
 
+namespace Internal {
+
 /**
  * \brief A properties editor for the CommonNeighborAnalysisModifier class.
  */
@@ -219,6 +211,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H

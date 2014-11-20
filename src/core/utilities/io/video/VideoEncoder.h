@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file
- * \brief Contains the definition of the Ovito::VideoEncoder class.
- */
-
 #ifndef __OVITO_VIDEO_ENCODER_H
 #define __OVITO_VIDEO_ENCODER_H
 
@@ -39,7 +34,7 @@ extern "C" {
 	struct SwsContext;
 };
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO { namespace Internal {
 
 /**
  * \brief Wrapper class for the FFmpeg video encoding library.
@@ -103,6 +98,6 @@ private:
 	Q_OBJECT
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_VIDEO_ENCODER_H

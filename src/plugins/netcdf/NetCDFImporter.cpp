@@ -47,7 +47,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
-#include <plugins/particles/importer/InputColumnMappingDialog.h>
+#include <plugins/particles/import/InputColumnMappingDialog.h>
 
 #include "NetCDFImporter.h"
 
@@ -59,7 +59,7 @@
 #define NCERR(x)  _ncerr(x, __FILE__, __LINE__)
 #define NCERRI(x, info)  _ncerr_with_info(x, __FILE__, __LINE__, info)
 
-namespace NetCDF {
+namespace Ovito { namespace Plugins { namespace NetCDF {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDF, NetCDFImporter, ParticleImporter);
 IMPLEMENT_OVITO_OBJECT(NetCDF, NetCDFImporterEditor, PropertiesEditor);
@@ -820,4 +820,4 @@ void NetCDFImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
-};
+}}}	// End of namespace

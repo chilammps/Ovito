@@ -23,16 +23,14 @@
 #define __OVITO_PARTICLE_INFORMATION_APPLET_H
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/mainwin/cmdpanel/UtilityApplet.h>
+#include <core/plugins/utility/UtilityApplet.h>
 #include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
 
-using namespace Ovito;
-
-class ParticleInformationInputMode;
+class ParticleInformationInputMode;		// defined below
 
 /**
  * \brief This utility applet lets the user select a particle in the viewports
@@ -110,6 +108,6 @@ private:
 	friend class ParticleInformationApplet;
 };
 
-};
+}}}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_INFORMATION_APPLET_H

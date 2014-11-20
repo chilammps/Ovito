@@ -26,11 +26,14 @@
 #include "IdentifyDiamondModifier.h"
 #include <plugins/particles/modifier/analysis/cna/CommonNeighborAnalysisModifier.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IdentifyDiamondModifier, StructureIdentificationModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, IdentifyDiamondModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(IdentifyDiamondModifier, IdentifyDiamondModifierEditor);
+SET_OVITO_OBJECT_EDITOR(IdentifyDiamondModifier, Internal::IdentifyDiamondModifierEditor);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, IdentifyDiamondModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -202,6 +205,8 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	}
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -225,4 +230,6 @@ void IdentifyDiamondModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

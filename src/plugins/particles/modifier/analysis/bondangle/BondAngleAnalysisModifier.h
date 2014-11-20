@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file BondAngleAnalysisModifier.h
- * \brief Contains the definition of the Particles::BondAngleAnalysisModifier class.
- */
-
 #ifndef __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
 #define __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
 
@@ -31,11 +26,7 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
-
-class TreeNeighborListBuilder;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief A modifier that performs the structure analysis developed by Ackland and Jones.
@@ -93,6 +84,8 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 };
 
+namespace Internal {
+
 /**
  * \brief A properties editor for the BondAngleAnalysisModifier class.
  */
@@ -112,6 +105,8 @@ protected:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H

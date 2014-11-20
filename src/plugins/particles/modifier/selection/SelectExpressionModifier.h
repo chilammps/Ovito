@@ -26,9 +26,7 @@
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 /******************************************************************************
 * Selects particles based on a user-defined Boolean expression.
@@ -86,9 +84,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_expression);
 };
 
-/******************************************************************************
-* A properties editor for the SelectExpressionModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the SelectExpressionModifier class.
+ */
 class SelectExpressionModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -118,6 +118,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_SELECT_EXPRESSION_MODIFIER_H

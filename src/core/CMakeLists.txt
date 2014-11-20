@@ -59,18 +59,16 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/ObjectNode.cpp
 	scene/SceneRoot.cpp
 	scene/SelectionSet.cpp
+	scene/objects/DisplayObject.cpp
 	scene/objects/SceneObject.cpp
-	scene/objects/geometry/TriMesh.cpp
 	scene/objects/geometry/TriMeshObject.cpp
-	scene/objects/geometry/HalfEdgeMesh.cpp
+	scene/objects/geometry/TriMeshDisplay.cpp
 	scene/objects/camera/CameraObject.cpp
 	scene/objects/helpers/TargetObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp
 	scene/pipeline/Modifier.cpp
 	scene/pipeline/ModifierApplication.cpp
-	scene/display/DisplayObject.cpp
-	scene/display/geometry/TriMeshDisplay.cpp
 	gui/app/Application.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/ViewportsPanel.cpp
@@ -144,6 +142,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/CompressedTextWriter.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/TaskManager.cpp
+	utilities/mesh/TriMesh.cpp
+	utilities/mesh/HalfEdgeMesh.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/OpenGLLinePrimitive.cpp

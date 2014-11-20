@@ -22,23 +22,26 @@
 #include <plugins/pyscript/PyScript.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/SimulationCell.h>
-#include <plugins/particles/exporter/ParticleExporter.h>
-#include <plugins/particles/exporter/imd/IMDExporter.h>
-#include <plugins/particles/exporter/vasp/POSCARExporter.h>
-#include <plugins/particles/exporter/xyz/XYZExporter.h>
-#include <plugins/particles/exporter/lammps/LAMMPSDumpExporter.h>
-#include <plugins/particles/exporter/lammps/LAMMPSDataExporter.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/export/ParticleExporter.h>
+#include <plugins/particles/export/imd/IMDExporter.h>
+#include <plugins/particles/export/vasp/POSCARExporter.h>
+#include <plugins/particles/export/xyz/XYZExporter.h>
+#include <plugins/particles/export/lammps/LAMMPSDumpExporter.h>
+#include <plugins/particles/export/lammps/LAMMPSDataExporter.h>
 
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
+using namespace Particles::Export::Lammps;
+using namespace Particles::Export::XYZ;
+using namespace Particles::Export::Vasp;
+using namespace Particles::Export::IMD;
 
 BOOST_PYTHON_MODULE(ParticlesExporter)
 {
@@ -85,4 +88,4 @@ BOOST_PYTHON_MODULE(ParticlesExporter)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesExporter);
 
-};
+}}}}	// End of namespace

@@ -27,7 +27,7 @@
 #include <core/scene/pipeline/PipelineStatus.h>
 #include <core/utilities/concurrent/Future.h>
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
 
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
@@ -193,6 +193,6 @@ inline LoadStream& operator>>(LoadStream& stream, LinkedFileImporter::FrameSourc
 	return stream;
 }
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_LINKED_FILE_IMPORTER_H

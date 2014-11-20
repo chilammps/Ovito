@@ -23,18 +23,18 @@
 #ifndef __OVITO_BIN_AND_REDUCE_MODIFIER_H
 #define __OVITO_BIN_AND_REDUCE_MODIFIER_H
 
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../ParticleModifier.h"
 #include <qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /*
  * This modifier computes a spatial average (over splices) for a particle
@@ -208,9 +208,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
-/******************************************************************************
-* A properties editor for the BinAndReduceModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the BinAndReduceModifier class.
+ */
 class BinAndReduceModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -264,11 +266,13 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::ReductionOperationType);
-Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+}}}}}	// End of namespace
+
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType);
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_BIN_AND_REDUCE_MODIFIER_H

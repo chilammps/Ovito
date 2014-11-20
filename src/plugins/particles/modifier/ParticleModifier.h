@@ -30,12 +30,10 @@
 #include <core/reference/CloneHelper.h>
 #include <core/reference/RefTargetListener.h>
 
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/SimulationCell.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
 /*
  * Abstract base class for modifiers that operate on a system of particles.
@@ -212,6 +210,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_MODIFIER_H

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file CloneHelper.h
- * \brief Contains the definition of the Ovito::CloneHelper class.
- */
-
 #ifndef __OVITO_CLONE_HELPER_H
 #define __OVITO_CLONE_HELPER_H
 
@@ -32,7 +27,7 @@
 #include "PropertyField.h"
 #include "RefTarget.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief Helper class that is used to clone a RefTarget derived object.
@@ -150,7 +145,7 @@ private:
 	std::map<RefMaker*, OORef<RefTarget>> _cloneTable;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_CLONE_HELPER_H
 

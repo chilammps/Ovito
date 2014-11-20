@@ -19,20 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file IdentifyDiamondModifier.h
- * \brief Contains the definition of the Particles::IdentifyDiamondModifier class.
- */
-
 #ifndef __OVITO_IDENTIFY_DIAMOND_MODIFIER_H
 #define __OVITO_IDENTIFY_DIAMOND_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief A modifier that identifies local diamond structures.
@@ -87,6 +80,8 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 };
 
+namespace Internal {
+
 /**
  * \brief A properties editor for the IdentifyDiamondModifier class.
  */
@@ -108,6 +103,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_IDENTIFY_DIAMOND_MODIFIER_H

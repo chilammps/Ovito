@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OvitoObjectReference.h
- * \brief Contains the definition of the Ovito::OORef class.
- */
-
 #ifndef __OVITO_OBJECT_REFERENCE_H
 #define __OVITO_OBJECT_REFERENCE_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief A smart pointer holding a reference to an OvitoObject.
@@ -220,6 +215,6 @@ template<class T> QDebug operator<<(QDebug debug, const OORef<T>& p)
 	return debug << p.get();
 }
 
-};	// End of namespace Ovito
+}}	// End of namespace
 
 #endif // __OVITO_OBJECT_REFERENCE_H

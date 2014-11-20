@@ -30,9 +30,9 @@
 #include <plugins/crystalanalysis/data/patterns/PatternCatalog.h>
 #include <plugins/crystalanalysis/modifier/SmoothSurfaceModifier.h>
 #include <plugins/crystalanalysis/modifier/SmoothDislocationsModifier.h>
-#include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/import/lammps/LAMMPSTextDumpImporter.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include "CAImporter.h"
 
 namespace CrystalAnalysis {

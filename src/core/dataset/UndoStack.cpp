@@ -23,7 +23,7 @@
 #include <core/reference/RefMaker.h>
 #include "UndoStack.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Undo {
 
 /******************************************************************************
 * Increments the suspend count of the undo stack associated with the given
@@ -301,4 +301,4 @@ void TargetChangedRedoOperation::redo()
 	_target->notifyDependents(ReferenceEvent::TargetChanged);
 }
 
-};
+}}}	// End of namespace

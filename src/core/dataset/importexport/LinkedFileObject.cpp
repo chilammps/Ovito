@@ -36,7 +36,9 @@
 #include "LinkedFileObject.h"
 #include "LinkedFileObjectEditor.h"
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
+
+using namespace Internal;
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject);
 SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor);
@@ -633,4 +635,4 @@ void LinkedFileObject::showURLSelectionDialog(QWidget* parent)
 	}
 }
 
-};
+}}	// End of namespace

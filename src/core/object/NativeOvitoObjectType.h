@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file NativeOvitoObjectType.h
- * \brief Contains the definition of the Ovito::NativeOvitoObjectType class.
- */
-
 #ifndef __OVITO_NATIVE_OVITO_OBJECT_TYPE_H
 #define __OVITO_NATIVE_OVITO_OBJECT_TYPE_H
 
 #include <core/Core.h>
 #include "OvitoObjectType.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Internal {
 
 /**
  * \brief Every C++ class derived from OvitoObject is described by an instance of this class.
@@ -109,8 +104,8 @@ private:
 	/// The head of the linked list of all native object types.
 	static NativeOvitoObjectType* _firstInfo;
 
-	friend class NativePlugin;
-	friend class PropertyFieldDescriptor;
+	friend class Ovito::PluginSystem::Internal::NativePlugin;
+	friend class Ovito::ObjectSystem::PropertyFieldDescriptor;
 };
 
 ///////////////////////////////////// Macros //////////////////////////////////////////
@@ -118,17 +113,17 @@ private:
 /// This macro must be included in the class definition of a OvitoObject-derived class.
 #define OVITO_OBJECT													\
 	public:																\
-		static const Ovito::NativeOvitoObjectType OOType;				\
-		virtual const Ovito::OvitoObjectType& getOOType() const { return OOType; }
+		static const Ovito::ObjectSystem::Internal::NativeOvitoObjectType OOType;				\
+		virtual const Ovito::ObjectSystem::OvitoObjectType& getOOType() const { return OOType; }
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_OVITO_OBJECT(plugin, name, basename)							\
-	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
+	const Ovito::ObjectSystem::Internal::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(plugin, name, basename)				\
-	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
+	const Ovito::ObjectSystem::Internal::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_NATIVE_OVITO_OBJECT_TYPE_H

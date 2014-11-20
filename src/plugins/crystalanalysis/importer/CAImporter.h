@@ -24,9 +24,9 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
-#include <core/scene/objects/geometry/HalfEdgeMesh.h>
+#include <core/utilities/mesh/HalfEdgeMesh.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/importer/ParticleImportTask.h>
+#include <plugins/particles/import/ParticleImportTask.h>
 #include <plugins/crystalanalysis/data/patterns/StructurePattern.h>
 
 namespace CrystalAnalysis {

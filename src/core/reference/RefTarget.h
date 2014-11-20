@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file RefTarget.h
- * \brief Contains the definition of the Ovito::RefTarget class.
- */
-
 #ifndef __OVITO_REFTARGET_H
 #define __OVITO_REFTARGET_H
 
 #include <core/Core.h>
 #include "RefMaker.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief Base class for objects that are referenced by RefMaker objects.
@@ -306,10 +301,10 @@ private:
 	friend class VectorReferenceFieldBase;
 };
 
-};
+}}	// End of namespace
+
 
 // Also include the CloneHelper header because it is always needed in conjunction with the RefTarget class.
 #include "CloneHelper.h"
 
 #endif // __OVITO_REFTARGET_H
-

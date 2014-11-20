@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file PipelineFlowState.h 
- * \brief Contains the definition of the Ovito::PipelineFlowState class.
- */
- 
 #ifndef __OVITO_PIPELINE_FLOW_STATE_H
 #define __OVITO_PIPELINE_FLOW_STATE_H
 
@@ -33,7 +28,7 @@
 #include <core/scene/objects/VersionedObjectReference.h>
 #include "PipelineStatus.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief This object flows down the geometry pipeline of an ObjectNode.
@@ -160,7 +155,7 @@ private:
 	QVariantMap _attributes;
 };
 
-};
+}}}	// End of namespace
 
 #include <core/scene/objects/SceneObject.h>
 

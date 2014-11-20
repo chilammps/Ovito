@@ -19,20 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file RefMaker.h
- * \brief Contains the definition of the Ovito::RefMaker class.
- */
-
 #ifndef __OVITO_REFMAKER_H
 #define __OVITO_REFMAKER_H
 
 #include <core/Core.h>
 #include "ReferenceEvent.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
-class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class SingleReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 class VectorReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 
@@ -328,7 +322,7 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #include "NativePropertyFieldDescriptor.h"
 

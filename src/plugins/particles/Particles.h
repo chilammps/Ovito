@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -29,5 +29,33 @@
 #else
 #  define OVITO_PARTICLES_EXPORT Q_DECL_IMPORT
 #endif
+
+namespace Ovito { namespace Plugins { namespace Particles {
+
+	namespace Objects {
+		class ParticlePropertyObject;
+		namespace Display {}
+	}
+	namespace Data {
+		class ParticleProperty;
+	}
+	namespace Import {}
+	namespace Export {}
+	namespace Modifiers {}
+	namespace Util {
+		class TreeNeighborListBuilder;
+		class OnTheFlyNeighborListBuilder;
+		class ParticlePropertyComboBox;
+	}
+
+	using namespace Objects;
+	using namespace Objects::Display;
+	using namespace Data;
+	using namespace Import;
+	using namespace Export;
+	using namespace Modifiers;
+	using namespace Util;
+
+}}}
 
 #endif

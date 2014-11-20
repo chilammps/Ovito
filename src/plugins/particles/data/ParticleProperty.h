@@ -19,19 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ParticleProperty.h
- * \brief Contains the definition of the Particles::ParticleProperty class.
- */
-
 #ifndef __OVITO_PARTICLE_PROPERTY_H
 #define __OVITO_PARTICLE_PROPERTY_H
 
 #include <plugins/particles/Particles.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
 
 /**
  * \brief Memory storage for a per-particle property.
@@ -577,9 +570,9 @@ protected:
 	std::unique_ptr<uint8_t[]> _data;
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Particles::ParticleProperty::Type);
-Q_DECLARE_TYPEINFO(Particles::ParticleProperty::Type, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Data::ParticleProperty::Type);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Data::ParticleProperty::Type, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PARTICLE_PROPERTY_H

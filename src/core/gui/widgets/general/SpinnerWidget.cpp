@@ -25,6 +25,8 @@
 
 namespace Ovito { namespace Gui { namespace Widgets {
 
+using namespace Ovito::ObjectSystem::Units;
+
 /******************************************************************************
 * Constructs the spinner.
 ******************************************************************************/

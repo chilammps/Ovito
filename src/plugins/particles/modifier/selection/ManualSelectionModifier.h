@@ -25,12 +25,10 @@
 #include <plugins/particles/Particles.h>
 #include <core/viewport/input/ViewportInputMode.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
-#include <plugins/particles/data/ParticleSelectionSet.h>
+#include <plugins/particles/util/ParticleSelectionSet.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 /**
  * Modifiers that allows the user to select individual particles by hand.
@@ -80,6 +78,8 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 
+namespace Internal {
+
 /**
  * A properties editor for the ManualSelectionModifier class.
  */
@@ -121,6 +121,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_MANUAL_SELECTION_MODIFIER_H

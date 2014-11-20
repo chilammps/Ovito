@@ -23,11 +23,11 @@
 #define __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/VectorDisplay.h>
+#include <plugins/particles/objects/VectorDisplay.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include "../../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /******************************************************************************
 * Calculates the per-particle displacement vectors by comparing the current
@@ -137,9 +137,11 @@ private:
 	DECLARE_REFERENCE_FIELD(_vectorDisplay);
 };
 
-/******************************************************************************
-* A properties editor for the CalculateDisplacementsModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the CalculateDisplacementsModifier class.
+ */
 class CalculateDisplacementsModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -156,6 +158,8 @@ protected:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H

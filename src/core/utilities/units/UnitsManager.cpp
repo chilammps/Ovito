@@ -24,7 +24,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "UnitsManager.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Units {
 
 /******************************************************************************
 * Constructor.
@@ -125,4 +125,4 @@ void TimeParameterUnit::onAnimationSettingsReplaced(AnimationSettings* newAnimat
 	Q_EMIT formatChanged();
 }
 
-};
+}}}	// End of namespace

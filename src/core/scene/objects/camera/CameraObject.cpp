@@ -31,12 +31,16 @@
 #include "CameraObject.h"
 #include "moc_AbstractCameraObject.cpp"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+
+using namespace Internal;
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, SceneObject);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraObject, AbstractCameraObject);
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraDisplayObject, DisplayObject);
-IMPLEMENT_OVITO_OBJECT(Core, CameraObjectEditor, PropertiesEditor);
+namespace Internal {
+	IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraDisplayObject, DisplayObject);
+	IMPLEMENT_OVITO_OBJECT(Core, CameraObjectEditor, PropertiesEditor);
+}
 SET_OVITO_OBJECT_EDITOR(CameraObject, CameraObjectEditor);
 DEFINE_PROPERTY_FIELD(CameraObject, _isPerspective, "IsPerspective");
 DEFINE_REFERENCE_FIELD(CameraObject, _fov, "FOV", Controller);
@@ -211,6 +215,8 @@ FloatType CameraObject::targetDistance() const
 	// That's the fixed target distance of a free camera:
 	return 50.0f;
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Constructor that creates the UI controls for the editor.
@@ -475,4 +481,6 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	renderer->endPickObject();
 }
 
-};
+}	// End of namespace
+
+}}}}	// End of namespace

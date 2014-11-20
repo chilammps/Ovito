@@ -25,16 +25,19 @@
 #include <plugins/particles/util/TreeNeighborListBuilder.h>
 #include "CentroSymmetryModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /// The maximum number of neighbors that can be taken into account to compute the CSP.
 enum { MAX_CSP_NEIGHBORS = 32 };
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CentroSymmetryModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, CentroSymmetryModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, Internal::CentroSymmetryModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(CentroSymmetryModifier, _numNeighbors, "NumNeighbors", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neighbors");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -151,6 +154,8 @@ void CentroSymmetryModifier::propertyChanged(const PropertyFieldDescriptor& fiel
 	AsynchronousParticleModifier::propertyChanged(field);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -186,5 +191,6 @@ void CentroSymmetryModifierEditor::createUI(const RolloutInsertionParameters& ro
 	layout1->addWidget(statusLabel());
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

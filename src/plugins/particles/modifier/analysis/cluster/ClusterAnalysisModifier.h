@@ -27,7 +27,7 @@
 #include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /*
  * This modifier determines decomposes the particle set into clusters.
@@ -124,9 +124,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_cutoff);
 };
 
-/******************************************************************************
-* A properties editor for the ClusterAnalysisModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the ClusterAnalysisModifier class.
+ */
 class ClusterAnalysisModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -145,6 +147,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_CLUSTER_ANALYSIS_MODIFIER_H

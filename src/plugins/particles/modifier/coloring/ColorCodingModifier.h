@@ -23,7 +23,7 @@
 #define __OVITO_COLOR_CODING_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/rendering/ImagePrimitive.h>
@@ -31,9 +31,7 @@
 #include <core/viewport/Viewport.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
 /*
  * Abstract base class for color gradients that can be used with the ColorCodingModifier.
@@ -316,6 +314,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
+namespace Internal {
+
 /*
  * A properties editor for the ColorCodingModifier class.
  */
@@ -376,6 +376,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_COLOR_CODING_MODIFIER_H

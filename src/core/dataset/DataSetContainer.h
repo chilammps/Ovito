@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file DataSetContainer.h
- * \brief Contains the definition of the Ovito::DataSetContainer class.
- */
-
 #ifndef __OVITO_DATASET_CONTAINER_H
 #define __OVITO_DATASET_CONTAINER_H
 
@@ -32,7 +27,7 @@
 #include "DataSet.h"
 #include "importexport/FileImporter.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief Manages the DataSet being edited.
@@ -203,6 +198,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_currentSet);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DATASET_CONTAINER_H

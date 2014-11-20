@@ -22,26 +22,32 @@
 #include <plugins/pyscript/PyScript.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/SimulationCell.h>
-#include <plugins/particles/importer/InputColumnMapping.h>
-#include <plugins/particles/importer/ParticleImporter.h>
-#include <plugins/particles/importer/cfg/CFGImporter.h>
-#include <plugins/particles/importer/imd/IMDImporter.h>
-#include <plugins/particles/importer/parcas/ParcasFileImporter.h>
-#include <plugins/particles/importer/vasp/POSCARImporter.h>
-#include <plugins/particles/importer/xyz/XYZImporter.h>
-#include <plugins/particles/importer/pdb/PDBImporter.h>
-#include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
-#include <plugins/particles/importer/lammps/LAMMPSBinaryDumpImporter.h>
-#include <plugins/particles/importer/lammps/LAMMPSDataImporter.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/import/InputColumnMapping.h>
+#include <plugins/particles/import/ParticleImporter.h>
+#include <plugins/particles/import/cfg/CFGImporter.h>
+#include <plugins/particles/import/imd/IMDImporter.h>
+#include <plugins/particles/import/parcas/ParcasFileImporter.h>
+#include <plugins/particles/import/vasp/POSCARImporter.h>
+#include <plugins/particles/import/xyz/XYZImporter.h>
+#include <plugins/particles/import/pdb/PDBImporter.h>
+#include <plugins/particles/import/lammps/LAMMPSTextDumpImporter.h>
+#include <plugins/particles/import/lammps/LAMMPSBinaryDumpImporter.h>
+#include <plugins/particles/import/lammps/LAMMPSDataImporter.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
+using namespace Particles::Import::Lammps;
+using namespace Particles::Import::Vasp;
+using namespace Particles::Import::AtomEye;
+using namespace Particles::Import::IMD;
+using namespace Particles::Import::Parcas;
+using namespace Particles::Import::PDB;
+using namespace Particles::Import::XYZ;
 
 BOOST_PYTHON_MODULE(ParticlesImporter)
 {
@@ -125,4 +131,4 @@ BOOST_PYTHON_MODULE(ParticlesImporter)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesImporter);
 
-};
+}}}}	// End of namespace

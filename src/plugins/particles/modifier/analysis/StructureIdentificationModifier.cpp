@@ -23,7 +23,7 @@
 #include <core/viewport/Viewport.h>
 #include "StructureIdentificationModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, StructureIdentificationModifier, AsynchronousParticleModifier);
 DEFINE_VECTOR_REFERENCE_FIELD(StructureIdentificationModifier, _structureTypes, "StructureTypes", ParticleType);
@@ -232,4 +232,4 @@ void StructureListParameterUI::onDoubleClickStructureType(const QModelIndex& ind
 	});
 }
 
-};	// End of namespace
+}}}}}	// End of namespace

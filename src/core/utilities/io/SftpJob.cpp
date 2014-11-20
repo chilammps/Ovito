@@ -27,7 +27,7 @@
 
 #include "SftpJob.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO { namespace Internal {
 
 /// List SFTP jobs that are waiting to be executed.
 QQueue<SftpJob*> SftpJob::_queuedJobs;
@@ -404,4 +404,4 @@ void SftpListDirectoryJob::onFileInfoAvailable(QSsh::SftpJobId job, const QList<
 	}
 }
 
-};
+}}}}

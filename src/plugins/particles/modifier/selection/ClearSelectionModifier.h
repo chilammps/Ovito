@@ -25,9 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 /**
  * \brief This modifier clear the current selection such that no particles are selected.
@@ -57,6 +55,6 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 
-};	// End of namespace
+}}}}}	// End of namespace
 
 #endif // __OVITO_CLEAR_SELECTION_MODIFIER_H

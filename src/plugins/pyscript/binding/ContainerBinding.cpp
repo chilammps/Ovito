@@ -24,7 +24,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/SceneNode.h>
 #include <core/scene/ObjectNode.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/viewport/Viewport.h>
 #include "PythonBinding.h"
 

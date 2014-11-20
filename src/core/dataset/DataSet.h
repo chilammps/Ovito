@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -28,7 +28,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include "UndoStack.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief This class stores everything that belongs to a scene.
@@ -169,9 +169,11 @@ protected:
 	/// Is called when the value of a reference field of this RefMaker changes.
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
+private:
+
 	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
 	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
-			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
+			Viewport* viewport, FrameBuffer* frameBuffer, Util::IO::Internal::VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
 
 	/// Returns a viewport configuration that is used as template for new scenes.
 	OORef<ViewportConfiguration> createDefaultViewportConfiguration();
@@ -221,6 +223,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_renderSettings);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DATASET_H

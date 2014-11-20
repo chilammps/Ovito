@@ -27,7 +27,7 @@
 #include <core/utilities/concurrent/TaskManager.h>
 #include "AsynchronousParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier);
 DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate");
@@ -232,4 +232,4 @@ void AsynchronousParticleModifier::loadFromStream(ObjectLoadStream& stream)
 	stream.closeChunk();
 }
 
-};	// End of namespace
+}}}}	// End of namespace

@@ -24,8 +24,8 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/importer/InputColumnMappingDialog.h>
-#include <plugins/particles/importer/ParticleImporter.h>
+#include <plugins/particles/import/InputColumnMappingDialog.h>
+#include <plugins/particles/import/ParticleImporter.h>
 
 #ifdef MAKING_MODULE_NETCDFIMPORTER
 #  define OVITO_NETCDF_EXPORT Q_DECL_EXPORT
@@ -33,9 +33,8 @@
 #  define OVITO_NETCDF_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace NetCDF {
+namespace Ovito { namespace Plugins { namespace NetCDF {
 
-using namespace Ovito;
 using namespace Particles;
 
 /*
@@ -211,6 +210,6 @@ template<typename T> void fullToVoigt(size_t particleCount, T *full, T *voigt) {
     }
 }
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_NETCDF_IMPORTER_H

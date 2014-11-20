@@ -23,13 +23,13 @@
 #define __OVITO_CA_DISLOCATION_DISPLAY_H
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCell.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 
 namespace CrystalAnalysis {

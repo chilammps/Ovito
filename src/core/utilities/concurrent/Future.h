@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "FutureInterface.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 class FutureBase {
 public:
@@ -127,6 +127,6 @@ inline void FutureWatcher::setFuture(const FutureBase& future)
 	setFutureInterface(future.interface());
 }
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_BACKGROUND_OPERATION_H

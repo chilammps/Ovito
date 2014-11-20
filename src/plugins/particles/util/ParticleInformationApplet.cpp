@@ -26,11 +26,11 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "ParticleInformationApplet.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleInformationApplet, UtilityApplet);
 
@@ -248,4 +248,4 @@ Box3 ParticleInformationInputMode::overlayBoundingBox(Viewport* vp, ViewportScen
 	return bbox;
 }
 
-};
+}}}}}	// End of namespace

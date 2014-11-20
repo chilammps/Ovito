@@ -24,9 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
 
 /**
 * \brief Stores the geometry and boundary conditions of a simulation box.
@@ -156,6 +154,6 @@ private:
 	std::array<bool,3> _pbcFlags = {{ true, true, true }};
 };
 
-};
+}}}}	// End of namespace
 
 #endif // __OVITO_SIMULATION_CELL_DATA_H

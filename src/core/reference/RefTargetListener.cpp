@@ -22,12 +22,12 @@
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
-IMPLEMENT_OVITO_OBJECT(Core, RefTargetListenerBase, RefMaker)
-IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListenerBase, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(RefTargetListenerBase, _target, "Target", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(VectorRefTargetListenerBase, _targets, "Targets", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF)
+IMPLEMENT_OVITO_OBJECT(Core, RefTargetListenerBase, RefMaker);
+IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListenerBase, RefMaker);
+DEFINE_FLAGS_REFERENCE_FIELD(RefTargetListenerBase, _target, "Target", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(VectorRefTargetListenerBase, _targets, "Targets", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF);
 
 /******************************************************************************
 * Is called when the RefTarget referenced by this listener has sent a message.
@@ -51,4 +51,5 @@ bool VectorRefTargetListenerBase::referenceEvent(RefTarget* source, ReferenceEve
 	return RefMaker::referenceEvent(source, event);
 }
 
-};
+}}	// End of namespace
+

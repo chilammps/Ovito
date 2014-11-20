@@ -26,7 +26,7 @@
 #include "Task.h"
 #include "moc_FutureWatcher.cpp"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 enum {
     MaxProgressEmitsPerSecond = 20
@@ -390,5 +390,4 @@ void FutureWatcher::waitForFinished() const
 		_futureInterface->waitForFinished();
 }
 
-
-};
+}}}	// End of namespace

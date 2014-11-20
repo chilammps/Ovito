@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file StructureIdentificationModifier.h
- * \brief Contains the definition of the Particles::StructureIdentificationModifier class.
- */
-
 #ifndef __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H
 #define __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H
 
@@ -31,12 +26,10 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/ParticleType.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticleType.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Base class for modifiers that assign a structure type to each particle.
@@ -189,6 +182,6 @@ private:
 	Q_OBJECT
 };
 
-};	// End of namespace
+}}}}}	// End of namespace
 
 #endif // __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H

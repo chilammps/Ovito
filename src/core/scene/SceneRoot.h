@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file SceneRoot.h 
- * \brief Contains the definition of the Ovito::SceneRoot class.
- */
-
 #ifndef __OVITO_SCENEROOT_H
 #define __OVITO_SCENEROOT_H
 
@@ -31,7 +26,7 @@
 #include <core/animation/TimeInterval.h>
 #include "SceneNode.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief This is the scene's root node.
@@ -64,6 +59,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SCENEROOT_H

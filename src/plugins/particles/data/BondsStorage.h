@@ -19,19 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file BondsStorage.h
- * \brief Contains the definition of the Particles::BondsStorage class.
- */
-
 #ifndef __OVITO_BONDS_STORAGE_H
 #define __OVITO_BONDS_STORAGE_H
 
 #include <plugins/particles/Particles.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
 
 /**
  * \brief Memory storage for bonds between particles.
@@ -89,6 +82,6 @@ protected:
 	std::vector<Bond> _bonds;
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_BONDS_STORAGE_H

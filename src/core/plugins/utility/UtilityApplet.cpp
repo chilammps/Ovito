@@ -22,8 +22,8 @@
 #include <core/Core.h>
 #include "UtilityApplet.h"
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 IMPLEMENT_OVITO_OBJECT(Core, UtilityApplet, RefMaker);
 
-};
+}}	// End of namespace

@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ModifierApplication.h
- * \brief Contains the definition of the Ovito::ModifierApplication class.
- */
-
 #ifndef __OVITO_MODIFIER_APPLICATION_H
 #define __OVITO_MODIFIER_APPLICATION_H
 
 #include <core/Core.h>
 #include "Modifier.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Stores information about an application of a Modifier
@@ -103,7 +98,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_modifierData);
 };
 
-
-};
+}}}	// End of namespace
 
 #endif // __OVITO_MODIFIER_APPLICATION_H

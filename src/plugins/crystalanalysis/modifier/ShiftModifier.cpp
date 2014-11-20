@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include "ShiftModifier.h"

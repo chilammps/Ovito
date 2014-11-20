@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Modifier.h
- * \brief Contains the definition of the Ovito::Modifier class.
- */
-
 #ifndef __OVITO_MODIFIER_H
 #define __OVITO_MODIFIER_H
 
@@ -32,7 +27,7 @@
 #include "PipelineFlowState.h"
 #include "PipelineStatus.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Base class for algorithms that modify an object or data in some way.
@@ -172,9 +167,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_isEnabled);
 };
 
-};
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Modifier*);
-Q_DECLARE_TYPEINFO(Ovito::Modifier*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ObjectSystem::Scene::Modifier*);
+Q_DECLARE_TYPEINFO(Ovito::ObjectSystem::Scene::Modifier*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_MODIFIER_H

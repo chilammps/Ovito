@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PropertyFieldDescriptor.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Internal {
 
 /******************************************************************************
 * This structure describes one member field of a RefMaker object that stores
@@ -81,15 +81,15 @@ public:
 
 #define DECLARE_REFERENCE_FIELD(storageFieldName)																	\
 	public: 																										\
-		static Ovito::SingleReferenceFieldBase& storageFieldName##__access_reffield(RefMaker* obj);					\
-		static Ovito::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
+		static Ovito::ObjectSystem::SingleReferenceFieldBase& storageFieldName##__access_reffield(RefMaker* obj);					\
+		static Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
 	private:
 
 #define DEFINE_FLAGS_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, Flags)	\
-	Ovito::SingleReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
+	Ovito::ObjectSystem::SingleReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
 		return static_cast<RefMakerClass*>(obj)->storageFieldName;													\
 	}																												\
-	Ovito::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
+	Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
 		&RefMakerClass::OOType, &TargetClass::OOType, 																\
 		UniqueFieldIdentifier, Flags, RefMakerClass::storageFieldName##__access_reffield		 					\
 	);
@@ -99,15 +99,15 @@ public:
 
 #define DECLARE_VECTOR_REFERENCE_FIELD(storageFieldName)\
 	public: 											\
-		static Ovito::VectorReferenceFieldBase& storageFieldName##__access_reffield(RefMaker* obj);					\
-		static Ovito::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
+		static Ovito::ObjectSystem::VectorReferenceFieldBase& storageFieldName##__access_reffield(RefMaker* obj);					\
+		static Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
 	private:
 
 #define DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, Flags)	\
-	Ovito::VectorReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
+	Ovito::ObjectSystem::VectorReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
 		return static_cast<RefMakerClass*>(obj)->storageFieldName;													\
 	}																												\
-	Ovito::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
+	Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
 		&RefMakerClass::OOType, &TargetClass::OOType, 																\
 		UniqueFieldIdentifier, Flags | PROPERTY_FIELD_VECTOR, RefMakerClass::storageFieldName##__access_reffield 	\
 	);
@@ -119,10 +119,10 @@ public:
 	RefMakerClassPlusStorageFieldName.init(this, &PROPERTY_FIELD(RefMakerClassPlusStorageFieldName));
 
 #define SET_PROPERTY_FIELD_UNITS(RefMakerClass, storageFieldName, ParameterUnitClass)								\
-	static Ovito::NativePropertyFieldDescriptor::PropertyFieldUnitsSetter __unitsSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, &ParameterUnitClass::staticMetaObject);
+	static Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor::PropertyFieldUnitsSetter __unitsSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, &ParameterUnitClass::staticMetaObject);
 
 #define SET_PROPERTY_FIELD_LABEL(RefMakerClass, storageFieldName, labelText)										\
-	static Ovito::NativePropertyFieldDescriptor::PropertyFieldDisplayNameSetter __displayNameSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, labelText);
+	static Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor::PropertyFieldDisplayNameSetter __displayNameSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, labelText);
 
 #define DECLARE_PROPERTY_FIELD(storageFieldName)																	\
 	public: 																										\
@@ -130,7 +130,7 @@ public:
 		static void __write_propfield_##storageFieldName(Ovito::RefMaker* obj, const QVariant& newValue);			\
 		static void __save_propfield_##storageFieldName(Ovito::RefMaker* obj, Ovito::SaveStream& stream);			\
 		static void __load_propfield_##storageFieldName(Ovito::RefMaker* obj, Ovito::LoadStream& stream);			\
-		static Ovito::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
+		static Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;	\
 	private:
 
 #define DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, Flags)			\
@@ -146,7 +146,7 @@ public:
 	void RefMakerClass::__load_propfield_##storageFieldName(RefMaker* obj, LoadStream& stream) {			\
 		static_cast<RefMakerClass*>(obj)->storageFieldName.loadFromStream(stream);							\
 	}																										\
-	Ovito::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(				\
+	Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(				\
 		&RefMakerClass::OOType, 									 										\
 		UniqueFieldIdentifier, Flags, __read_propfield_##storageFieldName, 	__write_propfield_##storageFieldName,	\
 		__save_propfield_##storageFieldName, __load_propfield_##storageFieldName 							\
@@ -155,7 +155,7 @@ public:
 #define DEFINE_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier)						\
 	DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, PROPERTY_FIELD_NO_FLAGS)
 
-};
+}}}	// End of namespace
 
 // The RefTarget header must be present because
 // we are using OORef<RefTarget> here.

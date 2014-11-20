@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "OnTheFlyNeighborListBuilder.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /******************************************************************************
 * Constructor
@@ -286,5 +286,4 @@ void OnTheFlyNeighborListBuilder::iterator::next()
 	}
 }
 
-};	// End of namespace
-
+}}}}	// End of namespace

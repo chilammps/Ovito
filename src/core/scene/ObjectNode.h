@@ -19,22 +19,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ObjectNode.h
- * \brief Contains the definition of the Ovito::ObjectNode class.
- */
-
 #ifndef __OVITO_OBJECT_NODE_H
 #define __OVITO_OBJECT_NODE_H
 
 #include <core/Core.h>
 #include "SceneNode.h"
 #include "objects/SceneObject.h"
-#include "display/DisplayObject.h"
+#include "objects/DisplayObject.h"
 
-namespace Ovito {
-
-class Modifier;			// defined in Modifier.h
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief A node in the scene that represents an object.
@@ -137,7 +130,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 
-
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OBJECT_NODE_H

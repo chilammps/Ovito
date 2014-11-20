@@ -27,10 +27,10 @@
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/animation/controller/Controller.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/rendering/LinePrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
  * The default camera scene object.
@@ -103,6 +103,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_zoom);
 };
 
+namespace Internal {
 
 /**
  * A properties editor for the CameraObject class.
@@ -181,6 +182,8 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}	// End of namespace
+
+}}}}	// End of namespace
 
 #endif // __OVITO_CAMERA_OBJECT_H

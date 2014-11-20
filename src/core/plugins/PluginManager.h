@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PluginManager.h
- * \brief Contains the definition of the Ovito::PluginManager class.
- */
-
 #ifndef __OVITO_PLUGIN_MANAGER_H
 #define __OVITO_PLUGIN_MANAGER_H
 
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /**
  * \brief Loads and manages the installed plugins.
@@ -118,9 +113,9 @@ private:
 	static PluginManager* _instance;
 
 	friend class Ovito::Gui::Application;
-	friend class Ovito::Plugin;
+	friend class Ovito::PluginSystem::Plugin;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_PLUGIN_MANAGER_H

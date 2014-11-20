@@ -23,7 +23,7 @@
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/netcdf/NetCDFImporter.h>
 
-namespace NetCDF {
+namespace Ovito { namespace Plugins { namespace NetCDF { namespace Internal {
 
 using namespace boost::python;
 using namespace Ovito;
@@ -41,4 +41,4 @@ BOOST_PYTHON_MODULE(NetCDFImporter)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(NetCDFImporter);
 
-};
+}}}}	// End of namespace

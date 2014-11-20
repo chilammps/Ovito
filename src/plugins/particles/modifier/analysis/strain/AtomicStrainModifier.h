@@ -27,7 +27,7 @@
 #include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /******************************************************************************
 * Calculates the per-particle displacement vectors by comparing the current
@@ -328,9 +328,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
-/******************************************************************************
-* A properties editor for the AtomicStrainModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the AtomicStrainModifier class.
+ */
 class AtomicStrainModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -349,6 +351,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_ATOMIC_STRAIN_MODIFIER_H

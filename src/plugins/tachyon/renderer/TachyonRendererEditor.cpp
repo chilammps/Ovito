@@ -27,7 +27,7 @@
 #include "TachyonRenderer.h"
 #include "TachyonRendererEditor.h"
 
-namespace Ovito { namespace Rendering { namespace Tachyon {
+namespace Ovito { namespace Plugins { namespace Tachyon { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Tachyon, TachyonRendererEditor, PropertiesEditor);
 
@@ -113,4 +113,4 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	mainLayout->addWidget(label);
 }
 
-}}}	// End of namespace
+}}}}	// End of namespace

@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file NativePlugin.h
- * \brief Contains the definition of the Ovito::NativePlugin class.
- */
-
 #ifndef __OVITO_NATIVE_PLUGIN_H
 #define __OVITO_NATIVE_PLUGIN_H
 
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem { namespace Internal {
 
 /**
  * \brief A plugin that is implemented as a native shared library.
@@ -74,9 +69,9 @@ private:
 	/// The plugin library after it has been loaded.
 	QLibrary* _library;
 
-	friend class PluginManager;
+	friend class Ovito::PluginSystem::PluginManager;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_NATIVE_PLUGIN_H

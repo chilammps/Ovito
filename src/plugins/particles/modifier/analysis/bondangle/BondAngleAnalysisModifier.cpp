@@ -28,11 +28,14 @@
 
 #include "BondAngleAnalysisModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, Internal::BondAngleAnalysisModifierEditor);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -164,6 +167,8 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 	else return HCP;
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -188,5 +193,6 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

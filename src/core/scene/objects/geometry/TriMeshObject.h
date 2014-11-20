@@ -19,19 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file TriMeshObject.h
- * \brief Contains the definition of the Ovito::TriMeshObject class.
- */
-
 #ifndef __OVITO_TRIMESH_OBJECT_H
 #define __OVITO_TRIMESH_OBJECT_H
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/utilities/mesh/TriMesh.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
  * \brief A scene object type that consist of a triangle mesh.
@@ -81,6 +76,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}}	// End of namespace
 
 #endif // __OVITO_TRIMESH_OBJECT_H

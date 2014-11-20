@@ -32,11 +32,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "BinAndReduceModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BinAndReduceModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, BinAndReduceModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, BinAndReduceModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, Internal::BinAndReduceModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _reductionOperation, "ReductionOperation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _firstDerivative, "firstDerivative", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
@@ -55,6 +54,10 @@ SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _fixPropertyAxisRange, "Fix prope
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeStart, "Property axis range start");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeEnd, "Property axis range end");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, BinAndReduceModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -303,6 +306,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	return PipelineStatus(PipelineStatus::Success);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -323,11 +328,11 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	QGridLayout* gridlayout = new QGridLayout();
 	gridlayout->addWidget(new QLabel(tr("Reduction operation:"), rollout), 0, 0);
 	VariantComboBoxParameterUI* reductionOperationPUI = new VariantComboBoxParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation));
-    reductionOperationPUI->comboBox()->addItem(tr("mean"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MEAN));
-    reductionOperationPUI->comboBox()->addItem(tr("sum"), qVariantFromValue(Particles::BinAndReduceModifier::RED_SUM));
-    reductionOperationPUI->comboBox()->addItem(tr("sum divided by bin volume"), qVariantFromValue(Particles::BinAndReduceModifier::RED_SUM_VOL));
-    reductionOperationPUI->comboBox()->addItem(tr("min"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MIN));
-    reductionOperationPUI->comboBox()->addItem(tr("max"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MAX));
+    reductionOperationPUI->comboBox()->addItem(tr("mean"), qVariantFromValue(BinAndReduceModifier::RED_MEAN));
+    reductionOperationPUI->comboBox()->addItem(tr("sum"), qVariantFromValue(BinAndReduceModifier::RED_SUM));
+    reductionOperationPUI->comboBox()->addItem(tr("sum divided by bin volume"), qVariantFromValue(BinAndReduceModifier::RED_SUM_VOL));
+    reductionOperationPUI->comboBox()->addItem(tr("min"), qVariantFromValue(BinAndReduceModifier::RED_MIN));
+    reductionOperationPUI->comboBox()->addItem(tr("max"), qVariantFromValue(BinAndReduceModifier::RED_MAX));
     gridlayout->addWidget(reductionOperationPUI->comboBox(), 0, 1);
     layout->addLayout(gridlayout);
 
@@ -605,5 +610,6 @@ void BinAndReduceModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

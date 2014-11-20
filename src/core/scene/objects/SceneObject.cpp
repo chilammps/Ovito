@@ -25,7 +25,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget);
 DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene");
@@ -129,4 +129,4 @@ bool SceneObject::waitUntilReady(TimePoint time, const QString& message, QProgre
 	}, message, progressDialog);
 }
 
-};
+}}}	// End of namespace

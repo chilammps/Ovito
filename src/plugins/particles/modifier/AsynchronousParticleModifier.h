@@ -19,24 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file AsynchronousParticleModifier.h
- * \brief Contains the definition of the Particles::AsynchronousParticleModifier class.
- */
-
 #ifndef __OVITO_ASYNC_PARTICLE_MODIFIER_H
 #define __OVITO_ASYNC_PARTICLE_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
 #include <core/utilities/concurrent/Future.h>
-
 #include <plugins/particles/modifier/ParticleModifier.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/ParticleType.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
 /**
  * \brief Base class for modifiers that compute their results in a background thread.
@@ -151,6 +141,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_saveResults);
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_ASYNC_PARTICLE_MODIFIER_H

@@ -30,11 +30,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ScatterPlotModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ScatterPlotModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, ScatterPlotModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(ScatterPlotModifier, ScatterPlotModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ScatterPlotModifier, Internal::ScatterPlotModifierEditor);
 DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectXAxisInRange, "SelectXAxisInRange");
 DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeStart, "SelectionXAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeEnd, "SelectionXAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
@@ -63,6 +62,10 @@ SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisRangeStart, "Y-axis range st
 SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisRangeEnd, "Y-axis range end");
 SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisProperty, "X-axis property");
 SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisProperty, "Y-axis property");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, ScatterPlotModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -312,6 +315,8 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -335,9 +340,9 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_scatterPlot = new QCustomPlot();
 	_scatterPlot->setMinimumHeight(240);
 	_scatterPlot->setInteraction(QCP::iRangeDrag, true);
-	_scatterPlot->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+	_scatterPlot->axisRect()->setRangeDrag(Qt::Orientations(Qt::Horizontal | Qt::Vertical));
 	_scatterPlot->setInteraction(QCP::iRangeZoom, true);
-	_scatterPlot->axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
+	_scatterPlot->axisRect()->setRangeZoom(Qt::Orientations(Qt::Horizontal | Qt::Vertical));
 	_scatterPlot->addGraph();
 	_scatterPlot->graph()->setLineStyle(QCPGraph::lsNone);
 	_scatterPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
@@ -593,5 +598,6 @@ void ScatterPlotModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "FutureWatcher.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 template<typename R> class Future;						// Defined in Future.h
 template<typename R, typename Function> class Task;		// Defined in Task.h
@@ -180,6 +180,6 @@ public:
 	template<typename R2> friend class Future;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_FUTURE_INTERFACE_H

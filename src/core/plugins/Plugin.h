@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Plugin.h
- * \brief Contains the definition of the Ovito::Plugin class.
- */
-
 #ifndef __OVITO_PLUGIN_H
 #define __OVITO_PLUGIN_H
 
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /**
  * \brief Represents a plugin that is loaded at runtime.
@@ -181,6 +176,6 @@ private:
 	friend class PluginManager;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_PLUGIN_H

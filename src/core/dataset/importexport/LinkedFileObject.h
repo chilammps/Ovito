@@ -26,7 +26,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include "LinkedFileImporter.h"
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
 
 /**
  * \brief A place holder object that feeds data read from an external file into the scene.
@@ -253,6 +253,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_playbackStartTime);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_LINKED_FILE_OBJECT_H

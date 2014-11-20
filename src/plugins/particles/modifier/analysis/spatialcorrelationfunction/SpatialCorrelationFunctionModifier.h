@@ -29,15 +29,16 @@
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../AsynchronousParticleModifier.h"
 #include <qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
+}
 /*
  * This modifier computes the Fourier transform of a (spatial) cross correlation function
  * between two particle properties.
@@ -327,9 +328,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty2);
 };
 
-/******************************************************************************
-* A properties editor for the SpatialCorrelationFunctionModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the SpatialCorrelationFunctionModifier class.
+ */
 class SpatialCorrelationFunctionModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -368,9 +371,11 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Particles::SpatialCorrelationFunctionModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Particles::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+}}}}}	// End of namespace
+
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SPATIAL_CORRELATION_FUNCTION_MODIFIER_H

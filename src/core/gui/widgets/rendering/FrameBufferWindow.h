@@ -26,7 +26,7 @@
 #include <core/rendering/FrameBuffer.h>
 #include "FrameBufferWidget.h"
 
-namespace Ovito { namespace Gui {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
  * This window displays the contents of a FrameBuffer.
@@ -66,6 +66,6 @@ private:
 	Q_OBJECT
 };
 
-}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_FRAME_BUFFER_WINDOW_H

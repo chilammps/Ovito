@@ -31,7 +31,7 @@
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /******************************************************************************
 * Constructor of the object.
@@ -170,4 +170,4 @@ const PropertyFieldDescriptor* OvitoObjectType::findPropertyField(const char* id
 	return nullptr;
 }
 
-};
+}}	// End of namespace

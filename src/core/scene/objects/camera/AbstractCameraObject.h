@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
  * \brief Abstract base class for camera scene objects.
@@ -58,7 +58,6 @@ private:
 	OVITO_OBJECT
 };
 
-
-};
+}}}}	// End of namespace
 
 #endif // __OVITO_ABSTRACT_CAMERA_OBJECT_H

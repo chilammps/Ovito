@@ -25,10 +25,10 @@
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/objects/WeakVersionedObjectReference.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/rendering/LinePrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
  * A simple helper object that serves as direction target for camera and light objects.
@@ -92,6 +92,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}}	// End of namespace
 
 #endif // __OVITO_TARGET_OBJECT_H

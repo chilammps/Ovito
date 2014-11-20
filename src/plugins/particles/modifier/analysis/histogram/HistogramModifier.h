@@ -24,14 +24,14 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../ParticleModifier.h"
 #include <qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /*
  * This modifier computes a value histogram for a particle property.
@@ -165,9 +165,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
-/******************************************************************************
-* A properties editor for the HistogramModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the HistogramModifier class.
+ */
 class HistogramModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -212,6 +214,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_HISTOGRAM_MODIFIER_H

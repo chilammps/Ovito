@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file ImportExportManager.h 
- * \brief Contains the definition of the Ovito::ImportExportManager class.
- */
-
 #ifndef __OVITO_IMPORT_EXPORT_MANAGER_H
 #define __OVITO_IMPORT_EXPORT_MANAGER_H
 
@@ -32,7 +27,7 @@
 #include "FileImporter.h"
 #include "FileExporter.h"
 
-namespace Ovito {
+namespace Ovito { namespace DataIO {
 
 /**
  * \brief Manages the installed data import and export services.
@@ -92,6 +87,6 @@ private:
 	friend class Ovito::Gui::Application;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_IMPORT_EXPORT_MANAGER_H

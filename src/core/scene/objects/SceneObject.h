@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file SceneObject.h
- * \brief Contains the definition of the Ovito::SceneObject class.
- */
-
 #ifndef __OVITO_SCENE_OBJECT_H
 #define __OVITO_SCENE_OBJECT_H
 
@@ -31,9 +26,9 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Abstract base class for all objects in the scene.
@@ -205,6 +200,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SCENE_OBJECT_H

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -35,7 +35,9 @@
 	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
+
+using namespace Util::IO::Internal;
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DataSet, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
@@ -504,4 +506,4 @@ void DataSet::saveToFile(const QString& filePath)
 	fileStream.close();
 }
 
-};
+}}	// End of namespace

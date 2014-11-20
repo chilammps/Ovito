@@ -23,7 +23,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/objects/SceneObject.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /******************************************************************************
 * Tries to convert one of the to scene objects stored in this flow state to
@@ -86,4 +86,4 @@ void PipelineFlowState::updateRevisionNumbers()
 		o.updateRevisionNumber();
 }
 
-};
+}}}	// End of namespace

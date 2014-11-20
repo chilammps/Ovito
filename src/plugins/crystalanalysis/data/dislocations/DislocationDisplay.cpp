@@ -23,7 +23,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCell.h>
 #include "DislocationDisplay.h"
 #include "DislocationNetwork.h"
 

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file
- * \brief Contains the definition of the Particles::TreeNeighborListBuilder class.
- */
-
 #ifndef __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 #define __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 
@@ -33,9 +28,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/SimulationCellData.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
  * \brief Finds the N nearest neighbors of particles.
@@ -300,6 +293,6 @@ public:
 	int maxTreeDepth;
 };
 
-}; // End of namespace
+}}}} // End of namespace
 
 #endif // __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H

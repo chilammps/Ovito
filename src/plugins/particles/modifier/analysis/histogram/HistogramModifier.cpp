@@ -29,11 +29,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "HistogramModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, HistogramModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, HistogramModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(HistogramModifier, HistogramModifierEditor);
+SET_OVITO_OBJECT_EDITOR(HistogramModifier, Internal::HistogramModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(HistogramModifier, _selectInRange, "SelectInRange");
 DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE);
@@ -56,6 +55,10 @@ SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixYAxisRange, "Fix y-axis range");
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeStart, "Y-axis range start");
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeEnd, "Y-axis range end");
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _sourceProperty, "Source property");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, HistogramModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -230,6 +233,8 @@ PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& 
 
 	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -477,5 +482,6 @@ void HistogramModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

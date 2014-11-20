@@ -25,11 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
-
-using namespace Ovito;
-
-class ParticlePropertyComboBox;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 /******************************************************************************
 * Selects particles of of one or more types.
@@ -89,9 +85,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_selectedParticleTypes);
 };
 
-/******************************************************************************
-* A properties editor for the SelectParticleTypeModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the SelectParticleTypeModifier class.
+ */
 class SelectParticleTypeModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -135,6 +133,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_SELECT_PARTICLE_TYPE_MODIFIER_H

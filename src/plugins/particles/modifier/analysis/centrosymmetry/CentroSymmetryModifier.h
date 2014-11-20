@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file CentroSymmetryModifier.h
- * \brief Contains the definition of the Particles::CentroSymmetryModifier class.
- */
-
 #ifndef __OVITO_CENTRO_SYMMETRY_MODIFIER_H
 #define __OVITO_CENTRO_SYMMETRY_MODIFIER_H
 
@@ -31,11 +26,7 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
-
-class TreeNeighborListBuilder;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Calculates the centro-symmetry parameter (CSP) for particles.
@@ -126,6 +117,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_numNeighbors);
 };
 
+namespace Internal {
+
 /**
  * \brief A properties editor for the CentroSymmetryModifier class.
  */
@@ -145,7 +138,8 @@ protected:
 	OVITO_OBJECT
 };
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace
 
 #endif // __OVITO_CENTRO_SYMMETRY_MODIFIER_H

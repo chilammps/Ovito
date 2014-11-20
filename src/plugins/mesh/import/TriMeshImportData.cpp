@@ -22,7 +22,7 @@
 #include <plugins/mesh/Mesh.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/scene/objects/geometry/TriMeshObject.h>
-#include <core/scene/display/geometry/TriMeshDisplay.h>
+#include <core/scene/objects/geometry/TriMeshDisplay.h>
 #include <core/utilities/io/FileManager.h>
 #include "TriMeshImportData.h"
 

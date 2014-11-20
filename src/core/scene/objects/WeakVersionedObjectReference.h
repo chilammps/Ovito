@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief A weak reference (a.k.a. guarded pointer) that refers to a particular revision of an object.
@@ -184,8 +184,6 @@ template<class T> QDebug operator<<(QDebug debug, const WeakVersionedOORef<T>& p
 	return debug << p.get();
 }
 
-}
-;
-// End of namespace Ovito
+}}	// End of namespace
 
 #endif // __OVITO_WEAK_VERSIONED_OBJECT_REFERENCE_H

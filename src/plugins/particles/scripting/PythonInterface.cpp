@@ -22,21 +22,20 @@
 #include <plugins/pyscript/PyScript.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/ParticleDisplay.h>
-#include <plugins/particles/data/VectorDisplay.h>
-#include <plugins/particles/data/SimulationCellDisplay.h>
-#include <plugins/particles/data/SurfaceMeshDisplay.h>
-#include <plugins/particles/data/BondsObject.h>
-#include <plugins/particles/data/BondsDisplay.h>
-#include <plugins/particles/data/SimulationCell.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticleDisplay.h>
+#include <plugins/particles/objects/VectorDisplay.h>
+#include <plugins/particles/objects/SimulationCellDisplay.h>
+#include <plugins/particles/objects/SurfaceMeshDisplay.h>
+#include <plugins/particles/objects/BondsObject.h>
+#include <plugins/particles/objects/BondsDisplay.h>
+#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
 
 dict ParticlePropertyObject__array_interface__(const ParticlePropertyObject& p)
@@ -483,4 +482,4 @@ BOOST_PYTHON_MODULE(Particles)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);
 
-};
+}}}}	// End of namespace

@@ -26,7 +26,7 @@
 #include "FutureInterface.h"
 #include "Future.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 class TaskBase : public QRunnable
 {
@@ -78,6 +78,6 @@ private:
 	std::shared_ptr<FutureInterface<R>> _p;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_TASK_H

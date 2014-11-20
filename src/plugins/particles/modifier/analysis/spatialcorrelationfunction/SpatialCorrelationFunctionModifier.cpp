@@ -32,11 +32,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "SpatialCorrelationFunctionModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(SpatialCorrelationFunctionModifier, SpatialCorrelationFunctionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SpatialCorrelationFunctionModifier, Internal::SpatialCorrelationFunctionModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _maxWaveVector, "MaxWaveVector", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _radialAverage, "radialAverage", PROPERTY_FIELD_MEMORIZE);
@@ -55,6 +54,10 @@ SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _propertyAxisRangeS
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _propertyAxisRangeEnd, "Property axis range end");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _sourceProperty1, "First source property");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _sourceProperty2, "Second source property");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -400,6 +403,8 @@ void SpatialCorrelationFunctionModifier::propertyChanged(const PropertyFieldDesc
 	AsynchronousParticleModifier::propertyChanged(field);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -657,5 +662,6 @@ void SpatialCorrelationFunctionModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

@@ -32,7 +32,7 @@
 class QCustomPlot;
 class QCPItemStraightLine;
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /*
  * This modifier computes a scatter plot for two particle properties.
@@ -193,9 +193,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_yAxisProperty);
 };
 
-/******************************************************************************
-* A properties editor for the ScatterPlotModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the ScatterPlotModifier class.
+ */
 class ScatterPlotModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -249,6 +251,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_SCATTER_PLOT_MODIFIER_H

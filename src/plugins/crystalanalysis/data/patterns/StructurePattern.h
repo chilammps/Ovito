@@ -24,7 +24,7 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
-#include <plugins/particles/data/ParticleType.h>
+#include <plugins/particles/objects/ParticleType.h>
 #include "BurgersVectorFamily.h"
 
 namespace CrystalAnalysis {

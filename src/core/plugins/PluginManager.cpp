@@ -24,7 +24,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/plugins/NativePlugin.h>
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /// The singleton instance of this class.
 PluginManager* PluginManager::_instance = nullptr;
@@ -209,4 +209,4 @@ QVector<OvitoObjectType*> PluginManager::listClasses(const OvitoObjectType& supe
 	return result;
 }
 
-};
+}}	// End of namespace

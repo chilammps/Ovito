@@ -20,13 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/SimulationCell.h>
 #include "ParticleExpressionEvaluator.h"
 
 #include <QtConcurrent>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
 
 /// List of characters allowed in variable names.
 QByteArray ParticleExpressionEvaluator::_validVariableNameChars("0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.");
@@ -396,4 +396,4 @@ QString ParticleExpressionEvaluator::inputVariableTable() const
 	return str;
 }
 
-};	// End of namespace
+}}}}}	// End of namespace

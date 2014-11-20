@@ -22,8 +22,8 @@
 #include <core/Core.h>
 #include "AutoStartObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 IMPLEMENT_OVITO_OBJECT(Core, AutoStartObject, OvitoObject);
 
-};
+}}	// End of namespace

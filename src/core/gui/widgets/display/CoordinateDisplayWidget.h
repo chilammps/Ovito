@@ -62,7 +62,7 @@ public:
 	}
 
 	/// Sets the units of the displayed values.
-	void setUnit(ParameterUnit* unit) {
+	void setUnit(Ovito::ObjectSystem::Units::ParameterUnit* unit) {
 		_spinners[0]->setUnit(unit);
 		_spinners[1]->setUnit(unit);
 		_spinners[2]->setUnit(unit);

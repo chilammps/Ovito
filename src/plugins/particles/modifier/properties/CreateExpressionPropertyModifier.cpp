@@ -27,17 +27,20 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include "CreateExpressionPropertyModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CreateExpressionPropertyModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, CreateExpressionPropertyModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(CreateExpressionPropertyModifier, CreateExpressionPropertyModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CreateExpressionPropertyModifier, Internal::CreateExpressionPropertyModifierEditor);
 DEFINE_PROPERTY_FIELD(CreateExpressionPropertyModifier, _expressions, "Expressions");
 DEFINE_PROPERTY_FIELD(CreateExpressionPropertyModifier, _outputProperty, "OutputProperty");
 DEFINE_PROPERTY_FIELD(CreateExpressionPropertyModifier, _onlySelectedParticles, "OnlySelectedParticles");
 SET_PROPERTY_FIELD_LABEL(CreateExpressionPropertyModifier, _expressions, "Expressions");
 SET_PROPERTY_FIELD_LABEL(CreateExpressionPropertyModifier, _outputProperty, "Output property");
 SET_PROPERTY_FIELD_LABEL(CreateExpressionPropertyModifier, _onlySelectedParticles, "Compute only for selected particles");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, CreateExpressionPropertyModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Sets the number of vector components of the property to create.
@@ -80,7 +83,7 @@ PipelineStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time,
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
 
 	// Initialize the evaluator class.
-	ParticleExpressionEvaluator evaluator;
+	Util::Internal::ParticleExpressionEvaluator evaluator;
 	evaluator.initialize(expressions(), input(), currentFrame);
 
 	// Save list of available input variables, which will be displayed in the modifier's UI.
@@ -150,7 +153,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 
 	// Generate list of available input variables.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-	ParticleExpressionEvaluator evaluator;
+	Util::Internal::ParticleExpressionEvaluator evaluator;
 	evaluator.createInputVariables(input);
 	_inputVariableNames = evaluator.inputVariableNames();
 	_inputVariableTable = evaluator.inputVariableTable();
@@ -176,6 +179,8 @@ bool CreateExpressionPropertyModifier::loadPropertyFieldFromStream(ObjectLoadStr
 	}
 	return ParticleModifier::loadPropertyFieldFromStream(stream, serializedField);
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -216,7 +221,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
     variablesLayout->setContentsMargins(4,4,4,4);
 	variableNamesList = new QLabel();
 	variableNamesList->setWordWrap(true);
-	variableNamesList->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+	variableNamesList->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
 	variablesLayout->addWidget(variableNamesList);
 
 	// Update input variables list if another modifier has been loaded into the editor.
@@ -299,4 +304,6 @@ void CreateExpressionPropertyModifierEditor::onExpressionEditingFinished()
 	});
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

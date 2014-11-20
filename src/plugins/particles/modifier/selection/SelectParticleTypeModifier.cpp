@@ -24,18 +24,21 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "SelectParticleTypeModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, Internal::SelectParticleTypeModifierEditor);
 DEFINE_PROPERTY_FIELD(SelectParticleTypeModifier, _sourceProperty, "SourceProperty");
 DEFINE_PROPERTY_FIELD(SelectParticleTypeModifier, _selectedParticleTypes, "SelectedParticleTypes");
 SET_PROPERTY_FIELD_LABEL(SelectParticleTypeModifier, _sourceProperty, "Property");
 SET_PROPERTY_FIELD_LABEL(SelectParticleTypeModifier, _selectedParticleTypes, "Selected types");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * This modifies the input object.
@@ -111,6 +114,8 @@ void SelectParticleTypeModifier::loadFromStream(ObjectLoadStream& stream)
 		stream.closeChunk();
 	}
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -205,7 +210,7 @@ void SelectParticleTypeModifierEditor::updateParticleTypeList()
 					item->setCheckState(Qt::Checked);
 				else
 					item->setCheckState(Qt::Unchecked);
-				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren);
+				item->setFlags(Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren));
 			}
 		}
 	}
@@ -257,4 +262,6 @@ bool SelectParticleTypeModifierEditor::referenceEvent(RefTarget* source, Referen
 	return ParticleModifierEditor::referenceEvent(source, event);
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
