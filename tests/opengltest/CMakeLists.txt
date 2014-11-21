@@ -33,7 +33,7 @@ QT5_ADD_RESOURCES(OVITO_GLTEST_RESOURCE_FILES gltest.qrc)
 ADD_EXECUTABLE(OpenGLTest Main.cpp TestWindow.cpp ${OVITO_GLTEST_RESOURCE_FILES})
 
 # The executable makes use of OVITO's core functions.
-TARGET_LINK_LIBRARIES(OpenGLTest Base Core)
+TARGET_LINK_LIBRARIES(OpenGLTest Core)
 
 # Link Qt5.
 QT5_USE_MODULES(OpenGLTest ${OVITO_REQUIRED_QT_MODULES})

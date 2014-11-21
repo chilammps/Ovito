@@ -19,6 +19,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_UTILITY_COMMAND_PAGE_H
+#define __OVITO_UTILITY_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include <core/plugins/utility/UtilityApplet.h>
@@ -72,3 +75,5 @@ private:
 };
 
 }}}	// End of namespace
+
+#endif // __OVITO_UTILITY_COMMAND_PAGE_H

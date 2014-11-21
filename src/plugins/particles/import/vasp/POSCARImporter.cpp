@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include "POSCARImporter.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace Vasp {

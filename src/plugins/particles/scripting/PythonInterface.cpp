@@ -165,7 +165,7 @@ BOOST_PYTHON_MODULE(Particles)
 	converter::registry::push_back(convertible_ParticlePropertyReference, construct_ParticlePropertyReference, boost::python::type_id<ParticlePropertyReference>());
 
 	{
-		scope s = ovito_class<ParticlePropertyObject, SceneObject>(
+		scope s = ovito_class<ParticlePropertyObject, DataObject>(
 				":Base: :py:class:`ovito.data.DataObject`\n\n"
 				"A data object that stores the values of a single particle property.",
 				// Python class name:
@@ -298,7 +298,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.staticmethod("getDefaultParticleColorFromName")
 	;
 
-	ovito_class<SimulationCell, SceneObject>(
+	ovito_class<SimulationCell, DataObject>(
 			":Base: :py:class:`ovito.data.DataObject`\n\n"
 			"Stores the geometry and the boundary conditions of the simulation cell."
 			"\n\n"
@@ -317,7 +317,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("origin", make_function(&SimulationCell::origin, return_value_policy<copy_const_reference>()))
 	;
 
-	ovito_class<BondsObject, SceneObject>(
+	ovito_class<BondsObject, DataObject>(
 			":Base: :py:class:`ovito.data.DataObject`\n\n"
 			"This data object stores bonds between particles. One way of creating bonds is to use the :py:class:`~.ovito.modifiers.CreateBondsModifier`.",
 			// Python class name:
@@ -474,7 +474,7 @@ BOOST_PYTHON_MODULE(Particles)
 				":Default: ``True``\n")
 	;
 
-	ovito_class<SurfaceMesh, SceneObject>()
+	ovito_class<SurfaceMesh, DataObject>()
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
 		.def("clearMesh", &SurfaceMesh::clearMesh)
 	;

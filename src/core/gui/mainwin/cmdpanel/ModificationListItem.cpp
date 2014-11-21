@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include "ModificationListItem.h"
@@ -83,9 +83,8 @@ ModificationListItem::Status ModificationListItem::status() const
 	if(modifier)
 		status = modifier->status();
 	else {
-		SceneObject* sceneObject = dynamic_object_cast<SceneObject>(object());
-		if(sceneObject)
-			status = sceneObject->status();
+		if(DataObject* dataObj = dynamic_object_cast<DataObject>(object()))
+			status = dataObj->status();
 	}
 	if(status.type() == PipelineStatus::Warning)
 		return Warning;

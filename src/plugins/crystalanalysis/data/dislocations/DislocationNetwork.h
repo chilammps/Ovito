@@ -23,18 +23,16 @@
 #define __OVITO_CA_DISLOCATION_NETWORK_H
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "DislocationSegment.h"
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * \brief Stores a collection of dislocation segments.
  */
-class OVITO_CRYSTALANALYSIS_EXPORT DislocationNetwork : public SceneObject
+class OVITO_CRYSTALANALYSIS_EXPORT DislocationNetwork : public DataObject
 {
 public:
 
@@ -92,6 +90,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_DISLOCATION_NETWORK_H

@@ -22,7 +22,6 @@
 #include <core/Core.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileImporter.h>
-#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/dataset/UndoStack.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/SceneRoot.h>
@@ -281,7 +280,7 @@ bool DataSetContainer::fileLoad(const QString& filename)
 /******************************************************************************
 * Imports a given file into the scene.
 ******************************************************************************/
-bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription* importerType, FileImporter::ImportMode importMode)
+bool DataSetContainer::importFile(const QUrl& url, const OvitoObjectType* importerType, FileImporter::ImportMode importMode)
 {
 	if(!url.isValid())
 		throw Exception(tr("Failed to import file. URL is not valid: %1").arg(url.toString()));
@@ -295,12 +294,12 @@ bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription
 			return false;
 
 		// Detect file format.
-		importer = ImportExportManager::instance().autodetectFileFormat(currentSet(), fetchFileFuture.result(), url.path());
+		importer = FileImporter::autodetectFileFormat(currentSet(), fetchFileFuture.result(), url.path());
 		if(!importer)
 			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
 	}
 	else {
-		importer = importerType->createService(currentSet());
+		importer = static_object_cast<FileImporter>(importerType->createInstance(currentSet()));
 		if(!importer)
 			throw Exception(tr("Failed to import file. Could not initialize import service."));
 	}

@@ -23,7 +23,7 @@
 #define __OVITO_PARTICLE_IMPORTER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/dataset/importexport/LinkedFileImporter.h>
+#include <core/dataset/importexport/FileSourceImporter.h>
 #include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include "ParticleImportTask.h"
@@ -33,12 +33,12 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 /**
  * \brief Base class for file parsers that read particle-position data.
  */
-class OVITO_PARTICLES_EXPORT ParticleImporter : public LinkedFileImporter
+class OVITO_PARTICLES_EXPORT ParticleImporter : public FileSourceImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	ParticleImporter(DataSet* dataset) : LinkedFileImporter(dataset), _isMultiTimestepFile(false), _isNewFile(false) {
+	ParticleImporter(DataSet* dataset) : FileSourceImporter(dataset), _isMultiTimestepFile(false), _isNewFile(false) {
 		INIT_PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile);
 	}
 
@@ -49,15 +49,15 @@ public:
 	void setMultiTimestepFile(bool enable) { _isMultiTimestepFile = enable; }
 
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
-	virtual Future<QVector<LinkedFileImporter::FrameSourceInformation>> findFrames(const QUrl& sourceUrl) override;
+	virtual Future<QVector<FileSourceImporter::Frame>> findFrames(const QUrl& sourceUrl) override;
 
 	/// This method indicates whether a wildcard pattern should be automatically generated
 	/// when the user picks a new input filename.
 	virtual bool autoGenerateWildcardPattern() override { return !isMultiTimestepFile(); }
 
-	/// This method is called by the LinkedFileObject each time a new source
+	/// This method is called by the FileSource each time a new source
 	/// file has been selected by the user.
-	virtual bool inspectNewFile(LinkedFileObject* obj) override;
+	virtual bool inspectNewFile(FileSource* obj) override;
 
 protected:
 
@@ -65,10 +65,10 @@ protected:
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
 	/// \brief Scans the given input file to find all contained simulation frames.
-	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream);
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream);
 
 	/// Retrieves the given file in the background and scans it for simulation timesteps.
-	virtual QVector<LinkedFileImporter::FrameSourceInformation> scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl);
+	virtual QVector<FileSourceImporter::Frame> scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl);
 
 	/// Indicates whether the file currently being loaded has been newly selected by the user.
 	/// This method should only be called from an implementation of the createImportTask() virtual method.

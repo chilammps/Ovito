@@ -35,7 +35,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
 
 /**
- * \brief A display object for the SurfaceMesh scene object class.
+ * \brief A display object for the SurfaceMesh data object class.
  */
 class OVITO_PARTICLES_EXPORT SurfaceMeshDisplay : public DisplayObject
 {
@@ -44,11 +44,11 @@ public:
 	/// \brief Constructor.
 	Q_INVOKABLE SurfaceMeshDisplay(DataSet* dataset);
 
-	/// \brief Lets the display object render a scene object.
-	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+	/// \brief Lets the display object render the data object.
+	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
 	/// \brief Computes the bounding box of the object.
-	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Surface mesh"); }
@@ -142,7 +142,7 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		WeakVersionedOORef<DataObject>,		// Source object + revision number
 		SimulationCellData,						// Simulation cell geometry
 		ColorA,									// Surface color
 		ColorA,									// Cap color
@@ -155,7 +155,7 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		WeakVersionedOORef<DataObject>,		// Source object + revision number
 		SimulationCellData						// Simulation cell geometry
 		> _boundingBoxCacheHelper;
 

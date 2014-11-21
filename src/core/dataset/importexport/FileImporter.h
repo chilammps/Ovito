@@ -74,50 +74,23 @@ public:
 	/// \throw Exception when the check has failed.
 	virtual bool checkFileFormat(QFileDevice& input, const QUrl& sourceLocation) { return false; }
 
+	/// Returns a list of all available importer types.
+	static QVector<OvitoObjectType*> availableImporters();
+
+	/// \brief Tries to detect the format of the given file.
+	/// \return The importer class that can handle the given file. If the file format could not be recognized then NULL is returned.
+	/// \throw Exception if url is invalid or if operation has been canceled by the user.
+	/// \note This is a blocking function, which downloads the file and can take a long time to return.
+	static OORef<FileImporter> autodetectFileFormat(DataSet* dataset, const QUrl& url);
+
+	/// \brief Tries to detect the format of the given file.
+	/// \return The importer class that can handle the given file. If the file format could not be recognized then NULL is returned.
+	static OORef<FileImporter> autodetectFileFormat(DataSet* dataset, const QString& localFile, const QUrl& sourceLocation = QUrl());
+
 private:
 
 	Q_OBJECT
 	OVITO_OBJECT
-};
-
-/**
- * \brief This descriptor contains information about an installed FileImporter service.
- */
-class OVITO_CORE_EXPORT FileImporterDescription : public QObject
-{
-public:
-
-	/// \brief Initializes this descriptor from a file importer instance.
-	FileImporterDescription(QObject* parent, FileImporter* importer) : QObject(parent),
-		_fileFilter(importer->fileFilter()),
-		_fileFilterDescription(importer->fileFilterDescription()),
-		_pluginClass(&importer->getOOType()) {}
-
-	/// \brief Returns the file filter that specifies the files that can be imported by the service.
-	/// \return A wild-card pattern that specifies the file types that can be handled by the importer class.
-	const QString& fileFilter() const { return _fileFilter; }
-
-	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
-	/// \return A string that describes the file format.
-	const QString& fileFilterDescription() const { return _fileFilterDescription; }
-
-	/// \brief Creates an instance of the file importer class.
-	/// \param The dataset within which the importer object is to be created.
-	OORef<FileImporter> createService(DataSet* dataset) const {
-		return static_object_cast<FileImporter>(pluginClass()->createInstance(dataset));
-	}
-
-	/// \brief Returns the class descriptor for the file importer service.
-	/// \return The descriptor of the FileImporter-derived class.
-	const OvitoObjectType* pluginClass() const { return _pluginClass; }
-
-private:
-
-	QString _fileFilter;
-	QString _fileFilterDescription;
-	const OvitoObjectType* _pluginClass;
-
-	Q_OBJECT
 };
 
 }}	// End of namespace

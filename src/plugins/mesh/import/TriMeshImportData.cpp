@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/mesh/Mesh.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/scene/objects/geometry/TriMeshObject.h>
 #include <core/scene/objects/geometry/TriMeshDisplay.h>
 #include <core/utilities/io/FileManager.h>
@@ -54,19 +54,19 @@ void TriMeshImportData::load(DataSetContainer& container, FutureInterfaceBase& f
 
 /******************************************************************************
 * Lets the data container insert the data it holds into the scene by creating
-* appropriate scene objects.
+* appropriate data objects.
 ******************************************************************************/
-QSet<SceneObject*> TriMeshImportData::insertIntoScene(LinkedFileObject* destination)
+QSet<DataObject*> TriMeshImportData::insertIntoScene(FileSource* destination)
 {
-	OORef<TriMeshObject> triMeshObj = destination->findSceneObject<TriMeshObject>();
+	OORef<TriMeshObject> triMeshObj = destination->findDataObject<TriMeshObject>();
 	if(!triMeshObj) {
 		triMeshObj = new TriMeshObject(destination->dataset());
 
-		// Create a display object for the scene object.
+		// Create a display object for the data object.
 		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay(destination->dataset());
 		triMeshObj->addDisplayObject(triMeshDisplay);
 
-		destination->addSceneObject(triMeshObj);
+		destination->addDataObject(triMeshObj);
 	}
 	triMeshObj->mesh() = mesh();
 	triMeshObj->notifyDependents(ReferenceEvent::TargetChanged);

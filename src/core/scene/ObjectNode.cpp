@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/scene/ObjectNode.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/viewport/Viewport.h>
 #include <core/dataset/DataSetContainer.h>
@@ -29,7 +29,7 @@
 namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode);
-DEFINE_REFERENCE_FIELD(ObjectNode, _dataProvider, "SceneObject", SceneObject);
+DEFINE_REFERENCE_FIELD(ObjectNode, _dataProvider, "SceneObject", DataObject);
 DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject);
 SET_PROPERTY_FIELD_LABEL(ObjectNode, _dataProvider, "Object");
 
@@ -66,14 +66,14 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 				// Check if the display object is still being referenced by any of the objects
 				// that left the pipeline.
 				if(std::none_of(_pipelineCache.objects().begin(), _pipelineCache.objects().end(),
-						[displayObj](SceneObject* obj) { return obj->displayObjects().contains(displayObj); })) {
+						[displayObj](DataObject* obj) { return obj->displayObjects().contains(displayObj); })) {
 					_displayObjects.remove(i);
 				}
 			}
 
 			// Now add any new display objects to this node.
-			for(const auto& sceneObj : _pipelineCache.objects()) {
-				for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+			for(const auto& dataObj : _pipelineCache.objects()) {
+				for(DisplayObject* displayObj : dataObj->displayObjects()) {
 					OVITO_CHECK_OBJECT_POINTER(displayObj);
 					if(displayObjects().contains(displayObj) == false)
 						_displayObjects.push_back(displayObj);
@@ -91,15 +91,15 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 }
 
 /******************************************************************************
-* Renders the node's scene objects.
+* Renders the node's data.
 ******************************************************************************/
 void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 {
 	const PipelineFlowState& state = evalPipeline(time);
-	for(const auto& sceneObj : state.objects()) {
-		for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+	for(const auto& dataObj : state.objects()) {
+		for(DisplayObject* displayObj : dataObj->displayObjects()) {
 			if(displayObj && displayObj->isEnabled()) {
-				displayObj->render(time, sceneObj, state, renderer, this);
+				displayObj->render(time, dataObj, state, renderer, this);
 			}
 		}
 	}
@@ -127,14 +127,14 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 }
 
 /******************************************************************************
-* Gets called when the scene object of the node has been replaced.
+* Gets called when the data object of the node has been replaced.
 ******************************************************************************/
 void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(ObjectNode::_dataProvider)) {
 		invalidatePipelineCache();
 
-		// When the scene object is being replaced, the pending state of the node might change.
+		// When the data object is being replaced, the pending state of the node might change.
 		// Even though we don't know for sure if the state has really changed, we send a notification event here.
 		notifyDependents(ReferenceEvent::PendingStateChanged);
 	}
@@ -150,11 +150,11 @@ Box3 ObjectNode::localBoundingBox(TimePoint time)
 	Box3 bb;
 	const PipelineFlowState& state = evalPipeline(time);
 
-	// Compute bounding boxes of scene objects.
-	for(SceneObject* sceneObj : state.objects()) {
-		for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+	// Compute bounding boxes of data objects.
+	for(DataObject* dataObj : state.objects()) {
+		for(DisplayObject* displayObj : dataObj->displayObjects()) {
 			if(displayObj && displayObj->isEnabled())
-				bb.addBox(displayObj->boundingBox(time, sceneObj, this, state));
+				bb.addBox(displayObj->boundingBox(time, dataObj, this, state));
 		}
 	}
 
@@ -193,7 +193,7 @@ QString ObjectNode::objectTitle()
 		return name();
 
 	// Otherwise, use the title of the node's data source object.
-	if(SceneObject* sourceObj = sourceObject())
+	if(DataObject* sourceObj = sourceObject())
 		return sourceObj->objectTitle();
 
 	// Fall back to default behavior.
@@ -224,9 +224,9 @@ void ObjectNode::applyModifier(Modifier* modifier)
 * Returns the modification pipeline source object, i.e., the input of this
 * node's modification pipeline.
 ******************************************************************************/
-SceneObject* ObjectNode::sourceObject() const
+DataObject* ObjectNode::sourceObject() const
 {
-	SceneObject* obj = dataProvider();
+	DataObject* obj = dataProvider();
 	while(obj) {
 		if(PipelineObject* pipeline = dynamic_object_cast<PipelineObject>(obj))
 			obj = pipeline->sourceObject();

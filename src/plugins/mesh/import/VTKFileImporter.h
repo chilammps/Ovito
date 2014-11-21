@@ -22,7 +22,7 @@
 #ifndef __OVITO_VTK_FILE_IMPORTER_H
 #define __OVITO_VTK_FILE_IMPORTER_H
 
-#include <core/dataset/importexport/LinkedFileImporter.h>
+#include <core/dataset/importexport/FileSourceImporter.h>
 #include <plugins/mesh/Mesh.h>
 #include "TriMeshImportData.h"
 
@@ -33,12 +33,12 @@ using namespace Ovito;
 /**
  * \brief File parser for VTK files containing triangle mesh data.
  */
-class OVITO_MESH_EXPORT VTKFileImporter : public LinkedFileImporter
+class OVITO_MESH_EXPORT VTKFileImporter : public FileSourceImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE VTKFileImporter(DataSet* dataset) : LinkedFileImporter(dataset) {}
+	Q_INVOKABLE VTKFileImporter(DataSet* dataset) : FileSourceImporter(dataset) {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -62,7 +62,7 @@ protected:
 	public:
 
 		/// Constructor.
-		VTKFileImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : TriMeshImportData(frame) {}
+		VTKFileImportTask(const FileSourceImporter::Frame& frame) : TriMeshImportData(frame) {}
 
 	protected:
 
@@ -73,7 +73,7 @@ protected:
 protected:
 
 	/// \brief Creates an import task object to read the given frame.
-	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
 		return std::make_shared<VTKFileImportTask>(frame);
 	}
 

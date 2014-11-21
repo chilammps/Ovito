@@ -25,27 +25,27 @@
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include "CreateExpressionPropertyModifier.h"
+#include "ComputePropertyModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CreateExpressionPropertyModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(CreateExpressionPropertyModifier, Internal::CreateExpressionPropertyModifierEditor);
-DEFINE_PROPERTY_FIELD(CreateExpressionPropertyModifier, _expressions, "Expressions");
-DEFINE_PROPERTY_FIELD(CreateExpressionPropertyModifier, _outputProperty, "OutputProperty");
-DEFINE_PROPERTY_FIELD(CreateExpressionPropertyModifier, _onlySelectedParticles, "OnlySelectedParticles");
-SET_PROPERTY_FIELD_LABEL(CreateExpressionPropertyModifier, _expressions, "Expressions");
-SET_PROPERTY_FIELD_LABEL(CreateExpressionPropertyModifier, _outputProperty, "Output property");
-SET_PROPERTY_FIELD_LABEL(CreateExpressionPropertyModifier, _onlySelectedParticles, "Compute only for selected particles");
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ComputePropertyModifier, ParticleModifier);
+SET_OVITO_OBJECT_EDITOR(ComputePropertyModifier, Internal::ComputePropertyModifierEditor);
+DEFINE_PROPERTY_FIELD(ComputePropertyModifier, _expressions, "Expressions");
+DEFINE_PROPERTY_FIELD(ComputePropertyModifier, _outputProperty, "OutputProperty");
+DEFINE_PROPERTY_FIELD(ComputePropertyModifier, _onlySelectedParticles, "OnlySelectedParticles");
+SET_PROPERTY_FIELD_LABEL(ComputePropertyModifier, _expressions, "Expressions");
+SET_PROPERTY_FIELD_LABEL(ComputePropertyModifier, _outputProperty, "Output property");
+SET_PROPERTY_FIELD_LABEL(ComputePropertyModifier, _onlySelectedParticles, "Compute only for selected particles");
 
 namespace Internal {
-	IMPLEMENT_OVITO_OBJECT(Particles, CreateExpressionPropertyModifierEditor, ParticleModifierEditor);
+	IMPLEMENT_OVITO_OBJECT(Particles, ComputePropertyModifierEditor, ParticleModifierEditor);
 }
 
 /******************************************************************************
 * Sets the number of vector components of the property to create.
 ******************************************************************************/
-void CreateExpressionPropertyModifier::setPropertyComponentCount(int newComponentCount)
+void ComputePropertyModifier::setPropertyComponentCount(int newComponentCount)
 {
 	if(newComponentCount == propertyComponentCount()) return;
 
@@ -63,9 +63,9 @@ void CreateExpressionPropertyModifier::setPropertyComponentCount(int newComponen
 /******************************************************************************
 * Is called when the value of a property of this object has changed.
 ******************************************************************************/
-void CreateExpressionPropertyModifier::propertyChanged(const PropertyFieldDescriptor& field)
+void ComputePropertyModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	if(field == PROPERTY_FIELD(CreateExpressionPropertyModifier::_outputProperty)) {
+	if(field == PROPERTY_FIELD(ComputePropertyModifier::_outputProperty)) {
 		if(outputProperty().type() != ParticleProperty::UserProperty)
 			setPropertyComponentCount(ParticleProperty::standardPropertyComponentCount(outputProperty().type()));
 		else
@@ -77,7 +77,7 @@ void CreateExpressionPropertyModifier::propertyChanged(const PropertyFieldDescri
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-PipelineStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ComputePropertyModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// The current animation frame number.
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
@@ -147,7 +147,7 @@ PipelineStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time,
 * This method is called by the system when the modifier has been inserted
 * into a pipeline.
 ******************************************************************************/
-void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp)
+void ComputePropertyModifier::initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp)
 {
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
@@ -162,7 +162,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 /******************************************************************************
 * Allows the object to parse the serialized contents of a property field in a custom way.
 ******************************************************************************/
-bool CreateExpressionPropertyModifier::loadPropertyFieldFromStream(ObjectLoadStream& stream, const ObjectLoadStream::SerializedPropertyField& serializedField)
+bool ComputePropertyModifier::loadPropertyFieldFromStream(ObjectLoadStream& stream, const ObjectLoadStream::SerializedPropertyField& serializedField)
 {
 	// This is to maintain compatibility with old file format.
 	if(serializedField.identifier == "PropertyName") {
@@ -185,7 +185,7 @@ namespace Internal {
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
-void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+void ComputePropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	rollout = createRollout(tr("Compute property"), rolloutParams, "particles.modifiers.compute_property.html");
 
@@ -200,11 +200,11 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	propertiesLayout->setSpacing(4);
 
 	// Output property
-	ParticlePropertyParameterUI* outputPropertyUI = new ParticlePropertyParameterUI(this, PROPERTY_FIELD(CreateExpressionPropertyModifier::_outputProperty), false, false);
+	ParticlePropertyParameterUI* outputPropertyUI = new ParticlePropertyParameterUI(this, PROPERTY_FIELD(ComputePropertyModifier::_outputProperty), false, false);
 	propertiesLayout->addWidget(outputPropertyUI->comboBox());
 
 	// Create the check box for the selection flag.
-	BooleanParameterUI* selectionFlagUI = new BooleanParameterUI(this, PROPERTY_FIELD(CreateExpressionPropertyModifier::_onlySelectedParticles));
+	BooleanParameterUI* selectionFlagUI = new BooleanParameterUI(this, PROPERTY_FIELD(ComputePropertyModifier::_onlySelectedParticles));
 	propertiesLayout->addWidget(selectionFlagUI->checkBox());
 
 	expressionsGroupBox = new QGroupBox(tr("Expression(s)"));
@@ -225,13 +225,13 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	variablesLayout->addWidget(variableNamesList);
 
 	// Update input variables list if another modifier has been loaded into the editor.
-	connect(this, &CreateExpressionPropertyModifierEditor::contentsReplaced, this, &CreateExpressionPropertyModifierEditor::updateEditorFields);
+	connect(this, &ComputePropertyModifierEditor::contentsReplaced, this, &ComputePropertyModifierEditor::updateEditorFields);
 }
 
 /******************************************************************************
 * This method is called when a reference target changes.
 ******************************************************************************/
-bool CreateExpressionPropertyModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
+bool ComputePropertyModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == editObject() && event->type() == ReferenceEvent::TargetChanged) {
 		updateEditorFields();
@@ -242,9 +242,9 @@ bool CreateExpressionPropertyModifierEditor::referenceEvent(RefTarget* source, R
 /******************************************************************************
 * Updates the enabled/disabled status of the editor's controls.
 ******************************************************************************/
-void CreateExpressionPropertyModifierEditor::updateEditorFields()
+void ComputePropertyModifierEditor::updateEditorFields()
 {
-	CreateExpressionPropertyModifier* mod = static_object_cast<CreateExpressionPropertyModifier>(editObject());
+	ComputePropertyModifier* mod = static_object_cast<ComputePropertyModifier>(editObject());
 	if(!mod) return;
 
 	const QStringList& expr = mod->expressions();
@@ -256,7 +256,7 @@ void CreateExpressionPropertyModifierEditor::updateEditorFields()
 		expressionsLayout->insertWidget(expressionBoxes.size()*2 + 1, edit);
 		expressionBoxes.push_back(edit);
 		expressionBoxLabels.push_back(label);
-		connect(edit, &AutocompleteLineEdit::editingFinished, this, &CreateExpressionPropertyModifierEditor::onExpressionEditingFinished);
+		connect(edit, &AutocompleteLineEdit::editingFinished, this, &ComputePropertyModifierEditor::onExpressionEditingFinished);
 	}
 	while(expr.size() < expressionBoxes.size()) {
 		delete expressionBoxes.takeLast();
@@ -289,13 +289,13 @@ void CreateExpressionPropertyModifierEditor::updateEditorFields()
 /******************************************************************************
 * Is called when the user has typed in an expression.
 ******************************************************************************/
-void CreateExpressionPropertyModifierEditor::onExpressionEditingFinished()
+void ComputePropertyModifierEditor::onExpressionEditingFinished()
 {
 	QLineEdit* edit = (QLineEdit*)sender();
 	int index = expressionBoxes.indexOf(edit);
 	OVITO_ASSERT(index >= 0);
 
-	CreateExpressionPropertyModifier* mod = static_object_cast<CreateExpressionPropertyModifier>(editObject());
+	ComputePropertyModifier* mod = static_object_cast<ComputePropertyModifier>(editObject());
 
 	undoableTransaction(tr("Change expression"), [mod, edit, index]() {
 		QStringList expr = mod->expressions();

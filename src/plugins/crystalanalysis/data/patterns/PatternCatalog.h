@@ -24,17 +24,15 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include "StructurePattern.h"
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * \brief Encapsulates a pattern catalog from the CA lib.
  */
-class OVITO_CRYSTALANALYSIS_EXPORT PatternCatalog : public SceneObject
+class OVITO_CRYSTALANALYSIS_EXPORT PatternCatalog : public DataObject
 {
 public:
 
@@ -92,6 +90,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_PATTERN_CATALOG_H

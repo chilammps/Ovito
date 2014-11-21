@@ -70,9 +70,9 @@ BondsDisplay::BondsDisplay(DataSet* dataset) : DisplayObject(dataset),
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 BondsDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(sceneObject);
+	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(dataObject);
 	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
 
@@ -111,11 +111,11 @@ Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectN
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render the data object.
 ******************************************************************************/
-void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void BondsDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(sceneObject);
+	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(dataObject);
 	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
 	ParticlePropertyObject* colorProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::ColorProperty);

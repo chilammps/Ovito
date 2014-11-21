@@ -61,20 +61,20 @@ SimulationCellDisplay::SimulationCellDisplay(DataSet* dataset) : DisplayObject(d
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 SimulationCellDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 SimulationCellDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCell* cellObject = dynamic_object_cast<SimulationCell>(sceneObject);
+	SimulationCell* cellObject = dynamic_object_cast<SimulationCell>(dataObject);
 	OVITO_CHECK_OBJECT_POINTER(cellObject);
 
 	return cellObject->boundingBox().padBox(simulationCellLineWidth());
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render the data object.
 ******************************************************************************/
-void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void SimulationCellDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	SimulationCell* cell = dynamic_object_cast<SimulationCell>(sceneObject);
+	SimulationCell* cell = dynamic_object_cast<SimulationCell>(dataObject);
 	OVITO_CHECK_OBJECT_POINTER(cell);
 
 	if(renderer->isInteractive() && !renderer->viewport()->renderPreviewMode()) {

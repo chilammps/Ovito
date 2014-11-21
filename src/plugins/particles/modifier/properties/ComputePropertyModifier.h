@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_CREATE_EXPRESSION_PROPERTY_MODIFIER_H
-#define __OVITO_CREATE_EXPRESSION_PROPERTY_MODIFIER_H
+#ifndef __OVITO_COMPUTE_PROPERTY_MODIFIER_H
+#define __OVITO_COMPUTE_PROPERTY_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/StringParameterUI.h>
@@ -33,18 +33,18 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers 
 /**
  * \brief Computes the values of a particle property from a user-defined math expression.
  */
-class OVITO_PARTICLES_EXPORT CreateExpressionPropertyModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT ComputePropertyModifier : public ParticleModifier
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE CreateExpressionPropertyModifier(DataSet* dataset) : ParticleModifier(dataset),
+	Q_INVOKABLE ComputePropertyModifier(DataSet* dataset) : ParticleModifier(dataset),
 		_outputProperty(tr("Custom property")), _expressions(QStringList("0")),
 		_onlySelectedParticles(false)
 	{
-		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_expressions);
-		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_outputProperty);
-		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_onlySelectedParticles);
+		INIT_PROPERTY_FIELD(ComputePropertyModifier::_expressions);
+		INIT_PROPERTY_FIELD(ComputePropertyModifier::_outputProperty);
+		INIT_PROPERTY_FIELD(ComputePropertyModifier::_onlySelectedParticles);
 	}
 
 	//////////////////////////// from base classes ////////////////////////////
@@ -153,6 +153,7 @@ private:
 
 	Q_CLASSINFO("DisplayName", "Compute property");
 	Q_CLASSINFO("ModifierCategory", "Modification");
+	Q_CLASSINFO("ClassNameAlias", "CreateExpressionPropertyModifier");	// This for backward compatibility with files written by Ovito 2.4 and older.
 
 	DECLARE_PROPERTY_FIELD(_expressions);
 	DECLARE_PROPERTY_FIELD(_outputProperty);
@@ -162,14 +163,14 @@ private:
 namespace Internal {
 
 /**
- * A properties editor for the CreateExpressionPropertyModifier class.
+ * A properties editor for the ComputePropertyModifier class.
  */
-class CreateExpressionPropertyModifierEditor : public ParticleModifierEditor
+class ComputePropertyModifierEditor : public ParticleModifierEditor
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE CreateExpressionPropertyModifierEditor() {}
+	Q_INVOKABLE ComputePropertyModifierEditor() {}
 
 protected:
 
@@ -206,4 +207,4 @@ private:
 
 }}}}}	// End of namespace
 
-#endif // __OVITO_CREATE_EXPRESSION_PROPERTY_MODIFIER_H
+#endif // __OVITO_COMPUTE_PROPERTY_MODIFIER_H

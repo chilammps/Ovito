@@ -25,7 +25,7 @@
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include "ShiftModifier.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ShiftModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ShiftModifierEditor, PropertiesEditor);
@@ -127,6 +127,5 @@ void ShiftModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	}
 }
 
-
-};	// End of namespace
+}}}	// End of namespace
 

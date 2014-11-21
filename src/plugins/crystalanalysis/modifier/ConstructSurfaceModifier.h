@@ -25,12 +25,9 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 #include <plugins/particles/objects/SurfaceMesh.h>
-#include <plugins/particles/data/SurfaceMeshDisplay.h>
+#include <plugins/particles/objects/SurfaceMeshDisplay.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /*
  * Constructs a surface mesh from a particle system.
@@ -42,7 +39,7 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ConstructSurfaceModifier(DataSet* dataset);
 
-	/// \brief Returns the scene object that stores the generated surface mesh.
+	/// \brief Returns the data object that stores the generated surface mesh.
 	SurfaceMesh* surfaceMesh() const { return _surfaceMeshObj; }
 
 	/// \brief Returns the display object that is responsible for rendering the surface mesh.
@@ -200,6 +197,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CONSTRUCT_SURFACE_MODIFIER_H

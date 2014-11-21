@@ -75,9 +75,9 @@ VectorDisplay::VectorDisplay(DataSet* dataset) : DisplayObject(dataset),
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 VectorDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 VectorDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
+	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(dataObject);
 	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
 		vectorProperty = nullptr;
@@ -126,12 +126,12 @@ Box3 VectorDisplay::arrowBoundingBox(ParticlePropertyObject* vectorProperty, Par
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render the data object.
 ******************************************************************************/
-void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void VectorDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get input data.
-	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
+	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(dataObject);
 	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
 		vectorProperty = nullptr;

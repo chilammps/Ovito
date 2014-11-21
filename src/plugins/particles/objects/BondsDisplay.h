@@ -43,11 +43,11 @@ public:
 	/// \brief Constructor.
 	Q_INVOKABLE BondsDisplay(DataSet* dataset);
 
-	/// \brief Renders the associated scene object.
-	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+	/// \brief Renders the associated data object.
+	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
-	/// \brief Computes the display bounding box of the scene object.
-	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+	/// \brief Computes the display bounding box of the data object.
+	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Bonds"); }
@@ -110,7 +110,7 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<BondsObject>,				// The bonds scene object + revision number
+		WeakVersionedOORef<BondsObject>,				// The bonds data object + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle color property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle type property + revision number
@@ -126,7 +126,7 @@ protected:
 	/// This helper structure is used to detect changes in the input data
 	/// that require recomputing the bounding box.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<BondsObject>,				// The bonds scene object + revision number
+		WeakVersionedOORef<BondsObject>,				// The bonds data object + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
 		WeakVersionedOORef<SimulationCell>,				// Simulation cell + revision number
 		FloatType										// Bond width

@@ -26,10 +26,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /*
  * Smoothes the dislocation lines.
@@ -126,6 +123,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_SMOOTH_DISLOCATIONS_MODIFIER_H

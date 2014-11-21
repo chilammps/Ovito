@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Application.h
- * \brief Contains the definition of the Ovito::Application class.
- */
-
 #ifndef __OVITO_APPLICATION_H
 #define __OVITO_APPLICATION_H
 

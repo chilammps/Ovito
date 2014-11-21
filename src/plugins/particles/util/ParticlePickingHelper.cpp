@@ -95,8 +95,8 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 	ParticlePropertyObject* posProperty = nullptr;
 	ParticlePropertyObject* radiusProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(SceneObject* sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+	for(DataObject* dataObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;
@@ -163,8 +163,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	ParticlePropertyObject* colorProperty = nullptr;
 	ParticlePropertyObject* selectionProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(SceneObject* sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+	for(DataObject* dataObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;

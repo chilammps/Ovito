@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -26,16 +26,16 @@
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/animation/AnimationSettings.h>
-#include "LinkedFileObjectEditor.h"
+#include "FileSourceEditor.h"
 
 namespace Ovito { namespace DataIO { namespace Internal {
 
-IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, FileSourceEditor, PropertiesEditor);
 
 /******************************************************************************
 * Sets up the UI of the editor.
 ******************************************************************************/
-void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+void FileSourceEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("External data source"), rolloutParams);
@@ -97,7 +97,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	sublayout = new QVBoxLayout(wildcardBox);
 	sublayout->setContentsMargins(4,4,4,4);
 	_wildcardPatternTextbox = new QLineEdit();
-	connect(_wildcardPatternTextbox, &QLineEdit::returnPressed, this, &LinkedFileObjectEditor::onWildcardPatternEntered);
+	connect(_wildcardPatternTextbox, &QLineEdit::returnPressed, this, &FileSourceEditor::onWildcardPatternEntered);
 	sublayout->addWidget(_wildcardPatternTextbox);
 
 	QGroupBox* frameSequenceBox = new QGroupBox(tr("Input frames"), rollout);
@@ -112,20 +112,20 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	_framesListBox = new QComboBox();
 	_framesListBox->setEditable(false);
 	_framesListBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-	connect(_framesListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &LinkedFileObjectEditor::onFrameSelected);
+	connect(_framesListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &FileSourceEditor::onFrameSelected);
 	subsublayout->addWidget(_framesListBox, 1);
 	sublayout->addLayout(subsublayout);
 
 	subsublayout = new QHBoxLayout();
 	subsublayout->setContentsMargins(0,0,0,0);
 	subsublayout->setSpacing(2);
-	IntegerParameterUI* playbackSpeedNumeratorUI = new IntegerParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_playbackSpeedNumerator));
+	IntegerParameterUI* playbackSpeedNumeratorUI = new IntegerParameterUI(this, PROPERTY_FIELD(FileSource::_playbackSpeedNumerator));
 	playbackSpeedNumeratorUI->setMinValue(1);
 	subsublayout->addWidget(new QLabel(tr("Playback speed:")));
 	subsublayout->addWidget(playbackSpeedNumeratorUI->textBox());
 	subsublayout->addWidget(playbackSpeedNumeratorUI->spinner());
 	subsublayout->addWidget(new QLabel(tr("/")));
-	IntegerParameterUI* playbackSpeedDenominatorUI = new IntegerParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_playbackSpeedDenominator));
+	IntegerParameterUI* playbackSpeedDenominatorUI = new IntegerParameterUI(this, PROPERTY_FIELD(FileSource::_playbackSpeedDenominator));
 	playbackSpeedDenominatorUI->setMinValue(1);
 	subsublayout->addWidget(playbackSpeedDenominatorUI->textBox());
 	subsublayout->addWidget(playbackSpeedDenominatorUI->spinner());
@@ -133,16 +133,16 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 
 	subsublayout = new QHBoxLayout();
 	subsublayout->setContentsMargins(0,0,0,0);
-	IntegerParameterUI* playbackStartUI = new IntegerParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_playbackStartTime));
+	IntegerParameterUI* playbackStartUI = new IntegerParameterUI(this, PROPERTY_FIELD(FileSource::_playbackStartTime));
 	subsublayout->addWidget(new QLabel(tr("Start at animation frame:")));
 	subsublayout->addLayout(playbackStartUI->createFieldLayout());
 	sublayout->addLayout(subsublayout);
 
-	BooleanParameterUI* adjustAnimIntervalUI = new BooleanParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled));
+	BooleanParameterUI* adjustAnimIntervalUI = new BooleanParameterUI(this, PROPERTY_FIELD(FileSource::_adjustAnimationIntervalEnabled));
 	sublayout->addWidget(adjustAnimIntervalUI->checkBox());
 
 	// Show settings editor of importer class.
-	new SubObjectParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_importer), rolloutParams.after(rollout));
+	new SubObjectParameterUI(this, PROPERTY_FIELD(FileSource::_importer), rolloutParams.after(rollout));
 
 	_subEditorRolloutParams = rolloutParams.collapse();
 }
@@ -150,20 +150,20 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 /******************************************************************************
 * Is called when a new object has been loaded into the editor.
 ******************************************************************************/
-void LinkedFileObjectEditor::onEditorContentsReplaced(RefTarget* newObject)
+void FileSourceEditor::onEditorContentsReplaced(RefTarget* newObject)
 {
 	updateInformationLabel();
 
 	// Close old sub-editors.
 	_subEditors.clear();
 	if(newObject) {
-		LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
+		FileSource* obj = static_object_cast<FileSource>(newObject);
 		// Open new sub-editors.
-		for(SceneObject* sceneObj : obj->sceneObjects()) {
-			OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();
+		for(DataObject* dataObj : obj->dataObjects()) {
+			OORef<PropertiesEditor> subEditor = dataObj->createPropertiesEditor();
 			if(subEditor) {
 				subEditor->initialize(container(), mainWindow(), _subEditorRolloutParams);
-				subEditor->setEditObject(sceneObj);
+				subEditor->setEditObject(dataObj);
 				_subEditors.push_back(subEditor);
 			}
 		}
@@ -173,9 +173,9 @@ void LinkedFileObjectEditor::onEditorContentsReplaced(RefTarget* newObject)
 /******************************************************************************
 * Is called when the user presses the "Pick local input file" button.
 ******************************************************************************/
-void LinkedFileObjectEditor::onPickLocalInputFile()
+void FileSourceEditor::onPickLocalInputFile()
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	if(obj)
 		obj->showFileSelectionDialog(container()->window());
 }
@@ -183,9 +183,9 @@ void LinkedFileObjectEditor::onPickLocalInputFile()
 /******************************************************************************
 * Is called when the user presses the "Pick remote input file" button.
 ******************************************************************************/
-void LinkedFileObjectEditor::onPickRemoteInputFile()
+void FileSourceEditor::onPickRemoteInputFile()
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	if(obj)
 		obj->showURLSelectionDialog(container()->window());
 }
@@ -193,11 +193,11 @@ void LinkedFileObjectEditor::onPickRemoteInputFile()
 /******************************************************************************
 * Is called when the user presses the Reload frame button.
 ******************************************************************************/
-void LinkedFileObjectEditor::onReloadFrame()
+void FileSourceEditor::onReloadFrame()
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	if(obj) {
-		obj->refreshFromSource(obj->loadedFrame());
+		obj->refreshFromSource(obj->loadedFrameIndex());
 		obj->notifyDependents(ReferenceEvent::TargetChanged);
 	}
 }
@@ -205,9 +205,9 @@ void LinkedFileObjectEditor::onReloadFrame()
 /******************************************************************************
 * Is called when the user presses the Reload animation button.
 ******************************************************************************/
-void LinkedFileObjectEditor::onReloadAnimation()
+void FileSourceEditor::onReloadAnimation()
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 	try {
 		obj->updateFrames();
@@ -222,9 +222,9 @@ void LinkedFileObjectEditor::onReloadAnimation()
 /******************************************************************************
 * This is called when the user has changed the source URL.
 ******************************************************************************/
-void LinkedFileObjectEditor::onWildcardPatternEntered()
+void FileSourceEditor::onWildcardPatternEntered()
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
 	undoableTransaction(tr("Change wildcard pattern"), [this, obj]() {
@@ -250,9 +250,9 @@ void LinkedFileObjectEditor::onWildcardPatternEntered()
 /******************************************************************************
 * Updates the displayed status informations.
 ******************************************************************************/
-void LinkedFileObjectEditor::updateInformationLabel()
+void FileSourceEditor::updateInformationLabel()
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	if(!obj) {
 		_wildcardPatternTextbox->clear();
 		_wildcardPatternTextbox->setEnabled(false);
@@ -281,9 +281,9 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	_wildcardPatternTextbox->setText(wildcardPattern);
 	_wildcardPatternTextbox->setEnabled(true);
 
-	int frameIndex = obj->loadedFrame();
+	int frameIndex = obj->loadedFrameIndex();
 	if(frameIndex >= 0) {
-		const LinkedFileImporter::FrameSourceInformation& frameInfo = obj->frames()[frameIndex];
+		const FileSourceImporter::Frame& frameInfo = obj->frames()[frameIndex];
 		if(frameInfo.sourceFile.isLocalFile()) {
 			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.toLocalFile()).fileName());
 		}
@@ -316,9 +316,9 @@ void LinkedFileObjectEditor::updateInformationLabel()
 /******************************************************************************
 * Is called when the user has selected a certain frame in the frame list box.
 ******************************************************************************/
-void LinkedFileObjectEditor::onFrameSelected(int index)
+void FileSourceEditor::onFrameSelected(int index)
 {
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	FileSource* obj = static_object_cast<FileSource>(editObject());
 	if(!obj) return;
 
 	dataset()->animationSettings()->setTime(obj->inputFrameToAnimationTime(index));
@@ -327,7 +327,7 @@ void LinkedFileObjectEditor::onFrameSelected(int index)
 /******************************************************************************
 * This method is called when a reference target changes.
 ******************************************************************************/
-bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
+bool FileSourceEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == editObject()) {
 		if(event->type() == ReferenceEvent::ObjectStatusChanged || event->type() == ReferenceEvent::TitleChanged) {
@@ -335,22 +335,22 @@ bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* e
 		}
 		else if(event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved) {
 			ReferenceFieldEvent* refEvent = static_cast<ReferenceFieldEvent*>(event);
-			if(refEvent->field() == PROPERTY_FIELD(LinkedFileObject::_sceneObjects)) {
-				SceneObject* sceneObj = dynamic_object_cast<SceneObject>(event->type() == ReferenceEvent::ReferenceAdded ? refEvent->newTarget() : refEvent->oldTarget());
-				if(sceneObj) {
+			if(refEvent->field() == PROPERTY_FIELD(FileSource::_dataObjects)) {
+				DataObject* dataObj = dynamic_object_cast<DataObject>(event->type() == ReferenceEvent::ReferenceAdded ? refEvent->newTarget() : refEvent->oldTarget());
+				if(dataObj) {
 					if(event->type() == ReferenceEvent::ReferenceAdded) {
 						// Open a new sub-editor.
-						OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();
+						OORef<PropertiesEditor> subEditor = dataObj->createPropertiesEditor();
 						if(subEditor) {
 							subEditor->initialize(container(), mainWindow(), _subEditorRolloutParams);
-							subEditor->setEditObject(sceneObj);
+							subEditor->setEditObject(dataObj);
 							_subEditors.push_back(subEditor);
 						}
 					}
 					else {
 						// Close sub-editor.
 						for(int i = _subEditors.size() - 1; i >= 0; i--) {
-							if(_subEditors[i]->editObject() == sceneObj)
+							if(_subEditors[i]->editObject() == dataObj)
 								_subEditors.erase(_subEditors.begin() + i);
 						}
 					}

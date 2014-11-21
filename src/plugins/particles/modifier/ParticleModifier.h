@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/Modifier.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/widgets/display/StatusWidget.h>
 #include <core/reference/CloneHelper.h>

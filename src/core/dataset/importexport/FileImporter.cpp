@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -24,8 +24,7 @@
 #include <core/utilities/io/FileManager.h>
 #include <core/dataset/DataSet.h>
 #include <core/dataset/DataSetContainer.h>
-#include "ImportExportManager.h"
-#include "moc_FileImporter.cpp"
+#include "FileImporter.h"
 #include "moc_FileExporter.cpp"
 
 namespace Ovito { namespace DataIO {
@@ -33,69 +32,26 @@ namespace Ovito { namespace DataIO {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileExporter, RefTarget);
 
-/// The singleton instance of the class.
-ImportExportManager* ImportExportManager::_instance = nullptr;
-
-/******************************************************************************
-* Initializes the manager.
-******************************************************************************/
-ImportExportManager::ImportExportManager()
-{
-	OVITO_ASSERT_MSG(!_instance, "ImportExportManager constructor", "Multiple instances of this singleton class have been created.");
-}
-
 /******************************************************************************
 * Return the list of available import services.
 ******************************************************************************/
-const QVector<FileImporterDescription*>& ImportExportManager::fileImporters(DataSet* dataset)
+QVector<OvitoObjectType*> FileImporter::availableImporters()
 {
-	if(_fileImporters.empty()) {
-		UndoSuspender noUnder(dataset);
-
-		// Scan the class list for file import services.
-		Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileImporter::OOType)) {
-			try {
-				// Create a temporary instance to get the supported file formats.
-				OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance(dataset));
-				if(obj)
-					_fileImporters.push_back(new FileImporterDescription(this, obj));
-			}
-			catch(const Exception& ex) {
-				ex.showError();
-			}
-		}
-	}
-	return _fileImporters;
+	return PluginManager::instance().listClasses(FileImporter::OOType);
 }
 
 /******************************************************************************
 * Return the list of available export services.
 ******************************************************************************/
-const QVector<FileExporterDescription*>& ImportExportManager::fileExporters(DataSet* dataset)
+QVector<OvitoObjectType*> FileExporter::availableExporters()
 {
-	if(_fileExporters.empty()) {
-		UndoSuspender noUnder(dataset);
-
-		// Scan the class list for file export services.
-		Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileExporter::OOType)) {
-			try {
-				// Create a temporary instance to get the supported file formats.
-				OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance(dataset));
-				if(obj)
-					_fileExporters.push_back(new FileExporterDescription(this, obj));
-			}
-			catch(const Exception& ex) {
-				ex.showError();
-			}
-		}
-	}
-	return _fileExporters;
+	return PluginManager::instance().listClasses(FileExporter::OOType);
 }
 
 /******************************************************************************
 * Tries to detect the format of the given file.
 ******************************************************************************/
-OORef<FileImporter> ImportExportManager::autodetectFileFormat(DataSet* dataset, const QUrl& url)
+OORef<FileImporter> FileImporter::autodetectFileFormat(DataSet* dataset, const QUrl& url)
 {
 	if(!url.isValid())
 		throw Exception(tr("Invalid path or URL."));
@@ -113,12 +69,12 @@ OORef<FileImporter> ImportExportManager::autodetectFileFormat(DataSet* dataset, 
 /******************************************************************************
 * Tries to detect the format of the given file.
 ******************************************************************************/
-OORef<FileImporter> ImportExportManager::autodetectFileFormat(DataSet* dataset, const QString& localFile, const QUrl& sourceLocation)
+OORef<FileImporter> FileImporter::autodetectFileFormat(DataSet* dataset, const QString& localFile, const QUrl& sourceLocation)
 {
 	UndoSuspender noUnder(dataset);
-	for(FileImporterDescription* importerType : fileImporters(dataset)) {
+	for(const OvitoObjectType* importerType : availableImporters()) {
 		try {
-			OORef<FileImporter> importer = importerType->createService(dataset);
+			OORef<FileImporter> importer = static_object_cast<FileImporter>(importerType->createInstance(dataset));
 			QFile file(localFile);
 			if(importer && importer->checkFileFormat(file, sourceLocation)) {
 				return importer;

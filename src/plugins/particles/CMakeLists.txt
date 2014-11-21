@@ -66,7 +66,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/selection/SelectExpressionModifier.cpp
 	modifier/selection/ManualSelectionModifier.cpp
 	modifier/selection/ClearSelectionModifier.cpp
-	modifier/properties/CreateExpressionPropertyModifier.cpp
+	modifier/properties/ComputePropertyModifier.cpp
 	modifier/properties/FreezePropertyModifier.cpp
 	import/ParticleImporter.cpp
 	import/ParticleImportTask.cpp

@@ -51,16 +51,16 @@ SET(OVITO_CORE_SOURCE_FILES
 	dataset/DataSet.cpp
 	dataset/DataSetContainer.cpp
 	dataset/UndoStack.cpp
-	dataset/importexport/ImportExportManager.cpp
-	dataset/importexport/LinkedFileImporter.cpp
-	dataset/importexport/LinkedFileObject.cpp
-	dataset/importexport/LinkedFileObjectEditor.cpp
+	dataset/importexport/FileImporter.cpp
+	dataset/importexport/FileSourceImporter.cpp
+	dataset/importexport/FileSource.cpp
+	dataset/importexport/FileSourceEditor.cpp
 	scene/SceneNode.cpp
 	scene/ObjectNode.cpp
 	scene/SceneRoot.cpp
 	scene/SelectionSet.cpp
 	scene/objects/DisplayObject.cpp
-	scene/objects/SceneObject.cpp
+	scene/objects/DataObject.cpp
 	scene/objects/geometry/TriMeshObject.cpp
 	scene/objects/geometry/TriMeshDisplay.cpp
 	scene/objects/camera/CameraObject.cpp

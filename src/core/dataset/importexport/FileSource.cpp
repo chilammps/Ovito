@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -30,49 +30,47 @@
 #include <core/scene/ObjectNode.h>
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
-#include <core/dataset/importexport/ImportExportManager.h>
+#include <core/dataset/importexport/FileImporter.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/UndoStack.h>
-#include "LinkedFileObject.h"
-#include "LinkedFileObjectEditor.h"
+#include "FileSource.h"
+#include "FileSourceEditor.h"
 
 namespace Ovito { namespace DataIO {
 
-using namespace Internal;
-
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject);
-SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor);
-DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO);
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled");
-DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO);
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedNumerator, "PlaybackSpeedNumerator");
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedDenominator, "PlaybackSpeedDenominator");
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackStartTime, "PlaybackStartTime");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedNumerator, "Playback speed numerator");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedDenominator, "Playback speed denominator");
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackStartTime, "Playback start time");
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSource, DataObject);
+SET_OVITO_OBJECT_EDITOR(FileSource, Internal::FileSourceEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(FileSource, _importer, "Importer", FileSourceImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(FileSource, _dataObjects, "SceneObjects", DataObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_PROPERTY_FIELD(FileSource, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled");
+DEFINE_FLAGS_PROPERTY_FIELD(FileSource, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO);
+DEFINE_PROPERTY_FIELD(FileSource, _playbackSpeedNumerator, "PlaybackSpeedNumerator");
+DEFINE_PROPERTY_FIELD(FileSource, _playbackSpeedDenominator, "PlaybackSpeedDenominator");
+DEFINE_PROPERTY_FIELD(FileSource, _playbackStartTime, "PlaybackStartTime");
+SET_PROPERTY_FIELD_LABEL(FileSource, _importer, "File Importer");
+SET_PROPERTY_FIELD_LABEL(FileSource, _dataObjects, "Objects");
+SET_PROPERTY_FIELD_LABEL(FileSource, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval");
+SET_PROPERTY_FIELD_LABEL(FileSource, _sourceUrl, "Source location");
+SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedNumerator, "Playback speed numerator");
+SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedDenominator, "Playback speed denominator");
+SET_PROPERTY_FIELD_LABEL(FileSource, _playbackStartTime, "Playback start time");
 
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
-LinkedFileObject::LinkedFileObject(DataSet* dataset) : SceneObject(dataset),
-	_adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1),
+FileSource::FileSource(DataSet* dataset) : DataObject(dataset),
+	_adjustAnimationIntervalEnabled(true), _loadedFrameIndex(-1), _frameBeingLoaded(-1),
 	_playbackSpeedNumerator(1), _playbackSpeedDenominator(1), _playbackStartTime(0)
 {
-	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_sourceUrl);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_playbackSpeedNumerator);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_playbackSpeedDenominator);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_playbackStartTime);
+	INIT_PROPERTY_FIELD(FileSource::_importer);
+	INIT_PROPERTY_FIELD(FileSource::_dataObjects);
+	INIT_PROPERTY_FIELD(FileSource::_adjustAnimationIntervalEnabled);
+	INIT_PROPERTY_FIELD(FileSource::_sourceUrl);
+	INIT_PROPERTY_FIELD(FileSource::_playbackSpeedNumerator);
+	INIT_PROPERTY_FIELD(FileSource::_playbackSpeedDenominator);
+	INIT_PROPERTY_FIELD(FileSource::_playbackStartTime);
 
-	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
+	connect(&_frameLoaderWatcher, &FutureWatcher::finished, this, &FileSource::loadOperationFinished);
 
 	// Do not save a copy of the linked external data in scene file by default.
 	setSaveWithScene(false);
@@ -81,7 +79,7 @@ LinkedFileObject::LinkedFileObject(DataSet* dataset) : SceneObject(dataset),
 /******************************************************************************
 * Sets the source location for importing data.
 ******************************************************************************/
-bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDescription* importerType)
+bool FileSource::setSource(const QUrl& newSourceUrl, const OvitoObjectType* importerType)
 {
 	OORef<FileImporter> fileimporter;
 
@@ -94,18 +92,18 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 			return false;
 
 		// Detect file format.
-		fileimporter = ImportExportManager::instance().autodetectFileFormat(dataset(), fetchFileFuture.result(), newSourceUrl.path());
+		fileimporter = FileImporter::autodetectFileFormat(dataset(), fetchFileFuture.result(), newSourceUrl.path());
 		if(!fileimporter)
 			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
 	}
 	else {
-		fileimporter = importerType->createService(dataset());
+		fileimporter = static_object_cast<FileImporter>(importerType->createInstance(dataset()));
 		if(!fileimporter)
 			return false;
 	}
-	OORef<LinkedFileImporter> newImporter = dynamic_object_cast<LinkedFileImporter>(fileimporter);
+	OORef<FileSourceImporter> newImporter = dynamic_object_cast<FileSourceImporter>(fileimporter);
 	if(!newImporter)
-		throw Exception(tr("You did not select a compatible file."));
+		throw Exception(tr("The selected file type is not compatible."));
 
 	ViewportSuspender noVPUpdate(dataset()->viewportConfig());
 
@@ -125,7 +123,7 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 /******************************************************************************
 * Sets the source location for importing data.
 ******************************************************************************/
-bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, bool useExactURL)
+bool FileSource::setSource(QUrl sourceUrl, FileSourceImporter* importer, bool useExactURL)
 {
 	// Make file path absolute.
 	if(sourceUrl.isLocalFile()) {
@@ -167,18 +165,18 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, b
 	// Make the call to setSource() undoable.
 	class SetSourceOperation : public UndoableOperation {
 	public:
-		SetSourceOperation(LinkedFileObject* obj) : _obj(obj), _oldUrl(obj->sourceUrl()), _oldImporter(obj->importer()) {}
+		SetSourceOperation(FileSource* obj) : _obj(obj), _oldUrl(obj->sourceUrl()), _oldImporter(obj->importer()) {}
 		virtual void undo() override {
 			QUrl url = _obj->sourceUrl();
-			OORef<LinkedFileImporter> importer = _obj->importer();
+			OORef<FileSourceImporter> importer = _obj->importer();
 			_obj->setSource(_oldUrl, _oldImporter, true);
 			_oldUrl = url;
 			_oldImporter = importer;
 		}
 	private:
 		QUrl _oldUrl;
-		OORef<LinkedFileImporter> _oldImporter;
-		OORef<LinkedFileObject> _obj;
+		OORef<FileSourceImporter> _oldImporter;
+		OORef<FileSource> _obj;
 	};
 	if(dataset()->undoStack().isRecording())
 		dataset()->undoStack().push(new SetSourceOperation(this));
@@ -231,24 +229,24 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, LinkedFileImporter* importer, b
 /******************************************************************************
 * Scans the input source for animation frames and updates the internal list of frames.
 ******************************************************************************/
-bool LinkedFileObject::updateFrames()
+bool FileSource::updateFrames()
 {
 	if(!importer()) {
 		_frames.clear();
-		_loadedFrame = -1;
+		_loadedFrameIndex = -1;
 		return false;
 	}
 
-	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames(sourceUrl());
+	Future<QVector<FileSourceImporter::Frame>> framesFuture = importer()->findFrames(sourceUrl());
 	if(!dataset()->container()->taskManager().waitForTask(framesFuture))
 		return false;
 
-	QVector<LinkedFileImporter::FrameSourceInformation> newFrames = framesFuture.result();
+	QVector<FileSourceImporter::Frame> newFrames = framesFuture.result();
 
 	// Reload current frame if file has changed.
-	if(_loadedFrame >= 0) {
-		if(_loadedFrame >= newFrames.size() || _loadedFrame >= _frames.size() || newFrames[_loadedFrame] != _frames[_loadedFrame])
-			_loadedFrame = -1;
+	if(_loadedFrameIndex >= 0) {
+		if(_loadedFrameIndex >= newFrames.size() || _loadedFrameIndex >= _frames.size() || newFrames[_loadedFrameIndex] != _frames[_loadedFrameIndex])
+			_loadedFrameIndex = -1;
 	}
 
 	_frames = newFrames;
@@ -260,14 +258,14 @@ bool LinkedFileObject::updateFrames()
 /******************************************************************************
 * Cancels the current load operation if there is any in progress.
 ******************************************************************************/
-void LinkedFileObject::cancelLoadOperation()
+void FileSource::cancelLoadOperation()
 {
 	if(_frameBeingLoaded != -1) {
 		try {
 			// This will suppress any pending notification events.
-			_loadFrameOperationWatcher.unsetFuture();
-			_loadFrameOperation.cancel();
-			_loadFrameOperation.waitForFinished();
+			_frameLoaderWatcher.unsetFuture();
+			_activeFrameLoader.cancel();
+			_activeFrameLoader.waitForFinished();
 		} catch(...) {}
 		_frameBeingLoaded = -1;
 		notifyDependents(ReferenceEvent::PendingStateChanged);
@@ -277,7 +275,7 @@ void LinkedFileObject::cancelLoadOperation()
 /******************************************************************************
 * Given an animation time, computes the input frame index to be shown at that time.
 ******************************************************************************/
-int LinkedFileObject::animationTimeToInputFrame(TimePoint time) const
+int FileSource::animationTimeToInputFrame(TimePoint time) const
 {
 	int animFrame = dataset()->animationSettings()->timeToFrame(time);
 	return (animFrame - _playbackStartTime) *
@@ -288,7 +286,7 @@ int LinkedFileObject::animationTimeToInputFrame(TimePoint time) const
 /******************************************************************************
 * Given an input frame index, returns the animation time at which it is shown.
 ******************************************************************************/
-TimePoint LinkedFileObject::inputFrameToAnimationTime(int frame) const
+TimePoint FileSource::inputFrameToAnimationTime(int frame) const
 {
 	int animFrame = frame *
 			std::max(1, (int)_playbackSpeedDenominator) /
@@ -300,7 +298,7 @@ TimePoint LinkedFileObject::inputFrameToAnimationTime(int frame) const
 /******************************************************************************
 * Asks the object for the result of the geometry pipeline at the given time.
 ******************************************************************************/
-PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
+PipelineFlowState FileSource::evaluate(TimePoint time)
 {
 	return requestFrame(animationTimeToInputFrame(time));
 }
@@ -308,7 +306,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 /******************************************************************************
 * Requests a frame of the input file sequence.
 ******************************************************************************/
-PipelineFlowState LinkedFileObject::requestFrame(int frame)
+PipelineFlowState FileSource::requestFrame(int frame)
 {
 	// Handle out-of-range cases.
 	if(frame < 0) frame = 0;
@@ -322,7 +320,7 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 		interval.setEnd(std::max(inputFrameToAnimationTime(frame+1)-1, inputFrameToAnimationTime(frame)));
 
 	// Prepare the attribute map that will be passed to the modification pipeline
-	// along with the scene objects.
+	// along with the data objects.
 	QVariantMap attrs = attributes();
 	attrs.insert(QStringLiteral("Frame"), QVariant::fromValue(frame));
 
@@ -331,16 +329,16 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 		if(_frameBeingLoaded == frame) {
 			// The requested frame is already being loaded at the moment.
 			// Indicate to the caller that the result is pending.
-			return PipelineFlowState(PipelineStatus::Pending, _sceneObjects.targets(), interval, attrs);
+			return PipelineFlowState(PipelineStatus::Pending, dataObjects(), interval, attrs);
 		}
 		else {
 			// Another frame than the requested one is already being loaded.
 			// Cancel pending loading operation first.
 			try {
 				// This will suppress any pending notification events.
-				_loadFrameOperationWatcher.unsetFuture();
-				_loadFrameOperation.cancel();
-				_loadFrameOperation.waitForFinished();
+				_frameLoaderWatcher.unsetFuture();
+				_activeFrameLoader.cancel();
+				_activeFrameLoader.waitForFinished();
 			} catch(...) {}
 			_frameBeingLoaded = -1;
 			// Inform previous caller that the existing loading operation has been canceled.
@@ -348,12 +346,12 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 		}
 	}
 
-	if(frame >= 0 && _loadedFrame == frame) {
+	if(frame >= 0 && loadedFrameIndex() == frame) {
 		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
-		return PipelineFlowState(status(), _sceneObjects.targets(), interval, attrs);
+		return PipelineFlowState(status(), dataObjects(), interval, attrs);
 	}
 	else {
 		// The requested frame needs to be loaded first. Start background loading task.
@@ -361,39 +359,39 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 			if(oldLoadingTaskWasCanceled)
 				notifyDependents(ReferenceEvent::PendingStateChanged);
 			setStatus(PipelineStatus(PipelineStatus::Error, tr("The source location is empty (no files found).")));
-			_loadedFrame = -1;
-			return PipelineFlowState(status(), _sceneObjects.targets(), interval);
+			_loadedFrameIndex = -1;
+			return PipelineFlowState(status(), dataObjects(), interval);
 		}
 		_frameBeingLoaded = frame;
-		_loadFrameOperation = importer()->load(_frames[frame]);
-		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
+		_activeFrameLoader = importer()->loadFrame(_frames[frame]);
+		_frameLoaderWatcher.setFuture(_activeFrameLoader);
 		setStatus(PipelineStatus::Pending);
 		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 		// Indicate to the caller that the result is pending.
-		return PipelineFlowState(PipelineStatus::Pending, _sceneObjects.targets(), interval, attrs);
+		return PipelineFlowState(PipelineStatus::Pending, dataObjects(), interval, attrs);
 	}
 }
 
 /******************************************************************************
 * This is called when the background loading operation has finished.
 ******************************************************************************/
-void LinkedFileObject::loadOperationFinished()
+void FileSource::loadOperationFinished()
 {
 	OVITO_ASSERT(_frameBeingLoaded != -1);
-	bool wasCanceled = _loadFrameOperation.isCanceled();
-	_loadedFrame = _frameBeingLoaded;
+	bool wasCanceled = _activeFrameLoader.isCanceled();
+	_loadedFrameIndex = _frameBeingLoaded;
 	_frameBeingLoaded = -1;
 	PipelineStatus newStatus = status();
 
 	if(!wasCanceled) {
 		try {
 			// Adopt the data loaded by the importer.
-			LinkedFileImporter::ImportTaskPtr importedData = _loadFrameOperation.result();
-			QSet<SceneObject*> activeObjects;
-			if(importedData) {
-				activeObjects = importedData->insertIntoScene(this);
-				newStatus = importedData->status();
+			std::shared_ptr<FileSourceImporter::FrameLoader> frameLoader = _activeFrameLoader.result();
+			QSet<DataObject*> activeObjects;
+			if(frameLoader) {
+				activeObjects = frameLoader->insertIntoScene(this);
+				newStatus = frameLoader->status();
 			}
 			removeInactiveObjects(activeObjects);
 		}
@@ -408,8 +406,8 @@ void LinkedFileObject::loadOperationFinished()
 	}
 
 	// Reset everything.
-	_loadFrameOperationWatcher.unsetFuture();
-	_loadFrameOperation.reset();
+	_frameLoaderWatcher.unsetFuture();
+	_activeFrameLoader.reset();
 
 	// Set the new object status.
 	setStatus(newStatus);
@@ -422,18 +420,18 @@ void LinkedFileObject::loadOperationFinished()
 /******************************************************************************
 * This will reload an animation frame.
 ******************************************************************************/
-void LinkedFileObject::refreshFromSource(int frame)
+void FileSource::refreshFromSource(int frameIndex)
 {
 	if(!importer())
 		return;
 
 	// Remove external file from local file cache so that it will be fetched from the
 	// remote server again.
-	if(frame >= 0 && frame < _frames.size())
-		FileManager::instance().removeFromCache(_frames[frame].sourceFile);
+	if(frameIndex >= 0 && frameIndex < frames().size())
+		FileManager::instance().removeFromCache(frames()[frameIndex].sourceFile);
 
-	if(frame == loadedFrame() || frame == -1) {
-		_loadedFrame = -1;
+	if(frameIndex == loadedFrameIndex() || frameIndex == -1) {
+		_loadedFrameIndex = -1;
 		notifyDependents(ReferenceEvent::TargetChanged);
 	}
 }
@@ -442,7 +440,7 @@ void LinkedFileObject::refreshFromSource(int frame)
 * Saves the status returned by the parser object and generates a
 * ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
-void LinkedFileObject::setStatus(const PipelineStatus& status)
+void FileSource::setStatus(const PipelineStatus& status)
 {
 	if(status == _importStatus) return;
 	_importStatus = status;
@@ -453,7 +451,7 @@ void LinkedFileObject::setStatus(const PipelineStatus& status)
 * Adjusts the animation interval of the current data set to the number of
 * frames reported by the file parser.
 ******************************************************************************/
-void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
+void FileSource::adjustAnimationInterval(int gotoFrameIndex)
 {
 	if(!_adjustAnimationIntervalEnabled)
 		return;
@@ -482,13 +480,13 @@ void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
 /******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
-void LinkedFileObject::saveToStream(ObjectSaveStream& stream)
+void FileSource::saveToStream(ObjectSaveStream& stream)
 {
-	SceneObject::saveToStream(stream);
+	DataObject::saveToStream(stream);
 	stream.beginChunk(0x01);
 	stream << _frames;
 	if(saveWithScene())
-		stream << _loadedFrame;
+		stream << _loadedFrameIndex;
 	else
 		stream << -1;
 	stream.endChunk();
@@ -497,22 +495,22 @@ void LinkedFileObject::saveToStream(ObjectSaveStream& stream)
 /******************************************************************************
 * Loads the class' contents from the given stream.
 ******************************************************************************/
-void LinkedFileObject::loadFromStream(ObjectLoadStream& stream)
+void FileSource::loadFromStream(ObjectLoadStream& stream)
 {
-	SceneObject::loadFromStream(stream);
+	DataObject::loadFromStream(stream);
 	stream.expectChunk(0x01);
 	stream >> _frames;
-	stream >> _loadedFrame;
+	stream >> _loadedFrameIndex;
 	stream.closeChunk();
 }
 
 /******************************************************************************
 * Returns the title of this object.
 ******************************************************************************/
-QString LinkedFileObject::objectTitle()
+QString FileSource::objectTitle()
 {
 	QString filename;
-	int frameIndex = loadedFrame();
+	int frameIndex = loadedFrameIndex();
 	if(frameIndex >= 0) {
 		filename = QFileInfo(frames()[frameIndex].sourceFile.path()).fileName();
 	}
@@ -521,74 +519,81 @@ QString LinkedFileObject::objectTitle()
 	}
 	if(importer())
 		return QString("%2 [%1]").arg(importer()->objectTitle()).arg(filename);
-	return SceneObject::objectTitle();
+	return DataObject::objectTitle();
 }
 
 /******************************************************************************
 * Returns the number of sub-objects that should be displayed in the modifier stack.
 ******************************************************************************/
-int LinkedFileObject::editableSubObjectCount()
+int FileSource::editableSubObjectCount()
 {
-	return sceneObjects().size();
+	return dataObjects().size();
 }
 
 /******************************************************************************
 * Returns a sub-object that should be listed in the modifier stack.
 ******************************************************************************/
-RefTarget* LinkedFileObject::editableSubObject(int index)
+RefTarget* FileSource::editableSubObject(int index)
 {
-	return sceneObjects()[index];
+	return dataObjects()[index];
 }
 
 /******************************************************************************
 * Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 ******************************************************************************/
-void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
+void FileSource::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
+	if(field == PROPERTY_FIELD(FileSource::_dataObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
 
-	SceneObject::referenceInserted(field, newTarget, listIndex);
+	DataObject::referenceInserted(field, newTarget, listIndex);
 }
 
 /******************************************************************************
 * Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 ******************************************************************************/
-void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
+void FileSource::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
+	if(field == PROPERTY_FIELD(FileSource::_dataObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
 
-	SceneObject::referenceRemoved(field, newTarget, listIndex);
+	DataObject::referenceRemoved(field, newTarget, listIndex);
 }
 
 /******************************************************************************
 * Is called when the value of a property of this object has changed.
 ******************************************************************************/
-void LinkedFileObject::propertyChanged(const PropertyFieldDescriptor& field)
+void FileSource::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	if(field == PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled) ||
-			field == PROPERTY_FIELD(LinkedFileObject::_playbackSpeedNumerator) ||
-			field == PROPERTY_FIELD(LinkedFileObject::_playbackSpeedDenominator) ||
-			field == PROPERTY_FIELD(LinkedFileObject::_playbackStartTime)) {
+	if(field == PROPERTY_FIELD(FileSource::_adjustAnimationIntervalEnabled) ||
+			field == PROPERTY_FIELD(FileSource::_playbackSpeedNumerator) ||
+			field == PROPERTY_FIELD(FileSource::_playbackSpeedDenominator) ||
+			field == PROPERTY_FIELD(FileSource::_playbackStartTime)) {
 		adjustAnimationInterval();
 	}
-	SceneObject::propertyChanged(field);
+	DataObject::propertyChanged(field);
 }
 
 /******************************************************************************
 * Displays the file selection dialog and lets the user select a new input file.
 ******************************************************************************/
-void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
+void FileSource::showFileSelectionDialog(QWidget* parent)
 {
 	try {
 		QUrl newSourceUrl;
-		const FileImporterDescription* importerType;
+		const OvitoObjectType* importerType;
 
 		// Put code in a block: Need to release dialog before loading new input file.
 		{
+			// Offer only file importer types that are compatible with a FileSource.
+			QVector<OvitoObjectType*> availableTypes;
+			for(OvitoObjectType* type : FileImporter::availableImporters()) {
+				if(type->isDerivedFrom(FileSourceImporter::OOType))
+					availableTypes.push_back(type);
+			}
+
 			// Let the user select a file.
-			ImportFileDialog dialog(ImportExportManager::instance().fileImporters(dataset()), parent, tr("Pick input file"));
+			ImportFileDialog dialog(availableTypes, dataset(), parent, tr("Pick input file"));
 			if(sourceUrl().isLocalFile())
 				dialog.selectFile(sourceUrl().toLocalFile());
 			if(dialog.exec() != QDialog::Accepted)
@@ -609,16 +614,23 @@ void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 /******************************************************************************
 * Displays the file selection dialog and lets the user select a new input file.
 ******************************************************************************/
-void LinkedFileObject::showURLSelectionDialog(QWidget* parent)
+void FileSource::showURLSelectionDialog(QWidget* parent)
 {
 	try {
 		QUrl newSourceUrl;
-		const FileImporterDescription* importerType;
+		const OvitoObjectType* importerType;
 
 		// Put code in a block: Need to release dialog before loading new input file.
 		{
+			// Offer only file importer types that are compatible with a FileSource.
+			QVector<OvitoObjectType*> availableTypes;
+			for(OvitoObjectType* type : FileImporter::availableImporters()) {
+				if(type->isDerivedFrom(FileSourceImporter::OOType))
+					availableTypes.push_back(type);
+			}
+
 			// Let the user select a new URL.
-			ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(dataset()), parent, tr("Pick source"));
+			ImportRemoteFileDialog dialog(availableTypes, dataset(), parent, tr("Pick source"));
 			dialog.selectFile(sourceUrl());
 			if(dialog.exec() != QDialog::Accepted)
 				return;

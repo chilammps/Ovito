@@ -34,10 +34,10 @@
 namespace Ovito { namespace Anim {
 
 /**
- * \brief Rotation controller that lets an object always "look" at another scene object.
+ * \brief Rotation controller that lets an object always "look" at another scene node.
  * 
  * This RotationController computes a rotation matrix for a SceneNode such
- * that it always faces into the direction of another SceneNode.
+ * that it always faces into the direction of the target SceneNode.
  */
 class OVITO_CORE_EXPORT LookAtController : public Controller
 {

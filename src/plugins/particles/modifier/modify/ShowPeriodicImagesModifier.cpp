@@ -87,7 +87,7 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 	_outputParticleCount = newParticleCount;
 	AffineTransformation simCell = expectSimulationCell()->cellMatrix();
 
-	for(SceneObject* outobj : _output.objects()) {
+	for(DataObject* outobj : _output.objects()) {
 		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;

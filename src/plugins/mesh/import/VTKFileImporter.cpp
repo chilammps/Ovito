@@ -25,7 +25,7 @@
 
 namespace Mesh {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Mesh, VTKFileImporter, LinkedFileImporter);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Mesh, VTKFileImporter, FileSourceImporter);
 
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.

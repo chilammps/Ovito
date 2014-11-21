@@ -27,10 +27,9 @@
 #include <plugins/crystalanalysis/importer/CAImporter.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
 
 BOOST_PYTHON_MODULE(CrystalAnalysis)
@@ -85,11 +84,11 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 		.add_property("smoothingLevel", &SmoothSurfaceModifier::smoothingLevel, &SmoothSurfaceModifier::setSmoothingLevel)
 	;
 
-	ovito_class<CAImporter, LinkedFileImporter>()
+	ovito_class<CAImporter, FileSourceImporter>()
 		.add_property("loadParticles", &CAImporter::loadParticles, &CAImporter::setLoadParticles)
 	;
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(CrystalAnalysis);
 
-};
+}}}	// End of namespace

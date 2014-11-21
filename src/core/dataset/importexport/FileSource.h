@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,48 +19,50 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_LINKED_FILE_OBJECT_H
-#define __OVITO_LINKED_FILE_OBJECT_H
+#ifndef __OVITO_FILE_SOURCE_H
+#define __OVITO_FILE_SOURCE_H
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
-#include "LinkedFileImporter.h"
+#include <core/scene/objects/DataObject.h>
+#include "FileSourceImporter.h"
 
 namespace Ovito { namespace DataIO {
 
 /**
  * \brief A place holder object that feeds data read from an external file into the scene.
  *
- * This class is used in conjunction with a LinkedFileImporter class.
+ * This class is used in conjunction with a FileSourceImporter class.
  */
-class OVITO_CORE_EXPORT LinkedFileObject : public SceneObject
+class OVITO_CORE_EXPORT FileSource : public DataObject
 {
 public:
 
-	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LinkedFileObject(DataSet* dataset);
+	/// Constructs an empty file source which is not referring to an external file.
+	Q_INVOKABLE FileSource(DataSet* dataset);
 
-	/// \brief Returns the parser that loads the input file.
-	LinkedFileImporter* importer() const { return _importer; }
+	/// Returns the object that is responsible for loading data from the external file referenced by this FileSource.
+	/// \return The importer owned by this FileSource; or \c nullptr if this FileSource is currently not referring to an external file.
+	/// The importer can be replaced by calling setSource().
+	FileSourceImporter* importer() const { return _importer; }
 
 	/// \brief Sets the source location for importing data.
 	/// \param sourceUrl The new source location.
-	/// \param importerType The type of importer object that will parse the input file (can be NULL to request auto-detection).
+	/// \param importerType The FileSourceImporter type that will be used to parse the input file (can be \c nullptr to request format auto-detection).
 	/// \return false if the operation has been canceled by the user.
-	bool setSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
+	bool setSource(const QUrl& sourceUrl, const OvitoObjectType* importerType = nullptr);
 
 	/// \brief Sets the source location for importing data.
 	/// \param sourceUrl The new source location.
 	/// \param importer The importer object that will parse the input file.
 	/// \return false if the operation has been canceled by the user.
-	bool setSource(QUrl sourceUrl, LinkedFileImporter* importer, bool useExactURL = false);
+	bool setSource(QUrl sourceUrl, FileSourceImporter* importer, bool useExactURL = false);
 
 	/// \brief Returns the source location of the data.
 	const QUrl& sourceUrl() const { return _sourceUrl; }
 
 	/// \brief This reloads the input data from the external file.
-	/// \param frame The animation frame to reload from the external file.
-	Q_INVOKABLE void refreshFromSource(int frame = -1);
+	/// \param frameIndex The animation frame to reload from the external file.
+	Q_INVOKABLE void refreshFromSource(int frameIndex = -1);
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	virtual PipelineStatus status() const override { return _importStatus; }
@@ -72,10 +74,10 @@ public:
 	int numberOfFrames() const { return _frames.size(); }
 
 	/// \brief Returns the index of the animation frame loaded last from the input file.
-	int loadedFrame() const { return _loadedFrame; }
+	int loadedFrameIndex() const { return _loadedFrameIndex; }
 
 	/// \brief Returns the list of animation frames in the input file(s).
-	const QVector<LinkedFileImporter::FrameSourceInformation>& frames() const { return _frames; }
+	const QVector<FileSourceImporter::Frame>& frames() const { return _frames; }
 
 	/// \brief Given an animation time, computes the input frame index to be shown at that time.
 	Q_INVOKABLE int animationTimeToInputFrame(TimePoint time) const;
@@ -93,60 +95,60 @@ public:
 	void adjustAnimationInterval(int gotoFrameIndex = -1);
 
 	/// \brief Requests a frame of the input file sequence.
-	PipelineFlowState requestFrame(int frame);
+	PipelineFlowState requestFrame(int frameIndex);
 
 	/// \brief Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override;
 
-	/// \brief Returns the list of imported scene objects.
-	const QVector<SceneObject*>& sceneObjects() const { return _sceneObjects; }
+	/// \brief Returns the list of imported data objects.
+	const QVector<DataObject*>& dataObjects() const { return _dataObjects; }
 
-	/// \brief Inserts a new object into the list of scene objects held by this container object.
-	void addSceneObject(SceneObject* obj) {
-		if(!_sceneObjects.contains(obj)) {
+	/// \brief Inserts a new object into the list of data objects held by this container object.
+	void addDataObject(DataObject* obj) {
+		if(!_dataObjects.contains(obj)) {
 			obj->setSaveWithScene(saveWithScene());
-			_sceneObjects.push_back(obj);
+			_dataObjects.push_back(obj);
 		}
 	}
 
-	/// \brief Looks for an object of the given type in the list of scene objects and returns it.
+	/// \brief Looks for an object of the given type in the list of data objects and returns it.
 	template<class T>
-	T* findSceneObject() const {
-		for(SceneObject* obj : sceneObjects()) {
+	T* findDataObject() const {
+		for(DataObject* obj : dataObjects()) {
 			T* castObj = dynamic_object_cast<T>(obj);
 			if(castObj) return castObj;
 		}
 		return nullptr;
 	}
 
-	/// \brief Removes all scene objects owned by this LinkedFileObject that are not
+	/// \brief Removes all data objects owned by this FileSource that are not
 	///        listed in the given set of active objects.
-	void removeInactiveObjects(const QSet<SceneObject*>& activeObjects) {
-		for(int index = _sceneObjects.size() - 1; index >= 0; index--)
-			if(!activeObjects.contains(_sceneObjects[index]))
-				_sceneObjects.remove(index);
+	void removeInactiveObjects(const QSet<DataObject*>& activeObjects) {
+		for(int index = _dataObjects.size() - 1; index >= 0; index--)
+			if(!activeObjects.contains(_dataObjects[index]))
+				_dataObjects.remove(index);
 	}
 
 	/// \brief Controls whether the imported data is saved along with the scene.
 	/// \param on \c true if data should be stored in the scene file; \c false if the data resides only in the external file.
 	/// \undoable
 	void setSaveWithScene(bool on) override {
-		SceneObject::setSaveWithScene(on);
+		DataObject::setSaveWithScene(on);
 		// Propagate flag to sub-objects.
-		for(SceneObject* sceneObj : sceneObjects())
-			sceneObj->setSaveWithScene(on);
+		for(DataObject* obj : dataObjects())
+			obj->setSaveWithScene(on);
 	}
 
 	/// Returns the attributes set or loaded by the file importer which are fed into the modification pipeline
-	/// along with the scene objects.
+	/// along with the data objects.
 	const QVariantMap& attributes() const { return _attributes; }
 
 	/// Sets the attributes that will be fed into the modification pipeline
-	/// along with the scene objects.
+	/// along with the data objects.
 	void setAttributes(const QVariantMap& attributes) { _attributes = attributes; }
 
 	/// Resets the attributes that will be fed into the modification pipeline
-	/// along with the scene objects.
+	/// along with the data objects.
 	void clearAttributes() { _attributes.clear(); }
 
 	/// Returns the title of this object.
@@ -197,10 +199,10 @@ protected:
 private:
 
 	/// The associated importer object that is responsible for parsing the input file.
-	ReferenceField<LinkedFileImporter> _importer;
+	ReferenceField<FileSourceImporter> _importer;
 
-	/// Stores the imported scene objects.
-	VectorReferenceField<SceneObject> _sceneObjects;
+	/// Stores the imported data objects.
+	VectorReferenceField<DataObject> _dataObjects;
 
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
 	PropertyField<bool> _adjustAnimationIntervalEnabled;
@@ -218,25 +220,25 @@ private:
 	PropertyField<int> _playbackStartTime;
 
 	/// Stores the list of animation frames in the input file(s).
-	QVector<LinkedFileImporter::FrameSourceInformation> _frames;
+	QVector<FileSourceImporter::Frame> _frames;
 
 	/// The index of the animation frame loaded last from the input file.
-	int _loadedFrame;
+	int _loadedFrameIndex;
 
 	/// The index of the animation frame currently being loaded.
 	int _frameBeingLoaded;
 
 	/// The background file loading task started by evaluate().
-	Future<LinkedFileImporter::ImportTaskPtr> _loadFrameOperation;
+	Future<std::shared_ptr<FileSourceImporter::FrameLoader>> _activeFrameLoader;
 
 	/// The watcher object that is used to monitor the background operation.
-	FutureWatcher _loadFrameOperationWatcher;
+	FutureWatcher _frameLoaderWatcher;
 
 	/// The status returned by the parser during its last call.
 	PipelineStatus _importStatus;
 
 	/// Attributes set or loaded by the file importer which will be fed into the modification pipeline
-	/// along with the scene objects.
+	/// along with the data objects.
 	QVariantMap _attributes;
 
 private:
@@ -244,8 +246,10 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
+	Q_CLASSINFO("ClassNameAlias", "LinkedFileObject");	// This for backward compatibility with files written by Ovito 2.4 and older.
+
 	DECLARE_REFERENCE_FIELD(_importer);
-	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
+	DECLARE_VECTOR_REFERENCE_FIELD(_dataObjects);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 	DECLARE_PROPERTY_FIELD(_sourceUrl);
 	DECLARE_PROPERTY_FIELD(_playbackSpeedNumerator);
@@ -255,4 +259,4 @@ private:
 
 }}	// End of namespace
 
-#endif // __OVITO_LINKED_FILE_OBJECT_H
+#endif // __OVITO_FILE_SOURCE_H

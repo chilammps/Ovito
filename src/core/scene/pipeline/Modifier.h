@@ -103,7 +103,7 @@ public:
 	/// \brief Returns the list of applications of this modifier in pipelines.
 	/// \return The list of ModifierApplication objects that describe the particular applications of this Modifier.
 	///
-	/// One and the same modifier instance can be applied multiple times in different geometry pipelines of several scene objects.
+	/// One and the same modifier instance can be applied in several geometry pipelines.
 	/// Each application of the modifier instance is associated with a instance of the ModifierApplication class.
 	/// This method can be used to determine all applications of this Modifier instance.
 	QVector<ModifierApplication*> modifierApplications() const;

@@ -32,7 +32,7 @@
 #include "DislocationNetwork.h"
 #include "DislocationDisplay.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationInspector, PropertiesEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(DislocationInspector, _sceneNode, "SceneNode", ObjectNode, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF);
@@ -467,4 +467,4 @@ void ClusterItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* mode
 	else QStyledItemDelegate::setModelData(editor, model, index);
 }
 
-};
+}}}	// End of namespace

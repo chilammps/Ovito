@@ -58,50 +58,13 @@ public:
 	/// \throw Exception when the export has failed or an error has occurred.
 	Q_INVOKABLE virtual bool exportToFile(const QVector<SceneNode*>& nodes, const QString& filePath, bool noninteractive = true) = 0;
 
+	/// Returns a list of all available exporter types.
+	static QVector<OvitoObjectType*> availableExporters();
+
 private:
 
 	Q_OBJECT
 	OVITO_OBJECT
-};
-
-/**
- * \brief This descriptor contains information about an installed FileExporter service.
- */
-class OVITO_CORE_EXPORT FileExporterDescription : public QObject
-{
-public:
-
-	/// \brief Initializes this descriptor from a file exporter instance.
-	FileExporterDescription(QObject* parent, FileExporter* exporter) : QObject(parent),
-		_fileFilter(exporter->fileFilter()),
-		_fileFilterDescription(exporter->fileFilterDescription()),
-		_pluginClass(&exporter->getOOType()) {}
-
-	/// \brief Returns the file filter that specifies the files that can be exported by the service.
-	/// \return A wild-card pattern that specifies the file types that can be handled by the exporter class.
-	const QString& fileFilter() const { return _fileFilter; }
-
-	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
-	/// \return A string that describes the file format.
-	const QString& fileFilterDescription() const { return _fileFilterDescription; }
-
-	/// \brief Creates an instance of the file exporter class.
-	/// \param The dataset within which the exporter object is to be created.
-	OORef<FileExporter> createService(DataSet* dataset) const {
-		return static_object_cast<FileExporter>(pluginClass()->createInstance(dataset));
-	}
-
-	/// \brief Returns the class descriptor for the file exporter service.
-	/// \return The descriptor of the FileExporter-derived class.
-	const OvitoObjectType* pluginClass() const { return _pluginClass; }
-
-private:
-
-	QString _fileFilter;
-	QString _fileFilterDescription;
-	const OvitoObjectType* _pluginClass;
-
-	Q_OBJECT
 };
 
 }}	// End of namespace

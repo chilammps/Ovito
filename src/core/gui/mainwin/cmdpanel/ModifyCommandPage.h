@@ -19,6 +19,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_MODIFY_COMMAND_PAGE_H
+#define __OVITO_MODIFY_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
@@ -112,3 +115,5 @@ private:
 };
 
 }}}	// End of namespace
+
+#endif	// __OVITO_MODIFY_COMMAND_PAGE_H

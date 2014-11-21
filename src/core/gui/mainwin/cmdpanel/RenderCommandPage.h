@@ -19,6 +19,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_RENDER_COMMAND_PAGE_H
+#define __OVITO_RENDER_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 
@@ -53,3 +56,5 @@ private:
 };
 
 }}}	// End of namespace
+
+#endif // __OVITO_RENDER_COMMAND_PAGE_H

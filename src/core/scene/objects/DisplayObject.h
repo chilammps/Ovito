@@ -30,7 +30,7 @@ namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Abstract base class for display object that are responsible
- *        for rendering SceneObject derived classes in the viewports.
+ *        for rendering DataObject derived classes in the viewports.
  */
 class OVITO_CORE_EXPORT DisplayObject : public RefTarget
 {
@@ -41,34 +41,34 @@ protected:
 
 public:
 
-	/// \brief Lets the display object render a scene object.
+	/// \brief Lets the display object render a data object.
 	///
 	/// \param time The animation time at which to render the object
-	/// \param sceneObject The scene object that should be rendered.
+	/// \param dataObject The data object that should be rendered.
 	/// \param flowState The pipeline evaluation results of the object node.
 	/// \param renderer The renderer object that should be used to display the geometry.
 	/// \param contextNode The object node.
 	///
 	/// The world transformation matrix is already set up when this method is called by the
 	/// system. The object has to be rendered in the local object coordinate system.
-	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) = 0;
+	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) = 0;
 
-	/// \brief Computes the view-independent bounding box of the given scene object.
+	/// \brief Computes the view-independent bounding box of the given data object.
 	/// \param time The animation time for which the bounding box should be computed.
-	/// \param sceneObject The scene object for which to compute the bounding box.
+	/// \param dataObject The data object for which to compute the bounding box.
 	/// \param contextNode The scene node to which this object belongs to.
 	/// \param flowState The pipeline evaluation result of the object node.
 	/// \return The bounding box of the object in local object coordinates.
-	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) = 0;
+	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) = 0;
 
-	/// \brief Computes the view-dependent bounding box of the scene object for interactive rendering in the viewports.
+	/// \brief Computes the view-dependent bounding box of the data object for interactive rendering in the viewports.
 	/// \param time The animation time for which the bounding box should be computed.
 	/// \param viewport The viewport which should be used to determine the view-dependent bounding box.
-	/// \param sceneObject The scene object for which to compute the bounding box.
+	/// \param dataObject The data object for which to compute the bounding box.
 	/// \param contextNode The scene node to which this object belongs to.
 	/// \param flowState The pipeline evaluation result of the object node.
 	/// \return The bounding box of the object in local object coordinates.
-	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) {
+	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) {
 		return Box3();
 	}
 

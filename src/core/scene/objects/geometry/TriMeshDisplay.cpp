@@ -56,12 +56,12 @@ TriMeshDisplay::TriMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 TriMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 TriMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(sceneObject) || _cachedBoundingBox.isEmpty()) {
+	if(_boundingBoxCacheHelper.updateState(dataObject) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
-		OORef<TriMeshObject> triMeshObj = sceneObject->convertTo<TriMeshObject>(time);
+		OORef<TriMeshObject> triMeshObj = dataObject->convertTo<TriMeshObject>(time);
 		if(triMeshObj)
 			_cachedBoundingBox = triMeshObj->mesh().boundingBox();
 		else
@@ -71,9 +71,9 @@ Box3 TriMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Objec
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render a data object.
 ******************************************************************************/
-void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void TriMeshDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_buffer || !_buffer->isValid(renderer);
@@ -84,7 +84,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 	ColorA color_mesh(color(), 1.0f - transp);
 
 	// Do we have to update contents of the geometry buffer?
-	bool updateContents = _geometryCacheHelper.updateState(sceneObject, color_mesh) || recreateBuffer;
+	bool updateContents = _geometryCacheHelper.updateState(dataObject, color_mesh) || recreateBuffer;
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
@@ -92,7 +92,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 
 	// Update buffer contents.
 	if(updateContents) {
-		OORef<TriMeshObject> triMeshObj = sceneObject->convertTo<TriMeshObject>(time);
+		OORef<TriMeshObject> triMeshObj = dataObject->convertTo<TriMeshObject>(time);
 		if(triMeshObj)
 			_buffer->setMesh(triMeshObj->mesh(), color_mesh);
 		else

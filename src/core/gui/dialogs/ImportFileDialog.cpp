@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/dataset/importexport/ImportExportManager.h>
 #include "ImportFileDialog.h"
 
 namespace Ovito { namespace Gui { namespace Internal {
@@ -28,14 +27,15 @@ namespace Ovito { namespace Gui { namespace Internal {
 /******************************************************************************
 * Constructs the dialog window.
 ******************************************************************************/
-ImportFileDialog::ImportFileDialog(const QVector<FileImporterDescription*>& importerTypes, QWidget* parent, const QString& caption, const QString& directory) :
+ImportFileDialog::ImportFileDialog(const QVector<OvitoObjectType*>& importerTypes, DataSet* dataset, QWidget* parent, const QString& caption, const QString& directory) :
 	HistoryFileDialog("import", parent, caption, directory), _importerTypes(importerTypes)
 {
 	connect(this, &QFileDialog::fileSelected, this, &ImportFileDialog::onFileSelected);
 
 	// Build filter string.
-	for(FileImporterDescription* descriptor : _importerTypes) {
-		_filterStrings << QString("%1 (%2)").arg(descriptor->fileFilterDescription(), descriptor->fileFilter());
+	for(OvitoObjectType* importerType : _importerTypes) {
+		OORef<FileImporter> imp = static_object_cast<FileImporter>(importerType->createInstance(dataset));
+		_filterStrings << QString("%1 (%2)").arg(imp->fileFilterDescription(), imp->fileFilter());
 	}
 	if(_filterStrings.isEmpty())
 		throw Exception(tr("There are no importer plugins installed."));
@@ -87,7 +87,7 @@ QString ImportFileDialog::fileToImport() const
 /******************************************************************************
 * Returns the selected importer type or NULL if auto-detection is requested.
 ******************************************************************************/
-const FileImporterDescription* ImportFileDialog::selectedFileImporterType() const
+const OvitoObjectType* ImportFileDialog::selectedFileImporterType() const
 {
 	int importFilterIndex = _filterStrings.indexOf(_selectedFilter.isEmpty() ? selectedNameFilter() : _selectedFilter) - 1;
 	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _importerTypes.size());

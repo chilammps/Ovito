@@ -23,18 +23,18 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include "PatternCatalog.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, PatternCatalog, SceneObject)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, PatternCatalogEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(PatternCatalog, PatternCatalogEditor)
-DEFINE_VECTOR_REFERENCE_FIELD(PatternCatalog, _patterns, "Patterns", StructurePattern)
-SET_PROPERTY_FIELD_LABEL(PatternCatalog, _patterns, "Structure patterns")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, PatternCatalog, DataObject);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, PatternCatalogEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(PatternCatalog, PatternCatalogEditor);
+DEFINE_VECTOR_REFERENCE_FIELD(PatternCatalog, _patterns, "Patterns", StructurePattern);
+SET_PROPERTY_FIELD_LABEL(PatternCatalog, _patterns, "Structure patterns");
 
 /******************************************************************************
 * Constructs the PatternCatalog object.
 ******************************************************************************/
-PatternCatalog::PatternCatalog(DataSet* dataset) : SceneObject(dataset)
+PatternCatalog::PatternCatalog(DataSet* dataset) : DataObject(dataset)
 {
 	INIT_PROPERTY_FIELD(PatternCatalog::_patterns);
 
@@ -128,4 +128,4 @@ void PatternCatalogEditor::onDoubleClickPattern(const QModelIndex& index)
 	});
 }
 
-};	// End of namespace
+}}}	// End of namespace

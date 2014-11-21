@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/utilities/io/FileManager.h>
 #include <plugins/particles/objects/SimulationCell.h>
 #include <plugins/particles/objects/SimulationCellDisplay.h>
@@ -110,14 +110,14 @@ void ParticleImportTask::sortParticleTypesById()
 
 /******************************************************************************
 * Lets the data container insert the data it holds into the scene by creating
-* appropriate scene objects.
+* appropriate data objects.
 ******************************************************************************/
-QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destination)
+QSet<DataObject*> ParticleImportTask::insertIntoScene(FileSource* destination)
 {
-	QSet<SceneObject*> activeObjects;
+	QSet<DataObject*> activeObjects;
 
 	// Adopt simulation cell.
-	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
+	OORef<SimulationCell> cell = destination->findDataObject<SimulationCell>();
 	if(!cell) {
 		cell = new SimulationCell(destination->dataset(), simulationCell());
 
@@ -133,7 +133,7 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 				simulationCell().matrix().column(2)).length();
 		cellDisplay->setSimulationCellLineWidth(cellDiameter * 1.4e-3f);
 
-		destination->addSceneObject(cell);
+		destination->addDataObject(cell);
 	}
 	else {
 		// Adopt pbc flags from input file only if it is a new file.
@@ -146,8 +146,8 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 	// Adopt particle properties.
 	for(auto& property : _properties) {
 		OORef<ParticlePropertyObject> propertyObj;
-		for(const auto& sceneObj : destination->sceneObjects()) {
-			ParticlePropertyObject* po = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+		for(const auto& dataObj : destination->dataObjects()) {
+			ParticlePropertyObject* po = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 			if(po != nullptr && po->type() == property->type() && po->name() == property->name()) {
 				propertyObj = po;
 				break;
@@ -159,7 +159,7 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 		}
 		else {
 			propertyObj = ParticlePropertyObject::createFromStorage(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
-			destination->addSceneObject(propertyObj);
+			destination->addDataObject(propertyObj);
 		}
 
 		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty) {

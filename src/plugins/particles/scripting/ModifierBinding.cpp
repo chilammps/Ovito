@@ -36,7 +36,7 @@
 #include <plugins/particles/modifier/modify/SliceModifier.h>
 #include <plugins/particles/modifier/modify/AffineTransformationModifier.h>
 #include <plugins/particles/modifier/modify/CreateBondsModifier.h>
-#include <plugins/particles/modifier/properties/CreateExpressionPropertyModifier.h>
+#include <plugins/particles/modifier/properties/ComputePropertyModifier.h>
 #include <plugins/particles/modifier/properties/FreezePropertyModifier.h>
 #include <plugins/particles/modifier/selection/ClearSelectionModifier.h>
 #include <plugins/particles/modifier/selection/InvertSelectionModifier.h>
@@ -225,7 +225,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"around at the periodic boundaries of the simulation cell. This modifier has no parameters.")
 	;
 
-	ovito_class<CreateExpressionPropertyModifier, ParticleModifier>(
+	ovito_class<ComputePropertyModifier, ParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"Evaluates a user-defined math expression to compute the values of a particle property."
 			"\n\n"
@@ -234,20 +234,18 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"   modifier = ComputePropertyModifier()\n"
 			"   modifier.output_property = \"Color\"\n"
 			"   modifier.expressions = [\"Position.X / CellSize.X\", \"0.0\", \"0.5\"]\n"
-			"\n",
-			// Python class name:
-			"ComputePropertyModifier")
-		.add_property("expressions", make_function(&CreateExpressionPropertyModifier::expressions, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setExpressions,
+			"\n")
+		.add_property("expressions", make_function(&ComputePropertyModifier::expressions, return_value_policy<copy_const_reference>()), &ComputePropertyModifier::setExpressions,
 				"A list of strings containing the math expressions to compute, one for each vector component of the output property. "
 				"If the output property is a scalar property, the list should comprise exactly one string. "
 				"\n\n"
 				":Default: ``[\"0\"]``\n")
-		.add_property("output_property", make_function(&CreateExpressionPropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setOutputProperty,
+		.add_property("output_property", make_function(&ComputePropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &ComputePropertyModifier::setOutputProperty,
 				"The output particle property in which the modifier should store the computed values. "
 				"\n\n"
 				":Default: ``\"Custom property\"``\n")
-		.add_property("propertyComponentCount", &CreateExpressionPropertyModifier::propertyComponentCount, &CreateExpressionPropertyModifier::setPropertyComponentCount)
-		.add_property("only_selected", &CreateExpressionPropertyModifier::onlySelectedParticles, &CreateExpressionPropertyModifier::setOnlySelectedParticles,
+		.add_property("propertyComponentCount", &ComputePropertyModifier::propertyComponentCount, &ComputePropertyModifier::setPropertyComponentCount)
+		.add_property("only_selected", &ComputePropertyModifier::onlySelectedParticles, &ComputePropertyModifier::setOnlySelectedParticles,
 				"If ``True``, the property is only computed for selected particles and existing property values "
 				"are preserved for unselected particles."
 				"\n\n"

@@ -21,7 +21,7 @@
 
 #include <plugins/pyscript/PyScript.h>
 #include <core/scene/pipeline/ModifierApplication.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/SceneNode.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/objects/DisplayObject.h>
@@ -52,17 +52,17 @@ BOOST_PYTHON_MODULE(PyScriptContainers)
 	;
 	python_to_container_conversion<QVector<SceneNode*>>();
 
-	class_<QVector<SceneObject*>, boost::noncopyable>("QVectorSceneObject", no_init)
-		.def(QVector_OO_readonly_indexing_suite<SceneObject>())
+	class_<QVector<DataObject*>, boost::noncopyable>("QVectorDataObject", no_init)
+		.def(QVector_OO_readonly_indexing_suite<DataObject>())
 	;
-	python_to_container_conversion<QVector<SceneObject*>>();
+	python_to_container_conversion<QVector<DataObject*>>();
 
-	class_<QVector<OORef<SceneObject>>, boost::noncopyable>("QVectorOORefSceneObject", no_init)
-		.def(QVector_OO_readonly_indexing_suite<SceneObject, QVector<OORef<SceneObject>>>())
+	class_<QVector<OORef<DataObject>>, boost::noncopyable>("QVectorOORefDataObject", no_init)
+		.def(QVector_OO_readonly_indexing_suite<DataObject, QVector<OORef<DataObject>>>())
 	;
 
-	class_<QVector<VersionedOORef<SceneObject>>, boost::noncopyable>("QVectorVersionedOORefSceneObject", no_init)
-		.def(QVector_OO_readonly_indexing_suite<SceneObject, QVector<VersionedOORef<SceneObject>>>())
+	class_<QVector<VersionedOORef<DataObject>>, boost::noncopyable>("QVectorVersionedOORefDataObject", no_init)
+		.def(QVector_OO_readonly_indexing_suite<DataObject, QVector<VersionedOORef<DataObject>>>())
 	;
 
 	class_<QVector<ModifierApplication*>, boost::noncopyable>("QVectorModifierApplication", no_init)

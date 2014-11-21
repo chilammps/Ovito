@@ -24,12 +24,12 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include "ParticleImporter.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleImporter, LinkedFileImporter);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleImporter, FileSourceImporter);
 DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFile");
 SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains multiple timesteps");
 
@@ -37,33 +37,33 @@ SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains 
 * Scans the input source (which can be a directory or a single file) to
 * discover all animation frames.
 ******************************************************************************/
-Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::findFrames(const QUrl& sourceUrl)
+Future<QVector<FileSourceImporter::Frame>> ParticleImporter::findFrames(const QUrl& sourceUrl)
 {
 	if(isMultiTimestepFile()) {
 		DataSetContainer& datasetContainer = *dataset()->container();
-		return datasetContainer.taskManager().runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
-				[this, sourceUrl](FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface) {
+		return datasetContainer.taskManager().runInBackground<QVector<FileSourceImporter::Frame>>(
+				[this, sourceUrl](FutureInterface<QVector<FileSourceImporter::Frame>>& futureInterface) {
 					futureInterface.setResult(scanMultiTimestepFile(futureInterface, sourceUrl));
 				}
 		);
 	}
 	else {
-		return LinkedFileImporter::findFrames(sourceUrl);
+		return FileSourceImporter::findFrames(sourceUrl);
 	}
 }
 
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-QVector<LinkedFileImporter::FrameSourceInformation> ParticleImporter::scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl)
+QVector<FileSourceImporter::Frame> ParticleImporter::scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl)
 {
-	QVector<LinkedFileImporter::FrameSourceInformation> result;
+	QVector<FileSourceImporter::Frame> result;
 
 	// Check if filename is a wildcard pattern.
 	// If yes, find all matching files and scan each one of them.
 	QFileInfo fileInfo(sourceUrl.path());
 	if(fileInfo.fileName().contains('*') || fileInfo.fileName().contains('?')) {
-		auto findFilesFuture = LinkedFileImporter::findWildcardMatches(sourceUrl, dataset()->container());
+		auto findFilesFuture = FileSourceImporter::findWildcardMatches(sourceUrl, dataset()->container());
 		if(!futureInterface.waitForSubTask(findFilesFuture))
 			return result;
 		for(auto item : findFilesFuture.result()) {
@@ -102,7 +102,7 @@ QVector<LinkedFileImporter::FrameSourceInformation> ParticleImporter::scanMultiT
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void ParticleImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
+void ParticleImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	// By default, register a single frame.
 	QFileInfo fileInfo(stream.filename());
@@ -118,16 +118,16 @@ void ParticleImporter::propertyChanged(const PropertyFieldDescriptor& field)
 		// Automatically rescan input file for animation frames when this option has been activated.
 		requestFramesUpdate();
 	}
-	LinkedFileImporter::propertyChanged(field);
+	FileSourceImporter::propertyChanged(field);
 }
 
 /******************************************************************************
-* This method is called by the LinkedFileObject each time a new source
+* This method is called by the FileSource each time a new source
 * file has been selected by the user.
 ******************************************************************************/
-bool ParticleImporter::inspectNewFile(LinkedFileObject* obj)
+bool ParticleImporter::inspectNewFile(FileSource* obj)
 {
-	if(!LinkedFileImporter::inspectNewFile(obj))
+	if(!FileSourceImporter::inspectNewFile(obj))
 		return false;
 
 	// Set flag that this file is new.

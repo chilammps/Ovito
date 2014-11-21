@@ -27,10 +27,7 @@
 #include <plugins/particles/objects/ParticleType.h>
 #include "BurgersVectorFamily.h"
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * \brief Encapsulates a super pattern from the CA lib.
@@ -130,9 +127,9 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(CrystalAnalysis::StructurePattern::StructureType);
-Q_DECLARE_TYPEINFO(CrystalAnalysis::StructurePattern::StructureType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Plugins::CrystalAnalysis::StructurePattern::StructureType);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::CrystalAnalysis::StructurePattern::StructureType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_CA_STRUCTURE_PATTERN_H

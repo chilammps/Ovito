@@ -117,7 +117,7 @@ ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty
 ******************************************************************************/
 ParticlePropertyObject* ParticleModifier::expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount) const
 {
-	for(SceneObject* o : _input.objects()) {
+	for(DataObject* o : _input.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->name() == propertyName) {
 			if(property->dataType() != dataType)
@@ -234,7 +234,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
-	for(SceneObject* o : input().objects()) {
+	for(DataObject* o : input().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			inputProperty = property;
@@ -250,7 +250,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 
 	// Check if property already exists in the output.
 	OORef<ParticlePropertyObject> outputProperty;
-	for(SceneObject* o : output().objects()) {
+	for(DataObject* o : output().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			outputProperty = property;
@@ -288,7 +288,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(ParticleProperty*
 
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
-	for(SceneObject* o : input().objects()) {
+	for(DataObject* o : input().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == storage->name()) {
 			inputProperty = property;
@@ -302,7 +302,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(ParticleProperty*
 
 	// Check if property already exists in the output.
 	OORef<ParticlePropertyObject> outputProperty;
-	for(SceneObject* o : output().objects()) {
+	for(DataObject* o : output().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == storage->name()) {
 			outputProperty = property;
@@ -385,7 +385,7 @@ size_t ParticleModifier::deleteParticles(const boost::dynamic_bitset<>& mask, si
 	QVector<QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>> oldToNewMap;
 
 	// Create output particle properties.
-	for(SceneObject* outobj : _output.objects()) {
+	for(DataObject* outobj : _output.objects()) {
 		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;

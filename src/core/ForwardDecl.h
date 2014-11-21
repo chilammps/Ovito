@@ -80,7 +80,7 @@ namespace Ovito {
 		}
 		namespace Scene {
 			class SceneNode;
-			class SceneObject;
+			class DataObject;
 			class SceneRoot;
 			class SelectionSet;
 			class Modifier;
@@ -123,8 +123,8 @@ namespace Ovito {
 		using namespace Internal;
 	}
 	namespace DataIO {
-		class LinkedFileObject;
-		class LinkedFileImporter;
+		class FileSource;
+		class FileSourceImporter;
 	}
 	namespace Gui {
 		class MainWindow;

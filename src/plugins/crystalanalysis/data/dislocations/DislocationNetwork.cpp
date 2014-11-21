@@ -26,18 +26,18 @@
 #include "DislocationDisplay.h"
 #include "DislocationInspector.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationNetwork, SceneObject)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationNetworkEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(DislocationNetwork, DislocationNetworkEditor)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(DislocationNetwork, _segments, "DislocationSegments", DislocationSegment, PROPERTY_FIELD_ALWAYS_CLONE)
-SET_PROPERTY_FIELD_LABEL(DislocationNetwork, _segments, "Dislocation segments")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationNetwork, DataObject);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationNetworkEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(DislocationNetwork, DislocationNetworkEditor);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(DislocationNetwork, _segments, "DislocationSegments", DislocationSegment, PROPERTY_FIELD_ALWAYS_CLONE);
+SET_PROPERTY_FIELD_LABEL(DislocationNetwork, _segments, "Dislocation segments");
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DislocationNetwork::DislocationNetwork(DataSet* dataset) : SceneObject(dataset)
+DislocationNetwork::DislocationNetwork(DataSet* dataset) : DataObject(dataset)
 {
 	INIT_PROPERTY_FIELD(DislocationNetwork::_segments);
 	addDisplayObject(new DislocationDisplay(dataset));
@@ -87,4 +87,4 @@ void DislocationNetworkEditor::onOpenInspector()
 	inspectorWindow->show();
 }
 
-};	// End of namespace
+}}}	// End of namespace

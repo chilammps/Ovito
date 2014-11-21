@@ -64,10 +64,10 @@ public:
 
 	/// \brief Imports a given file into the current dataset.
 	/// \param url The location of the file to import.
-	/// \param importerType The type of importer to use. If NULL, the file format will be automatically detected.
+	/// \param importerType The FileImporter type to use. If NULL, the file format will be automatically detected.
 	/// \return true if the file was successfully imported; false if operation has been canceled by the user.
 	/// \throw Exception on error.
-	bool importFile(const QUrl& url, const FileImporterDescription* importerType = nullptr, FileImporter::ImportMode importMode = FileImporter::AskUser);
+	bool importFile(const QUrl& url, const OvitoObjectType* importerType = nullptr, FileImporter::ImportMode importMode = FileImporter::AskUser);
 
 	/// \brief Creates an empty dataset and makes it the current dataset.
 	/// \return \c true if the operation was completed; \c false if the operation has been canceled by the user.

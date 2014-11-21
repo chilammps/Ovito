@@ -28,7 +28,7 @@
 #define __OVITO_PARTICLE_PROPERTY_OBJECT_H
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
@@ -42,7 +42,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
  *
  * An entire particle dataset usually consists of multiple ParticlePropertyObject instances, each storing a
  * different property such as position, type, identifier etc. A particle dataset is normally kept
- * in a PipelineFlowState structure, which consists of a collection of scene objects (with some of them
+ * in a PipelineFlowState structure, which consists of a collection of data objects (with some of them
  * being ParticlePropertyObject instances and perhaps a instance of the SimulationCell class).
  *
  * The ParticlePropertyObject class keeps the actual per-particle data in an internal storage object
@@ -51,7 +51,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
  * too (e.g. when loading data from a file).
  *
  */
-class OVITO_PARTICLES_EXPORT ParticlePropertyObject : public SceneObject
+class OVITO_PARTICLES_EXPORT ParticlePropertyObject : public DataObject
 {
 public:
 

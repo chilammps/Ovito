@@ -80,9 +80,9 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("LAMMPS Data"); }
 
-	/// This method is called by the LinkedFileObject each time a new source
+	/// This method is called by the FileSource each time a new source
 	/// file has been selected by the user.
-	virtual bool inspectNewFile(LinkedFileObject* obj) override;
+	virtual bool inspectNewFile(FileSource* obj) override;
 
 	/// Returns the LAMMPS atom style used in the data file.
 	LAMMPSAtomStyle atomStyle() const { return _atomStyle; }
@@ -101,7 +101,7 @@ protected:
 	public:
 
 		/// Normal constructor.
-		LAMMPSDataImportTask(const LinkedFileImporter::FrameSourceInformation& frame,
+		LAMMPSDataImportTask(const FileSourceImporter::Frame& frame,
 				bool isNewFile,
 				LAMMPSAtomStyle atomStyle = AtomStyle_Unknown,
 				bool detectAtomStyle = false) : ParticleImportTask(frame, isNewFile), _atomStyle(atomStyle), _detectAtomStyle(detectAtomStyle) {}
@@ -132,7 +132,7 @@ protected:
 	};
 
 	/// \brief Creates an import task object to read the given frame.
-	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
 		return std::make_shared<LAMMPSDataImportTask>(frame, isNewlySelectedFile(), atomStyle());
 	}
 

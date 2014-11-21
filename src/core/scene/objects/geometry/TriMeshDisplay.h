@@ -42,11 +42,11 @@ public:
 	/// \brief Constructor.
 	Q_INVOKABLE TriMeshDisplay(DataSet* dataset);
 
-	/// \brief Lets the display object render a scene object.
-	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+	/// \brief Lets the display object render a data object.
+	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
 	/// \brief Computes the bounding box of the object.
-	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Mesh"); }
@@ -77,7 +77,7 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>,		// Mesh object
+		WeakVersionedOORef<DataObject>,		// Mesh object
 		ColorA									// Display color
 		> _geometryCacheHelper;
 
@@ -87,7 +87,7 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>	// Mesh object
+		WeakVersionedOORef<DataObject>	// Mesh object
 		> _boundingBoxCacheHelper;
 
 private:

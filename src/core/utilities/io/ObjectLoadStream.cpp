@@ -77,8 +77,10 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			SerializedPropertyField propFieldEntry;
 			*this >> propFieldEntry.identifier;
 			propFieldEntry.definingClass = OvitoObjectType::deserializeRTTI(*this);
-			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false)
+			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false) {
+				qDebug() << "WARNING:" << classEntry.descriptor->name() << "is not derived from" << propFieldEntry.definingClass->name();
 				throw Exception(tr("The class hierarchy stored in the file differs from the class hierarchy of the program."));
+			}
 			*this >> propFieldEntry.flags;
 			*this >> propFieldEntry.isReferenceField;
 			if(propFieldEntry.isReferenceField)

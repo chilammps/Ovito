@@ -88,12 +88,12 @@ public:
 	public:
 
 		/// Normal constructor.
-		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile,
+		LAMMPSTextDumpImportTask(const FileSourceImporter::Frame& frame, bool isNewFile,
 				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
 			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
 
 		/// Constructor used when reading only the file header information.
-		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
+		LAMMPSTextDumpImportTask(const FileSourceImporter::Frame& frame)
 			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
 
 		/// Returns the file column mapping used to load the file.
@@ -123,12 +123,12 @@ protected:
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// \brief Creates an import task object to read the given frame.
-	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
 		return std::make_shared<LAMMPSTextDumpImportTask>(frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
-	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;
 
 	/// \brief Guesses the mapping of input file columns to internal particle properties.
 	static InputColumnMapping generateAutomaticColumnMapping(const QStringList& columnNames);

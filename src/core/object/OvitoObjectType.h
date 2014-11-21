@@ -45,6 +45,16 @@ public:
 	/// \brief Changes the the human-readable display name of this plugin class.
 	void setDisplayName(const QString& name) { _displayName = name; }
 
+	/// Returns the name alias that has been set for this class.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
+	const QString& nameAlias() const { return _nameAlias; }
+
+	/// Sets a name alias for this class.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
+	void setNameAlias(const QString& alias) { _nameAlias = alias; }
+
 	/// \brief Returns the descriptor of the super class.
 	/// \return The descriptor of the base class or \c NULL if this is the descriptor of the root OvitoObject class.
 	const OvitoObjectType* superClass() const { return _superClass; }
@@ -159,6 +169,10 @@ protected:
 
 	/// The plugin that defined the class.
 	Plugin*	_plugin;
+
+	/// An alias for the class name, which is used when looking up a class for a serialized object.
+	/// This can help to maintain backward file compatibility when renaming classes.
+	QString _nameAlias;
 
 	/// The base class descriptor (or NULL if this is the descriptor for the root OvitoObject class).
 	const OvitoObjectType* _superClass;

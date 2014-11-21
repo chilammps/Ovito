@@ -26,9 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "../patterns/StructurePattern.h"
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 class Cluster;
 
@@ -133,6 +131,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_orientation);
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_CLUSTER_H

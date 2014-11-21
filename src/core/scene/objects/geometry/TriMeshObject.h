@@ -23,15 +23,15 @@
 #define __OVITO_TRIMESH_OBJECT_H
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/utilities/mesh/TriMesh.h>
 
 namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
- * \brief A scene object type that consist of a triangle mesh.
+ * \brief A data object type that consist of a triangle mesh.
  */
-class OVITO_CORE_EXPORT TriMeshObject : public SceneObject
+class OVITO_CORE_EXPORT TriMeshObject : public DataObject
 {
 public:
 
@@ -47,13 +47,13 @@ public:
 	/// Return false because this object cannot be edited.
 	virtual bool isSubObjectEditable() const override { return false; }
 
-	/// Returns a const-reference to the triangle mesh encapsulated by this scene object.
+	/// Returns a const-reference to the triangle mesh encapsulated by this data object.
 	const TriMesh& mesh() const { return _mesh; }
 
-	/// Returns a reference to the triangle mesh encapsulated by this scene object.
+	/// Returns a reference to the triangle mesh encapsulated by this data object.
 	/// The reference can be used to modify the mesh. However, each time the mesh has been modified,
 	/// this->notifyDependents(ReferenceEvent::TargetChanged) must be called to increment
-	/// the scene object's revision number.
+	/// the data object's revision number.
 	TriMesh& mesh() { return _mesh; }
 
 protected:
@@ -69,7 +69,7 @@ protected:
 
 private:
 
-	/// The triangle mesh encapsulated by this scene object.
+	/// The triangle mesh encapsulated by this data object.
 	TriMesh _mesh;
 
 	Q_OBJECT

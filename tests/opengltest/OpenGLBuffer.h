@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <core/rendering/viewport/OpenGLHelpers.h>
-#include <base/utilities/Exception.h>
+#include <core/utilities/Exception.h>
 #include "TestWindow.h"
 
 /**

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_LINKED_FILE_OBJECT_EDITOR_H
-#define __OVITO_LINKED_FILE_OBJECT_EDITOR_H
+#ifndef __OVITO_FILE_SOURCE_OBJECT_EDITOR_H
+#define __OVITO_FILE_SOURCE_OBJECT_EDITOR_H
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -28,20 +28,20 @@
 #include <core/gui/widgets/general/ElidedTextLabel.h>
 #include <core/gui/widgets/display/StatusWidget.h>
 
-#include "LinkedFileObject.h"
+#include "FileSource.h"
 
 namespace Ovito { namespace DataIO { namespace Internal {
 
 /**
- * A properties editor for the LinkedFileObject class.
+ * A properties editor for the FileSource.
  */
-class LinkedFileObjectEditor : public PropertiesEditor
+class FileSourceEditor : public PropertiesEditor
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE LinkedFileObjectEditor() {
-		connect(this, &PropertiesEditor::contentsReplaced, this, &LinkedFileObjectEditor::onEditorContentsReplaced);
+	Q_INVOKABLE FileSourceEditor() {
+		connect(this, &PropertiesEditor::contentsReplaced, this, &FileSourceEditor::onEditorContentsReplaced);
 	}
 
 protected:
@@ -95,4 +95,4 @@ private:
 
 }}}	// End of namespace
 
-#endif // __OVITO_LINKED_FILE_OBJECT_EDITOR_H
+#endif // __OVITO_FILE_SOURCE_OBJECT_EDITOR_H

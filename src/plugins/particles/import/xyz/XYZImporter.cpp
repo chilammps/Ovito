@@ -29,7 +29,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -101,10 +101,10 @@ bool XYZImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 }
 
 /******************************************************************************
-* This method is called by the LinkedFileObject each time a new source
+* This method is called by the FileSource each time a new source
 * file has been selected by the user.
 ******************************************************************************/
-bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
+bool XYZImporter::inspectNewFile(FileSource* obj)
 {
 	if(!ParticleImporter::inspectNewFile(obj))
 		return false;
@@ -172,7 +172,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
+void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Scanning XYZ file %1").arg(stream.filename()));
 	futureInterface.setProgressRange(stream.underlyingSize() / 1000);
@@ -198,7 +198,7 @@ void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVe
 			throw Exception(tr("Invalid number of particles in line %1 of XYZ file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 
 		// Create a new record for the time step.
-		FrameSourceInformation frame;
+		Frame frame;
 		frame.sourceFile = sourceUrl;
 		frame.byteOffset = byteOffset;
 		frame.lineNumber = startLineNumber;

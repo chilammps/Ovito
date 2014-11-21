@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/animation/AnimationSettings.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
@@ -34,7 +34,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers 
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AtomicStrainModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(AtomicStrainModifier, Internal::AtomicStrainModifierEditor);
-DEFINE_FLAGS_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Configuration", SceneObject, PROPERTY_FIELD_NO_SUB_ANIM);
+DEFINE_FLAGS_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Configuration", DataObject, PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceShown, "ShowReferenceConfiguration");
 DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _eliminateCellDeformation, "EliminateCellDeformation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates");
@@ -92,9 +92,9 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameOffset);
 
-	// Create the scene object, which will be responsible for loading
+	// Create the file source object, which will be responsible for loading
 	// and storing the reference configuration.
-	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+	OORef<FileSource> linkedFileObj(new FileSource(dataset));
 
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
@@ -108,7 +108,7 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 ******************************************************************************/
 QUrl AtomicStrainModifier::referenceSource() const
 {
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration()))
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration()))
 		return linkedFileObj->sourceUrl();
 	else
 		return QUrl();
@@ -117,13 +117,13 @@ QUrl AtomicStrainModifier::referenceSource() const
 /******************************************************************************
 * Sets the source URL of the reference configuration.
 ******************************************************************************/
-void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType)
+void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType)
 {
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration())) {
 		linkedFileObj->setSource(sourceUrl, importerType);
 	}
 	else {
-		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
+		OORef<FileSource> newObj(new FileSource(dataset()));
 		newObj->setSource(sourceUrl, importerType);
 		setReferenceConfiguration(newObj);
 	}
@@ -159,7 +159,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 
 	// Get the reference configuration.
 	PipelineFlowState refState;
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration())) {
 		if(linkedFileObj->numberOfFrames() > 0) {
 			if(referenceFrame < 0 || referenceFrame >= linkedFileObj->numberOfFrames())
 				throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));

@@ -29,7 +29,7 @@
 #include <plugins/crystalanalysis/util/DelaunayTessellation.h>
 #include "ConstructSurfaceModifier.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ConstructSurfaceModifier, AsynchronousParticleModifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ConstructSurfaceModifierEditor, ParticleModifierEditor);
@@ -442,5 +442,5 @@ void ConstructSurfaceModifierEditor::createUI(const RolloutInsertionParameters& 
 	new SubObjectParameterUI(this, PROPERTY_FIELD(ConstructSurfaceModifier::_surfaceMeshDisplay), rolloutParams.after(rollout));
 }
 
-};	// End of namespace
+}}}	// End of namespace
 

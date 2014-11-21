@@ -42,36 +42,11 @@ public:
 
 	/// \brief Constructs the plugin class descriptor object.
 	/// \note This is an internal constructor that is not for public use.
-	NativeOvitoObjectType(const QString& name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
-		: OvitoObjectType(name, superClass, (qtClassInfo->constructorCount() == 0), isSerializable), _pluginId(pluginId), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
-	{
-		// Insert into linked list of all object types.
-		_next = _firstInfo;
-		_firstInfo = this;
-
-		// Fetch display name assigned to the Qt object class.
-		int infoIndex = qtClassInfo->indexOfClassInfo("DisplayName");
-		if(infoIndex != -1)
-			setDisplayName(QString::fromLocal8Bit(qtClassInfo->classInfo(infoIndex).value()));
-	}
+	NativeOvitoObjectType(const QString& name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable);
 
 	/// \brief Returns the name of this class.
 	/// \return A pointer to the class name string (without namespace qualifier).
-	const char* className() const {
-		if(_pureClassName) return _pureClassName;
-
-		// Remove namespace qualifier from Qt's class name.
-		NativeOvitoObjectType* this_ = const_cast<NativeOvitoObjectType*>(this);
-		this_->_pureClassName = _qtClassInfo->className();
-		for(const char* p = this_->_pureClassName; *p != '\0'; p++) {
-			if(p[0] == ':' && p[1] == ':') {
-				p++;
-				this_->_pureClassName = p+1;
-			}
-		}
-
-		return this_->_pureClassName;
-	}
+	const char* className() const;
 
 	/// \brief Returns the identifier of the plugin this class belongs to.
 	const char* pluginId() const { return _pluginId; }

@@ -25,7 +25,7 @@
 #include <plugins/particles/objects/SimulationCell.h>
 #include "SmoothSurfaceModifier.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifierEditor, PropertiesEditor);
@@ -94,6 +94,4 @@ void SmoothSurfaceModifierEditor::createUI(const RolloutInsertionParameters& rol
 	smoothingLevelUI->setMinValue(0);
 }
 
-
-};	// End of namespace
-
+}}}	// End of namespace

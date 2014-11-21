@@ -33,7 +33,7 @@ namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellEditor, PropertiesEditor);
 }
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCell, SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCell, DataObject);
 SET_OVITO_OBJECT_EDITOR(SimulationCell, Internal::SimulationCellEditor);
 DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector1, "CellVector1");
 DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector2, "CellVector2");

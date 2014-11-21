@@ -40,7 +40,7 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 
 	int propertyIndex = 1;
 	size_t particleCount = 0;
-	for(SceneObject* o : inputState.objects()) {
+	for(DataObject* o : inputState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(!property) continue;
 

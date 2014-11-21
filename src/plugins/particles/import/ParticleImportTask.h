@@ -23,7 +23,7 @@
 #define __OVITO_PARTICLE_IMPORT_TASK_H
 
 #include <plugins/particles/Particles.h>
-#include <core/dataset/importexport/LinkedFileImporter.h>
+#include <core/dataset/importexport/FileSourceImporter.h>
 #include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
@@ -34,7 +34,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 /**
  * Background loading task and data container used by a ParticleImporter derived class.
  */
-class OVITO_PARTICLES_EXPORT ParticleImportTask : public LinkedFileImporter::ImportTask
+class OVITO_PARTICLES_EXPORT ParticleImportTask : public FileSourceImporter::FrameLoader
 {
 public:
 
@@ -49,8 +49,8 @@ public:
 public:
 
 	/// Constructor.
-	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile)
-		: LinkedFileImporter::ImportTask(frame),
+	ParticleImportTask(const FileSourceImporter::Frame& frame, bool isNewFile)
+		: FileSourceImporter::FrameLoader(frame),
 		  _datasetContainer(nullptr),
 		  _timestep(-1),
 		  _isNewFile(isNewFile) {}
@@ -62,8 +62,8 @@ public:
 	DataSetContainer& datasetContainer() const { OVITO_CHECK_POINTER(_datasetContainer); return *_datasetContainer; }
 
 	/// Lets the data container insert the data it holds into the scene by creating
-	/// appropriate scene objects.
-	virtual QSet<SceneObject*> insertIntoScene(LinkedFileObject* destination) override;
+	/// appropriate data objects.
+	virtual QSet<DataObject*> insertIntoScene(FileSource* destination) override;
 
 	/// Returns the current simulation cell matrix.
 	const SimulationCellData& simulationCell() const { return _simulationCell; }

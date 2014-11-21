@@ -44,17 +44,17 @@ public:
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for the Wigner-Seitz analysis.
-	SceneObject* referenceConfiguration() const { return _referenceObject; }
+	DataObject* referenceConfiguration() const { return _referenceObject; }
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for the Wigner-Seitz analysis.
-	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(DataObject* refConf) { _referenceObject = refConf; }
 
 	/// Returns the source URL of the reference configuration.
 	QUrl referenceSource() const;
 
 	/// Sets the source URL of the reference configuration.
-	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
+	void setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType = nullptr);
 
 	/// Returns true if the homogeneous deformation of the simulation cell is eliminated before performing the analysis.
 	bool eliminateCellDeformation() const { return _eliminateCellDeformation; }
@@ -158,7 +158,7 @@ protected:
 	QExplicitlySharedDataPointer<ParticleProperty> _occupancyNumbers;
 
 	/// The reference configuration.
-	ReferenceField<SceneObject> _referenceObject;
+	ReferenceField<DataObject> _referenceObject;
 
 	/// Controls the whether the homogeneous deformation of the simulation cell is eliminated from the calculated displacement vectors.
 	PropertyField<bool> _eliminateCellDeformation;

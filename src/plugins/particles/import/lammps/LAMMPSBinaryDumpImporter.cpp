@@ -24,7 +24,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -106,10 +106,10 @@ bool LAMMPSBinaryDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& s
 }
 
 /******************************************************************************
-*  This method is called by the LinkedFileObject each time a new source
+*  This method is called by the FileSource each time a new source
 * file has been selected by the user.
 ******************************************************************************/
-bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
+bool LAMMPSBinaryDumpImporter::inspectNewFile(FileSource* obj)
 {
 	if(!ParticleImporter::inspectNewFile(obj))
 		return false;
@@ -172,7 +172,7 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void LAMMPSBinaryDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
+void LAMMPSBinaryDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Scanning binary LAMMPS dump file %1").arg(stream.filename()));
 	futureInterface.setProgressRange(stream.underlyingSize() / 1000);
@@ -217,7 +217,7 @@ void LAMMPSBinaryDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureI
 		}
 
 		// Create a new record for the time step.
-		FrameSourceInformation frame;
+		Frame frame;
 		frame.sourceFile = sourceUrl;
 		frame.byteOffset = byteOffset;
 		frame.lineNumber = 0;

@@ -106,8 +106,8 @@ void ParticleInformationApplet::updateInformationDisplay()
 
 		// If selection is based on particle ID, update the stored particle index in case order has changed.
 		if(pickedParticle.particleId >= 0) {
-			for(SceneObject* sceneObj : flowState.objects()) {
-				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+			for(DataObject* dataObj : flowState.objects()) {
+				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 				if(property && property->type() == ParticleProperty::IdentifierProperty) {
 					const int* begin = property->constDataInt();
 					const int* end = begin + property->size();
@@ -121,8 +121,8 @@ void ParticleInformationApplet::updateInformationDisplay()
 		stream << QStringLiteral("<b>") << tr("Particle index") << QStringLiteral(" ") << (pickedParticle.particleIndex + 1) << QStringLiteral(":</b>");
 		stream << QStringLiteral("<table border=\"0\">");
 
-		for(SceneObject* sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+		for(DataObject* dataObj : flowState.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 			if(!property || property->size() <= pickedParticle.particleIndex) continue;
 
 			// Update saved particle position in case it has changed.

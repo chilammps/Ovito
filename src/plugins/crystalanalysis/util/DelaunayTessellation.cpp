@@ -22,7 +22,7 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include "DelaunayTessellation.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /******************************************************************************
 * Generates the tessellation.
@@ -135,5 +135,4 @@ bool DelaunayTessellation::isGhostCell(CellHandle cell) const
 	return isGhost;
 }
 
-
-}; // End of namespace
+}}}	// End of namespace

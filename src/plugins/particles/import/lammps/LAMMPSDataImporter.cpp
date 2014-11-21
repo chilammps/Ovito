@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
@@ -67,10 +67,10 @@ bool LAMMPSDataImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceL
 }
 
 /******************************************************************************
-* This method is called by the LinkedFileObject each time a new source
+* This method is called by the FileSource each time a new source
 * file has been selected by the user.
 ******************************************************************************/
-bool LAMMPSDataImporter::inspectNewFile(LinkedFileObject* obj)
+bool LAMMPSDataImporter::inspectNewFile(FileSource* obj)
 {
 	if(!ParticleImporter::inspectNewFile(obj))
 		return false;

@@ -109,7 +109,7 @@ void ParticlePropertyParameterUI::updateUI()
 
 				// Populate property list from input object.
 				int initialIndex = -1;
-				for(SceneObject* o : inputState.objects()) {
+				for(DataObject* o : inputState.objects()) {
 					ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 					if(!property) continue;
 

@@ -20,32 +20,32 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/dataset/DataSetContainer.h>
 
 namespace Ovito { namespace ObjectSystem { namespace Scene {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget);
-DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene");
-DEFINE_VECTOR_REFERENCE_FIELD(SceneObject, _displayObjects, "DisplayObjects", DisplayObject);
-SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene");
-SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObjects, "Display objects");
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DataObject, RefTarget);
+DEFINE_PROPERTY_FIELD(DataObject, _saveWithScene, "SaveWithScene");
+DEFINE_VECTOR_REFERENCE_FIELD(DataObject, _displayObjects, "DisplayObjects", DisplayObject);
+SET_PROPERTY_FIELD_LABEL(DataObject, _saveWithScene, "Save data with scene");
+SET_PROPERTY_FIELD_LABEL(DataObject, _displayObjects, "Display objects");
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneObject::SceneObject(DataSet* dataset) : RefTarget(dataset), _revisionNumber(0), _saveWithScene(true)
+DataObject::DataObject(DataSet* dataset) : RefTarget(dataset), _revisionNumber(0), _saveWithScene(true)
 {
-	INIT_PROPERTY_FIELD(SceneObject::_saveWithScene);
-	INIT_PROPERTY_FIELD(SceneObject::_displayObjects);
+	INIT_PROPERTY_FIELD(DataObject::_saveWithScene);
+	INIT_PROPERTY_FIELD(DataObject::_displayObjects);
 }
 
 /******************************************************************************
 * Sends an event to all dependents of this RefTarget.
 ******************************************************************************/
-void SceneObject::notifyDependents(ReferenceEvent& event)
+void DataObject::notifyDependents(ReferenceEvent& event)
 {
 	// Automatically increment revision counter each time the object changes.
 	if(event.type() == ReferenceEvent::TargetChanged)
@@ -57,7 +57,7 @@ void SceneObject::notifyDependents(ReferenceEvent& event)
 /******************************************************************************
 * Handles reference events sent by reference targets of this object.
 ******************************************************************************/
-bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
+bool DataObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(event->type() == ReferenceEvent::TargetChanged) {
 
@@ -75,7 +75,7 @@ bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 /******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
-void SceneObject::saveToStream(ObjectSaveStream& stream)
+void DataObject::saveToStream(ObjectSaveStream& stream)
 {
 	RefTarget::saveToStream(stream);
 	stream.beginChunk(0x02);
@@ -85,7 +85,7 @@ void SceneObject::saveToStream(ObjectSaveStream& stream)
 /******************************************************************************
 * Loads the class' contents from the given stream.
 ******************************************************************************/
-void SceneObject::loadFromStream(ObjectLoadStream& stream)
+void DataObject::loadFromStream(ObjectLoadStream& stream)
 {
 	RefTarget::loadFromStream(stream);
 	int formatVersion = stream.expectChunkRange(0, 0x02);
@@ -102,7 +102,7 @@ void SceneObject::loadFromStream(ObjectLoadStream& stream)
 /******************************************************************************
 * Returns a list of object nodes that have this object as a data source.
 ******************************************************************************/
-QSet<ObjectNode*> SceneObject::dependentNodes() const
+QSet<ObjectNode*> DataObject::dependentNodes() const
 {
 	QSet<ObjectNode*> nodeList;
 	for(RefMaker* dependent : this->dependents()) {
@@ -122,7 +122,7 @@ QSet<ObjectNode*> SceneObject::dependentNodes() const
 * This function blocks execution until the object is able ready to
 * provide data via its evaluate() function.
 ******************************************************************************/
-bool SceneObject::waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog)
+bool DataObject::waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog)
 {
 	return dataset()->container()->waitUntil([this, time]() {
 		return evaluate(time).status().type() != PipelineStatus::Pending;

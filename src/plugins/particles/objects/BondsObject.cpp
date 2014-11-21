@@ -24,12 +24,12 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsObject, SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsObject, DataObject);
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-BondsObject::BondsObject(DataSet* dataset, BondsStorage* storage) : SceneObject(dataset),
+BondsObject::BondsObject(DataSet* dataset, BondsStorage* storage) : DataObject(dataset),
 	_storage(storage ? storage : new BondsStorage())
 {
 }
@@ -49,7 +49,7 @@ void BondsObject::setStorage(BondsStorage* storage)
 ******************************************************************************/
 void BondsObject::saveToStream(ObjectSaveStream& stream)
 {
-	SceneObject::saveToStream(stream);
+	DataObject::saveToStream(stream);
 
 	stream.beginChunk(0x01);
 	_storage.constData()->saveToStream(stream, !saveWithScene());
@@ -61,7 +61,7 @@ void BondsObject::saveToStream(ObjectSaveStream& stream)
 ******************************************************************************/
 void BondsObject::loadFromStream(ObjectLoadStream& stream)
 {
-	SceneObject::loadFromStream(stream);
+	DataObject::loadFromStream(stream);
 
 	stream.expectChunk(0x01);
 	_storage->loadFromStream(stream);
@@ -74,7 +74,7 @@ void BondsObject::loadFromStream(ObjectLoadStream& stream)
 OORef<RefTarget> BondsObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Let the base class create an instance of this class.
-	OORef<BondsObject> clone = static_object_cast<BondsObject>(SceneObject::clone(deepCopy, cloneHelper));
+	OORef<BondsObject> clone = static_object_cast<BondsObject>(DataObject::clone(deepCopy, cloneHelper));
 
 	// Shallow copy storage.
 	clone->_storage = this->_storage;

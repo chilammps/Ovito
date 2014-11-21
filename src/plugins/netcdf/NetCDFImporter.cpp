@@ -43,7 +43,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
@@ -117,7 +117,7 @@ bool NetCDFImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocat
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
+void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	QString filename = QDir::toNativeSeparators(stream.device().fileName());
 
@@ -133,7 +133,7 @@ void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, 
 	QFileInfo fileInfo(stream.device().fileName());
 	QDateTime lastModified = fileInfo.lastModified();
 	for(int i = 0; i < nFrames; i++) {
-		FrameSourceInformation frame;
+		Frame frame;
 		frame.sourceFile = sourceUrl;
 		frame.byteOffset = 0;
 		frame.lineNumber = i;
@@ -740,9 +740,9 @@ OORef<RefTarget> NetCDFImporter::clone(bool deepCopy, CloneHelper& cloneHelper)
 void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 {
 	// Retrieve column names from current input file.
-	LinkedFileObject* obj = nullptr;
+	FileSource* obj = nullptr;
 	for(RefMaker* refmaker : dependents()) {
-		obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		obj = dynamic_object_cast<FileSource>(refmaker);
 		if(obj) break;
 	}
 	if(!obj) return;

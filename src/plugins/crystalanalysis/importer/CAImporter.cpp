@@ -21,7 +21,7 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/scene/ObjectNode.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
@@ -35,13 +35,13 @@
 #include <plugins/particles/objects/SurfaceMesh.h>
 #include "CAImporter.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, CAImporter, LinkedFileImporter)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, CAImporterEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(CAImporter, CAImporterEditor)
-DEFINE_PROPERTY_FIELD(CAImporter, _loadParticles, "LoadParticles")
-SET_PROPERTY_FIELD_LABEL(CAImporter, _loadParticles, "Load particles")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, CAImporter, FileSourceImporter);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, CAImporterEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(CAImporter, CAImporterEditor);
+DEFINE_PROPERTY_FIELD(CAImporter, _loadParticles, "LoadParticles");
+SET_PROPERTY_FIELD_LABEL(CAImporter, _loadParticles, "Load particles");
 
 /******************************************************************************
 * Is called when the value of a property of this object has changed.
@@ -51,7 +51,7 @@ void CAImporter::propertyChanged(const PropertyFieldDescriptor& field)
 	if(field == PROPERTY_FIELD(CAImporter::_loadParticles)) {
 		requestReload();
 	}
-	LinkedFileImporter::propertyChanged(field);
+	FileSourceImporter::propertyChanged(field);
 }
 
 /******************************************************************************
@@ -313,7 +313,7 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 
 	// Load particles if requested by the user.
 	if(_loadParticles) {
-		LinkedFileImporter::FrameSourceInformation particleFileInfo;
+		FileSourceImporter::Frame particleFileInfo;
 		particleFileInfo.byteOffset = 0;
 		particleFileInfo.lineNumber = 0;
 
@@ -334,7 +334,7 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 		else particleFileInfo.sourceFile = QUrl::fromLocalFile(atomsFilename);
 
 		// Create and execute the import sub-task.
-		_particleLoadTask = std::make_shared<LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, true, false, InputColumnMapping());
+		_particleLoadTask = std::make_shared<Particles::Import::Lammps::LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, true, false, InputColumnMapping());
 		_particleLoadTask->load(datasetContainer(), futureInterface);
 		if(futureInterface.isCanceled())
 			return;
@@ -348,35 +348,35 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 
 /******************************************************************************
 * Lets the data container insert the data it holds into the scene by creating
-* appropriate scene objects.
+* appropriate data objects.
 ******************************************************************************/
-QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(LinkedFileObject* destination)
+QSet<DataObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(FileSource* destination)
 {
-	QSet<SceneObject*> activeObjects = ParticleImportTask::insertIntoScene(destination);
+	QSet<DataObject*> activeObjects = ParticleImportTask::insertIntoScene(destination);
 
 	// Insert dislocations.
-	OORef<DislocationNetwork> dislocationsObj = destination->findSceneObject<DislocationNetwork>();
+	OORef<DislocationNetwork> dislocationsObj = destination->findDataObject<DislocationNetwork>();
 	if(!dislocationsObj) {
 		dislocationsObj = new DislocationNetwork(destination->dataset());
-		destination->addSceneObject(dislocationsObj);
+		destination->addDataObject(dislocationsObj);
 	}
 	activeObjects.insert(dislocationsObj);
 
 	// Insert defect surface.
-	OORef<SurfaceMesh> defectSurfaceObj = destination->findSceneObject<SurfaceMesh>();
+	OORef<SurfaceMesh> defectSurfaceObj = destination->findDataObject<SurfaceMesh>();
 	if(!defectSurfaceObj) {
 		defectSurfaceObj = new SurfaceMesh(destination->dataset());
-		destination->addSceneObject(defectSurfaceObj);
+		destination->addDataObject(defectSurfaceObj);
 	}
 	defectSurfaceObj->mesh().swap(_defectSurface);
 	defectSurfaceObj->notifyDependents(ReferenceEvent::TargetChanged);
 	activeObjects.insert(defectSurfaceObj);
 
 	// Insert pattern catalog.
-	OORef<PatternCatalog> patternCatalog = destination->findSceneObject<PatternCatalog>();
+	OORef<PatternCatalog> patternCatalog = destination->findDataObject<PatternCatalog>();
 	if(!patternCatalog) {
 		patternCatalog = new PatternCatalog(destination->dataset());
-		destination->addSceneObject(patternCatalog);
+		destination->addDataObject(patternCatalog);
 	}
 	activeObjects.insert(patternCatalog.get());
 
@@ -421,10 +421,10 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		patternCatalog->removePattern(i);
 
 	// Insert cluster graph.
-	OORef<ClusterGraph> clusterGraph = destination->findSceneObject<ClusterGraph>();
+	OORef<ClusterGraph> clusterGraph = destination->findDataObject<ClusterGraph>();
 	if(!clusterGraph) {
 		clusterGraph = new ClusterGraph(destination->dataset());
-		destination->addSceneObject(clusterGraph);
+		destination->addDataObject(clusterGraph);
 	}
 	activeObjects.insert(clusterGraph);
 	clusterGraph->clear();
@@ -446,10 +446,10 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	}
 
 	// Insert dislocations.
-	OORef<DislocationNetwork> dislocationNetwork = destination->findSceneObject<DislocationNetwork>();
+	OORef<DislocationNetwork> dislocationNetwork = destination->findDataObject<DislocationNetwork>();
 	if(!dislocationNetwork) {
 		dislocationNetwork = new DislocationNetwork(destination->dataset());
-		destination->addSceneObject(dislocationNetwork);
+		destination->addDataObject(dislocationNetwork);
 	}
 	activeObjects.insert(dislocationNetwork);
 	dislocationNetwork->clear();
@@ -466,8 +466,8 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		activeObjects.unite(_particleLoadTask->insertIntoScene(destination));
 
 		// Copy structure patterns into StructureType particle property.
-		for(SceneObject* sceneObj : activeObjects) {
-			ParticleTypeProperty* structureTypeProperty = dynamic_object_cast<ParticleTypeProperty>(sceneObj);
+		for(DataObject* dataObj : activeObjects) {
+			ParticleTypeProperty* structureTypeProperty = dynamic_object_cast<ParticleTypeProperty>(dataObj);
 			if(structureTypeProperty && structureTypeProperty->type() == ParticleProperty::StructureTypeProperty) {
 				structureTypeProperty->clearParticleTypes();
 				for(StructurePattern* pattern : patternCatalog->patterns()) {
@@ -481,11 +481,11 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 }
 
 /******************************************************************************
-* This method is called when the scene node for the LinkedFileObject is created.
+* This method is called when the scene node for the FileSource is created.
 ******************************************************************************/
-void CAImporter::prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj)
+void CAImporter::prepareSceneNode(ObjectNode* node, FileSource* importObj)
 {
-	LinkedFileImporter::prepareSceneNode(node, importObj);
+	FileSourceImporter::prepareSceneNode(node, importObj);
 
 	// Add a modifier to smooth the defect surface mesh.
 	node->applyModifier(new SmoothSurfaceModifier(node->dataset()));
@@ -511,4 +511,4 @@ void CAImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 	layout->addWidget(loadParticlesUI->checkBox());
 }
 
-};
+}}}	// End of namespace

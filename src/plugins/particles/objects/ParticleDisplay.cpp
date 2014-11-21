@@ -65,9 +65,9 @@ ParticleDisplay::ParticleDisplay(DataSet* dataset) : DisplayObject(dataset),
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 ParticleDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
+	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(dataObject);
 	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
 
@@ -294,12 +294,12 @@ ParticlePrimitive::RenderingQuality ParticleDisplay::effectiveRenderingQuality(S
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render the data object.
 ******************************************************************************/
-void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get input data.
-	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
+	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(dataObject);
 	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
 	ParticlePropertyObject* colorProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::ColorProperty);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
@@ -440,8 +440,8 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 QString ParticlePickInfo::infoString(ObjectNode* objectNode, quint32 subobjectId)
 {
 	QString str;
-	for(SceneObject* sceneObj : pipelineState().objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+	for(DataObject* dataObj : pipelineState().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 		if(!property || property->size() <= subobjectId) continue;
 		if(property->type() == ParticleProperty::SelectionProperty) continue;
 		if(property->type() == ParticleProperty::ColorProperty) continue;

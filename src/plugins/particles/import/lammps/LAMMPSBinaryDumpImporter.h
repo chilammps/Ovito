@@ -53,9 +53,9 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("LAMMPS Dump File"); }
 
-	/// This method is called by the LinkedFileObject each time a new source
+	/// This method is called by the FileSource each time a new source
 	/// file has been selected by the user.
-	virtual bool inspectNewFile(LinkedFileObject* obj) override;
+	virtual bool inspectNewFile(FileSource* obj) override;
 
 	/// \brief Returns the user-defined mapping between data columns in the input file and
 	///        the internal particle properties.
@@ -81,11 +81,11 @@ protected:
 	public:
 
 		/// Normal constructor.
-		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile, const InputColumnMapping& columnMapping)
+		LAMMPSBinaryDumpImportTask(const FileSourceImporter::Frame& frame, bool isNewFile, const InputColumnMapping& columnMapping)
 			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _columnMapping(columnMapping) {}
 
 		/// Constructor used when reading only the file header information.
-		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
+		LAMMPSBinaryDumpImportTask(const FileSourceImporter::Frame& frame)
 			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true) {}
 
 		/// Returns the file column mapping used to load the file.
@@ -114,12 +114,12 @@ protected:
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// \brief Creates an import task object to read the given frame.
-	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
 		return std::make_shared<LAMMPSBinaryDumpImportTask>(frame, isNewlySelectedFile(), _columnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
-	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;
 
 private:
 

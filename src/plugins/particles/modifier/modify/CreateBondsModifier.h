@@ -103,7 +103,7 @@ public:
 	/// \brief Returns the display object that is responsible for rendering the bonds.
 	BondsDisplay* bondsDisplay() const { return _bondsDisplay; }
 
-	/// \brief Returns the scene object that stores the generated bonds.
+	/// \brief Returns the data object that stores the generated bonds.
 	BondsObject* bondsObject() const { return _bondsObj; }
 
 protected:

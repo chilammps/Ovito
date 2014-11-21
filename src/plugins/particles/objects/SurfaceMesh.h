@@ -23,7 +23,7 @@
 #define __OVITO_SURFACE_MESH_H
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/utilities/mesh/HalfEdgeMesh.h>
 #include <plugins/particles/data/SimulationCellData.h>
 
@@ -32,7 +32,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 /**
  * \brief A closed triangle mesh representing a surface.
  */
-class OVITO_PARTICLES_EXPORT SurfaceMesh : public SceneObject
+class OVITO_PARTICLES_EXPORT SurfaceMesh : public DataObject
 {
 public:
 
@@ -48,13 +48,13 @@ public:
 	/// Return false because this object cannot be edited.
 	virtual bool isSubObjectEditable() const override { return false; }
 
-	/// Returns a const-reference to the mesh encapsulated by this scene object.
+	/// Returns a const-reference to the mesh encapsulated by this data object.
 	const HalfEdgeMesh& mesh() const { return _mesh; }
 
-	/// Returns a reference to the mesh encapsulated by this scene object.
+	/// Returns a reference to the mesh encapsulated by this data object.
 	/// The reference can be used to modify the mesh. However, each time the mesh has been modified,
 	/// notifyDependents(ReferenceEvent::TargetChanged) must be called to increment
-	/// the scene object's revision number.
+	/// the data object's revision number.
 	HalfEdgeMesh& mesh() { return _mesh; }
 
 	/// Indicates whether the entire simulation cell is part of the solid region.

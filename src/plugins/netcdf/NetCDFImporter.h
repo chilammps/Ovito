@@ -92,12 +92,12 @@ protected:
 	public:
 
 		/// Normal constructor.
-		NetCDFImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool isNewFile,
+		NetCDFImportTask(const FileSourceImporter::Frame& frame, bool isNewFile,
 				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
 			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping), _ncIsOpen(false), _ncid(-1) {}
 
 		/// Constructor used when reading only the file header information.
-		NetCDFImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
+		NetCDFImportTask(const FileSourceImporter::Frame& frame)
 			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false), _ncIsOpen(false), _ncid(-1) {}
 
 		/// Returns the file column mapping used to load the file.
@@ -145,12 +145,12 @@ protected:
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// \brief Creates an import task object to read the given frame.
-	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
 		return std::make_shared<NetCDFImportTask>(frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
-	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;
 
 	/// \brief Guesses the mapping of an input file field to one of OVITO's internal particle properties.
 	static InputColumnInfo mapVariableToColumn(const QString& name, int dataType);

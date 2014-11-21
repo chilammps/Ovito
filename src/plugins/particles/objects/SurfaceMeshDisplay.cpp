@@ -75,14 +75,14 @@ SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
 	if(!cellObject)
 		return Box3();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(sceneObject, cellObject->data()) || _cachedBoundingBox.isEmpty()) {
+	if(_boundingBoxCacheHelper.updateState(dataObject, cellObject->data()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox = Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
 	}
@@ -90,9 +90,9 @@ Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, O
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render the data object.
 ******************************************************************************/
-void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get the simulation cell.
 	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
@@ -114,7 +114,7 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Do we have to update contents of the geometry buffer?
 	bool updateContents = _geometryCacheHelper.updateState(
-			sceneObject,
+			dataObject,
 			cellObject->data(), color_surface, color_cap, _smoothShading)
 					|| recreateSurfaceBuffer || recreateCapBuffer;
 
@@ -126,7 +126,7 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Update buffer contents.
 	if(updateContents) {
-		OORef<SurfaceMesh> defectSurfaceObj = sceneObject->convertTo<SurfaceMesh>(time);
+		OORef<SurfaceMesh> defectSurfaceObj = dataObject->convertTo<SurfaceMesh>(time);
 		if(defectSurfaceObj) {
 			TriMesh surfaceMesh;
 			TriMesh capMesh;

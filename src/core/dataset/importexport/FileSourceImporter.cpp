@@ -22,28 +22,28 @@
 #include <core/Core.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SceneRoot.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/SelectionSet.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/utilities/io/FileManager.h>
-#include "LinkedFileImporter.h"
-#include "LinkedFileObject.h"
+#include "FileSourceImporter.h"
+#include "FileSource.h"
 
 namespace Ovito { namespace DataIO {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSourceImporter, FileImporter);
 
 /******************************************************************************
-* Sends a request to the LinkedFileObject owning this importer to reload
+* Sends a request to the FileSource owning this importer to reload
 * the input file.
 ******************************************************************************/
-void LinkedFileImporter::requestReload(int frame)
+void FileSourceImporter::requestReload(int frame)
 {
-	// Retrieve the LinkedFileObject that owns this importer by looking it up in the list of dependents.
+	// Retrieve the FileSource that owns this importer by looking it up in the list of dependents.
 	for(RefMaker* refmaker : dependents()) {
-		LinkedFileObject* obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		FileSource* obj = dynamic_object_cast<FileSource>(refmaker);
 		if(obj) {
 			try {
 				obj->refreshFromSource(frame);
@@ -56,14 +56,14 @@ void LinkedFileImporter::requestReload(int frame)
 }
 
 /******************************************************************************
-* Sends a request to the LinkedFileObject owning this importer to refresh the
+* Sends a request to the FileSource owning this importer to refresh the
 * animation frame sequence.
 ******************************************************************************/
-void LinkedFileImporter::requestFramesUpdate()
+void FileSourceImporter::requestFramesUpdate()
 {
-	// Retrieve the LinkedFileObject that owns this importer by looking it up in the list of dependents.
+	// Retrieve the FileSource that owns this importer by looking it up in the list of dependents.
 	for(RefMaker* refmaker : dependents()) {
-		LinkedFileObject* obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		FileSource* obj = dynamic_object_cast<FileSource>(refmaker);
 		if(obj) {
 			try {
 				// If wildcard pattern seach has been disabled, replace
@@ -71,8 +71,8 @@ void LinkedFileImporter::requestFramesUpdate()
 				if(!autoGenerateWildcardPattern()) {
 					QFileInfo fileInfo(obj->sourceUrl().path());
 					if(fileInfo.fileName().contains('*') || fileInfo.fileName().contains('?')) {
-						if(obj->loadedFrame() >= 0 && obj->loadedFrame() < obj->frames().size()) {
-							QUrl currentUrl = obj->frames()[obj->loadedFrame()].sourceFile;
+						if(obj->loadedFrameIndex() >= 0 && obj->loadedFrameIndex() < obj->frames().size()) {
+							QUrl currentUrl = obj->frames()[obj->loadedFrameIndex()].sourceFile;
 							if(currentUrl != obj->sourceUrl()) {
 								obj->setSource(currentUrl, this);
 								continue;
@@ -100,19 +100,19 @@ void LinkedFileImporter::requestFramesUpdate()
 * Return false if the import has been aborted by the user.
 * Throws an exception when the import has failed.
 ******************************************************************************/
-bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode)
+bool FileSourceImporter::importFile(const QUrl& sourceUrl, ImportMode importMode)
 {
-	OORef<LinkedFileObject> existingFileSource;
+	OORef<FileSource> existingFileSource;
 	ObjectNode* existingNode = nullptr;
 
 	if(dataset()->sceneRoot()->children().empty() == false) {
 
 		if(importMode != AddToScene) {
-			// Look for an existing LinkedFileObject in the scene whose
+			// Look for an existing FileSource in the scene whose
 			// data source we can replace with the newly imported file.
 			for(SceneNode* node : dataset()->selection()->nodes()) {
 				if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
-					existingFileSource = dynamic_object_cast<LinkedFileObject>(objNode->sourceObject());
+					existingFileSource = dynamic_object_cast<FileSource>(objNode->sourceObject());
 					if(existingFileSource) {
 						existingNode = objNode;
 						break;
@@ -198,11 +198,11 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	// Do not create any animation keys during import.
 	AnimationSuspender animSuspender(this);
 
-	OORef<LinkedFileObject> fileSource;
+	OORef<FileSource> fileSource;
 
 	// Create the object that will insert the imported data into the scene.
 	if(existingFileSource == nullptr) {
-		fileSource = new LinkedFileObject(dataset());
+		fileSource = new FileSource(dataset());
 
 		// When adding the imported data to an existing scene,
 		// do not auto-adjust animation interval.
@@ -265,9 +265,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 /******************************************************************************
 * Returns the list of files that match the given wildcard pattern.
 ******************************************************************************/
-Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findWildcardMatches(const QUrl& sourceUrl, DataSetContainer* datasetContainer)
+Future<QVector<FileSourceImporter::Frame>> FileSourceImporter::findWildcardMatches(const QUrl& sourceUrl, DataSetContainer* datasetContainer)
 {
-	QVector<FrameSourceInformation> frames;
+	QVector<Frame> frames;
 
 	// Determine whether the filename contains wildcard characters.
 	QFileInfo fileInfo(sourceUrl.path());
@@ -304,7 +304,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 			// Retrieve list of files in remote directory.
 			Future<QStringList> fileListFuture = FileManager::instance().listDirectoryContents(directoryUrl);
 			if(!datasetContainer->taskManager().waitForTask(fileListFuture))
-				return Future<QVector<FrameSourceInformation>>::createCanceled();
+				return Future<QVector<Frame>>::createCanceled();
 
 			// Filter file names.
 			for(const QString& filename : fileListFuture.result()) {
@@ -351,13 +351,13 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 		}
 	}
 
-	return Future<QVector<FrameSourceInformation>>::createImmediate(frames);
+	return Future<QVector<Frame>>::createImmediate(frames);
 }
 
 /******************************************************************************
 * Checks if a filename matches to the given wildcard pattern.
 ******************************************************************************/
-bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QString& filename)
+bool FileSourceImporter::matchesWildcardPattern(const QString& pattern, const QString& filename)
 {
 	QString::const_iterator p = pattern.constBegin();
 	QString::const_iterator f = filename.constBegin();
@@ -382,13 +382,13 @@ bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QS
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-Future<LinkedFileImporter::ImportTaskPtr> LinkedFileImporter::load(const LinkedFileImporter::FrameSourceInformation& frame)
+Future<std::shared_ptr<FileSourceImporter::FrameLoader>> FileSourceImporter::loadFrame(const FileSourceImporter::Frame& frame)
 {
-	ImportTaskPtr importTask = createImportTask(frame);
+	std::shared_ptr<FrameLoader> importTask = createImportTask(frame);
 	DataSetContainer& container = *dataset()->container();
 
-	return container.taskManager().runInBackground<ImportTaskPtr>(
-			[importTask, &container] (FutureInterface<LinkedFileImporter::ImportTaskPtr>& futureInterface) {
+	return container.taskManager().runInBackground<std::shared_ptr<FrameLoader>>(
+			[importTask, &container] (FutureInterface<std::shared_ptr<FrameLoader>>& futureInterface) {
 
 		// Run the task
 		importTask->load(container, futureInterface);

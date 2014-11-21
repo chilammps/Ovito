@@ -24,7 +24,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -83,7 +83,7 @@ bool LAMMPSTextDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& sou
 /******************************************************************************
 * Scans the given input file to find all contained simulation frames.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
+void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	futureInterface.setProgressText(tr("Scanning LAMMPS dump file %1").arg(stream.filename()));
 	futureInterface.setProgressRange(stream.underlyingSize() / 1000);
@@ -108,7 +108,7 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 			if(stream.lineStartsWith("ITEM: TIMESTEP")) {
 				if(sscanf(stream.readLine(), "%i", &timestep) != 1)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid timestep number (line %1):\n%2").arg(stream.lineNumber()).arg(QString::fromLocal8Bit(stream.line())));
-				FrameSourceInformation frame;
+				Frame frame;
 				frame.sourceFile = sourceUrl;
 				frame.byteOffset = byteOffset;
 				frame.lineNumber = startLineNumber;
@@ -450,9 +450,9 @@ OORef<RefTarget> LAMMPSTextDumpImporter::clone(bool deepCopy, CloneHelper& clone
 void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 {
 	// Retrieve column names from current input file.
-	LinkedFileObject* obj = nullptr;
+	FileSource* obj = nullptr;
 	for(RefMaker* refmaker : dependents()) {
-		obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		obj = dynamic_object_cast<FileSource>(refmaker);
 		if(obj) break;
 	}
 	if(!obj) return;

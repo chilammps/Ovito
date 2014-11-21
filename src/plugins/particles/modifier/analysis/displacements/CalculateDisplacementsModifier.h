@@ -42,17 +42,17 @@ public:
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	SceneObject* referenceConfiguration() const { return _referenceObject; }
+	DataObject* referenceConfiguration() const { return _referenceObject; }
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(DataObject* refConf) { _referenceObject = refConf; }
 
 	/// Returns the source URL of the reference configuration.
 	QUrl referenceSource() const;
 
 	/// Sets the source URL of the reference configuration.
-	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
+	void setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType = nullptr);
 
 	/// Returns true if the homogeneous deformation of the simulation cell is eliminated from the calculated displacement vectors.
 	bool eliminateCellDeformation() const { return _eliminateCellDeformation; }
@@ -96,7 +96,7 @@ protected:
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The reference configuration.
-	ReferenceField<SceneObject> _referenceObject;
+	ReferenceField<DataObject> _referenceObject;
 
 	/// Controls the whether the reference configuration is shown instead of the current configuration.
 	PropertyField<bool> _referenceShown;

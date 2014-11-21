@@ -26,12 +26,12 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMesh, SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMesh, DataObject);
 
 /******************************************************************************
 * Constructs an empty surface mesh object.
 ******************************************************************************/
-SurfaceMesh::SurfaceMesh(DataSet* dataset) : SceneObject(dataset), _isCompletelySolid(false)
+SurfaceMesh::SurfaceMesh(DataSet* dataset) : DataObject(dataset), _isCompletelySolid(false)
 {
 	addDisplayObject(new SurfaceMeshDisplay(dataset));
 }
@@ -42,7 +42,7 @@ SurfaceMesh::SurfaceMesh(DataSet* dataset) : SceneObject(dataset), _isCompletely
 OORef<RefTarget> SurfaceMesh::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Let the base class create an instance of this class.
-	OORef<SurfaceMesh> clone = static_object_cast<SurfaceMesh>(SceneObject::clone(deepCopy, cloneHelper));
+	OORef<SurfaceMesh> clone = static_object_cast<SurfaceMesh>(DataObject::clone(deepCopy, cloneHelper));
 
 	// Copy the internal mesh.
 	clone->_mesh = this->_mesh;

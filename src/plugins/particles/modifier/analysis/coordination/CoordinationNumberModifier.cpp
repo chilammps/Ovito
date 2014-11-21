@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/SceneObject.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/scene/objects/DataObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <qcustomplot.h>
 #include "CoordinationNumberModifier.h"

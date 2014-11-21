@@ -99,7 +99,7 @@ ColorLegendOverlay::ColorLegendOverlay(DataSet* dataset) : ViewportOverlay(datas
 
 	// Find a ColorCodingModifiers in the scene that we can connect to.
 	dataset->sceneRoot()->visitObjectNodes([this](ObjectNode* node) {
-		SceneObject* obj = node->dataProvider();
+		DataObject* obj = node->dataProvider();
 		while(obj) {
 			if(PipelineObject* pipeline = dynamic_object_cast<PipelineObject>(obj)) {
 				for(ModifierApplication* modApp : pipeline->modifierApplications()) {
@@ -255,7 +255,7 @@ void ColorLegendOverlayEditor::createUI(const RolloutInsertionParameters& rollou
 				// Find all ColorCodingModifiers in the scene. For this we have to visit all
 				// object nodes and iterate over their modification pipelines.
 				_overlay->dataset()->sceneRoot()->visitObjectNodes([this](ObjectNode* node) {
-					SceneObject* obj = node->dataProvider();
+					DataObject* obj = node->dataProvider();
 					while(obj) {
 						if(PipelineObject* pipeline = dynamic_object_cast<PipelineObject>(obj)) {
 							for(ModifierApplication* modApp : pipeline->modifierApplications()) {

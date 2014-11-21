@@ -106,7 +106,7 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	else textStream() << "0 ";
 
 	int otherColumnsCount = 0;
-	for(SceneObject* o : state.objects()) {
+	for(DataObject* o : state.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(!property) continue;
 		if(property == posProperty || property == typeProperty || property == identifierProperty || property == massProperty || property == velocityProperty)

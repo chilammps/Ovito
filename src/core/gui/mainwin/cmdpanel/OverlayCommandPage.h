@@ -19,6 +19,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_OVERLAY_COMMAND_PAGE_H
+#define __OVITO_OVERLAY_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/reference/RefTargetListener.h>
@@ -97,3 +100,5 @@ private:
 };
 
 }}}	// End of namespace
+
+#endif // __OVITO_OVERLAY_COMMAND_PAGE_H

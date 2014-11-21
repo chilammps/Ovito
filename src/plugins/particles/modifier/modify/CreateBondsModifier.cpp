@@ -61,7 +61,7 @@ CreateBondsModifier::CreateBondsModifier(DataSet* dataset) : AsynchronousParticl
 	_bondsObj = new BondsObject(dataset);
 	_bondsObj->setSaveWithScene(storeResultsWithScene());
 
-	// Create the display object for bonds rendering and assign it to the scene object.
+	// Create the display object for bonds rendering and assign it to the data object.
 	_bondsDisplay = new BondsDisplay(dataset);
 	_bondsObj->addDisplayObject(_bondsDisplay);
 }

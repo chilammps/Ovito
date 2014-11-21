@@ -40,23 +40,23 @@ public:
 	/// \brief Default constructor that creates an empty state object.
 	PipelineFlowState() : _stateValidity(TimeInterval::empty()) {}
 
-	/// \brief Constructor that creates a state object and initializes it with a SceneObject.
-	/// \param sceneObject The object represents the current state of a geometry pipeline evaluation.
+	/// \brief Constructor that creates a state object and initializes it with a DataObject.
+	/// \param dataObject The object represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned object is valid.
 	///                         For times outside this interval the geometry pipeline has to be re-evaluated.
-	PipelineFlowState(SceneObject* sceneObject, const TimeInterval& validityInterval) : _stateValidity(validityInterval) {
-		addObject(sceneObject);
+	PipelineFlowState(DataObject* dataObject, const TimeInterval& validityInterval) : _stateValidity(validityInterval) {
+		addObject(dataObject);
 	}
 
-	/// \brief Constructor that creates a state object and initializes it with a list of SceneObjects.
+	/// \brief Constructor that creates a state object and initializes it with a list of data objects.
 	/// \param status A status object that describes the outcome of the pipeline evaluation.
-	/// \param sceneObjects The objects that represents the current state of a geometry pipeline evaluation.
+	/// \param dataObjects The objects that represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned objects are valid.
-	PipelineFlowState(const PipelineStatus& status, const QVector<SceneObject*>& sceneObjects, const TimeInterval& validityInterval, const QVariantMap& attributes = QVariantMap()) :
+	PipelineFlowState(const PipelineStatus& status, const QVector<DataObject*>& dataObjects, const TimeInterval& validityInterval, const QVariantMap& attributes = QVariantMap()) :
 		_status(status), _stateValidity(validityInterval), _attributes(attributes)
 	{
-		_objects.reserve(sceneObjects.size());
-		for(const auto& obj : sceneObjects)
+		_objects.reserve(dataObjects.size());
+		for(const auto& obj : dataObjects)
 			addObject(obj);
 	}
 
@@ -70,36 +70,36 @@ public:
 
 	/// \brief Returns true if the given object is part of this pipeline flow state.
 	/// \note The method ignores the revision number of the object.
-	bool contains(SceneObject* obj) const;
+	bool contains(DataObject* obj) const;
 
-	/// \brief Adds an additional scene object to this state.
-	void addObject(SceneObject* obj);
+	/// \brief Adds an additional data object to this state.
+	void addObject(DataObject* obj);
 
-	/// \brief Replaces a scene object with a new one.
-	void replaceObject(SceneObject* oldObj, SceneObject* newObj);
+	/// \brief Replaces a data object with a new one.
+	void replaceObject(DataObject* oldObj, DataObject* newObj);
 
-	/// \brief Removes a scene object from this state.
-	void removeObject(SceneObject* sceneObj) {
-		replaceObject(sceneObj, nullptr);
+	/// \brief Removes a data object from this state.
+	void removeObject(DataObject* dataObj) {
+		replaceObject(dataObj, nullptr);
 	}
 
-	/// \brief Returns the list of scene objects stored in this flow state.
-	const QVector<VersionedOORef<SceneObject>>& objects() const { return _objects; }
+	/// \brief Returns the list of data objects stored in this flow state.
+	const QVector<VersionedOORef<DataObject>>& objects() const { return _objects; }
 
-	/// \brief Finds an object of the given type in the list of scene objects stored in this flow state.
+	/// \brief Finds an object of the given type in the list of data objects stored in this flow state.
 	template<class ObjectType>
 	ObjectType* findObject() const {
-		for(SceneObject* o : _objects) {
+		for(DataObject* o : _objects) {
 			if(ObjectType* obj = dynamic_object_cast<ObjectType>(o))
 				return obj;
 		}
 		return nullptr;
 	}
 
-	/// \brief Tries to convert one of the to scene objects stored in this flow state to the given object type.
-	OORef<SceneObject> convertObject(const OvitoObjectType& objectClass, TimePoint time) const;
+	/// \brief Tries to convert one of the to data objects stored in this flow state to the given object type.
+	OORef<DataObject> convertObject(const OvitoObjectType& objectClass, TimePoint time) const;
 
-	/// \brief Tries to convert one of the to scene objects stored in this flow state to the given object type.
+	/// \brief Tries to convert one of the to data objects stored in this flow state to the given object type.
 	template<class ObjectType>
 	OORef<ObjectType> convertObject(TimePoint time) const {
 		return static_object_cast<ObjectType>(convertObject(ObjectType::OOType, time));
@@ -123,7 +123,7 @@ public:
 	/// \brief Returns true if this state object has no valid contents.
 	bool isEmpty() const { return _objects.empty(); }
 
-	/// \brief Updates the stored revision numbers for all scene objects.
+	/// \brief Updates the stored revision numbers for all data objects.
 	void updateRevisionNumbers();
 
 	/// Returns the status of the pipeline evaluation.
@@ -143,7 +143,7 @@ private:
 	/// The data that has been output by the modification pipeline.
 	/// This is a list of data objects and associated revision numbers
 	/// to easily detect changes.
-	QVector<VersionedOORef<SceneObject>> _objects;
+	QVector<VersionedOORef<DataObject>> _objects;
 
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;
@@ -157,6 +157,6 @@ private:
 
 }}}	// End of namespace
 
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 
 #endif // __OVITO_PIPELINE_FLOW_STATE_H

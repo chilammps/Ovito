@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SceneRoot.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/mainwin/MainWindow.h>
 

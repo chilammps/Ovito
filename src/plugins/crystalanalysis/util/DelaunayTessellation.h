@@ -36,10 +36,7 @@
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 #include <CGAL/Triangulation_cell_base_with_info_3.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * Generates a Delaunay tessellation of a particle system.
@@ -189,6 +186,6 @@ private:
 	DT _dt;
 };
 
-}; // End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_DELAUNAY_TESSELLATION_H

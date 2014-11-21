@@ -27,7 +27,7 @@
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "SmoothDislocationsModifier.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifierEditor, PropertiesEditor);
@@ -236,6 +236,4 @@ void SmoothDislocationsModifierEditor::createUI(const RolloutInsertionParameters
 	linePointIntervalUI->setMinValue(0);
 }
 
-
-};	// End of namespace
-
+}}}	// End of namespace

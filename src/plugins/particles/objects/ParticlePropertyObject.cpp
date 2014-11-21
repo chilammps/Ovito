@@ -27,13 +27,13 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, DataObject);
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticleProperty* storage)
-	: SceneObject(dataset), _storage(storage ? storage : new ParticleProperty())
+	: DataObject(dataset), _storage(storage ? storage : new ParticleProperty())
 {
 }
 
@@ -137,7 +137,7 @@ void ParticlePropertyObject::setName(const QString& newName)
 ******************************************************************************/
 void ParticlePropertyObject::saveToStream(ObjectSaveStream& stream)
 {
-	SceneObject::saveToStream(stream);
+	DataObject::saveToStream(stream);
 
 	stream.beginChunk(0x01);
 	_storage.constData()->saveToStream(stream, !saveWithScene());
@@ -149,7 +149,7 @@ void ParticlePropertyObject::saveToStream(ObjectSaveStream& stream)
 ******************************************************************************/
 void ParticlePropertyObject::loadFromStream(ObjectLoadStream& stream)
 {
-	SceneObject::loadFromStream(stream);
+	DataObject::loadFromStream(stream);
 
 	stream.expectChunk(0x01);
 	_storage->loadFromStream(stream);
@@ -162,7 +162,7 @@ void ParticlePropertyObject::loadFromStream(ObjectLoadStream& stream)
 OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Let the base class create an instance of this class.
-	OORef<ParticlePropertyObject> clone = static_object_cast<ParticlePropertyObject>(SceneObject::clone(deepCopy, cloneHelper));
+	OORef<ParticlePropertyObject> clone = static_object_cast<ParticlePropertyObject>(DataObject::clone(deepCopy, cloneHelper));
 
 	// Shallow copy storage.
 	clone->_storage = this->_storage;
@@ -176,7 +176,7 @@ OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& clone
 ******************************************************************************/
 ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, ParticleProperty::Type type)
 {
-	for(SceneObject* o : state.objects()) {
+	for(DataObject* o : state.objects()) {
 		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(particleProperty && particleProperty->type() == type)
 			return particleProperty;
@@ -190,7 +190,7 @@ ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowSt
 ******************************************************************************/
 ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, const QString& name)
 {
-	for(SceneObject* o : state.objects()) {
+	for(DataObject* o : state.objects()) {
 		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(particleProperty && particleProperty->type() == ParticleProperty::UserProperty && particleProperty->name() == name)
 			return particleProperty;
@@ -206,7 +206,7 @@ ParticlePropertyObject* ParticlePropertyReference::findInState(const PipelineFlo
 {
 	if(isNull())
 		return nullptr;
-	for(SceneObject* o : state.objects()) {
+	for(DataObject* o : state.objects()) {
 		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(prop) {
 			if((this->type() == ParticleProperty::UserProperty && prop->name() == this->name()) ||

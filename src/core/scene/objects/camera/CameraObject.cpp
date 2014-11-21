@@ -33,15 +33,9 @@
 
 namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
-using namespace Internal;
-
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, DataObject);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraObject, AbstractCameraObject);
-namespace Internal {
-	IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraDisplayObject, DisplayObject);
-	IMPLEMENT_OVITO_OBJECT(Core, CameraObjectEditor, PropertiesEditor);
-}
-SET_OVITO_OBJECT_EDITOR(CameraObject, CameraObjectEditor);
+SET_OVITO_OBJECT_EDITOR(CameraObject, Internal::CameraObjectEditor);
 DEFINE_PROPERTY_FIELD(CameraObject, _isPerspective, "IsPerspective");
 DEFINE_REFERENCE_FIELD(CameraObject, _fov, "FOV", Controller);
 DEFINE_REFERENCE_FIELD(CameraObject, _zoom, "Zoom", Controller);
@@ -50,6 +44,11 @@ SET_PROPERTY_FIELD_LABEL(CameraObject, _fov, "FOV angle");
 SET_PROPERTY_FIELD_LABEL(CameraObject, _zoom, "FOV size");
 SET_PROPERTY_FIELD_UNITS(CameraObject, _fov, AngleParameterUnit);
 SET_PROPERTY_FIELD_UNITS(CameraObject, _zoom, WorldParameterUnit);
+
+namespace Internal {
+	IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraDisplayObject, DisplayObject);
+	IMPLEMENT_OVITO_OBJECT(Core, CameraObjectEditor, PropertiesEditor);
+}
 
 /******************************************************************************
 * Constructs a camera object.
@@ -65,7 +64,7 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 	_zoom = ControllerManager::instance().createFloatController(dataset);
 	_zoom->setFloatValue(0, 200);
 
-	addDisplayObject(new CameraDisplayObject(dataset));
+	addDisplayObject(new Internal::CameraDisplayObject(dataset));
 }
 
 /******************************************************************************
@@ -73,7 +72,7 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 ******************************************************************************/
 TimeInterval CameraObject::objectValidity(TimePoint time)
 {
-	TimeInterval interval = SceneObject::objectValidity(time);
+	TimeInterval interval = DataObject::objectValidity(time);
 	if(isPerspective() && _fov) interval.intersect(_fov->validityInterval(time));
 	if(!isPerspective() && _zoom) interval.intersect(_zoom->validityInterval(time));
 	return interval;
@@ -265,8 +264,8 @@ void CameraObjectEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	// Camera type.
 	layout->addSpacing(10);
 	VariantComboBoxParameterUI* typePUI = new VariantComboBoxParameterUI(this, "isTargetCamera");
-	typePUI->comboBox()->addItem(tr("Free camera"), qVariantFromValue(false));
-	typePUI->comboBox()->addItem(tr("Target camera"), qVariantFromValue(true));
+	typePUI->comboBox()->addItem(tr("Free camera"), QVariant::fromValue(false));
+	typePUI->comboBox()->addItem(tr("Target camera"), QVariant::fromValue(true));
 	layout->addWidget(new QLabel(tr("Camera type:")));
 	layout->addWidget(typePUI->comboBox());
 }
@@ -274,7 +273,7 @@ void CameraObjectEditor::createUI(const RolloutInsertionParameters& rolloutParam
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 CameraDisplayObject::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 CameraDisplayObject::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	// This is not a physical object. It doesn't have a size.
 	return Box3(Point3::Origin(), Point3::Origin());
@@ -283,7 +282,7 @@ Box3 CameraDisplayObject::boundingBox(TimePoint time, SceneObject* sceneObject, 
 /******************************************************************************
 * Computes the view-dependent bounding box of the object.
 ******************************************************************************/
-Box3 CameraDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 CameraDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* viewport, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	TimeInterval iv;
 	Point3 cameraPos = Point3::Origin() + contextNode->getWorldTransform(time, iv).translation();
@@ -292,7 +291,7 @@ Box3 CameraDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* vie
 
 	// Add the camera cone to the bounding box.
 	if(contextNode->isSelected()) {
-		if(CameraObject* camera = dynamic_object_cast<CameraObject>(sceneObject)) {
+		if(CameraObject* camera = dynamic_object_cast<CameraObject>(dataObject)) {
 			if(camera->isPerspective()) {
 				// Determine the camera and target positions when rendering a target camera.
 				FloatType targetDistance;
@@ -323,9 +322,9 @@ Box3 CameraDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* vie
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render a camera object.
 ******************************************************************************/
-void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void CameraDisplayObject::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Camera objects are only visible in the viewports.
 	if(renderer->isInteractive() == false || renderer->viewport() == nullptr)
@@ -341,7 +340,7 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	Color color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_CAMERAS);
 
 	// Do we have to update contents of the geometry buffers?
-	bool updateContents = _geometryCacheHelper.updateState(sceneObject, color) || recreateBuffer;
+	bool updateContents = _geometryCacheHelper.updateState(dataObject, color) || recreateBuffer;
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateBuffer) {
@@ -410,7 +409,7 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	if(contextNode->isSelected()) {
 		if(RenderSettings* renderSettings = dataset()->renderSettings())
 			aspectRatio = renderSettings->outputImageAspectRatio();
-		if(CameraObject* camera = dynamic_object_cast<CameraObject>(sceneObject)) {
+		if(CameraObject* camera = dynamic_object_cast<CameraObject>(dataObject)) {
 			if(camera->isPerspective()) {
 				coneAngle = camera->fieldOfView(time, iv);
 				if(targetDistance == 0)

@@ -169,9 +169,9 @@ void Plugin::parseResourceFileReference(const QDomElement& element)
 ******************************************************************************/
 OvitoObjectType* Plugin::findClass(const QString& name) const
 {
-	for(OvitoObjectType* descriptor : classes()) {
-		if(descriptor->name() == name)
-			return descriptor;
+	for(OvitoObjectType* type : classes()) {
+		if(type->name() == name || type->nameAlias() == name)
+			return type;
 	}
 	return nullptr;
 }

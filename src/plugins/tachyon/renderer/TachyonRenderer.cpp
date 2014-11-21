@@ -185,7 +185,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	rt_trans_mode(_rtscene, RT_TRANS_VMD);
 	rt_trans_max_surfaces(_rtscene, 4);
 
-	// Export Ovito scene objects to Tachyon scene.
+	// Export Ovito data objects to Tachyon scene.
 	renderScene();
 
 	// Render visual 3D representation of the modifiers.
