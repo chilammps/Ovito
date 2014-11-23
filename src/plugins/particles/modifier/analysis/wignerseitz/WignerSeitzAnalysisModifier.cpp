@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -52,7 +52,6 @@ namespace Internal {
 * Constructs the modifier object.
 ******************************************************************************/
 WignerSeitzAnalysisModifier::WignerSeitzAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_occupancyNumbers(new ParticleProperty(0, qMetaTypeId<int>(), sizeof(int), 1, sizeof(int), tr("Occupancy"), false)),
 	_eliminateCellDeformation(false),
 	_useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1),
 	_vacancyCount(0), _interstitialCount(0)
@@ -103,7 +102,7 @@ void WignerSeitzAnalysisModifier::setReferenceSource(const QUrl& sourceUrl, cons
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> WignerSeitzAnalysisModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -131,7 +130,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifie
 		throw Exception(tr("Simulation cell is degenerate in the reference configuration."));
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<WignerSeitzAnalysisEngine>(posProperty->storage(), inputCell->data(),
+	return std::make_shared<WignerSeitzAnalysisEngine>(validityInterval, posProperty->storage(), inputCell->data(),
 			refPosProperty->storage(), refCell->data(), eliminateCellDeformation());
 }
 
@@ -186,22 +185,22 @@ PipelineFlowState WignerSeitzAnalysisModifier::getReferenceState(TimePoint time)
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::perform()
 {
-	size_t particleCount = positions()->size();
-	futureInterface.setProgressText(tr("Performing Wigner-Seitz cell analysis"));
+	setProgressText(tr("Performing Wigner-Seitz cell analysis"));
 
+	size_t particleCount = positions()->size();
 	if(refPositions()->size() == 0)
 		return;
 
 	// Prepare the closest-point query structure.
 	TreeNeighborListBuilder neighborTree(0);
-	if(!neighborTree.prepare(refPositions(), refCell()) || futureInterface.isCanceled())
+	if(!neighborTree.prepare(refPositions(), refCell()) || isCanceled())
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = occupancyNumbers();
-	futureInterface.setProgressRange(particleCount);
+	setProgressRange(particleCount);
 
 	AffineTransformation tm;
 	if(_eliminateCellDeformation)
@@ -218,9 +217,9 @@ void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::compute(FutureInter
 
 		particleIndex++;
 		if((particleIndex % 1024) == 0) {
-			if(futureInterface.isCanceled())
+			if(isCanceled())
 				return;
-			futureInterface.setProgressValue(particleIndex);
+			setProgressValue(particleIndex);
 		}
 	}
 
@@ -234,9 +233,9 @@ void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::compute(FutureInter
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void WignerSeitzAnalysisModifier::retrieveModifierResults(Engine* engine)
+void WignerSeitzAnalysisModifier::transferComputationResults(ComputeEngine* engine)
 {
 	WignerSeitzAnalysisEngine* eng = static_cast<WignerSeitzAnalysisEngine*>(engine);
 	_occupancyNumbers = eng->occupancyNumbers();
@@ -245,10 +244,14 @@ void WignerSeitzAnalysisModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus WignerSeitzAnalysisModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
+	if(!_occupancyNumbers)
+		throw Exception(tr("No computation results available."));
+
 	PipelineFlowState refState = getReferenceState(time);
 
 	QVariantMap oldAttributes = output().attributes();
@@ -264,7 +267,7 @@ PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time,
 		throw Exception(tr("This modifier cannot be evaluated, because the reference configuration does not contain any particles."));
 	_outputParticleCount = posProperty->size();
 
-	if(posProperty->size() != occupancyNumbers().size())
+	if(posProperty->size() != _occupancyNumbers->size())
 		throw Exception(tr("The number of particles in the reference configuration has changed. The stored results have become invalid."));
 
 	outputCustomProperty(_occupancyNumbers.data());
@@ -277,16 +280,14 @@ PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time,
 ******************************************************************************/
 void WignerSeitzAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute modifier results when the parameters have changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_eliminateCellDeformation)
-				|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_useReferenceFrameOffset)
-				|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameNumber)
-				|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameOffset))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute modifier results when the parameters have changed.
+	if(field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_eliminateCellDeformation)
+			|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_useReferenceFrameOffset)
+			|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameNumber)
+			|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameOffset))
+		invalidateCachedResults();
 }
 
 namespace Internal {

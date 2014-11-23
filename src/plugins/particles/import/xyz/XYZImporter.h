@@ -72,24 +72,29 @@ public:
 	/// Guesses the mapping of input file columns to internal particle properties.
 	static bool mapVariableToProperty(InputColumnMapping &columnMapping, int column, QString name, int dataType, int vec);
 
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<XYZImportTask>(dataset()->container(), frame, isNewlySelectedFile(), _columnMapping);
+	}
+
 public:
 
 	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
 
-protected:
+private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class XYZImportTask : public ParticleImportTask
+	class XYZImportTask : public ParticleFrameLoader
 	{
 	public:
 
 		/// Normal constructor.
-		XYZImportTask(const FileSourceImporter::Frame& frame, bool isNewFile, const InputColumnMapping& columnMapping)
-		  : ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _columnMapping(columnMapping), _propertiesAssigned(false) {}
+		XYZImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile, const InputColumnMapping& columnMapping)
+		  : ParticleFrameLoader(container, frame, isNewFile), _parseFileHeaderOnly(false), _columnMapping(columnMapping), _propertiesAssigned(false) {}
 
 		/// Constructor used when reading only the file header information.
-		XYZImportTask(const FileSourceImporter::Frame& frame)
-		  : ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _propertiesAssigned(false) {}
+		XYZImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame)
+		  : ParticleFrameLoader(container, frame, true), _parseFileHeaderOnly(true), _propertiesAssigned(false) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _columnMapping; }
@@ -100,7 +105,7 @@ protected:
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 
 	private:
 
@@ -119,11 +124,6 @@ protected:
 
 	/// \brief Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<XYZImportTask>(frame, isNewlySelectedFile(), _columnMapping);
-	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;

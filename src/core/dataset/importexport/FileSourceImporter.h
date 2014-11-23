@@ -26,6 +26,7 @@
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/scene/pipeline/PipelineStatus.h>
 #include <core/utilities/concurrent/Future.h>
+#include <core/utilities/concurrent/Task.h>
 
 namespace Ovito { namespace DataIO {
 
@@ -67,44 +68,43 @@ public:
 	/**
 	 * Base class for background file loaders.
 	 */
-	class FrameLoader {
+	class FrameLoader : public AsynchronousTask {
 	public:
 
 		/// Constructor.
-		FrameLoader(const Frame& frame) : _frame(frame) {}
+		FrameLoader(DataSetContainer* container, const Frame& frame) : _datasetContainer(*container), _frame(frame) {}
 
-		// Virtual base destructor.
-		virtual ~FrameLoader() = default;
-
-		/// \brief Is called in the background thread to perform the actual loading.
-		virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) = 0;
-
-		/// \brief Lets the task object insert the data it holds into the scene by
-		///        creating appropriate data objects.
-		/// \return All data objects newly inserted into the destination FileSource
-		///         or existing data objects modified by the importer. The FileSource
-		///         will discard all existing data objects which are not in this set.
-		virtual QSet<DataObject*> insertIntoScene(FileSource* destination) = 0;
+		/// Inserts the data loaded by perform() into the provided container object.
+		/// This function is called by the system from the main thread after the asynchronous loading task
+		/// has finished.
+		/// \note The provided container may contain old data. It is the method's responsibility
+		///       to remove unneeded data objects from the container so that it contains only
+		///       the newly loaded data when the function returns. Existing data objects may be
+		///       re-used to preserve certain setting if appropriate.
+		virtual void handOver(FileSource* container) = 0;
 
 		/// Returns the source file information.
 		const Frame& frame() const { return _frame; }
 
-		/// Returns the status of the import operation.
-		PipelineStatus status() const { return PipelineStatus(PipelineStatus::Success, _infoText); }
+		/// Returns the status of the load operation.
+		const PipelineStatus& status() const { return _status; }
 
-		/// Sets the informational text.
-		void setInfoText(const QString& text) { _infoText = text; }
+		/// Sets the status of the load operation.
+		void setStatus(const QString& statusText) { _status.setText(statusText); }
 
-		/// Returns the informational text.
-		const QString& infoText() const { return _infoText; }
+		/// Returns the dataset container.
+		DataSetContainer& datasetContainer() const { return _datasetContainer; }
 
 	private:
+
+		/// The dataset container.
+		DataSetContainer& _datasetContainer;
 
 		/// The source file information.
 		Frame _frame;
 
-		/// Contains information about the loaded file set by the parser.
-		QString _infoText;
+		/// Stores additional status information about the load operation.
+		PipelineStatus _status;
 	};
 
 public:
@@ -119,21 +119,21 @@ public:
 
 	//////////////////////////// Specific methods ////////////////////////////////
 
-	/// \brief Reads the data from the input file(s).
-	/// \param frame The record that specifies the frame to load.
-	/// \return A future that will give access to the loaded data.
-	virtual Future<std::shared_ptr<FrameLoader>> loadFrame(const Frame& frame);
-
 	/// This method indicates whether a wildcard pattern should be automatically generated
 	/// when the user picks a new input filename. The default implementation returns true.
 	/// Subclasses can override this method to disable generation of wildcard patterns.
 	virtual bool autoGenerateWildcardPattern() { return true; }
 
-	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
+	/// Scans the given external path (which may be a directory and a wild-card pattern,
+	/// or a single file containing multiple frames) to find all available animation frames.
 	///
-	/// The default implementation of this method checks if the source URL contains a wild-card pattern.
+	/// \param sourceUrl The source file or wild-card pattern to scan for animation frames.
+	/// \return A Future that will yield the list of discovered animation frames.
+	///
+	/// The default implementation of this method checks if the given URL contains a wild-card pattern.
 	/// If yes, it scans the directory to find all matching files.
-	virtual Future<QVector<Frame>> findFrames(const QUrl& sourceUrl) {
+	/// Subclasses can override this method to support file formats which store multiple data frames per file.
+	virtual Future<QVector<Frame>> discoverFrames(const QUrl& sourceUrl) {
 		return findWildcardMatches(sourceUrl, dataset()->container());
 	}
 
@@ -152,10 +152,10 @@ public:
 	/// Returns false if the operation has been canceled by the user.
 	virtual bool inspectNewFile(FileSource* obj) { return true; }
 
-protected:
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) = 0;
 
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) = 0;
+protected:
 
 	/// This method is called when the scene node for the FileSource is created.
 	/// It can be overwritten by importer subclasses to customize the node, add modifiers, etc.

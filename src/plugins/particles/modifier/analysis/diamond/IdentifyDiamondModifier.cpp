@@ -53,7 +53,7 @@ IdentifyDiamondModifier::IdentifyDiamondModifier(DataSet* dataset) : StructureId
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> IdentifyDiamondModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> IdentifyDiamondModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
 		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
@@ -63,19 +63,19 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> IdentifyDiamondModifier::c
 	SimulationCell* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<Engine>(posProperty->storage(), simCell->data());
+	return std::make_shared<DiamondIdentificationEngine>(validityInterval, posProperty->storage(), simCell->data());
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterface)
+void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 {
-	futureInterface.setProgressText(tr("Finding nearest neighbors"));
+	setProgressText(tr("Finding nearest neighbors"));
 
 	// Prepare the neighbor list builder.
 	TreeNeighborListBuilder neighborListBuilder(4);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
 	// This data structure stores information about a single neighbor.
@@ -87,7 +87,7 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	std::vector<std::array<NeighborInfo,4>> neighLists(positions()->size());
 
 	// Determine four nearest neighbors of each atom and store vectors in the working array.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, &neighLists](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, &neighLists](size_t index) {
 		TreeNeighborListBuilder::Locator<4> loc(neighborListBuilder);
 		loc.findNeighbors(neighborListBuilder.particlePos(index));
 		for(size_t i = 0; i < loc.results().size(); i++) {
@@ -104,8 +104,8 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	ParticleProperty* output = structures();
 
 	// Perform structure identification.
-	futureInterface.setProgressText(tr("Identifying diamond structures"));
-	parallelFor(positions()->size(), futureInterface, [&neighLists, output, this](size_t index) {
+	setProgressText(tr("Identifying diamond structures"));
+	parallelFor(positions()->size(), *this, [&neighLists, output, this](size_t index) {
 		// Mark atom as 'other' by default.
 		output->setInt(index, OTHER);
 

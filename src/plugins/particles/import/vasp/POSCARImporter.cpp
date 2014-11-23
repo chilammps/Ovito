@@ -82,9 +82,9 @@ bool POSCARImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocat
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void POSCARImporter::POSCARImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading POSCAR file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading POSCAR file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
@@ -191,7 +191,7 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 		}
 	}
 
-	setInfoText(tr("%1 atoms").arg(totalAtomCount));
+	setStatus(tr("%1 atoms").arg(totalAtomCount));
 }
 
 }}}}}	// End of namespace

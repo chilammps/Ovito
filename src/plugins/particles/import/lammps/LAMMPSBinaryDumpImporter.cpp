@@ -22,7 +22,6 @@
 #include <plugins/particles/Particles.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
@@ -122,15 +121,9 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(FileSource* obj)
 		return true;
 
 	// Start task that inspects the file header to determine the number of data columns.
-	std::unique_ptr<LAMMPSBinaryDumpImportTask> inspectionTask(new LAMMPSBinaryDumpImportTask(obj->frames().front()));
-	DataSetContainer& datasetContainer = *dataset()->container();
-	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&LAMMPSBinaryDumpImportTask::load,
-			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
-	if(!datasetContainer.taskManager().waitForTask(future))
+	std::shared_ptr<LAMMPSBinaryDumpImportTask> inspectionTask = std::make_shared<LAMMPSBinaryDumpImportTask>(dataset()->container(), obj->frames().front());
+	if(!dataset()->container()->taskManager().runTask(inspectionTask))
 		return false;
-
-	// This is to throw an exception if an error has occurred.
-	future.result();
 
 	InputColumnMapping mapping(_columnMapping);
 	mapping.resize(inspectionTask->columnMapping().size());
@@ -156,7 +149,7 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(FileSource* obj)
 			mapping.resize(inspectionTask->columnMapping().size());
 		}
 
-		InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
+		InputColumnMappingDialog dialog(mapping, dataset()->mainWindow());
 		if(dialog.exec() == QDialog::Accepted) {
 			setColumnMapping(dialog.mapping());
 			return true;
@@ -306,9 +299,9 @@ bool LAMMPSBinaryDumpHeader::parse(QIODevice& input)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading binary LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading binary LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// First close text stream so we can re-open it in binary mode.
 	QIODevice& file = stream.device();
@@ -333,7 +326,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 		return;
 	}
 
-	futureInterface.setProgressRange(header.natoms);
+	setProgressRange(header.natoms);
 
 	// LAMMPS only stores the outer bounding box of the simulation cell in the dump file.
 	// We have to determine the size of the actual triclinic cell.
@@ -374,11 +367,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 			for(int nChunkAtoms = n / header.size_one; nChunkAtoms--; ++i, iter += header.size_one) {
 
 				// Update progress indicator.
-				if((i % 4096) == 0) {
-					if(futureInterface.isCanceled())
-						return;
-					futureInterface.setProgressValue(i);
-				}
+				if(!reportProgress(i)) return;
 
 				try {
 					columnParser.readParticle(i, iter, header.size_one);
@@ -413,7 +402,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 		}
 	}
 
-	setInfoText(tr("%1 particles at timestep %2").arg(header.natoms).arg(header.ntimestep));
+	setStatus(tr("%1 particles at timestep %2").arg(header.natoms).arg(header.ntimestep));
 }
 
 /******************************************************************************

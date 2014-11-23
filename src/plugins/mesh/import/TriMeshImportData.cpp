@@ -31,13 +31,13 @@ namespace Mesh {
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void TriMeshImportData::load(DataSetContainer& container, FutureInterfaceBase& futureInterface)
+void TriMeshImportData::perform()
 {
-	futureInterface.setProgressText(QString("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(QString("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(container, frame().sourceFile);
-	if(!futureInterface.waitForSubTask(fetchFileFuture))
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(datasetContainer(), frame().sourceFile);
+	if(!waitForSubTask(fetchFileFuture))
 		return;
 
 	// Open file for reading.
@@ -49,29 +49,30 @@ void TriMeshImportData::load(DataSetContainer& container, FutureInterfaceBase& f
 		stream.seek(frame().byteOffset);
 
 	// Parse file.
-	parseFile(futureInterface, stream);
+	parseFile(stream);
 }
 
 /******************************************************************************
-* Lets the data container insert the data it holds into the scene by creating
-* appropriate data objects.
+* Inserts the data loaded by perform() into the provided container object.
+* This function is called by the system from the main thread after the
+* asynchronous loading task has finished.
 ******************************************************************************/
-QSet<DataObject*> TriMeshImportData::insertIntoScene(FileSource* destination)
+void TriMeshImportData::handOver(FileSource* container)
 {
-	OORef<TriMeshObject> triMeshObj = destination->findDataObject<TriMeshObject>();
+	OORef<TriMeshObject> triMeshObj = container->findDataObject<TriMeshObject>();
 	if(!triMeshObj) {
-		triMeshObj = new TriMeshObject(destination->dataset());
+		triMeshObj = new TriMeshObject(container->dataset());
 
 		// Create a display object for the data object.
-		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay(destination->dataset());
+		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay(container->dataset());
 		triMeshObj->addDisplayObject(triMeshDisplay);
 
-		destination->addDataObject(triMeshObj);
+		container->addDataObject(triMeshObj);
 	}
 	triMeshObj->mesh() = mesh();
 	triMeshObj->notifyDependents(ReferenceEvent::TargetChanged);
 
-	return { triMeshObj };
+	container->removeInactiveObjects({ triMeshObj });
 }
 
 };

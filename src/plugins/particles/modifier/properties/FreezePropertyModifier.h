@@ -37,9 +37,6 @@ public:
 	/// Constructor.
 	Q_INVOKABLE FreezePropertyModifier(DataSet* dataset);
 
-	/// This virtual method is called by the modification system when the modifier is being inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
-
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
@@ -59,6 +56,9 @@ public:
 	void takePropertySnapshot(ModifierApplication* modApp, const PipelineFlowState& state);
 
 protected:
+
+	/// This virtual method is called by the modification system when the modifier is being inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

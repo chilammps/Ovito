@@ -44,9 +44,6 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ScatterPlotModifier(DataSet* dataset);
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
-
 	/// Sets the source particle property for which the scatter plot should be computed.
 	void setXAxisProperty(const ParticlePropertyReference& prop) { _xAxisProperty = prop; }
 
@@ -123,6 +120,9 @@ protected:
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 private:
 

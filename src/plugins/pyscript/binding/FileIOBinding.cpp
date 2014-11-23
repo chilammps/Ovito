@@ -97,7 +97,7 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 		.def("exportToFile", &FileExporter::exportToFile, FileExporter_exportToFile_overloads())
 	;
 
-	ovito_class<FileSource, DataObject>(
+	ovito_class<FileSource, CompoundObject>(
 			"A data source for a modification pipeline that reads the input data from external files."
 			"\n\n"
 			"You normally do not create an instance of this class yourself. "
@@ -150,7 +150,6 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"        print \"Structure %s contains %i FCC atoms.\" % (file, cna.counts[\"FCC\"])\n")
 		.add_property("importer", make_function(&FileSource::importer, return_value_policy<ovito_object_reference>()))
 		.add_property("source_path", make_function(&FileSource::sourceUrl, return_value_policy<copy_const_reference>()))
-		.add_property("status", &FileSource::status)
 		.add_property("num_frames", &FileSource::numberOfFrames,
 				"The number of frames the loaded file or file sequence contains (read-only).")
 		.add_property("loaded_frame", &FileSource::loadedFrameIndex,
@@ -167,13 +166,11 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 				"OVITO simultaneously, but their frame counts do not match. "
 				"\n\n"
 				":Default: ``True``\n")
-		.add_property("dataObjects", make_function(&FileSource::dataObjects, return_internal_reference<>()))
 		.def("refreshFromSource", &FileSource::refreshFromSource)
 		.def("updateFrames", &FileSource::updateFrames)
 		.def("animationTimeToInputFrame", &FileSource::animationTimeToInputFrame)
 		.def("inputFrameToAnimationTime", &FileSource::inputFrameToAnimationTime)
 		.def("adjustAnimationInterval", &FileSource::adjustAnimationInterval)
-		.def("addDataObject", &FileSource::addDataObject)
 		.def("setSource", (bool (FileSource::*)(const QUrl&, const OvitoObjectType*))&FileSource::setSource)
 		.def("setSource", (bool (FileSource::*)(QUrl, FileSourceImporter*, bool))&FileSource::setSource)
 	;

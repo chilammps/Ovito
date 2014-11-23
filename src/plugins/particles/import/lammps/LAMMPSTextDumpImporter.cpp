@@ -22,7 +22,6 @@
 #include <plugins/particles/Particles.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
@@ -156,9 +155,9 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
@@ -185,7 +184,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid number of atoms in line %1:\n%2").arg(stream.lineNumber()).arg(stream.lineString()));
 
 				numParticles = u;
-				futureInterface.setProgressRange(u);
+				setProgressRange(u);
 				break;
 			}
 			else if(stream.lineStartsWith("ITEM: BOX BOUNDS xy xz yz")) {
@@ -275,11 +274,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				int lineNumber = stream.lineNumber() + 1;
 				try {
 					for(size_t i = 0; i < numParticles; i++, lineNumber++) {
-						if((i % 4096) == 0) {
-							if(futureInterface.isCanceled())
-								return;
-							futureInterface.setProgressValue((int)i);
-						}
+						if(!reportProgress(i)) return;
 						if(!s)
 							columnParser.readParticle(i, stream.readLine());
 						else
@@ -333,7 +328,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 					}
 				}
 
-				setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
+				setStatus(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
 				return;	// Done!
 			}
 			else {
@@ -457,17 +452,11 @@ void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 	if(!obj) return;
 
-	// Start task that inspects the file header to determine the number of data columns.
-	std::unique_ptr<LAMMPSTextDumpImportTask> inspectionTask(new LAMMPSTextDumpImportTask(obj->frames().front()));
-	DataSetContainer& datasetContainer = *dataset()->container();
-	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&LAMMPSTextDumpImportTask::load,
-			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
-	if(!datasetContainer.taskManager().waitForTask(future))
-		return;
-
+	// Inspect the file header to determine the number of data columns.
+	std::shared_ptr<LAMMPSTextDumpImportTask> inspectionTask = std::make_shared<LAMMPSTextDumpImportTask>(dataset()->container(), obj->frames().front());
 	try {
-		// This is to detect if an error has occurred.
-		future.result();
+		if(!dataset()->container()->taskManager().runTask(inspectionTask))
+			return;
 	}
 	catch(const Exception& ex) {
 		ex.showError();

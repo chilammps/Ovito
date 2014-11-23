@@ -62,15 +62,6 @@ public:
 	///         modifier's input object.
 	virtual TimeInterval modifierValidity(TimePoint time);
 
-	/// \brief Informs the modifier that its input has changed.
-	/// \param modApp The application of this modifier in a geometry pipeline.
-	////
-	/// This method is called by the system when an item in the modification pipeline located before this
-	/// modifier has changed. This allows the modifier to clear its internal caches.
-	///
-	/// The default implementation does nothing.
-	virtual void inputDataChanged(ModifierApplication* modApp) {}
-
 	/// \brief Returns a structure that describes the current status of the modifier.
 	///
 	/// The default implementation of this method returns PipelineStatus::StatusType::Success.
@@ -130,11 +121,6 @@ public:
 	/// This method can be used to work with the input object outside of a normal call to modifyObject().
 	PipelineFlowState getModifierInput() const;
 
-	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	/// \param pipeline The PipelineObject into which the modifier has been inserted.
-	/// \param modApp The ModifierApplication object that has been created for this modifier.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
-
 	/// \brief Returns whether this modifier is currently enabled.
 	/// \return \c true if it is currently enabled, i.e. applied.
 	///         \c false if it is disabled and skipped in the geometry pipeline.
@@ -156,6 +142,23 @@ public:
 	/// This method is used to filter the list of available modifiers. The default implementation returns false.
 	virtual bool isApplicableTo(const PipelineFlowState& input) { return false; }
 
+protected:
+
+	/// \brief This method is called by the system when the modifier has been inserted into a PipelineObject.
+	/// \param pipeline The PipelineObject into which the modifier has been inserted.
+	/// \param modApp The ModifierApplication object that has been created for this modifier.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
+
+	/// \brief Informs the modifier that its input has changed.
+	/// \param modApp The application of this modifier in the modification pipeline.
+	////
+	/// This method is called by the system when the upstream modification pipeline has changed.
+	/// This allows the modifier to throw away any cached results so that a re-computation is triggered the
+	/// next time the modification pipeline is evaluated.
+	///
+	/// The default implementation does nothing.
+	virtual void upstreamPipelineChanged(ModifierApplication* modApp) {}
+
 private:
 
 	/// Flag that indicates whether the modifier is enabled.
@@ -165,6 +168,8 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_isEnabled);
+
+	friend class PipelineObject;
 };
 
 }}}	// End of namespace

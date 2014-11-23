@@ -41,7 +41,6 @@
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
@@ -290,9 +289,9 @@ void NetCDFImporter::NetCDFImportTask::detectDims(int movieFrame, int particleCo
 /******************************************************************************
 * Parses the given input file and stores the data in this container object.
 ******************************************************************************/
-void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading NetCDF file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading NetCDF file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// First close text stream so we can re-open it in binary mode.
 	QFileDevice& file = stream.device();
@@ -387,7 +386,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
 
 	// Report to user.
-	futureInterface.setProgressRange(columnMapping.size());
+	setProgressRange(columnMapping.size());
 
     // Now iterate over all variables and see if we have to reduce particleCount
     // We use the only float properties for this because at least one must be present (coordinates)
@@ -426,11 +425,11 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 	// Now iterate over all variables and load the appropriate frame
 	for (const InputColumnInfo& column : columnMapping) {
-		if(futureInterface.isCanceled()) {
+		if(isCanceled()) {
 			closeNetCDF();
 			return;
 		}
-		futureInterface.incrementProgressValue();
+		incrementProgressValue();
 		
 		ParticleProperty* property = nullptr;
 
@@ -663,7 +662,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 		}
 	}
 
-	setInfoText(tr("%1 particles").arg(particleCount));
+	setStatus(tr("%1 particles").arg(particleCount));
 }
 
 /******************************************************************************
@@ -748,16 +747,10 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	if(!obj) return;
 
 	// Start task that inspects the file header to determine the number of data columns.
-	std::unique_ptr<NetCDFImportTask> inspectionTask(new NetCDFImportTask(obj->frames().front()));
-	DataSetContainer& datasetContainer = *dataset()->container();	
-	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&NetCDFImportTask::load,
-			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
-	if(!datasetContainer.taskManager().waitForTask(future))
-		return;
-
+	std::shared_ptr<NetCDFImportTask> inspectionTask = std::make_shared<NetCDFImportTask>(dataset()->container(), obj->frames().front());
 	try {
-		// This is to detect if an error has occurred.
-		future.result();
+		if(!dataset()->container()->taskManager().runTask(inspectionTask))
+			return;
 	}
 	catch(const Exception& ex) {
 		ex.showError();

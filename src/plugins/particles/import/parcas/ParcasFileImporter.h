@@ -52,28 +52,27 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Parcas"); }
 
-protected:
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<ParcasFileImportTask>(dataset()->container(), frame, isNewlySelectedFile());
+	}
+
+private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class ParcasFileImportTask : public ParticleImportTask
+	class ParcasFileImportTask : public ParticleFrameLoader
 	{
 	public:
 
 		/// Normal constructor.
-		ParcasFileImportTask(const FileSourceImporter::Frame& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
+		ParcasFileImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile)
+			: ParticleFrameLoader(container, frame, isNewFile) {}
 
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 	};
-
-protected:
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<ParcasFileImportTask>(frame, isNewlySelectedFile());
-	}
 
 	Q_OBJECT
 	OVITO_OBJECT

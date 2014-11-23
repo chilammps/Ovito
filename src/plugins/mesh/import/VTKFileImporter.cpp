@@ -48,9 +48,9 @@ bool VTKFileImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLoca
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void VTKFileImporter::VTKFileImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading VTK file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading VTK file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Read first line.
 	stream.readLine(256);
@@ -130,7 +130,7 @@ void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureIn
 	}
 	mesh().invalidateFaces();
 
-	setInfoText(tr("%1 vertices, %2 triangles").arg(pointCount).arg(cellCount));
+	setStatus(tr("%1 vertices, %2 triangles").arg(pointCount).arg(cellCount));
 }
 
 };

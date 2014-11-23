@@ -53,9 +53,9 @@ bool PDBImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void PDBImporter::PDBImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading PDB file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading PDB file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Read header line.
 	stream.readLine();
@@ -109,7 +109,7 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 	}
 
-	futureInterface.setProgressRange(numAtoms);
+	setProgressRange(numAtoms);
 
 	// Jump back to beginning of file.
 	stream.seek(0);
@@ -153,7 +153,7 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 	}
 
-	setInfoText(tr("Number of particles: %1").arg(numAtoms));
+	setStatus(tr("Number of particles: %1").arg(numAtoms));
 }
 
 }}}}}	// End of namespace

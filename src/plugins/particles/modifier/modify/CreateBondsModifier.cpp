@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -35,11 +35,9 @@ SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, Internal::CreateBondsModifierEditor
 DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoffMode, "CutoffMode");
 DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _uniformCutoff, "UniformCutoff", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsObj, "BondsObject", BondsObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoffMode, "Cutoff mode");
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _uniformCutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsDisplay, "Bonds display");
-SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsObj, "Bonds");
 SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _uniformCutoff, WorldParameterUnit);
 
 namespace Internal {
@@ -55,15 +53,9 @@ CreateBondsModifier::CreateBondsModifier(DataSet* dataset) : AsynchronousParticl
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_cutoffMode);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay);
-	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsObj);
-
-	// Create the output object.
-	_bondsObj = new BondsObject(dataset);
-	_bondsObj->setSaveWithScene(storeResultsWithScene());
 
 	// Create the display object for bonds rendering and assign it to the data object.
 	_bondsDisplay = new BondsDisplay(dataset);
-	_bondsObj->addDisplayObject(_bondsDisplay);
 }
 
 /******************************************************************************
@@ -71,19 +63,11 @@ CreateBondsModifier::CreateBondsModifier(DataSet* dataset) : AsynchronousParticl
 ******************************************************************************/
 void CreateBondsModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute results when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff) || field == PROPERTY_FIELD(CreateBondsModifier::_cutoffMode))
-			invalidateCachedResults();
-	}
-
-	// Adopt "Save with scene" flag.
-	if(field == PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults)) {
-		if(bondsObject())
-			bondsObject()->setSaveWithScene(storeResultsWithScene());
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute results when the parameters have been changed.
+	if(field == PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff) || field == PROPERTY_FIELD(CreateBondsModifier::_cutoffMode))
+		invalidateCachedResults();
 }
 
 /******************************************************************************
@@ -97,9 +81,7 @@ void CreateBondsModifier::setPairCutoffs(const PairCutoffsList& pairCutoffs)
 
 	_pairCutoffs = pairCutoffs;
 
-	if(autoUpdateEnabled())
-		invalidateCachedResults();
-
+	invalidateCachedResults();
 	notifyDependents(ReferenceEvent::TargetChanged);
 }
 
@@ -143,8 +125,8 @@ OORef<RefTarget> CreateBondsModifier::clone(bool deepCopy, CloneHelper& cloneHel
 ******************************************************************************/
 bool CreateBondsModifier::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	// Do not propagate messages from the attached output and display objects.
-	if(source == _bondsDisplay || source == _bondsObj)
+	// Do not propagate messages from the attached display object.
+	if(source == _bondsDisplay)
 		return false;
 
 	return AsynchronousParticleModifier::referenceEvent(source, event);
@@ -158,14 +140,13 @@ void CreateBondsModifier::invalidateCachedResults()
 	AsynchronousParticleModifier::invalidateCachedResults();
 
 	// Reset all bonds when the input has changed.
-	if(bondsObject())
-		bondsObject()->clear();
+	_bonds.reset();
 }
 
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> CreateBondsModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CreateBondsModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -195,16 +176,17 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CreateBondsModifier::creat
 	}
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<BondGenerationEngine>(posProperty->storage(), typeProperty ? typeProperty->storage() : nullptr,
-			simCell->data(), cutoffMode(), uniformCutoff(), std::move(pairCutoffTable));
+	return std::make_shared<BondsEngine>(validityInterval, posProperty->storage(),
+			typeProperty ? typeProperty->storage() : nullptr, simCell->data(), cutoffMode(),
+			uniformCutoff(), std::move(pairCutoffTable));
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& futureInterface)
+void CreateBondsModifier::BondsEngine::perform()
 {
-	futureInterface.setProgressText(tr("Generating bonds"));
+	setProgressText(tr("Generating bonds"));
 
 	// Determine maximum cutoff.
 	FloatType maxCutoff = _uniformCutoff;
@@ -217,12 +199,12 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 
 	// Prepare the neighbor list.
 	OnTheFlyNeighborListBuilder neighborListBuilder(maxCutoff);
-	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || isCanceled())
 		return;
 
 	// Generate (half) bonds.
 	size_t particleCount = _positions->size();
-	futureInterface.setProgressRange(particleCount);
+	setProgressRange(particleCount);
 	if(!_particleTypes) {
 		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
 			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
@@ -230,8 +212,8 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 			}
 			// Update progress indicator.
 			if((particleIndex % 4096) == 0) {
-				futureInterface.setProgressValue(particleIndex);
-				if(futureInterface.isCanceled())
+				setProgressValue(particleIndex);
+				if(isCanceled())
 					return;
 			}
 		}
@@ -248,42 +230,46 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 			}
 			// Update progress indicator.
 			if((particleIndex % 4096) == 0) {
-				futureInterface.setProgressValue(particleIndex);
-				if(futureInterface.isCanceled())
+				setProgressValue(particleIndex);
+				if(isCanceled())
 					return;
 			}
 		}
 	}
-	futureInterface.setProgressValue(particleCount);
+	setProgressValue(particleCount);
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void CreateBondsModifier::retrieveModifierResults(Engine* engine)
+void CreateBondsModifier::transferComputationResults(ComputeEngine* engine)
 {
-	BondGenerationEngine* eng = static_cast<BondGenerationEngine*>(engine);
-	if(eng->bonds() && bondsObject()) {
-		bondsObject()->setStorage(eng->bonds());
-	}
+	_bonds = static_cast<BondsEngine*>(engine)->bonds();
 }
 
 /******************************************************************************
-* This lets the modifier insert the previously computed results into the pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CreateBondsModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	// Insert output object into pipeline.
-	size_t bondsCount = 0;
-	if(bondsObject()) {
-		output().addObject(bondsObject());
-		bondsCount = bondsObject()->bonds().size();
+	if(!_bonds)
+		throw Exception(tr("No computation results available."));
 
-		// If there are too many bonds, we better turn off bond sdisplay to prevent the program from freezing.
-		if(bondsCount > 1000000 && bondsDisplay()) {
-			bondsDisplay()->setEnabled(false);
-			return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
-		}
+	size_t bondsCount = _bonds->bonds().size();
+
+	// Create the output data object.
+	OORef<BondsObject> bondsObj(new BondsObject(dataset()));
+	bondsObj->setStorage(_bonds.data());
+	bondsObj->addDisplayObject(_bondsDisplay);
+
+	// Insert output object into the pipeline.
+	output().addObject(bondsObj);
+
+	// If the number of bonds is unusually high, we better turn off bonds display to prevent the program from freezing.
+	if(bondsCount > 1000000) {
+		bondsDisplay()->setEnabled(false);
+		return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
 	}
 
 	return PipelineStatus(PipelineStatus::Success, tr("Created %1 bonds.").arg(bondsCount));

@@ -30,10 +30,6 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
-namespace Internal {
-	IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
-}
-
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, Internal::AmbientOcclusionModifierEditor);
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity");
@@ -44,13 +40,16 @@ SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of ex
 SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution");
 SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit);
 
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
+}
+
 enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 AmbientOcclusionModifier::AmbientOcclusionModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_brightnessValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), tr("Brightness"), true)),
 	_intensity(0.7f), _samplingCount(20), _bufferResolution(3)
 {
 	INIT_PROPERTY_FIELD(AmbientOcclusionModifier::_intensity);
@@ -61,7 +60,7 @@ AmbientOcclusionModifier::AmbientOcclusionModifier(DataSet* dataset) : Asynchron
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> AmbientOcclusionModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	if(Application::instance().headlessMode())
 		throw Exception(tr("Ambient occlusion modifier requires OpenGL support and cannot be used when program is running in headless mode. "
@@ -86,15 +85,15 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 
 	TimeInterval interval;
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<AmbientOcclusionEngine>(resolution, samplingCount(), posProperty->storage(), boundingBox, inputParticleRadii(time, interval));
+	return std::make_shared<AmbientOcclusionEngine>(validityInterval, resolution, samplingCount(), posProperty->storage(), boundingBox, inputParticleRadii(time, interval));
 }
 
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBase& futureInterface)
+void AmbientOcclusionModifier::AmbientOcclusionEngine::perform()
 {
-	futureInterface.setProgressText(tr("Computing ambient occlusion"));
+	setProgressText(tr("Computing ambient occlusion"));
 
 	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
 	OORef<DataSet> dataset(new DataSet());
@@ -108,9 +107,9 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 		// The buffered particle geometry used to render the particles.
 		std::shared_ptr<ParticlePrimitive> particleBuffer;
 
-		futureInterface.setProgressRange(_samplingCount);
-		for(int sample = 0; sample < _samplingCount && !futureInterface.isCanceled(); sample++) {
-			futureInterface.setProgressValue(sample);
+		setProgressRange(_samplingCount);
+		for(int sample = 0; sample < _samplingCount && !isCanceled(); sample++) {
+			setProgressValue(sample);
 
 			// Generate lighting direction on unit sphere.
 			FloatType y = (FloatType)sample * 2 / _samplingCount - FloatType(1) + FloatType(1) / _samplingCount;
@@ -182,8 +181,8 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 	}
 	renderer->endRender();
 
-	if(!futureInterface.isCanceled()) {
-		futureInterface.setProgressValue(_samplingCount);
+	if(!isCanceled()) {
+		setProgressValue(_samplingCount);
 		// Normalize brightness values.
 		FloatType maxBrightness = *std::max_element(brightness()->constDataFloat(), brightness()->constDataFloat() + brightness()->size());
 		if(maxBrightness != 0) {
@@ -195,21 +194,23 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void AmbientOcclusionModifier::retrieveModifierResults(Engine* engine)
+void AmbientOcclusionModifier::transferComputationResults(ComputeEngine* engine)
 {
-	AmbientOcclusionEngine* eng = static_cast<AmbientOcclusionEngine*>(engine);
-	if(eng->brightness())
-		_brightnessValues = eng->brightness();
+	_brightnessValues = static_cast<AmbientOcclusionEngine*>(engine)->brightness();
 }
 
 /******************************************************************************
-* This lets the modifier insert the previously computed results into the pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AmbientOcclusionModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() != brightnessValues().size())
+	if(!_brightnessValues)
+		throw Exception(tr("No computation results available."));
+
+	if(inputParticleCount() != _brightnessValues->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	// Get effect intensity.
@@ -217,11 +218,11 @@ PipelineStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, Ti
 
 	// Get output property object.
 	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
-	OVITO_ASSERT(colorProperty->size() == brightnessValues().size());
+	OVITO_ASSERT(colorProperty->size() == _brightnessValues->size());
 
 	std::vector<Color> existingColors = inputParticleColors(time, validityInterval);
 	OVITO_ASSERT(colorProperty->size() == existingColors.size());
-	const FloatType* b = brightnessValues().constDataFloat();
+	const FloatType* b = _brightnessValues->constDataFloat();
 	Color* c = colorProperty->dataColor();
 	Color* c_end = c + colorProperty->size();
 	auto c_in = existingColors.cbegin();
@@ -242,14 +243,12 @@ PipelineStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, Ti
 ******************************************************************************/
 void AmbientOcclusionModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute brightness values when the AO parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(AmbientOcclusionModifier::_samplingCount) ||
-			field == PROPERTY_FIELD(AmbientOcclusionModifier::_bufferResolution))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute brightness values when the AO parameters have been changed.
+	if(field == PROPERTY_FIELD(AmbientOcclusionModifier::_samplingCount) ||
+		field == PROPERTY_FIELD(AmbientOcclusionModifier::_bufferResolution))
+		invalidateCachedResults();
 }
 
 namespace Internal {

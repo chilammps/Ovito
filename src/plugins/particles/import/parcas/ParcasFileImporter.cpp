@@ -121,9 +121,9 @@ bool ParcasFileImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceL
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& textStream)
+void ParcasFileImporter::ParcasFileImportTask::parseFile(CompressedTextReader& textStream)
 {
-	futureInterface.setProgressText(tr("Reading Parcas file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading Parcas file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// First close text stream so we can re-open it in binary mode.
 	QIODevice& file = textStream.device();
@@ -251,7 +251,7 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
     	throw Exception(tr("PARCAS file parsing error: Seek error: %1").arg(file.errorString()));
 
     int numAtoms = (int)natoms;
-	futureInterface.setProgressRange(numAtoms);
+	setProgressRange(numAtoms);
 
 	// Create the required standard properties.
 	ParticleProperty* posProperty = new ParticleProperty(natoms, ParticleProperty::PositionProperty, 0, true);
@@ -296,15 +296,11 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
 		}
 
 		// Update progress indicator.
-		if((i % 4096) == 0) {
-			if(futureInterface.isCanceled())
-				return;	// Abort!
-			futureInterface.setProgressValue(i);
-		}
+		if(!reportProgress(i)) return;
 	}
 
 	setTimestep(frame_num);
-	setInfoText(tr("%1 atoms at simulation time %2").arg(numAtoms).arg(simu_time));
+	setStatus(tr("%1 atoms at simulation time %2").arg(numAtoms).arg(simu_time));
 }
 
 }}}}}	// End of namespace

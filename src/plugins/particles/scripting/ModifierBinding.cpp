@@ -75,8 +75,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_abstract_class<AsynchronousParticleModifier, ParticleModifier>()
-		.add_property("auto_update", &AsynchronousParticleModifier::autoUpdateEnabled, &AsynchronousParticleModifier::setAutoUpdateEnabled)
-		.add_property("store_results", &AsynchronousParticleModifier::storeResultsWithScene, &AsynchronousParticleModifier::setStoreResultsWithScene)
 	;
 
 	ovito_class<AssignColorModifier, ParticleModifier>(
@@ -597,7 +595,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					":Default: 3.2\n")
 			.add_property("bonds_display", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()),
 					"A :py:class:`~ovito.vis.BondsDisplay` instance controlling the visual appearance of the bonds created by this modifier.")
-			.add_property("bondsObject", make_function(&CreateBondsModifier::bondsObject, return_value_policy<ovito_object_reference>()))
 		;
 
 		enum_<CreateBondsModifier::CutoffMode>("CutoffMode")

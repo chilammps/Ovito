@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -32,9 +32,7 @@ SET_PROPERTY_FIELD_LABEL(StructureIdentificationModifier, _structureTypes, "Stru
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-StructureIdentificationModifier::StructureIdentificationModifier(DataSet* dataset) :
-	AsynchronousParticleModifier(dataset),
-	_structureProperty(new ParticleProperty(0, ParticleProperty::StructureTypeProperty, 0, true))
+StructureIdentificationModifier::StructureIdentificationModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset)
 {
 	INIT_PROPERTY_FIELD(StructureIdentificationModifier::_structureTypes);
 }
@@ -57,8 +55,8 @@ void StructureIdentificationModifier::createStructureType(int id, const QString&
 void StructureIdentificationModifier::saveToStream(ObjectSaveStream& stream)
 {
 	AsynchronousParticleModifier::saveToStream(stream);
-	stream.beginChunk(0x01);
-	_structureProperty.constData()->saveToStream(stream, !storeResultsWithScene());
+	stream.beginChunk(0x02);
+	// For future use.
 	stream.endChunk();
 }
 
@@ -68,31 +66,32 @@ void StructureIdentificationModifier::saveToStream(ObjectSaveStream& stream)
 void StructureIdentificationModifier::loadFromStream(ObjectLoadStream& stream)
 {
 	AsynchronousParticleModifier::loadFromStream(stream);
-	stream.expectChunk(0x01);
-	_structureProperty.data()->loadFromStream(stream);
+	stream.expectChunkRange(0, 2);
+	// For future use.
 	stream.closeChunk();
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void StructureIdentificationModifier::retrieveModifierResults(Engine* engine)
+void StructureIdentificationModifier::transferComputationResults(ComputeEngine* engine)
 {
-	StructureIdentificationEngine* eng = static_cast<StructureIdentificationEngine*>(engine);
-	if(eng->structures())
-		_structureProperty = eng->structures();
+	_structureData = static_cast<StructureIdentificationEngine*>(engine)->structures();
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the modification pipeline.
 ******************************************************************************/
-PipelineStatus StructureIdentificationModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus StructureIdentificationModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() != particleStructures().size())
+	if(!_structureData)
+		throw Exception(tr("No computation results available."));
+
+	if(inputParticleCount() != _structureData->size())
 		throw Exception(tr("The number of input particles has changed. The stored analysis results have become invalid."));
 
 	// Create output property object.
-	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(_structureProperty.data()));
+	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(_structureData.data()));
 
 	// Insert structure types into output property.
 	structureProperty->setParticleTypes(structureTypes());
@@ -112,8 +111,7 @@ PipelineStatus StructureIdentificationModifier::applyModifierResults(TimePoint t
 
 	// Assign colors to particles based on their structure type.
 	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
-	OVITO_ASSERT(colorProperty->size() == particleStructures().size());
-	const int* s = particleStructures().constDataInt();
+	const int* s = structureProperty->constDataInt();
 	for(Color& c : colorProperty->colorRange()) {
 		OVITO_ASSERT(*s >= 0 && *s < structureTypeColors.size());
 		c = structureTypeColors[*s];

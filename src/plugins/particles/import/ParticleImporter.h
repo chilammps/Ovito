@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/FileSourceImporter.h>
 #include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include "ParticleImportTask.h"
+#include "ParticleFrameLoader.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 
@@ -48,8 +48,12 @@ public:
 	/// \brief Tells the importer that the input file contains multiple timesteps.
 	void setMultiTimestepFile(bool enable) { _isMultiTimestepFile = enable; }
 
-	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
-	virtual Future<QVector<FileSourceImporter::Frame>> findFrames(const QUrl& sourceUrl) override;
+	/// Scans the given external path (which may be a directory and a wild-card pattern,
+	/// or a single file containing multiple frames) to find all available animation frames.
+	///
+	/// \param sourceUrl The source file or wild-card pattern to scan for animation frames.
+	/// \return A Future that will yield the list of discovered animation frames.
+	virtual Future<QVector<FileSourceImporter::Frame>> discoverFrames(const QUrl& sourceUrl) override;
 
 	/// This method indicates whether a wildcard pattern should be automatically generated
 	/// when the user picks a new input filename.
@@ -67,9 +71,6 @@ protected:
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream);
 
-	/// Retrieves the given file in the background and scans it for simulation timesteps.
-	virtual QVector<FileSourceImporter::Frame> scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl);
-
 	/// Indicates whether the file currently being loaded has been newly selected by the user.
 	/// This method should only be called from an implementation of the createImportTask() virtual method.
 	bool isNewlySelectedFile() {
@@ -81,6 +82,9 @@ protected:
 	}
 
 private:
+
+	/// Retrieves the given file in the background and scans it for simulation timesteps.
+	QVector<FileSourceImporter::Frame> discoverFramesInFile(const QUrl sourceUrl, FutureInterfaceBase& futureInterface);
 
 	/// Indicates that the input file contains multiple timesteps.
 	PropertyField<bool> _isMultiTimestepFile;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -23,7 +23,7 @@
 #define __OVITO_ASYNC_PARTICLE_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/utilities/concurrent/Future.h>
+#include <core/utilities/concurrent/Task.h>
 #include <plugins/particles/modifier/ParticleModifier.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
@@ -35,45 +35,38 @@ class OVITO_PARTICLES_EXPORT AsynchronousParticleModifier : public ParticleModif
 {
 public:
 
-	/// Base class that computes the modifier's results.
-	class Engine
+	/**
+	 * Abstract base class for compute engines of AsynchronousParticleModifier implementations.
+	 */
+	class ComputeEngine : public AsynchronousTask
 	{
 	public:
 
-		/// Destructor of virtual class.
-		virtual ~Engine() {}
+		/// Constructs a new compute engine.
+		ComputeEngine(const TimeInterval& validityInterval) : _validityInterval(validityInterval) {}
 
-		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) = 0;
+		/// Returns the validity period of the results computed by this engine.
+		const TimeInterval& validityInterval() const { return _validityInterval; }
+
+		/// Changes the stored validity period of the results computed by this engine.
+		void setValidityInterval(const TimeInterval& iv) { _validityInterval = iv; }
+
+	private:
+
+		/// The validity period of the results computed by this engine.
+		TimeInterval _validityInterval;
 	};
-
-public:
 
 	/// Constructor.
 	AsynchronousParticleModifier(DataSet* dataset);
 
-	/// This method is called by the system when an item in the modification pipeline located before this modifier has changed.
-	virtual void inputDataChanged(ModifierApplication* modApp) override;
+	/// Cancels the current computation if there is a running computation engine.
+	void stopRunningEngine();
 
-	/// Returns whether the recalculation of the modifier results is performed every time the input data changes.
-	bool autoUpdateEnabled() const { return _autoUpdate; }
+private Q_SLOTS:
 
-	/// Sets whether the recalculation of the modifier results is performed every time the input data changes.
-	void setAutoUpdateEnabled(bool on) { _autoUpdate = on; }
-
-	/// \brief Returns whether the modifier results are saved along with the scene.
-	/// \return \c true if data is stored in the scene file; \c false if the data needs to be recomputed after loading the scene file.
-	bool storeResultsWithScene() const { return _saveResults; }
-
-	/// \brief Returns whether modifier results are saved along with the scene.
-	/// \param on \c true if data should be stored in the scene file; \c false if the data needs to be recomputed after loading the scene file.
-	/// \undoable
-	void setStoreResultsWithScene(bool on) { _saveResults = on; }
-
-protected Q_SLOTS:
-
-	/// \brief This is called when the background job has finished.
-	virtual void backgroundJobFinished();
+	/// Is called when the modifier's compute engine has finished.
+	virtual void computeEngineFinished();
 
 protected:
 
@@ -90,55 +83,40 @@ protected:
 	/// to the function is reduced to the interval where the modified object is valid/constant.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
+	/// This method is called by the system when the upstream modification pipeline has changed.
+	virtual void upstreamPipelineChanged(ModifierApplication* modApp) override;
+
 	/// Invalidates the modifier's result cache so that the results will be recomputed
 	/// next time the modifier is evaluated.
 	virtual void invalidateCachedResults();
 
-	/// Cancels any running background job.
-	void cancelBackgroundJob();
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) = 0;
 
-	/// This function is executed in a background thread to compute the modifier results.
-	void runEngine(FutureInterface<std::shared_ptr<Engine>>& futureInterface, std::shared_ptr<Engine> engine);
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) = 0;
 
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) = 0;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) = 0;
-
-	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) = 0;
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) = 0;
 
 private:
 
-	/// Controls whether the analysis is performed every time the input data changes.
-	PropertyField<bool> _autoUpdate;
+	/// The currently running compute engine.
+	std::shared_ptr<ComputeEngine> _runningEngine;
 
-	/// Controls whether the modifier's results are saved in the scene file.
-	PropertyField<bool> _saveResults;
+	/// The watcher that is used to monitor the currently running compute engine.
+	FutureWatcher _engineWatcher;
 
-	/// The background job.
-	Future<std::shared_ptr<Engine>> _backgroundOperation;
-
-	/// The watcher object that is used to monitor the background operation.
-	FutureWatcher _backgroundOperationWatcher;
-
-	/// Indicates if and how long the cached modifier results are valid.
+	/// The validity interval of the cached computation results.
 	TimeInterval _cacheValidity;
 
-	/// Indicates whether the modifier's results are currently being computed in the background.
-	TimeInterval _computationValidity;
-
-	/// The status returned by the asynchronous job.
-	PipelineStatus _asyncStatus;
+	/// The status returned by the compute engine.
+	PipelineStatus _computationStatus;
 
 private:
 
 	Q_OBJECT
 	OVITO_OBJECT
-
-	DECLARE_PROPERTY_FIELD(_autoUpdate);
-	DECLARE_PROPERTY_FIELD(_saveResults);
 };
 
 }}}}	// End of namespace

@@ -24,7 +24,6 @@
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/scene/ObjectNode.h>
@@ -38,17 +37,15 @@
 
 namespace Ovito { namespace DataIO {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSource, DataObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSource, CompoundObject);
 SET_OVITO_OBJECT_EDITOR(FileSource, Internal::FileSourceEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(FileSource, _importer, "Importer", FileSourceImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO);
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(FileSource, _dataObjects, "SceneObjects", DataObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
 DEFINE_PROPERTY_FIELD(FileSource, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled");
 DEFINE_FLAGS_PROPERTY_FIELD(FileSource, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO);
 DEFINE_PROPERTY_FIELD(FileSource, _playbackSpeedNumerator, "PlaybackSpeedNumerator");
 DEFINE_PROPERTY_FIELD(FileSource, _playbackSpeedDenominator, "PlaybackSpeedDenominator");
 DEFINE_PROPERTY_FIELD(FileSource, _playbackStartTime, "PlaybackStartTime");
 SET_PROPERTY_FIELD_LABEL(FileSource, _importer, "File Importer");
-SET_PROPERTY_FIELD_LABEL(FileSource, _dataObjects, "Objects");
 SET_PROPERTY_FIELD_LABEL(FileSource, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval");
 SET_PROPERTY_FIELD_LABEL(FileSource, _sourceUrl, "Source location");
 SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedNumerator, "Playback speed numerator");
@@ -58,12 +55,11 @@ SET_PROPERTY_FIELD_LABEL(FileSource, _playbackStartTime, "Playback start time");
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
-FileSource::FileSource(DataSet* dataset) : DataObject(dataset),
+FileSource::FileSource(DataSet* dataset) : CompoundObject(dataset),
 	_adjustAnimationIntervalEnabled(true), _loadedFrameIndex(-1), _frameBeingLoaded(-1),
 	_playbackSpeedNumerator(1), _playbackSpeedDenominator(1), _playbackStartTime(0)
 {
 	INIT_PROPERTY_FIELD(FileSource::_importer);
-	INIT_PROPERTY_FIELD(FileSource::_dataObjects);
 	INIT_PROPERTY_FIELD(FileSource::_adjustAnimationIntervalEnabled);
 	INIT_PROPERTY_FIELD(FileSource::_sourceUrl);
 	INIT_PROPERTY_FIELD(FileSource::_playbackSpeedNumerator);
@@ -237,7 +233,7 @@ bool FileSource::updateFrames()
 		return false;
 	}
 
-	Future<QVector<FileSourceImporter::Frame>> framesFuture = importer()->findFrames(sourceUrl());
+	Future<QVector<FileSourceImporter::Frame>> framesFuture = importer()->discoverFrames(sourceUrl());
 	if(!dataset()->container()->taskManager().waitForTask(framesFuture))
 		return false;
 
@@ -264,8 +260,9 @@ void FileSource::cancelLoadOperation()
 		try {
 			// This will suppress any pending notification events.
 			_frameLoaderWatcher.unsetFuture();
-			_activeFrameLoader.cancel();
-			_activeFrameLoader.waitForFinished();
+			OVITO_ASSERT(_activeFrameLoader);
+			_activeFrameLoader->cancel();
+			_activeFrameLoader->waitForFinished();
 		} catch(...) {}
 		_frameBeingLoaded = -1;
 		notifyDependents(ReferenceEvent::PendingStateChanged);
@@ -337,8 +334,9 @@ PipelineFlowState FileSource::requestFrame(int frame)
 			try {
 				// This will suppress any pending notification events.
 				_frameLoaderWatcher.unsetFuture();
-				_activeFrameLoader.cancel();
-				_activeFrameLoader.waitForFinished();
+				OVITO_ASSERT(_activeFrameLoader);
+				_activeFrameLoader->cancel();
+				_activeFrameLoader->waitForFinished();
 			} catch(...) {}
 			_frameBeingLoaded = -1;
 			// Inform previous caller that the existing loading operation has been canceled.
@@ -363,8 +361,9 @@ PipelineFlowState FileSource::requestFrame(int frame)
 			return PipelineFlowState(status(), dataObjects(), interval);
 		}
 		_frameBeingLoaded = frame;
-		_activeFrameLoader = importer()->loadFrame(_frames[frame]);
-		_frameLoaderWatcher.setFuture(_activeFrameLoader);
+		_activeFrameLoader = importer()->createFrameLoader(frames()[frame]);
+		_frameLoaderWatcher.setFutureInterface(_activeFrameLoader);
+		dataset()->container()->taskManager().runTaskAsync(_activeFrameLoader);
 		setStatus(PipelineStatus::Pending);
 		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
@@ -379,21 +378,19 @@ PipelineFlowState FileSource::requestFrame(int frame)
 void FileSource::loadOperationFinished()
 {
 	OVITO_ASSERT(_frameBeingLoaded != -1);
-	bool wasCanceled = _activeFrameLoader.isCanceled();
+	OVITO_ASSERT(_activeFrameLoader);
+	bool wasCanceled = _activeFrameLoader->isCanceled();
 	_loadedFrameIndex = _frameBeingLoaded;
 	_frameBeingLoaded = -1;
 	PipelineStatus newStatus = status();
 
 	if(!wasCanceled) {
 		try {
-			// Adopt the data loaded by the importer.
-			std::shared_ptr<FileSourceImporter::FrameLoader> frameLoader = _activeFrameLoader.result();
-			QSet<DataObject*> activeObjects;
-			if(frameLoader) {
-				activeObjects = frameLoader->insertIntoScene(this);
-				newStatus = frameLoader->status();
-			}
-			removeInactiveObjects(activeObjects);
+			// Check for exceptions thrown by the frame loader.
+			_activeFrameLoader->waitForFinished();
+			// Adopt the data loaded by the frame loader.
+			_activeFrameLoader->handOver(this);
+			newStatus = _activeFrameLoader->status();
 		}
 		catch(Exception& ex) {
 			// Transfer exception message to evaluation status.
@@ -482,7 +479,7 @@ void FileSource::adjustAnimationInterval(int gotoFrameIndex)
 ******************************************************************************/
 void FileSource::saveToStream(ObjectSaveStream& stream)
 {
-	DataObject::saveToStream(stream);
+	CompoundObject::saveToStream(stream);
 	stream.beginChunk(0x01);
 	stream << _frames;
 	if(saveWithScene())
@@ -497,7 +494,7 @@ void FileSource::saveToStream(ObjectSaveStream& stream)
 ******************************************************************************/
 void FileSource::loadFromStream(ObjectLoadStream& stream)
 {
-	DataObject::loadFromStream(stream);
+	CompoundObject::loadFromStream(stream);
 	stream.expectChunk(0x01);
 	stream >> _frames;
 	stream >> _loadedFrameIndex;
@@ -519,45 +516,7 @@ QString FileSource::objectTitle()
 	}
 	if(importer())
 		return QString("%2 [%1]").arg(importer()->objectTitle()).arg(filename);
-	return DataObject::objectTitle();
-}
-
-/******************************************************************************
-* Returns the number of sub-objects that should be displayed in the modifier stack.
-******************************************************************************/
-int FileSource::editableSubObjectCount()
-{
-	return dataObjects().size();
-}
-
-/******************************************************************************
-* Returns a sub-object that should be listed in the modifier stack.
-******************************************************************************/
-RefTarget* FileSource::editableSubObject(int index)
-{
-	return dataObjects()[index];
-}
-
-/******************************************************************************
-* Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
-******************************************************************************/
-void FileSource::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
-{
-	if(field == PROPERTY_FIELD(FileSource::_dataObjects))
-		notifyDependents(ReferenceEvent::SubobjectListChanged);
-
-	DataObject::referenceInserted(field, newTarget, listIndex);
-}
-
-/******************************************************************************
-* Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
-******************************************************************************/
-void FileSource::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
-{
-	if(field == PROPERTY_FIELD(FileSource::_dataObjects))
-		notifyDependents(ReferenceEvent::SubobjectListChanged);
-
-	DataObject::referenceRemoved(field, newTarget, listIndex);
+	return CompoundObject::objectTitle();
 }
 
 /******************************************************************************
@@ -571,7 +530,7 @@ void FileSource::propertyChanged(const PropertyFieldDescriptor& field)
 			field == PROPERTY_FIELD(FileSource::_playbackStartTime)) {
 		adjustAnimationInterval();
 	}
-	DataObject::propertyChanged(field);
+	CompoundObject::propertyChanged(field);
 }
 
 /******************************************************************************

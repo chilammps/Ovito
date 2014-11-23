@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -43,7 +43,6 @@ namespace Internal {
 * Constructs the modifier object.
 ******************************************************************************/
 CentroSymmetryModifier::CentroSymmetryModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_cspValues(new ParticleProperty(0, ParticleProperty::CentroSymmetryProperty, 0, false)),
 	_numNeighbors(12)
 {
 	INIT_PROPERTY_FIELD(CentroSymmetryModifier::_numNeighbors);
@@ -52,7 +51,7 @@ CentroSymmetryModifier::CentroSymmetryModifier(DataSet* dataset) : AsynchronousP
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> CentroSymmetryModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CentroSymmetryModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -65,19 +64,19 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CentroSymmetryModifier::cr
 		throw Exception(tr("The number of neighbors to take into account for the centrosymmetry calculation must be a positive, even integer."));
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<CentroSymmetryEngine>(posProperty->storage(), simCell->data(), numNeighbors());
+	return std::make_shared<CentroSymmetryEngine>(validityInterval, posProperty->storage(), simCell->data(), numNeighbors());
 }
 
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void CentroSymmetryModifier::CentroSymmetryEngine::compute(FutureInterfaceBase& futureInterface)
+void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 {
-	futureInterface.setProgressText(tr("Computing centrosymmetry parameters"));
+	setProgressText(tr("Computing centrosymmetry parameters"));
 
 	// Prepare the neighbor list.
 	TreeNeighborListBuilder neighborListBuilder(_nneighbors);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled()) {
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled()) {
 		return;
 	}
 
@@ -85,7 +84,7 @@ void CentroSymmetryModifier::CentroSymmetryEngine::compute(FutureInterfaceBase& 
 	ParticleProperty* output = csp();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
 		output->setFloat(index, computeCSP(neighborListBuilder, index));
 	});
 }
@@ -119,21 +118,23 @@ FloatType CentroSymmetryModifier::computeCSP(TreeNeighborListBuilder& neighList,
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void CentroSymmetryModifier::retrieveModifierResults(Engine* engine)
+void CentroSymmetryModifier::transferComputationResults(ComputeEngine* engine)
 {
-	CentroSymmetryEngine* eng = static_cast<CentroSymmetryEngine*>(engine);
-	if(eng->csp())
-		_cspValues = eng->csp();
+	_cspValues = static_cast<CentroSymmetryEngine*>(engine)->csp();
 }
 
 /******************************************************************************
-* This lets the modifier insert the previously computed results into the pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CentroSymmetryModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() != cspValues().size())
+	if(!_cspValues)
+		throw Exception(tr("No computation results available."));
+
+	if(inputParticleCount() != _cspValues->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(_cspValues.data());
@@ -145,13 +146,11 @@ PipelineStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, Time
 ******************************************************************************/
 void CentroSymmetryModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute brightness values when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(CentroSymmetryModifier::_numNeighbors))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute brightness values when the parameters have been changed.
+	if(field == PROPERTY_FIELD(CentroSymmetryModifier::_numNeighbors))
+		invalidateCachedResults();
 }
 
 namespace Internal {

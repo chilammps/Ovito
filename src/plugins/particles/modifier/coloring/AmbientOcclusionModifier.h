@@ -24,8 +24,8 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
-#include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
+#include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
@@ -37,12 +37,13 @@ class OVITO_PARTICLES_EXPORT AmbientOcclusionModifier : public AsynchronousParti
 public:
 
 	/// Computes the modifier's results.
-	class AmbientOcclusionEngine : public AsynchronousParticleModifier::Engine
+	class AmbientOcclusionEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		AmbientOcclusionEngine(int resolution, int samplingCount, ParticleProperty* positions, const Box3& boundingBox, std::vector<FloatType>&& particleRadii) :
+		AmbientOcclusionEngine(const TimeInterval& validityInterval, int resolution, int samplingCount, ParticleProperty* positions, const Box3& boundingBox, std::vector<FloatType>&& particleRadii) :
+			ComputeEngine(validityInterval),
 			_resolution(resolution),
 			_samplingCount(samplingCount),
 			_positions(positions),
@@ -54,7 +55,7 @@ public:
 		}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -77,9 +78,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE AmbientOcclusionModifier(DataSet* dataset);
-
-	/// Returns the computed per-particle brightness values.
-	const ParticleProperty& brightnessValues() const { OVITO_CHECK_POINTER(_brightnessValues.constData()); return *_brightnessValues; }
 
 	/// Returns the intensity of the shading.
 	FloatType intensity() const { return _intensity; }
@@ -105,20 +103,20 @@ protected:
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
 
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
 
-	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 
-	/// This stores the cached results of the modifier, i.e. the brightness assigned to the particles.
+	/// This stores the cached results of the modifier, i.e. the brightness value of each particle.
 	QExplicitlySharedDataPointer<ParticleProperty> _brightnessValues;
 
-	/// This controls the intensity of the ambient lighting effect.
+	/// This controls the intensity of the shading effect.
 	PropertyField<FloatType> _intensity;
 
 	/// Controls the quality of the lighting computation.

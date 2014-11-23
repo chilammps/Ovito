@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,16 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_PROGRESS_MANAGER_H
-#define __OVITO_PROGRESS_MANAGER_H
+#ifndef __OVITO_TASK_MANAGER_H
+#define __OVITO_TASK_MANAGER_H
 
 #include <core/Core.h>
 #include "Future.h"
 #include "Task.h"
 
 namespace Ovito { namespace Util { namespace Concurrency {
-
-typedef std::shared_ptr<FutureInterfaceBase> FutureInterfacePointer;
 
 /**
  * \brief Manages the background tasks.
@@ -39,22 +37,66 @@ class OVITO_CORE_EXPORT TaskManager : public QObject
 
 public:
 
-	/// \brief Constructor.
+	/// Constructs the task manager for the given main window.
 	TaskManager(MainWindow* mainWindow);
 
-	/// Destructor.
+	/// Shuts down the task manager after canceling all active tasks.
 	~TaskManager() {
 		cancelAllAndWait();
 	}
 
-	/// \brief Runs a function in a background thread.
+	/// \brief Executes an asynchronous function in the background.
+	///
+	/// This function may be called from any thread.
+	template<typename Function>
+	Future<typename std::result_of<Function(FutureInterfaceBase&)>::type> execAsync(Function f) {
+		auto task = std::make_shared<FunctionRunner<Function>>(f);
+		QThreadPool::globalInstance()->start(task.get());
+		registerTask(task);
+		return Future<typename std::result_of<Function(FutureInterfaceBase&)>::type>(task);
+	}
+
+	/// \brief Executes a function in a different thread and blocks the GUI until the function returns
+	///        or the user cancels the operation.
+	/// \return \c true if the function finished successfully without throwing an exception;
+	///         \c false if the operation has been canceled by the user.
+	///
+	/// The function signature of \c func must be:
+	///
+	///      void func(FutureInterfaceBase& futureInterface);
+	///
+	/// exec() may only be called from the main thread. In GUI mode, exec() will display
+	/// a modal progress dialog while running the worker function, allowing the user to
+	/// cancel the operation.
+	///
+	/// If \c func throws an exception, the exception is re-thrown by exec().
+	template<typename Function>
+	bool exec(Function func) {
+		Future<void> future = execAsync<void>(func);
+		if(!waitForTask(future)) return false;
+		// This is to re-throw the exception if an error has occurred.
+		future.result();
+		return true;
+	}
+
+	/// \brief Executes an asynchronous task in a background thread.
 	///
 	/// This function is thread-safe.
-	template<typename R, typename Function>
-	Future<R> runInBackground(Function f) {
-		Future<R> future = (new Task<R,Function>(f))->start();
-		addTask(future);
-		return future;
+	void runTaskAsync(const std::shared_ptr<AsynchronousTask>& task) {
+		QThreadPool::globalInstance()->start(task.get());
+		registerTask(task);
+	}
+
+	/// \brief Executes a task and blocks until the task has finished.
+	///
+	/// This function must be called from the main thread.
+	/// Any exceptions thrown by the task are forwarded.
+	bool runTask(const std::shared_ptr<AsynchronousTask>& task) {
+		runTaskAsync(task);
+		if(!waitForTask(task)) return false;
+		// This is to re-throw the exception if an error has occurred.
+		task->waitForFinished();
+		return true;
 	}
 
 	/// \brief Registers a future with the progress manager, which will display the progress of the background task
@@ -62,9 +104,17 @@ public:
 	///
 	/// This function is thread-safe.
 	template<typename R>
-	void addTask(const Future<R>& future) {
+	void registerTask(const Future<R>& future) {
+		registerTask(future.interface());
+	}
+
+	/// \brief Registers a future interface with the progress manager, which will display the progress of the background task
+	///        in the main window.
+	///
+	/// This function is thread-safe.
+	void registerTask(const std::shared_ptr<FutureInterfaceBase>& futureInterface) {
 		// Execute the function call in the GUI thread.
-		QMetaObject::invokeMethod(this, "addTaskInternal", Q_ARG(FutureInterfacePointer, future.interface()));
+		QMetaObject::invokeMethod(this, "addTaskInternal", Q_ARG(std::shared_ptr<FutureInterfaceBase>, futureInterface));
 	}
 
 	/// \brief Waits for the given task to finish and displays a modal progress dialog
@@ -77,25 +127,47 @@ public:
 		return waitForTask(future.interface());
 	}
 
-private:
-
-	/// \brief Registers a future with the progress manager.
-	Q_INVOKABLE void addTaskInternal(FutureInterfacePointer futureInterface);
-
 	/// \brief Waits for the given task to finish and displays a modal progress dialog
 	///        to show the task's progress.
-	bool waitForTask(const FutureInterfacePointer& futureInterface);
+	bool waitForTask(const std::shared_ptr<FutureInterfaceBase>& futureInterface);
 
 public Q_SLOTS:
 
-	/// \brief Cancels all running background tasks.
+	/// Cancels all running tasks.
 	void cancelAll();
 
-	/// \brief Cancels all running background tasks and waits for them to finish.
+	/// Cancels all running tasks and waits for them to finish.
 	void cancelAllAndWait();
 
-	/// \brief Waits for all tasks to finish.
+	/// Waits for all running tasks to finish.
 	void waitForAll();
+
+private:
+
+	/// \brief Registers a future with the progress manager.
+	Q_INVOKABLE void addTaskInternal(std::shared_ptr<FutureInterfaceBase> futureInterface);
+
+	/// Helper class used by asyncExec().
+	template<typename Function>
+	class FunctionRunner : public FutureInterface<typename std::result_of<Function(FutureInterfaceBase&)>::type>, public QRunnable
+	{
+		Function _function;
+	public:
+		FunctionRunner(Function fn) : _function(fn) {
+			setAutoDelete(false);
+		}
+		virtual void run() override { tryToRunImmediately(); }
+		virtual void tryToRunImmediately() override {
+			if(!this->reportStarted()) return;
+			try {
+				this->setResult(_function(*this));
+			}
+			catch(...) {
+				this->reportException();
+			}
+			this->reportFinished();
+		}
+	};
 
 private Q_SLOTS:
 
@@ -150,6 +222,6 @@ private:
 
 }}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Concurrency::FutureInterfacePointer);
+Q_DECLARE_METATYPE(std::shared_ptr<Ovito::Util::Concurrency::FutureInterfaceBase>);
 
-#endif // __OVITO_PROGRESS_MANAGER_H
+#endif // __OVITO_TASK_MANAGER_H

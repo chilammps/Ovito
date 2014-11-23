@@ -75,9 +75,9 @@ bool CAImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading crystal analysis file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading crystal analysis file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Read file header.
 	stream.readLine();
@@ -160,10 +160,10 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numClusters;
 	if(sscanf(stream.readLine(), "CLUSTERS %i", &numClusters) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of clusters in line %1.").arg(stream.lineNumber()));
-	futureInterface.setProgressText(tr("Reading clusters"));
-	futureInterface.setProgressRange(numClusters);
+	setProgressText(tr("Reading clusters"));
+	setProgressRange(numClusters);
 	for(int index = 0; index < numClusters; index++) {
-		futureInterface.setProgressValue(index);
+		setProgressValue(index);
 		ClusterInfo cluster;
 		int patternId;
 		stream.readLine();
@@ -190,10 +190,10 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numClusterTransitions;
 	if(sscanf(stream.readLine(), "CLUSTER_TRANSITIONS %i", &numClusterTransitions) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of cluster transitions in line %1.").arg(stream.lineNumber()));
-	futureInterface.setProgressText(tr("Reading cluster transitions"));
-	futureInterface.setProgressRange(numClusterTransitions);
+	setProgressText(tr("Reading cluster transitions"));
+	setProgressRange(numClusterTransitions);
 	for(int index = 0; index < numClusterTransitions; index++) {
-		futureInterface.setProgressValue(index);
+		setProgressValue(index);
 		ClusterTransitionInfo transition;
 		if(sscanf(stream.readLine(), "TRANSITION %i %i", &transition.cluster1, &transition.cluster2) != 2 || transition.cluster1 >= numClusters || transition.cluster2 >= numClusters)
 			throw Exception(tr("Failed to parse file. Invalid cluster transition in line %1.").arg(stream.lineNumber()));
@@ -211,10 +211,10 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numDislocationSegments;
 	if(sscanf(stream.readLine(), "DISLOCATIONS %i", &numDislocationSegments) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of dislocation segments in line %1.").arg(stream.lineNumber()));
-	futureInterface.setProgressText(tr("Reading dislocations"));
-	futureInterface.setProgressRange(numDislocationSegments);
+	setProgressText(tr("Reading dislocations"));
+	setProgressRange(numDislocationSegments);
 	for(int index = 0; index < numDislocationSegments; index++) {
-		futureInterface.setProgressValue(index);
+		setProgressValue(index);
 		DislocationSegmentInfo segment;
 		if(sscanf(stream.readLine(), "%i", &segment.id) != 1)
 			throw Exception(tr("Failed to parse file. Invalid segment ID in line %1.").arg(stream.lineNumber()));
@@ -261,11 +261,12 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numDefectMeshVertices;
 	if(sscanf(stream.readLine(), "DEFECT_MESH_VERTICES %i", &numDefectMeshVertices) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of defect mesh vertices in line %1.").arg(stream.lineNumber()));
-	futureInterface.setProgressText(tr("Reading defect surface"));
-	futureInterface.setProgressRange(numDefectMeshVertices);
+	setProgressText(tr("Reading defect surface"));
+	setProgressRange(numDefectMeshVertices);
 	_defectSurface.reserveVertices(numDefectMeshVertices);
 	for(int index = 0; index < numDefectMeshVertices; index++) {
-		if((index % 4096) == 0) futureInterface.setProgressValue(index);
+		if((index % 4096) == 0)
+			setProgressValue(index);
 		Point3 p;
 		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &p.x(), &p.y(), &p.z()) != 3)
 			throw Exception(tr("Failed to parse file. Invalid point in line %1.").arg(stream.lineNumber()));
@@ -276,10 +277,11 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numDefectMeshFacets;
 	if(sscanf(stream.readLine(), "DEFECT_MESH_FACETS %i", &numDefectMeshFacets) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of defect mesh facets in line %1.").arg(stream.lineNumber()));
-	futureInterface.setProgressRange(numDefectMeshFacets * 2);
+	setProgressRange(numDefectMeshFacets * 2);
 	_defectSurface.reserveFaces(numDefectMeshFacets);
 	for(int index = 0; index < numDefectMeshFacets; index++) {
-		if((index % 4096) == 0) futureInterface.setProgressValue(index);
+		if((index % 4096) == 0)
+			setProgressValue(index);
 		int v[3];
 		if(sscanf(stream.readLine(), "%i %i %i", &v[0], &v[1], &v[2]) != 3)
 			throw Exception(tr("Failed to parse file. Invalid triangle facet in line %1.").arg(stream.lineNumber()));
@@ -288,7 +290,8 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 
 	// Read facet adjacency information.
 	for(int index = 0; index < numDefectMeshFacets; index++) {
-		if((index % 4096) == 0) futureInterface.setProgressValue(index + numDefectMeshFacets);
+		if((index % 4096) == 0)
+			setProgressValue(index + numDefectMeshFacets);
 		int v[3];
 		if(sscanf(stream.readLine(), "%i %i %i", &v[0], &v[1], &v[2]) != 3)
 			throw Exception(tr("Failed to parse file. Invalid triangle adjacency info in line %1.").arg(stream.lineNumber()));
@@ -334,51 +337,48 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 		else particleFileInfo.sourceFile = QUrl::fromLocalFile(atomsFilename);
 
 		// Create and execute the import sub-task.
-		_particleLoadTask = std::make_shared<Particles::Import::Lammps::LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, true, false, InputColumnMapping());
-		_particleLoadTask->load(datasetContainer(), futureInterface);
-		if(futureInterface.isCanceled())
+		_particleLoadTask = Particles::Import::Lammps::LAMMPSTextDumpImporter::createFrameLoader(&datasetContainer(), particleFileInfo, true, false, InputColumnMapping());
+		if(!waitForSubTask(_particleLoadTask))
 			return;
 
-		setInfoText(tr("Number of segments: %1\n%2").arg(numDislocationSegments).arg(_particleLoadTask->infoText()));
+		setStatus(tr("Number of segments: %1\n%2").arg(numDislocationSegments).arg(_particleLoadTask->status().text()));
 	}
 	else {
-		setInfoText(tr("Number of segments: %1").arg(numDislocationSegments));
+		setStatus(tr("Number of segments: %1").arg(numDislocationSegments));
 	}
 }
 
 /******************************************************************************
-* Lets the data container insert the data it holds into the scene by creating
-* appropriate data objects.
+* Inserts the data loaded by perform() into the provided container object.
+* This function is called by the system from the main thread after the
+* asynchronous loading task has finished.
 ******************************************************************************/
-QSet<DataObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(FileSource* destination)
+void CAImporter::CrystalAnalysisFrameLoader::handOver(FileSource* container)
 {
-	QSet<DataObject*> activeObjects = ParticleImportTask::insertIntoScene(destination);
+	// Make a copy of the list of old data objects in the container so we can re-use some objects.
+	PipelineFlowState oldObjects(container->status(), container->dataObjects(), TimeInterval::infinite(), container->attributes());
+	// Insert simulation cell.
+	ParticleFrameLoader::handOver(container);
 
 	// Insert dislocations.
-	OORef<DislocationNetwork> dislocationsObj = destination->findDataObject<DislocationNetwork>();
+	OORef<DislocationNetwork> dislocationsObj = oldObjects.findObject<DislocationNetwork>();
 	if(!dislocationsObj) {
-		dislocationsObj = new DislocationNetwork(destination->dataset());
-		destination->addDataObject(dislocationsObj);
+		dislocationsObj = new DislocationNetwork(container->dataset());
 	}
-	activeObjects.insert(dislocationsObj);
 
 	// Insert defect surface.
-	OORef<SurfaceMesh> defectSurfaceObj = destination->findDataObject<SurfaceMesh>();
+	OORef<SurfaceMesh> defectSurfaceObj = oldObjects.findObject<SurfaceMesh>();
 	if(!defectSurfaceObj) {
-		defectSurfaceObj = new SurfaceMesh(destination->dataset());
-		destination->addDataObject(defectSurfaceObj);
+		defectSurfaceObj = new SurfaceMesh(container->dataset());
 	}
 	defectSurfaceObj->mesh().swap(_defectSurface);
 	defectSurfaceObj->notifyDependents(ReferenceEvent::TargetChanged);
-	activeObjects.insert(defectSurfaceObj);
 
 	// Insert pattern catalog.
-	OORef<PatternCatalog> patternCatalog = destination->findDataObject<PatternCatalog>();
+	OORef<PatternCatalog> patternCatalog = oldObjects.findObject<PatternCatalog>();
 	if(!patternCatalog) {
-		patternCatalog = new PatternCatalog(destination->dataset());
-		destination->addDataObject(patternCatalog);
+		patternCatalog = new PatternCatalog(container->dataset());
 	}
-	activeObjects.insert(patternCatalog.get());
 
 	// Update pattern catalog.
 	for(int i = 0; i < _patterns.size(); i++) {
@@ -421,12 +421,10 @@ QSet<DataObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(FileSou
 		patternCatalog->removePattern(i);
 
 	// Insert cluster graph.
-	OORef<ClusterGraph> clusterGraph = destination->findDataObject<ClusterGraph>();
+	OORef<ClusterGraph> clusterGraph = oldObjects.findObject<ClusterGraph>();
 	if(!clusterGraph) {
-		clusterGraph = new ClusterGraph(destination->dataset());
-		destination->addDataObject(clusterGraph);
+		clusterGraph = new ClusterGraph(container->dataset());
 	}
-	activeObjects.insert(clusterGraph);
 	clusterGraph->clear();
 	for(const ClusterInfo& icluster : _clusters) {
 		OORef<Cluster> cluster(new Cluster(clusterGraph->dataset()));
@@ -446,12 +444,10 @@ QSet<DataObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(FileSou
 	}
 
 	// Insert dislocations.
-	OORef<DislocationNetwork> dislocationNetwork = destination->findDataObject<DislocationNetwork>();
+	OORef<DislocationNetwork> dislocationNetwork = oldObjects.findObject<DislocationNetwork>();
 	if(!dislocationNetwork) {
-		dislocationNetwork = new DislocationNetwork(destination->dataset());
-		destination->addDataObject(dislocationNetwork);
+		dislocationNetwork = new DislocationNetwork(container->dataset());
 	}
-	activeObjects.insert(dislocationNetwork);
 	dislocationNetwork->clear();
 	for(const DislocationSegmentInfo& s : _dislocations) {
 		OORef<DislocationSegment> segment(new DislocationSegment(dislocationNetwork->dataset()));
@@ -463,10 +459,10 @@ QSet<DataObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(FileSou
 
 	// Insert particles.
 	if(_particleLoadTask) {
-		activeObjects.unite(_particleLoadTask->insertIntoScene(destination));
+		_particleLoadTask->handOver(container);
 
 		// Copy structure patterns into StructureType particle property.
-		for(DataObject* dataObj : activeObjects) {
+		for(DataObject* dataObj : container->dataObjects()) {
 			ParticleTypeProperty* structureTypeProperty = dynamic_object_cast<ParticleTypeProperty>(dataObj);
 			if(structureTypeProperty && structureTypeProperty->type() == ParticleProperty::StructureTypeProperty) {
 				structureTypeProperty->clearParticleTypes();
@@ -477,7 +473,11 @@ QSet<DataObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(FileSou
 		}
 	}
 
-	return activeObjects;
+	container->addDataObject(dislocationsObj);
+	container->addDataObject(defectSurfaceObj);
+	container->addDataObject(patternCatalog);
+	container->addDataObject(clusterGraph);
+	container->addDataObject(dislocationNetwork);
 }
 
 /******************************************************************************

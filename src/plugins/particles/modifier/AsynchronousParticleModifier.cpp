@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -23,38 +23,29 @@
 #include <core/viewport/Viewport.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/utilities/concurrent/TaskManager.h>
 #include "AsynchronousParticleModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier);
-DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate");
-DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults");
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update");
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results");
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 AsynchronousParticleModifier::AsynchronousParticleModifier(DataSet* dataset) : ParticleModifier(dataset),
-	_autoUpdate(true), _saveResults(false),
-	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty())
+		_cacheValidity(TimeInterval::empty())
 {
-	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate);
-	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults);
-
-	connect(&_backgroundOperationWatcher, &FutureWatcher::finished, this, &AsynchronousParticleModifier::backgroundJobFinished);
+	connect(&_engineWatcher, &FutureWatcher::finished, this, &AsynchronousParticleModifier::computeEngineFinished);
 }
 
 /******************************************************************************
-* This method is called by the system when an item in the modification pipeline
-* located before this modifier has changed.
+* This method is called by the system when the upstream modification pipeline
+* has changed.
 ******************************************************************************/
-void AsynchronousParticleModifier::inputDataChanged(ModifierApplication* modApp)
+void AsynchronousParticleModifier::upstreamPipelineChanged(ModifierApplication* modApp)
 {
-	ParticleModifier::inputDataChanged(modApp);
+	ParticleModifier::upstreamPipelineChanged(modApp);
 	invalidateCachedResults();
 }
 
@@ -75,28 +66,27 @@ bool AsynchronousParticleModifier::referenceEvent(RefTarget* source, ReferenceEv
 ******************************************************************************/
 void AsynchronousParticleModifier::invalidateCachedResults()
 {
-	if(autoUpdateEnabled()) {
-		cancelBackgroundJob();
-		_cacheValidity.setEmpty();
-	}
+	stopRunningEngine();
+	_cacheValidity.setEmpty();
 }
 
 /******************************************************************************
 * Cancels any running background job.
 ******************************************************************************/
-void AsynchronousParticleModifier::cancelBackgroundJob()
+void AsynchronousParticleModifier::stopRunningEngine()
 {
-	if(_backgroundOperation.isValid()) {
-		try {
-			_backgroundOperationWatcher.unsetFuture();
-			_backgroundOperation.cancel();
-			_backgroundOperation.waitForFinished();
-		} catch(...) {}
-		_backgroundOperation.reset();
-		if(status().type() == PipelineStatus::Pending)
-			setStatus(PipelineStatus());
-	}
-	_computationValidity.setEmpty();
+	if(!_runningEngine)
+		return;
+
+	try {
+		_engineWatcher.unsetFuture();
+		_runningEngine->cancel();
+		_runningEngine->waitForFinished();
+	} catch(...) {}
+	_runningEngine.reset();
+
+	if(status().type() == PipelineStatus::Pending)
+		setStatus(PipelineStatus());
 }
 
 /******************************************************************************
@@ -104,107 +94,95 @@ void AsynchronousParticleModifier::cancelBackgroundJob()
 ******************************************************************************/
 PipelineStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	if(autoUpdateEnabled() && !_cacheValidity.contains(time) && input().status().type() != PipelineStatus::Pending) {
-		if(!_computationValidity.contains(time)) {
+	if(input().status().type() != PipelineStatus::Pending) {
+		if(!_cacheValidity.contains(time)) {
+			if(!_runningEngine || !_runningEngine->validityInterval().contains(time)) {
 
-			// Stop running job first.
-			cancelBackgroundJob();
+				// Stop running engine first.
+				stopRunningEngine();
 
-			// Create the engine that will compute the results.
-			try {
-				std::shared_ptr<Engine> engine = createEngine(time, _computationValidity);
-				OVITO_CHECK_POINTER(engine.get());
-
-				// Start a background job that runs the engine to compute the modifier's results.
-				_backgroundOperation = dataset()->container()->taskManager().runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
-				_backgroundOperationWatcher.setFuture(_backgroundOperation);
+				try {
+					// Create the compute engine for this modifier.
+					_runningEngine = createEngine(time, input().stateValidity());
+				}
+				catch(const PipelineStatus& status) {
+					return status;
+				}
+				// Start compute engine.
+				dataset()->container()->taskManager().runTaskAsync(_runningEngine);
+				_engineWatcher.setFutureInterface(_runningEngine);
 			}
-			catch(const PipelineStatus& status) {
-				return status;
-			}
-			_computationValidity = input().stateValidity();
 		}
 	}
 
-	if(!_computationValidity.contains(time)) {
+	if(!_runningEngine || !_runningEngine->validityInterval().contains(time)) {
 		if(!_cacheValidity.contains(time)) {
 			if(input().status().type() != PipelineStatus::Pending)
 				throw Exception(tr("The modifier results have not been computed yet."));
 			else
 				return PipelineStatus(PipelineStatus::Warning, tr("Waiting for input data to become ready..."));
 		}
+		else {
+			if(_computationStatus.type() == PipelineStatus::Error)
+				return _computationStatus;
+
+			validityInterval.intersect(_cacheValidity);
+			return applyComputationResults(time, validityInterval);
+		}
 	}
 	else {
-
 		if(_cacheValidity.contains(time)) {
 			validityInterval.intersect(_cacheValidity);
-			applyModifierResults(time, validityInterval);
+			applyComputationResults(time, validityInterval);
 		}
 		else {
 			// Try to apply old results even though they are outdated.
 			validityInterval.intersect(time);
 			try {
-				applyModifierResults(time, validityInterval);
+				applyComputationResults(time, validityInterval);
 			}
 			catch(const Exception&) { /* Ignore problems. */ }
 		}
 
 		return PipelineStatus(PipelineStatus::Pending, tr("Results are being computed..."));
 	}
-
-	if(_asyncStatus.type() == PipelineStatus::Error)
-		return _asyncStatus;
-
-	validityInterval.intersect(_cacheValidity);
-	return applyModifierResults(time, validityInterval);
 }
 
 /******************************************************************************
-* This function is executed in a background thread to compute the modifier results.
+* Is called when the modifier's compute engine has finished.
 ******************************************************************************/
-void AsynchronousParticleModifier::runEngine(FutureInterface<std::shared_ptr<Engine>>& futureInterface, std::shared_ptr<Engine> engine)
+void AsynchronousParticleModifier::computeEngineFinished()
 {
-	// Let the engine object do the actual work.
-	engine->compute(futureInterface);
+	OVITO_ASSERT(_runningEngine);
 
-	// Pass engine back to caller since it carries the results.
-	if(!futureInterface.isCanceled())
-		futureInterface.setResult(engine);
-}
-
-/******************************************************************************
-* This is called when the background analysis task has finished.
-******************************************************************************/
-void AsynchronousParticleModifier::backgroundJobFinished()
-{
-	OVITO_ASSERT(!_computationValidity.isEmpty());
-	bool wasCanceled = _backgroundOperation.isCanceled();
-
-	if(!wasCanceled) {
-		_cacheValidity = _computationValidity;
+	if(!_runningEngine->isCanceled()) {
 		try {
-			std::shared_ptr<Engine> engine = _backgroundOperation.result();
-			retrieveModifierResults(engine.get());
+			// Throw exception if compute engine aborted with an error.
+			_runningEngine->waitForFinished();
+
+			// Store results of compute engine for later use.
+			transferComputationResults(_runningEngine.get());
 
 			// Notify dependents that the background operation has succeeded and new data is available.
-			_asyncStatus = PipelineStatus::Success;
+			_computationStatus = PipelineStatus::Success;
 		}
 		catch(const Exception& ex) {
-			// Transfer exception message to evaluation status.
-			_asyncStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
+			// Transfer exception message into evaluation status.
+			_computationStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
 		}
+		_cacheValidity = _runningEngine->validityInterval();
 	}
 	else {
-		_asyncStatus = PipelineStatus(PipelineStatus::Error, tr("Operation has been canceled by the user."));
+		_computationStatus = PipelineStatus(PipelineStatus::Error, tr("Computation has been canceled by the user."));
+		_cacheValidity.setEmpty();
 	}
 
 	// Reset everything.
-	_backgroundOperationWatcher.unsetFuture();
-	_backgroundOperation.reset();
-	_computationValidity.setEmpty();
+	_engineWatcher.unsetFuture();
+	_runningEngine.reset();
 
 	// Set the new modifier status.
-	setStatus(_asyncStatus);
+	setStatus(_computationStatus);
 
 	// Notify dependents that the evaluation request was satisfied or not satisfied.
 	notifyDependents(ReferenceEvent::PendingStateChanged);
@@ -216,8 +194,8 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 void AsynchronousParticleModifier::saveToStream(ObjectSaveStream& stream)
 {
 	ParticleModifier::saveToStream(stream);
-	stream.beginChunk(0x01);
-	stream << (storeResultsWithScene() ? _cacheValidity : TimeInterval::empty());
+	stream.beginChunk(0x02);
+	// For future use.
 	stream.endChunk();
 }
 
@@ -227,8 +205,8 @@ void AsynchronousParticleModifier::saveToStream(ObjectSaveStream& stream)
 void AsynchronousParticleModifier::loadFromStream(ObjectLoadStream& stream)
 {
 	ParticleModifier::loadFromStream(stream);
-	stream.expectChunk(0x01);
-	stream >> _cacheValidity;
+	stream.expectChunkRange(0, 2);
+	// For future use.
 	stream.closeChunk();
 }
 

@@ -29,7 +29,7 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include <plugins/particles/objects/ParticleDisplay.h>
 #include <plugins/particles/objects/ParticleType.h>
-#include "ParticleImportTask.h"
+#include "ParticleFrameLoader.h"
 #include "ParticleImporter.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
@@ -37,28 +37,26 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void ParticleImportTask::load(DataSetContainer& container, FutureInterfaceBase& futureInterface)
+void ParticleFrameLoader::perform()
 {
-	_datasetContainer = &container;
-	futureInterface.setProgressText(ParticleImporter::tr("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(ParticleImporter::tr("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(container, frame().sourceFile);
-	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(datasetContainer(), frame().sourceFile);
+	if(!waitForSubTask(fetchFileFuture))
 		return;
-	}
 	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
 
 	// Open file.
 	QFile file(fetchFileFuture.result());
 	CompressedTextReader stream(file, frame().sourceFile.path());
 
-	// Jump to requested file byte offset.
+	// Seek to byte offset of requested frame.
 	if(frame().byteOffset != 0)
 		stream.seek(frame().byteOffset);
 
 	// Parse file.
-	parseFile(futureInterface, stream);
+	parseFile(stream);
 }
 
 /******************************************************************************
@@ -66,7 +64,7 @@ void ParticleImportTask::load(DataSetContainer& container, FutureInterfaceBase& 
 * This method is used by file parsers that create particle types on the go while the read the particle data.
 * In such a case, the assignment of IDs to types depends on the storage order of particles in the file, which is not desirable.
 ******************************************************************************/
-void ParticleImportTask::sortParticleTypesByName()
+void ParticleFrameLoader::sortParticleTypesByName()
 {
 	// Check if type IDs form a consecutive sequence starting at 1.
 	for(int index = 0; index < _particleTypes.size(); index++) {
@@ -102,27 +100,28 @@ void ParticleImportTask::sortParticleTypesByName()
 /******************************************************************************
 * Sorts particle types with ascending identifier.
 ******************************************************************************/
-void ParticleImportTask::sortParticleTypesById()
+void ParticleFrameLoader::sortParticleTypesById()
 {
 	auto compare = [](const ParticleTypeDefinition& a, const ParticleTypeDefinition& b) -> bool { return a.id < b.id; };
 	std::sort(_particleTypes.begin(), _particleTypes.end(), compare);
 }
 
 /******************************************************************************
-* Lets the data container insert the data it holds into the scene by creating
-* appropriate data objects.
+* Inserts the data loaded by perform() into the provided container object.
+* This function is called by the system from the main thread after the
+* asynchronous loading task has finished.
 ******************************************************************************/
-QSet<DataObject*> ParticleImportTask::insertIntoScene(FileSource* destination)
+void ParticleFrameLoader::handOver(FileSource* container)
 {
 	QSet<DataObject*> activeObjects;
 
 	// Adopt simulation cell.
-	OORef<SimulationCell> cell = destination->findDataObject<SimulationCell>();
+	OORef<SimulationCell> cell = container->findDataObject<SimulationCell>();
 	if(!cell) {
-		cell = new SimulationCell(destination->dataset(), simulationCell());
+		cell = new SimulationCell(container->dataset(), simulationCell());
 
 		// Create a display object for the simulation cell.
-		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(destination->dataset());
+		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(container->dataset());
 		cellDisplay->loadUserDefaults();
 		cell->addDisplayObject(cellDisplay);
 
@@ -133,7 +132,7 @@ QSet<DataObject*> ParticleImportTask::insertIntoScene(FileSource* destination)
 				simulationCell().matrix().column(2)).length();
 		cellDisplay->setSimulationCellLineWidth(cellDiameter * 1.4e-3f);
 
-		destination->addDataObject(cell);
+		container->addDataObject(cell);
 	}
 	else {
 		// Adopt pbc flags from input file only if it is a new file.
@@ -146,7 +145,7 @@ QSet<DataObject*> ParticleImportTask::insertIntoScene(FileSource* destination)
 	// Adopt particle properties.
 	for(auto& property : _properties) {
 		OORef<ParticlePropertyObject> propertyObj;
-		for(const auto& dataObj : destination->dataObjects()) {
+		for(const auto& dataObj : container->dataObjects()) {
 			ParticlePropertyObject* po = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 			if(po != nullptr && po->type() == property->type() && po->name() == property->name()) {
 				propertyObj = po;
@@ -158,8 +157,8 @@ QSet<DataObject*> ParticleImportTask::insertIntoScene(FileSource* destination)
 			propertyObj->setStorage(QSharedDataPointer<ParticleProperty>(property.release()));
 		}
 		else {
-			propertyObj = ParticlePropertyObject::createFromStorage(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
-			destination->addDataObject(propertyObj);
+			propertyObj = ParticlePropertyObject::createFromStorage(container->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
+			container->addDataObject(propertyObj);
 		}
 
 		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty) {
@@ -170,17 +169,17 @@ QSet<DataObject*> ParticleImportTask::insertIntoScene(FileSource* destination)
 
 	// Pass timestep number to modification pipeline system.
 	if(hasTimestep())
-		destination->setAttributes({{ QStringLiteral("Timestep"), QVariant::fromValue(timestep()) }});
+		container->setAttributes({{ QStringLiteral("Timestep"), QVariant::fromValue(timestep()) }});
 	else
-		destination->clearAttributes();
+		container->clearAttributes();
 
-	return activeObjects;
+	container->removeInactiveObjects(activeObjects);
 }
 
 /******************************************************************************
 * Inserts the stores particle types into the given destination object.
 ******************************************************************************/
-void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj)
+void ParticleFrameLoader::insertParticleTypes(ParticlePropertyObject* propertyObj)
 {
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(propertyObj);
 	if(!typeProperty)

@@ -40,9 +40,6 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ManualSelectionModifier(DataSet* dataset) : ParticleModifier(dataset) {}
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
-
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
@@ -62,6 +59,9 @@ public:
 	void setParticleSelection(ModifierApplication* modApp, const PipelineFlowState& state, const QBitArray& selection, ParticleSelectionSet::SelectionMode mode);
 
 protected:
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

@@ -25,6 +25,7 @@
 #include <core/scene/SceneRoot.h>
 #include <core/scene/SelectionSet.h>
 #include <core/scene/objects/DataObject.h>
+#include <core/scene/objects/CompoundObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/scene/pipeline/PipelineObject.h>
@@ -116,6 +117,11 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.def("waitUntilReady", &DataObject::waitUntilReady, DataObject_waitUntilReady_overloads())
 	;
 	register_ptr_to_python<VersionedOORef<DataObject>>();
+
+	ovito_class<CompoundObject, DataObject>()
+		.add_property("dataObjects", make_function(&CompoundObject::dataObjects, return_internal_reference<>()))
+		.def("addDataObject", &CompoundObject::addDataObject)
+	;
 
 	ovito_abstract_class<Modifier, RefTarget>(
 			"This is the base class for all modifiers in OVITO.")

@@ -41,9 +41,6 @@ public:
 		INIT_PROPERTY_FIELD(SelectParticleTypeModifier::_selectedParticleTypes);
 	}
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
-
 	/// Returns the particle type property that is used as source for the selection.
 	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 
@@ -63,6 +60,9 @@ protected:
 
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

@@ -54,6 +54,11 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("VTK"); }
 
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<VTKFileImportTask>(dataset()->container(), frame);
+	}
+
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
@@ -62,20 +67,16 @@ protected:
 	public:
 
 		/// Constructor.
-		VTKFileImportTask(const FileSourceImporter::Frame& frame) : TriMeshImportData(frame) {}
+		VTKFileImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame) : TriMeshImportData(container, frame) {}
 
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 	};
 
 protected:
 
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<VTKFileImportTask>(frame);
-	}
 
 	Q_OBJECT
 	OVITO_OBJECT

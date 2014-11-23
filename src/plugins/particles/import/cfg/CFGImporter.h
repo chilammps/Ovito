@@ -52,28 +52,29 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("CFG"); }
 
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<CFGImportTask>(dataset()->container(), frame, isNewlySelectedFile());
+	}
+
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class CFGImportTask : public ParticleImportTask
+	class CFGImportTask : public ParticleFrameLoader
 	{
 	public:
 
 		/// Normal constructor.
-		CFGImportTask(const FileSourceImporter::Frame& frame, bool isNewFile) : ParticleImportTask(frame, isNewFile) {}
+		CFGImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile)
+			: ParticleFrameLoader(container, frame, isNewFile) {}
 
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 	};
 
 protected:
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<CFGImportTask>(frame, isNewlySelectedFile());
-	}
 
 	/// Guesses the mapping of input file columns to internal particle properties.
 	static void generateAutomaticColumnMapping(InputColumnMapping& mapping, const QStringList& columnNames);

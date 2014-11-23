@@ -39,14 +39,15 @@ class OVITO_MESH_EXPORT TriMeshImportData : public FileSourceImporter::FrameLoad
 public:
 
 	/// Constructor.
-	TriMeshImportData(const FileSourceImporter::Frame& frame) : FileSourceImporter::FrameLoader(frame) {}
+	TriMeshImportData(DataSetContainer* container, const FileSourceImporter::Frame& frame)
+		: FileSourceImporter::FrameLoader(container, frame) {}
 
-	/// Is called in the background thread to perform the data file import.
-	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
+	/// Loads the requested frame data from the external file.
+	virtual void perform() override;
 
-	/// Lets the data container insert the data it holds into the scene by creating
-	/// appropriate data objects.
-	virtual QSet<DataObject*> insertIntoScene(FileSource* destination) override;
+	/// Inserts the data loaded by perform() into the provided container object. This function is
+	/// called by the system from the main thread after the asynchronous loading task has finished.
+	virtual void handOver(FileSource* container) override;
 
 	/// Returns the triangle mesh data structure.
 	const TriMesh& mesh() const { return _mesh; }
@@ -57,7 +58,7 @@ public:
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) = 0;
+	virtual void parseFile(CompressedTextReader& stream) = 0;
 
 private:
 

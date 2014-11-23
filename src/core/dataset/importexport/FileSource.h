@@ -23,7 +23,7 @@
 #define __OVITO_FILE_SOURCE_H
 
 #include <core/Core.h>
-#include <core/scene/objects/DataObject.h>
+#include <core/scene/objects/CompoundObject.h>
 #include "FileSourceImporter.h"
 
 namespace Ovito { namespace DataIO {
@@ -33,7 +33,7 @@ namespace Ovito { namespace DataIO {
  *
  * This class is used in conjunction with a FileSourceImporter class.
  */
-class OVITO_CORE_EXPORT FileSource : public DataObject
+class OVITO_CORE_EXPORT FileSource : public CompoundObject
 {
 public:
 
@@ -100,65 +100,8 @@ public:
 	/// \brief Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override;
 
-	/// \brief Returns the list of imported data objects.
-	const QVector<DataObject*>& dataObjects() const { return _dataObjects; }
-
-	/// \brief Inserts a new object into the list of data objects held by this container object.
-	void addDataObject(DataObject* obj) {
-		if(!_dataObjects.contains(obj)) {
-			obj->setSaveWithScene(saveWithScene());
-			_dataObjects.push_back(obj);
-		}
-	}
-
-	/// \brief Looks for an object of the given type in the list of data objects and returns it.
-	template<class T>
-	T* findDataObject() const {
-		for(DataObject* obj : dataObjects()) {
-			T* castObj = dynamic_object_cast<T>(obj);
-			if(castObj) return castObj;
-		}
-		return nullptr;
-	}
-
-	/// \brief Removes all data objects owned by this FileSource that are not
-	///        listed in the given set of active objects.
-	void removeInactiveObjects(const QSet<DataObject*>& activeObjects) {
-		for(int index = _dataObjects.size() - 1; index >= 0; index--)
-			if(!activeObjects.contains(_dataObjects[index]))
-				_dataObjects.remove(index);
-	}
-
-	/// \brief Controls whether the imported data is saved along with the scene.
-	/// \param on \c true if data should be stored in the scene file; \c false if the data resides only in the external file.
-	/// \undoable
-	void setSaveWithScene(bool on) override {
-		DataObject::setSaveWithScene(on);
-		// Propagate flag to sub-objects.
-		for(DataObject* obj : dataObjects())
-			obj->setSaveWithScene(on);
-	}
-
-	/// Returns the attributes set or loaded by the file importer which are fed into the modification pipeline
-	/// along with the data objects.
-	const QVariantMap& attributes() const { return _attributes; }
-
-	/// Sets the attributes that will be fed into the modification pipeline
-	/// along with the data objects.
-	void setAttributes(const QVariantMap& attributes) { _attributes = attributes; }
-
-	/// Resets the attributes that will be fed into the modification pipeline
-	/// along with the data objects.
-	void clearAttributes() { _attributes.clear(); }
-
 	/// Returns the title of this object.
 	virtual QString objectTitle() override;
-
-	/// Returns the number of sub-objects that should be displayed in the modifier stack.
-	virtual int editableSubObjectCount() override;
-
-	/// Returns a sub-object that should be listed in the modifier stack.
-	virtual RefTarget* editableSubObject(int index) override;
 
 public Q_SLOTS:
 
@@ -178,12 +121,6 @@ protected:
 	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::ObjectStatusChanged event.
 	void setStatus(const PipelineStatus& status);
 
-	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
-	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
-
-	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
-	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
-
 	/// Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
@@ -200,9 +137,6 @@ private:
 
 	/// The associated importer object that is responsible for parsing the input file.
 	ReferenceField<FileSourceImporter> _importer;
-
-	/// Stores the imported data objects.
-	VectorReferenceField<DataObject> _dataObjects;
 
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
 	PropertyField<bool> _adjustAnimationIntervalEnabled;
@@ -228,18 +162,14 @@ private:
 	/// The index of the animation frame currently being loaded.
 	int _frameBeingLoaded;
 
-	/// The background file loading task started by evaluate().
-	Future<std::shared_ptr<FileSourceImporter::FrameLoader>> _activeFrameLoader;
+	/// The asynchronous file loading task started by requestFrame().
+	std::shared_ptr<FileSourceImporter::FrameLoader> _activeFrameLoader;
 
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _frameLoaderWatcher;
 
 	/// The status returned by the parser during its last call.
 	PipelineStatus _importStatus;
-
-	/// Attributes set or loaded by the file importer which will be fed into the modification pipeline
-	/// along with the data objects.
-	QVariantMap _attributes;
 
 private:
 
@@ -249,7 +179,6 @@ private:
 	Q_CLASSINFO("ClassNameAlias", "LinkedFileObject");	// This for backward compatibility with files written by Ovito 2.4 and older.
 
 	DECLARE_REFERENCE_FIELD(_importer);
-	DECLARE_VECTOR_REFERENCE_FIELD(_dataObjects);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 	DECLARE_PROPERTY_FIELD(_sourceUrl);
 	DECLARE_PROPERTY_FIELD(_playbackSpeedNumerator);

@@ -41,9 +41,6 @@ public:
 	/// \brief Constructor.
 	Q_INVOKABLE AffineTransformationModifier(DataSet* dataset);
 
-	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
-
 	// Property access functions:
 
 	/// Returns the affine transformation matrix.
@@ -89,6 +86,9 @@ public:
 	void setApplyToSurfaceMesh(bool apply) { _applyToSurfaceMesh = apply; }
 
 protected:
+
+	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

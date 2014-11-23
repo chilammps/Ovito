@@ -33,7 +33,7 @@
 namespace Ovito { namespace DataIO { namespace Internal {
 
 /**
- * A properties editor for the FileSource.
+ * A properties editor for the FileSource object.
  */
 class FileSourceEditor : public PropertiesEditor
 {

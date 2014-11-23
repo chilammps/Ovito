@@ -50,9 +50,6 @@ public:
 	/// Computes the bounding box of the visual representation of the modifier.
 	virtual Box3 boundingBox(TimePoint time,  ObjectNode* contextNode, ModifierApplication* modApp) override;
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
-
 	// Property access functions:
 
 	/// Returns the plane's distance from the origin.
@@ -113,6 +110,9 @@ public:
 	Plane3 slicingPlane(TimePoint time, TimeInterval& validityInterval);
 
 protected:
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

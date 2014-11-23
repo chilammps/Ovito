@@ -43,9 +43,6 @@ public:
 	/// Constructor.
 	Q_INVOKABLE HistogramModifier(DataSet* dataset);
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
-
 	/// Sets the source particle property for which the histogram should be computed.
 	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
 
@@ -107,6 +104,9 @@ protected:
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 private:
 

@@ -27,7 +27,6 @@
 #include <plugins/particles/Particles.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
@@ -113,15 +112,9 @@ bool XYZImporter::inspectNewFile(FileSource* obj)
 		return false;
 
 	// Start task that inspects the file header to determine the number of columns.
-	std::unique_ptr<XYZImportTask> inspectionTask(new XYZImportTask(obj->frames().front()));
-	DataSetContainer& datasetContainer = *dataset()->container();
-	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&XYZImportTask::load,
-			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
-	if(!datasetContainer.taskManager().waitForTask(future))
+	std::shared_ptr<XYZImportTask> inspectionTask = std::make_shared<XYZImportTask>(dataset()->container(), obj->frames().front());
+	if(!dataset()->container()->taskManager().runTask(inspectionTask))
 		return false;
-
-	// This is to throw an exception if an error has occurred.
-	future.result();
 
 	// If column names were given in the XYZ file, use them rather than popping up a dialog.
 	if(inspectionTask->propertiesAssigned()) {
@@ -157,7 +150,7 @@ bool XYZImporter::inspectNewFile(FileSource* obj)
 			mapping.resize(inspectionTask->columnMapping().size());
 		}
 
-		InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
+		InputColumnMappingDialog dialog(mapping, dataset()->mainWindow());
 		if(dialog.exec() == QDialog::Accepted) {
 			setColumnMapping(dialog.mapping());
 			return true;
@@ -292,16 +285,16 @@ inline bool parseBool(const char* s, int& d)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void XYZImporter::XYZImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(
+	setProgressText(
 			tr("Reading XYZ file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Parse number of atoms.
 	int numParticles;
 	if(sscanf(stream.readLine(), "%u", &numParticles) != 1 || numParticles < 0 || numParticles > 1e9)
 		throw Exception(tr("Invalid number of particles in line %1 of XYZ file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
-	futureInterface.setProgressRange(numParticles);
+	setProgressRange(numParticles);
 	QString fileExcerpt = stream.lineString();
 
 	// Regular expression for whitespace characters.
@@ -477,10 +470,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	InputColumnReader columnParser(_columnMapping, *this, numParticles);
 	try {
 		for(size_t i = 0; i < numParticles; i++) {
-			if((i % 4096) == 0) {
-				if(futureInterface.isCanceled()) return;	// Abort!
-				futureInterface.setProgressValue((int)i);
-			}
+			if(!reportProgress(i)) return;
 			stream.readLine();
 			columnParser.readParticle(i, stream.line());
 		}
@@ -529,7 +519,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 	}
 
-	setInfoText(tr("%1 particles").arg(numParticles));
+	setStatus(tr("%1 particles").arg(numParticles));
 }
 
 /******************************************************************************

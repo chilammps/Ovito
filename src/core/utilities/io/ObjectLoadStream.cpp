@@ -89,7 +89,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 				propFieldEntry.targetClass = nullptr;
 			closeChunk();
 
-			propFieldEntry.field = propFieldEntry.definingClass->findPropertyField(propFieldEntry.identifier.constData());
+			propFieldEntry.field = propFieldEntry.definingClass->findPropertyField(propFieldEntry.identifier.constData(), true);
 
 			if(propFieldEntry.field) {
 				if(propFieldEntry.field->isReferenceField() != propFieldEntry.isReferenceField ||

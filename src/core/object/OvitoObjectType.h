@@ -100,10 +100,8 @@ public:
 
 	/// If this is the descriptor of a RefMaker-derived class then this method will return
 	/// the reference field with the given identifier that has been defined in the RefMaker-derived
-	/// class. If no such field is defined by that class then NULL is returned.
-	/// Note that this method will NOT return reference fields that have been defined in
-	/// super-classes.
-	const PropertyFieldDescriptor* findPropertyField(const char* identifier) const;
+	/// class or one of its super classes. If no such field is defined, then NULL is returned.
+	const PropertyFieldDescriptor* findPropertyField(const char* identifier, bool searchSuperClasses = false) const;
 
 	/// If this is a RefTarget derived classes, this specifies the type of editor to use
 	/// when editing objects of this class.

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -105,21 +105,6 @@ public:
 	/// Returns the computed von Mises shear strain values.
 	const ParticleProperty& shearStrainValues() const { OVITO_CHECK_POINTER(_shearStrainValues.constData()); return *_shearStrainValues; }
 
-	/// Returns the computed volumetric strain values.
-	const ParticleProperty& volumetricStrainValues() const { OVITO_CHECK_POINTER(_volumetricStrainValues.constData()); return *_volumetricStrainValues; }
-
-	/// Returns the computed strain tensors.
-	const ParticleProperty& strainTensors() const { OVITO_CHECK_POINTER(_strainTensors.constData()); return *_strainTensors; }
-
-	/// Returns the computed deformation gradient tensors.
-	const ParticleProperty& deformationGradients() const { OVITO_CHECK_POINTER(_deformationGradients.constData()); return *_deformationGradients; }
-
-	/// Returns the computed deformation gradient tensors.
-	const ParticleProperty& nonaffineSquaredDisplacements() const { OVITO_CHECK_POINTER(_nonaffineSquaredDisplacements.constData()); return *_nonaffineSquaredDisplacements; }
-
-	/// Returns the selection of invalid particles.
-	const ParticleProperty& invalidParticles() const { OVITO_CHECK_POINTER(_invalidParticles.constData()); return *_invalidParticles; }
-
 	/// After a successful evaluation of the modifier, this returns the number of invalid particles for which
 	/// the strain tensor could not be computed.
 	size_t invalidParticleCount() const { return _numInvalidParticles; }
@@ -142,20 +127,35 @@ public:
 	/// Sets the relative frame offset to use.
 	void setReferenceFrameOffset(int frameOffset) { _referenceFrameOffset = frameOffset; }
 
+protected:
+
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
 private:
 
 	/// Computes the modifier's results.
-	class AtomicStrainEngine : public AsynchronousParticleModifier::Engine
+	class AtomicStrainEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		AtomicStrainEngine(ParticleProperty* positions, const SimulationCellData& simCell,
+		AtomicStrainEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell,
 				ParticleProperty* refPositions, const SimulationCellData& simCellRef,
 				ParticleProperty* identifiers, ParticleProperty* refIdentifiers,
 				FloatType cutoff, bool eliminateCellDeformation, bool assumeUnwrappedCoordinates,
-                bool calculateDeformationGradients, bool calculateStrainTensors,
-                bool calculateNonaffineSquaredDisplacements) :
+				bool calculateDeformationGradients, bool calculateStrainTensors,
+				bool calculateNonaffineSquaredDisplacements) :
+			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
 			_identifiers(identifiers), _refIdentifiers(refIdentifiers),
@@ -172,7 +172,7 @@ private:
 			_reducedToAbsolute(eliminateCellDeformation ? simCellRef.matrix() : simCell.matrix()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -234,20 +234,6 @@ private:
 		bool _calculateNonaffineSquaredDisplacements;
 		QAtomicInt _numInvalidParticles;
 	};
-
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This stores the cached results of the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _shearStrainValues;

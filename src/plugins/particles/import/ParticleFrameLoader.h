@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_PARTICLE_IMPORT_TASK_H
-#define __OVITO_PARTICLE_IMPORT_TASK_H
+#ifndef __OVITO_PARTICLE_FRAME_LOADER_H
+#define __OVITO_PARTICLE_FRAME_LOADER_H
 
 #include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/FileSourceImporter.h>
@@ -34,7 +34,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 /**
  * Background loading task and data container used by a ParticleImporter derived class.
  */
-class OVITO_PARTICLES_EXPORT ParticleImportTask : public FileSourceImporter::FrameLoader
+class OVITO_PARTICLES_EXPORT ParticleFrameLoader : public FileSourceImporter::FrameLoader
 {
 public:
 
@@ -49,21 +49,17 @@ public:
 public:
 
 	/// Constructor.
-	ParticleImportTask(const FileSourceImporter::Frame& frame, bool isNewFile)
-		: FileSourceImporter::FrameLoader(frame),
-		  _datasetContainer(nullptr),
+	ParticleFrameLoader(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile)
+		: FileSourceImporter::FrameLoader(container, frame),
 		  _timestep(-1),
 		  _isNewFile(isNewFile) {}
 
-	/// Is called in the background thread to perform the data file import.
-	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
+	/// Loads the requested frame data from the external file.
+	virtual void perform() override;
 
-	/// Returns the current dataset container.
-	DataSetContainer& datasetContainer() const { OVITO_CHECK_POINTER(_datasetContainer); return *_datasetContainer; }
-
-	/// Lets the data container insert the data it holds into the scene by creating
-	/// appropriate data objects.
-	virtual QSet<DataObject*> insertIntoScene(FileSource* destination) override;
+	/// Inserts the data loaded by perform() into the provided container object. This function is
+	/// called by the system from the main thread after the asynchronous loading task has finished.
+	virtual void handOver(FileSource* container) override;
 
 	/// Returns the current simulation cell matrix.
 	const SimulationCellData& simulationCell() const { return _simulationCell; }
@@ -153,7 +149,16 @@ public:
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) = 0;
+	virtual void parseFile(CompressedTextReader& stream) = 0;
+
+	// Updates the progress indicator.
+	bool reportProgress(int particleIndex) {
+		if((particleIndex % 4096) == 0) {
+			if(isCanceled()) return false;
+			setProgressValue(particleIndex);
+		}
+		return true;
+	}
 
 	/// Inserts the stores particle types into the given destination object.
 	void insertParticleTypes(ParticlePropertyObject* propertyObj);
@@ -172,9 +177,6 @@ private:
 	/// The simulation timestep number.
 	int _timestep;
 
-	/// The current dataset container.
-	DataSetContainer* _datasetContainer;
-
 	/// Flag indicating that the file currently being loaded has been newly selected by the user.
 	/// If not, then the file being loaded is just another frame from the existing sequence.
 	/// In this case we don't want to overwrite any settings like the periodic boundary flags that
@@ -184,4 +186,4 @@ private:
 
 }}}}	// End of namespace
 
-#endif // __OVITO_PARTICLE_IMPORT_TASK_H
+#endif // __OVITO_PARTICLE_FRAME_LOADER_H

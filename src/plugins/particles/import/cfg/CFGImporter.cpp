@@ -152,9 +152,9 @@ void CFGHeader::parse(CompressedTextReader& stream)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void CFGImporter::CFGImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading CFG file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading CFG file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	CFGHeader header;
 	header.parse(stream);
@@ -184,7 +184,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		generateAutomaticColumnMapping(cfgMapping, header.auxiliaryFields);
 	}
 
-	futureInterface.setProgressRange(header.numParticles);
+	setProgressRange(header.numParticles);
 
 	// Prepare the mapping between input file columns and particle properties.
 	InputColumnReader columnParser(cfgMapping, *this, header.numParticles);
@@ -209,11 +209,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	for(int particleIndex = 0; particleIndex < header.numParticles; ) {
 
 		// Update progress indicator.
-		if((particleIndex % 4000) == 0) {
-			if(futureInterface.isCanceled())
-				return;	// Abort!
-			futureInterface.setProgressValue(particleIndex);
-		}
+		if(!reportProgress(particleIndex)) return;
 
 		if(!isFirstLine)
 			stream.readLine();
@@ -281,7 +277,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			*p = H * (*p);
 	}
 
-	setInfoText(tr("Number of particles: %1").arg(header.numParticles));
+	setStatus(tr("Number of particles: %1").arg(header.numParticles));
 }
 
 /******************************************************************************

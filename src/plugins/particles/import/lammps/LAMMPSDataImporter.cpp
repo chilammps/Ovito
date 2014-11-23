@@ -83,18 +83,12 @@ bool LAMMPSDataImporter::inspectNewFile(FileSource* obj)
 		return true;
 
 	// Start task that inspects the file to detect the LAMMPS atom style.
-	std::unique_ptr<LAMMPSDataImportTask> inspectionTask(new LAMMPSDataImportTask(obj->frames().front(), true, atomStyle(), true));
-	DataSetContainer& datasetContainer = *dataset()->container();
-	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&LAMMPSDataImportTask::load,
-			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
-	if(!datasetContainer.taskManager().waitForTask(future))
+	std::shared_ptr<LAMMPSDataImportTask> inspectionTask = std::make_shared<LAMMPSDataImportTask>(dataset()->container(), obj->frames().front(), true, atomStyle(), true);
+	if(!dataset()->container()->taskManager().runTask(inspectionTask))
 		return false;
 
-	// This is to throw an exception if an error has occurred.
-	future.result();
-
 	if(inspectionTask->atomStyle() == AtomStyle_Unknown) {
-		return showAtomStyleDialog(datasetContainer.mainWindow());
+		return showAtomStyleDialog(dataset()->mainWindow());
 	}
 	else setAtomStyle(inspectionTask->atomStyle());
 
@@ -132,11 +126,11 @@ bool LAMMPSDataImporter::showAtomStyleDialog(QWidget* parent)
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& stream)
 {
 	using namespace std;
 
-	futureInterface.setProgressText(tr("Reading LAMMPS data file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading LAMMPS data file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Read comment line
 	stream.readLine();
@@ -164,7 +158,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
     		if(sscanf(line.c_str(), "%u", &natoms) != 1)
     			throw Exception(tr("Invalid number of atoms (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
 
-			futureInterface.setProgressRange(natoms);
+			setProgressRange(natoms);
 		}
     	else if(line.find("atom types") != string::npos) {
     		if(sscanf(line.c_str(), "%u", &natomtypes) != 1)
@@ -264,7 +258,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 
 				if(_atomStyle == AtomStyle_Atomic || _atomStyle == AtomStyle_Hybrid) {
 					for(int i = 0; i < natoms; i++, ++pos, ++atomType, ++atomId) {
-						if(!reportProgress(futureInterface, i)) return;
+						if(!reportProgress(i)) return;
 						if(i != 0) stream.readLine();
 						bool invalidLine;
 						if(!pbcImage)
@@ -284,7 +278,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 					addParticleProperty(chargeProperty);
 					FloatType* charge = chargeProperty->dataFloat();
 					for(int i = 0; i < natoms; i++, ++pos, ++atomType, ++atomId, ++charge) {
-						if(!reportProgress(futureInterface, i)) return;
+						if(!reportProgress(i)) return;
 						if(i != 0) stream.readLine();
 						bool invalidLine;
 						if(!pbcImage)
@@ -304,7 +298,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 					addParticleProperty(moleculeProperty);
 					int* molecule = moleculeProperty->dataInt();
 					for(int i = 0; i < natoms; i++, ++pos, ++atomType, ++atomId, ++molecule) {
-						if(!reportProgress(futureInterface, i)) return;
+						if(!reportProgress(i)) return;
 						if(i != 0) stream.readLine();
 						bool invalidLine;
 						if(!pbcImage)
@@ -340,7 +334,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 			addParticleProperty(velocityProperty);
 
 			for(int i = 0; i < natoms; i++) {
-				if(!reportProgress(futureInterface, i)) return;
+				if(!reportProgress(i)) return;
 				stream.readLine();
 
 				Vector3 v;
@@ -382,7 +376,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 	if(!foundAtomsSection)
 		throw Exception("LAMMPS data file does not contain atomic coordinates.");
 
-	setInfoText(tr("Number of particles: %1").arg(natoms));
+	setStatus(tr("Number of particles: %1").arg(natoms));
 }
 
 /******************************************************************************

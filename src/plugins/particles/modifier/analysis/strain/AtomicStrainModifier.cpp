@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -71,12 +71,6 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
     _cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _calculateNonaffineSquaredDisplacements(false),
     _selectInvalidParticles(true),
-	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), tr("Shear Strain"), false)),
-	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), tr("Volumetric Strain"), false)),
-	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty, 0, false)),
-	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty, 0, false)),
-	_nonaffineSquaredDisplacements(new ParticleProperty(0, ParticleProperty::NonaffineSquaredDisplacementProperty, 0, false)),
-    _invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty, 0, false)),
     _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1)
 {
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceObject);
@@ -132,7 +126,7 @@ void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const Ovito
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> AtomicStrainModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -201,7 +195,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	ParticlePropertyObject* refIdentifierProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::IdentifierProperty);
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
+	return std::make_shared<AtomicStrainEngine>(validityInterval, posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
 			identifierProperty ? identifierProperty->storage() : nullptr, refIdentifierProperty ? refIdentifierProperty->storage() : nullptr,
             cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors(),
             calculateNonaffineSquaredDisplacements());
@@ -210,9 +204,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futureInterface)
+void AtomicStrainModifier::AtomicStrainEngine::perform()
 {
-	futureInterface.setProgressText(tr("Computing atomic strain tensors"));
+	setProgressText(tr("Computing atomic strain tensors"));
 
 	// Build particle-to-particle index maps.
 	std::vector<size_t> currentToRefIndexMap(positions()->size());
@@ -230,7 +224,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 			index++;
 		}
 
-		if(futureInterface.isCanceled())
+		if(isCanceled())
 			return;
 
 		// Check for duplicate identifiers in current configuration
@@ -249,7 +243,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 		}
 #endif
 
-		if(futureInterface.isCanceled())
+		if(isCanceled())
 			return;
 
 		// Build index maps.
@@ -262,7 +256,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 			++id;
 		}
 
-		if(futureInterface.isCanceled())
+		if(isCanceled())
 			return;
 
 		id = _refIdentifiers->constDataInt();
@@ -282,16 +276,16 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 		std::iota(refToCurrentIndexMap.begin(), refToCurrentIndexMap.end(), size_t(0));
 		std::iota(currentToRefIndexMap.begin(), currentToRefIndexMap.end(), size_t(0));
 	}
-	if(futureInterface.isCanceled())
+	if(isCanceled())
 		return;
 
 	// Prepare the neighbor list for the reference configuration.
 	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(refPositions(), refCell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(refPositions(), refCell()) || isCanceled())
 		return;
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, &refToCurrentIndexMap, &currentToRefIndexMap, this](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, &refToCurrentIndexMap, &currentToRefIndexMap, this](size_t index) {
 		if(!this->computeStrain(index, neighborListBuilder, refToCurrentIndexMap, currentToRefIndexMap))
 			_numInvalidParticles.fetchAndAddRelaxed(1);
 	});
@@ -419,64 +413,46 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
+void AtomicStrainModifier::transferComputationResults(ComputeEngine* engine)
 {
 	AtomicStrainEngine* eng = static_cast<AtomicStrainEngine*>(engine);
-	if(eng->shearStrains())
-		_shearStrainValues = eng->shearStrains();
-	else
-		_shearStrainValues->resize(0, false);
-	if(eng->volumetricStrains())
-		_volumetricStrainValues = eng->volumetricStrains();
-	else
-		_volumetricStrainValues->resize(0, false);
-	if(eng->strainTensors())
-		_strainTensors = eng->strainTensors();
-	else
-		_strainTensors->resize(0, false);
-	if(eng->deformationGradients())
-		_deformationGradients = eng->deformationGradients();
-	else
-		_deformationGradients->resize(0, false);
-	if(eng->nonaffineSquaredDisplacements())
-		_nonaffineSquaredDisplacements = eng->nonaffineSquaredDisplacements();
-	else
-		_nonaffineSquaredDisplacements->resize(0, false);
-	if(eng->invalidParticles())
-		_invalidParticles = eng->invalidParticles();
-	else
-		_invalidParticles->resize(0, false);
-
+	_shearStrainValues = eng->shearStrains();
+	_volumetricStrainValues = eng->volumetricStrains();
+	_strainTensors = eng->strainTensors();
+	_deformationGradients = eng->deformationGradients();
+	_nonaffineSquaredDisplacements = eng->nonaffineSquaredDisplacements();
+	_invalidParticles = eng->invalidParticles();
 	_numInvalidParticles = eng->numInvalidParticles();
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AtomicStrainModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(outputParticleCount() != shearStrainValues().size() || outputParticleCount() != volumetricStrainValues().size())
+	if(!_shearStrainValues || !_volumetricStrainValues)
+		throw Exception(tr("No computation results available."));
+
+	if(outputParticleCount() != _shearStrainValues->size() || outputParticleCount() != _volumetricStrainValues->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	if(selectInvalidParticles() && invalidParticles().size() == outputParticleCount())
+	if(selectInvalidParticles() && _invalidParticles)
 		outputStandardProperty(_invalidParticles.data());
 
-	if(calculateStrainTensors() && strainTensors().size() == outputParticleCount())
+	if(calculateStrainTensors() && _strainTensors)
 		outputStandardProperty(_strainTensors.data());
 
-	if(calculateDeformationGradients() && deformationGradients().size() == outputParticleCount())
+	if(calculateDeformationGradients() && _deformationGradients)
 		outputStandardProperty(_deformationGradients.data());
 
-	if(calculateNonaffineSquaredDisplacements() && nonaffineSquaredDisplacements().size() == outputParticleCount())
+	if(calculateNonaffineSquaredDisplacements() && _nonaffineSquaredDisplacements)
 		outputStandardProperty(_nonaffineSquaredDisplacements.data());
 
-	if(volumetricStrainValues().size() == outputParticleCount())
-		outputCustomProperty(_volumetricStrainValues.data());
-
-	if(shearStrainValues().size() == outputParticleCount())
-		outputCustomProperty(_shearStrainValues.data());
+	outputCustomProperty(_volumetricStrainValues.data());
+	outputCustomProperty(_shearStrainValues.data());
 
 	if(invalidParticleCount() == 0)
 		return PipelineStatus::Success;
@@ -489,21 +465,19 @@ PipelineStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeIn
 ******************************************************************************/
 void AtomicStrainModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute brightness values when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(AtomicStrainModifier::_eliminateCellDeformation) ||
-				field == PROPERTY_FIELD(AtomicStrainModifier::_assumeUnwrappedCoordinates) ||
-				field == PROPERTY_FIELD(AtomicStrainModifier::_cutoff) ||
-				field == PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients) ||
-                field == PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors) ||
-                field == PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements) ||
-                field == PROPERTY_FIELD(AtomicStrainModifier::_useReferenceFrameOffset) ||
-                field == PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber) ||
-                field == PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameOffset))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute brightness values when the parameters have been changed.
+	if(field == PROPERTY_FIELD(AtomicStrainModifier::_eliminateCellDeformation) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_assumeUnwrappedCoordinates) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_cutoff) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_useReferenceFrameOffset) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber) ||
+			field == PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameOffset))
+		invalidateCachedResults();
 }
 
 namespace Internal {

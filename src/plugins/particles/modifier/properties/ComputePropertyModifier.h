@@ -47,11 +47,6 @@ public:
 		INIT_PROPERTY_FIELD(ComputePropertyModifier::_onlySelectedParticles);
 	}
 
-	//////////////////////////// from base classes ////////////////////////////
-
-	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
-
 	/////////////////////////// specific methods ///////////////////////////////
 
 	/// \brief Sets the math expressions that are used to calculate the values of the new property's components.
@@ -124,6 +119,9 @@ protected:
 
 	/// \brief Allows the object to parse the serialized contents of a property field in a custom way.
 	virtual bool loadPropertyFieldFromStream(ObjectLoadStream& stream, const ObjectLoadStream::SerializedPropertyField& serializedField) override;
+
+	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	/// \brief Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;

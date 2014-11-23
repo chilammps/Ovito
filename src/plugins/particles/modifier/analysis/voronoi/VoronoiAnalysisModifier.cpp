@@ -64,7 +64,6 @@ namespace Internal {
 VoronoiAnalysisModifier::VoronoiAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_useCutoff(false), _cutoff(6.0), _onlySelected(false), _computeIndices(false), _edgeCount(6),
 	_useRadii(false), _edgeThreshold(0), _faceThreshold(0),
-	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty, 0, false)),
 	_simulationBoxVolume(0), _voronoiVolumeSum(0)
 {
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_useCutoff);
@@ -80,7 +79,7 @@ VoronoiAnalysisModifier::VoronoiAnalysisModifier(DataSet* dataset) : Asynchronou
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> VoronoiAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> VoronoiAnalysisModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -100,6 +99,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> VoronoiAnalysisModifier::c
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<VoronoiAnalysisEngine>(
+			validityInterval,
 			posProperty->storage(),
 			selectionProperty ? selectionProperty->storage() : nullptr,
 			std::move(radii),
@@ -114,9 +114,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> VoronoiAnalysisModifier::c
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 {
-	futureInterface.setProgressText(tr("Computing Voronoi cells"));
+	setProgressText(tr("Computing Voronoi cells"));
 
 	if(_positions->size() == 0)
 		return;	// Nothing to do
@@ -138,14 +138,16 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase
 	double boxDiameter;
 	if(_cutoff > 0) {
 		// Prepare the cutoff-based neighbor list generator.
-		if(!onTheFlyNeighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
+		if(!onTheFlyNeighborListBuilder.prepare(_positions.data(), _simCell))
 			return;
 	}
 	else {
 		// Prepare the nearest neighbor list generator.
-		if(!treeNeighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
+		if(!treeNeighborListBuilder.prepare(_positions.data(), _simCell))
 			return;
 	}
+	if(isCanceled())
+		return;
 
 	// This is the size we use to initialize Voronoi cells. Must be larger than the simulation box.
 	boxDiameter = sqrt(
@@ -168,7 +170,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase
 
 	// Perform analysis, particle-wise parallel.
 	std::mutex mutex;
-	parallelFor(_positions->size(), futureInterface,
+	parallelFor(_positions->size(), *this,
 			[&onTheFlyNeighborListBuilder, &treeNeighborListBuilder, this, sqEdgeThreshold, &mutex, boxDiameter,
 			 planeNormals, corner1, corner2](size_t index) {
 
@@ -295,9 +297,9 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void VoronoiAnalysisModifier::retrieveModifierResults(Engine* engine)
+void VoronoiAnalysisModifier::transferComputationResults(ComputeEngine* engine)
 {
 	VoronoiAnalysisEngine* eng = static_cast<VoronoiAnalysisEngine*>(engine);
 	_coordinationNumbers = eng->coordinationNumbers();
@@ -308,17 +310,21 @@ void VoronoiAnalysisModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus VoronoiAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus VoronoiAnalysisModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(!coordinationNumbers() || inputParticleCount() != coordinationNumbers()->size())
+	if(!_coordinationNumbers)
+		throw Exception(tr("No computation results available."));
+
+	if(inputParticleCount() != _coordinationNumbers->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
-	outputStandardProperty(coordinationNumbers());
-	outputCustomProperty(atomicVolumes());
-	if(voronoiIndices())
-		outputCustomProperty(voronoiIndices());
+	outputStandardProperty(_coordinationNumbers.data());
+	outputCustomProperty(_atomicVolumes.data());
+	if(_voronoiIndices)
+		outputCustomProperty(_voronoiIndices.data());
 
 	// Check computed Voronoi cell volume sum.
 	if(std::abs(_voronoiVolumeSum - _simulationBoxVolume) > 1e-10 * inputParticleCount() * _simulationBoxVolume) {
@@ -349,11 +355,10 @@ PipelineStatus VoronoiAnalysisModifier::applyModifierResults(TimePoint time, Tim
 ******************************************************************************/
 void VoronoiAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute modifier results when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		invalidateCachedResults();
-	}
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute modifier results when the parameters have been changed.
+	invalidateCachedResults();
 }
 
 namespace Internal {

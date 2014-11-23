@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -38,9 +38,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE WignerSeitzAnalysisModifier(DataSet* dataset);
-
-	/// Returns the computed occupancy numbers.
-	const ParticleProperty& occupancyNumbers() const { OVITO_CHECK_POINTER(_occupancyNumbers.constData()); return *_occupancyNumbers; }
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for the Wigner-Seitz analysis.
@@ -86,23 +83,38 @@ public:
 	/// Returns the number of interstitial atoms found during the last analysis run.
 	int interstitialCount() const { return _interstitialCount; }
 
+protected:
+
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
 private:
 
 	/// Computes the modifier's results.
-	class WignerSeitzAnalysisEngine : public AsynchronousParticleModifier::Engine
+	class WignerSeitzAnalysisEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		WignerSeitzAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell,
+		WignerSeitzAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell,
 				ParticleProperty* refPositions, const SimulationCellData& simCellRef, bool eliminateCellDeformation) :
+			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
 			_eliminateCellDeformation(eliminateCellDeformation),
 			_occupancyNumbers(new ParticleProperty(refPositions->size(), qMetaTypeId<int>(), sizeof(int), 1, sizeof(int), tr("Occupancy"), true)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -136,20 +148,6 @@ private:
 		int _vacancyCount;
 		int _interstitialCount;
 	};
-
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Returns the reference state to be used to perform the analysis at the given time.
 	PipelineFlowState getReferenceState(TimePoint time);

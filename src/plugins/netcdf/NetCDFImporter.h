@@ -84,21 +84,26 @@ public:
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent = nullptr);
 
-protected:
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<NetCDFImportTask>(dataset()->container(), frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
+	}
+
+private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class OVITO_NETCDF_EXPORT NetCDFImportTask : public ParticleImportTask
+	class OVITO_NETCDF_EXPORT NetCDFImportTask : public ParticleFrameLoader
 	{
 	public:
 
 		/// Normal constructor.
-		NetCDFImportTask(const FileSourceImporter::Frame& frame, bool isNewFile,
+		NetCDFImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile,
 				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
-			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping), _ncIsOpen(false), _ncid(-1) {}
+			: ParticleFrameLoader(container, frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping), _ncIsOpen(false), _ncid(-1) {}
 
 		/// Constructor used when reading only the file header information.
-		NetCDFImportTask(const FileSourceImporter::Frame& frame)
-			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false), _ncIsOpen(false), _ncid(-1) {}
+		NetCDFImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame)
+			: ParticleFrameLoader(container, frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false), _ncIsOpen(false), _ncid(-1) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
@@ -109,7 +114,7 @@ protected:
         void detectDims(int movieFrame, int particleCount, int nDims, int *dimIds, int &nDimsDetected, int &componentCount, int &nativeComponentCount, size_t *startp, size_t *countp);
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 
 	private:
 
@@ -143,11 +148,6 @@ protected:
 
 	/// \brief Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<NetCDFImportTask>(frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
-	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;

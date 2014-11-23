@@ -53,10 +53,12 @@ public:
 	/// Returns a text string describing the status.
 	const QString& text() const { return _text; }
 
+	/// Changes the text string describing the status.
+	void setText(const QString& text) { _text = text; }
+
 	/// Tests two status objects for equality.
 	bool operator==(const PipelineStatus& other) const {
-		return (_type == other._type) &&
-				(_text == other._text);
+		return (_type == other._type) && (_text == other._text);
 	}
 
 	/// Tests two status objects for inequality.

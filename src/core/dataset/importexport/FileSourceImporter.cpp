@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -376,27 +376,6 @@ bool FileSourceImporter::matchesWildcardPattern(const QString& pattern, const QS
 		++f;
 	}
 	return p == pattern.constEnd() && f == filename.constEnd();
-}
-
-
-/******************************************************************************
-* Reads the data from the input file(s).
-******************************************************************************/
-Future<std::shared_ptr<FileSourceImporter::FrameLoader>> FileSourceImporter::loadFrame(const FileSourceImporter::Frame& frame)
-{
-	std::shared_ptr<FrameLoader> importTask = createImportTask(frame);
-	DataSetContainer& container = *dataset()->container();
-
-	return container.taskManager().runInBackground<std::shared_ptr<FrameLoader>>(
-			[importTask, &container] (FutureInterface<std::shared_ptr<FrameLoader>>& futureInterface) {
-
-		// Run the task
-		importTask->load(container, futureInterface);
-
-		// Return the importer task object as the result.
-		if(!futureInterface.isCanceled())
-			futureInterface.setResult(importTask);
-	});
 }
 
 }}	// End of namespace

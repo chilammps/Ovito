@@ -107,7 +107,7 @@ void InputColumnMapping::validate() const
 /******************************************************************************
  * Initializes the object.
  *****************************************************************************/
-InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleImportTask& destination, size_t particleCount)
+InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleFrameLoader& destination, size_t particleCount)
 	: _mapping(mapping), _destination(destination),
 	  _intMetaTypeId(qMetaTypeId<int>()), _floatMetaTypeId(qMetaTypeId<FloatType>()),
 	  _usingNamedParticleTypes(false)

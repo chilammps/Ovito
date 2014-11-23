@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -72,19 +72,36 @@ public:
 	/// Returns the surface area computed during the last evaluation of the modifier.
 	FloatType surfaceArea() const { return _surfaceArea; }
 
-public:
+protected:
+
+	/// Handles reference events sent by reference targets of this object.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
+private:
 
 	/// Computation engine that builds the surface mesh.
-	class ConstructSurfaceEngine : public AsynchronousParticleModifier::Engine
+	class ConstructSurfaceEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		ConstructSurfaceEngine(ParticleProperty* positions, ParticleProperty* selection, const SimulationCellData& simCell, FloatType radius, int smoothingLevel) :
-			_positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false) {}
+		ConstructSurfaceEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* selection, const SimulationCellData& simCell, FloatType radius, int smoothingLevel) :
+			ComputeEngine(validityInterval), _positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the generated mesh.
 		HalfEdgeMesh& mesh() { return _mesh; }
@@ -119,25 +136,6 @@ public:
 		double _surfaceArea;
 		bool _isCompletelySolid;
 	};
-
-protected:
-
-	/// Handles reference events sent by reference targets of this object.
-	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
-
-private:
 
 	/// Controls the radius of the probe sphere.
 	PropertyField<FloatType> _radius;

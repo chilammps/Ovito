@@ -61,6 +61,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/SelectionSet.cpp
 	scene/objects/DisplayObject.cpp
 	scene/objects/DataObject.cpp
+	scene/objects/CompoundObject.cpp
 	scene/objects/geometry/TriMeshObject.cpp
 	scene/objects/geometry/TriMeshDisplay.cpp
 	scene/objects/camera/CameraObject.cpp

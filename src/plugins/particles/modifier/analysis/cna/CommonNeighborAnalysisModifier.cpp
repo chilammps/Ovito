@@ -66,20 +66,18 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier(DataSet* dataset)
 ******************************************************************************/
 void CommonNeighborAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute results when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff) ||
-			field == PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode))
-			invalidateCachedResults();
-	}
-
 	StructureIdentificationModifier::propertyChanged(field);
+
+	// Recompute results when the parameters have been changed.
+	if(field == PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff) ||
+		field == PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode))
+		invalidateCachedResults();
 }
 
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CommonNeighborAnalysisModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
 		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
@@ -90,28 +88,28 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModi
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	if(adaptiveMode())
-		return std::make_shared<AdaptiveCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
+		return std::make_shared<AdaptiveCNAEngine>(validityInterval, posProperty->storage(), simCell->data());
 	else
-		return std::make_shared<FixedCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data(), cutoff());
+		return std::make_shared<FixedCNAEngine>(validityInterval, posProperty->storage(), simCell->data(), cutoff());
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void CommonNeighborAnalysisModifier::AdaptiveCNAEngine::perform()
 {
-	futureInterface.setProgressText(tr("Performing adaptive common neighbor analysis"));
+	setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
 	TreeNeighborListBuilder neighborListBuilder(MAX_NEIGHBORS);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructureAdaptive(neighborListBuilder, index));
 	});
 }
@@ -119,20 +117,20 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void CommonNeighborAnalysisModifier::FixedCNAEngine::perform()
 {
-	futureInterface.setProgressText(tr("Performing common neighbor analysis"));
+	setProgressText(tr("Performing common neighbor analysis"));
 
 	// Prepare the neighbor list.
 	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructureFixed(neighborListBuilder, index));
 	});
 }

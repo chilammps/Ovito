@@ -53,9 +53,6 @@ public:
 	/// Constructor.
 	Q_INVOKABLE SpatialCorrelationFunctionModifier(DataSet* dataset);
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
-
 	/// Sets the first source particle property for which the correlation function is computed.
 	void setSourceProperty1(const ParticlePropertyReference& prop) { _sourceProperty1 = prop; }
 
@@ -149,23 +146,25 @@ public:
 private:
 
     /// Computes the modifier's results.
-    class SpatialCorrelationAnalysisEngine : public AsynchronousParticleModifier::Engine
+    class SpatialCorrelationAnalysisEngine : public ComputeEngine
     {
     public:
        
         /// Constructor.
-        SpatialCorrelationAnalysisEngine(ParticleProperty *posProperty,
+        SpatialCorrelationAnalysisEngine(const TimeInterval& validityInterval,
+        								 ParticleProperty *posProperty,
                                          ParticleProperty *property1, int vecComponent1, int vecComponentCount1,
                                          ParticleProperty *property2, int vecComponent2, int vecComponentCount2,
                                          int numberOfBinsX, int numberOfBinsY,
                                          Vector3 recX, Vector3 recY) :
+            ComputeEngine(validityInterval),
             _posProperty(posProperty),
             _property1(property1), _vecComponent1(vecComponent1), _vecComponentCount1(vecComponentCount1),
             _property2(property2), _vecComponent2(vecComponent2), _vecComponentCount2(vecComponentCount2),
             _numberOfBinsX(numberOfBinsX), _numberOfBinsY(numberOfBinsY), _recX(recX), _recY(recY) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* posProperty() const { return _posProperty.data(); }
@@ -226,17 +225,20 @@ private:
 
 protected:
 
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
+
 	/// Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
 
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
 
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override {
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override {
         return PipelineStatus::Success;
     };
 

@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/FileSourceImporter.h>
 #include <core/utilities/mesh/HalfEdgeMesh.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/import/ParticleImportTask.h>
+#include <plugins/particles/import/ParticleFrameLoader.h>
 #include <plugins/crystalanalysis/data/patterns/StructurePattern.h>
 
 namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
@@ -61,24 +61,30 @@ public:
 	/// Controls the loading of the associated particle file.
 	void setLoadParticles(bool enable) { _loadParticles = enable; }
 
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<CrystalAnalysisFrameLoader>(dataset()->container(), frame, _loadParticles);
+	}
+
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class CrystalAnalysisImportTask : public ParticleImportTask
+	class CrystalAnalysisFrameLoader : public ParticleFrameLoader
 	{
 	public:
 
-		/// Normal constructor.
-		CrystalAnalysisImportTask(const FileSourceImporter::Frame& frame, bool loadParticles) : ParticleImportTask(frame, true), _loadParticles(loadParticles) {}
+		/// Constructor.
+		CrystalAnalysisFrameLoader(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool loadParticles)
+			: ParticleFrameLoader(container, frame, true), _loadParticles(loadParticles) {}
 
-		/// Lets the data container insert the data it holds into the scene by creating
-		/// appropriate data objects.
-		virtual QSet<DataObject*> insertIntoScene(FileSource* destination) override;
+		/// Inserts the data loaded by perform() into the provided container object. This function is
+		/// called by the system from the main thread after the asynchronous loading task has finished.
+		virtual void handOver(FileSource* container) override;
 
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 
 		struct BurgersVectorFamilyInfo {
 			int id;
@@ -140,11 +146,6 @@ protected:
 		/// This is the sub-task task that loads the particles.
 		std::shared_ptr<FileSourceImporter::FrameLoader> _particleLoadTask;
 	};
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<CrystalAnalysisImportTask>(frame, _loadParticles);
-	}
 
 	/// This method is called when the scene node for the FileSource is created.
 	virtual void prepareSceneNode(ObjectNode* node, FileSource* importObj) override;

@@ -28,54 +28,37 @@
 
 namespace Ovito { namespace Util { namespace Concurrency {
 
-class TaskBase : public QRunnable
+class AsynchronousTask : public FutureInterface<void>, public QRunnable
 {
 public:
 
-	TaskBase() {
+	/// Constructor.
+	AsynchronousTask() {
 		setAutoDelete(false);
 	}
 
-	virtual void runInternal() = 0;
-};
-
-template<typename R, typename Function>
-class Task : public TaskBase
-{
-public:
-
-	Task(Function fn) : _p(std::make_shared<FutureInterface<R>>()), _function(fn) {}
-
-	virtual void runInternal() override {
-		auto p = _p;
-		if(!p || !p->reportStarted()) {
-			return;
-		}
-		try {
-			_function(*p.get());
-		}
-		catch(...) {
-			p->reportException();
-		}
-		p->reportFinished();
-	}
-
-	virtual void run() override {
-		runInternal();
-		// Detach QRunnable from future interface.
-		_p.reset();
-	}
-
-	Future<R> start() {
-		_p->_runnable = this;
-		auto p2 = _p;
-		QThreadPool::globalInstance()->start(this);
-		return Future<R>(p2);
-	}
+	/// This function must be implemented by subclasses to perform the actual task.
+	virtual void perform() = 0;
 
 private:
-	Function _function;
-	std::shared_ptr<FutureInterface<R>> _p;
+
+	/// Implementation of QRunnable.
+	virtual void run() override {
+		tryToRunImmediately();
+	}
+
+	/// Implementation of FutureInterface.
+	virtual void tryToRunImmediately() override {
+		if(!this->reportStarted())
+			return;
+		try {
+			perform();
+		}
+		catch(...) {
+			this->reportException();
+		}
+		this->reportFinished();
+	}
 };
 
 }}}	// End of namespace

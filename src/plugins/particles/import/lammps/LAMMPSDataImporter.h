@@ -93,18 +93,23 @@ public:
 	/// Displays a dialog box that allows the user to select the LAMMPS atom style of the data file.
 	bool showAtomStyleDialog(QWidget* parent);
 
-protected:
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<LAMMPSDataImportTask>(dataset()->container(), frame, isNewlySelectedFile(), atomStyle());
+	}
+
+private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class LAMMPSDataImportTask : public ParticleImportTask
+	class LAMMPSDataImportTask : public ParticleFrameLoader
 	{
 	public:
 
 		/// Normal constructor.
-		LAMMPSDataImportTask(const FileSourceImporter::Frame& frame,
+		LAMMPSDataImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame,
 				bool isNewFile,
 				LAMMPSAtomStyle atomStyle = AtomStyle_Unknown,
-				bool detectAtomStyle = false) : ParticleImportTask(frame, isNewFile), _atomStyle(atomStyle), _detectAtomStyle(detectAtomStyle) {}
+				bool detectAtomStyle = false) : ParticleFrameLoader(container, frame, isNewFile), _atomStyle(atomStyle), _detectAtomStyle(detectAtomStyle) {}
 
 		/// Returns the LAMMPS atom style used in the data file.
 		LAMMPSAtomStyle atomStyle() const { return _atomStyle; }
@@ -115,28 +120,12 @@ protected:
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
-
-		// Updates the progress indicator.
-		bool reportProgress(FutureInterfaceBase& futureInterface, int progressValue) {
-			if((progressValue % 4096) == 0) {
-				if(futureInterface.isCanceled()) return false;
-				futureInterface.setProgressValue(progressValue);
-			}
-			return true;
-		}
+		virtual void parseFile(CompressedTextReader& stream) override;
 
 		/// The LAMMPS atom style used by the data file.
 		LAMMPSAtomStyle _atomStyle;
 		bool _detectAtomStyle;
 	};
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<LAMMPSDataImportTask>(frame, isNewlySelectedFile(), atomStyle());
-	}
-
-private:
 
 	/// The LAMMPS atom style used by the data format.
 	PropertyField<LAMMPSAtomStyle, int> _atomStyle;

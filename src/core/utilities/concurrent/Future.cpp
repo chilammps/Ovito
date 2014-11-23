@@ -35,8 +35,6 @@ enum {
 FutureInterfaceBase::~FutureInterfaceBase()
 {
 	//qDebug() << "FutureInterfaceBase::~FutureInterfaceBase() this=" << this;
-	// Clean up the associated QRunnable object.
-	delete _runnable;
 }
 
 void FutureInterfaceBase::cancel()
@@ -115,12 +113,6 @@ void FutureInterfaceBase::reportResultReady()
     sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
 }
 
-void FutureInterfaceBase::tryToRunImmediately()
-{
-	if(_runnable)
-		_runnable->runInternal();
-}
-
 void FutureInterfaceBase::waitForResult()
 {
 	//qDebug() << "WAIT FOR RESULT FutureInterfaceBase::waitForResult() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
@@ -191,7 +183,7 @@ void FutureInterfaceBase::unregisterWatcher(FutureWatcher* watcher)
 	_watchers.removeOne(watcher);
 }
 
-bool FutureInterfaceBase::waitForSubTask(FutureInterfaceBase* subTask)
+bool FutureInterfaceBase::waitForSubTask(const std::shared_ptr<FutureInterfaceBase>& subTask)
 {
 	//qDebug() << "BEG FutureInterfaceBase::waitForSubTask() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText() << "subtask=" << subTask;
 	QMutexLocker locker(&_mutex);
@@ -204,7 +196,7 @@ bool FutureInterfaceBase::waitForSubTask(FutureInterfaceBase* subTask)
 		this->cancel();
 		return false;
 	}
-	this->_subTask = subTask;
+	this->_subTask = subTask.get();
 	locker.unlock();
 	try {
 #if 0

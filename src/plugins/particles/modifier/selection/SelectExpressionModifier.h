@@ -40,11 +40,6 @@ public:
 		INIT_PROPERTY_FIELD(SelectExpressionModifier::_expression);
 	}
 
-	//////////////////////////// from base classes ////////////////////////////
-
-	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
-
 	/////////////////////////// specific methods ///////////////////////////////
 
 	/// Sets the expression that is used to select particles.
@@ -60,6 +55,9 @@ public:
 	const QString& inputVariableTable() const { return _variableTable; }
 
 protected:
+
+	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

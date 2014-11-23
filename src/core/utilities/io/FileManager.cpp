@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/gui/dialogs/RemoteAuthenticationDialog.h>
 #include <core/dataset/DataSetContainer.h>
 
@@ -80,7 +79,7 @@ Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& u
 		Future<QString> future(futureInterface);
 		_pendingFiles.insert(normalizedUrl, future);
 		new SftpDownloadJob(url, futureInterface);
-		container.taskManager().addTask(future);
+		container.taskManager().registerTask(futureInterface);
 		return future;
 	}
 	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and local file paths."));

@@ -22,7 +22,6 @@
 #include <plugins/particles/Particles.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileSource.h>
 #include "ParticleImporter.h"
@@ -34,40 +33,36 @@ DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFi
 SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains multiple timesteps");
 
 /******************************************************************************
-* Scans the input source (which can be a directory or a single file) to
-* discover all animation frames.
+* Scans the given external path (which may be a directory and a wild-card pattern,
+* or a single file containing multiple frames) to find all available animation frames.
 ******************************************************************************/
-Future<QVector<FileSourceImporter::Frame>> ParticleImporter::findFrames(const QUrl& sourceUrl)
+Future<QVector<FileSourceImporter::Frame>> ParticleImporter::discoverFrames(const QUrl& sourceUrl)
 {
 	if(isMultiTimestepFile()) {
-		DataSetContainer& datasetContainer = *dataset()->container();
-		return datasetContainer.taskManager().runInBackground<QVector<FileSourceImporter::Frame>>(
-				[this, sourceUrl](FutureInterface<QVector<FileSourceImporter::Frame>>& futureInterface) {
-					futureInterface.setResult(scanMultiTimestepFile(futureInterface, sourceUrl));
-				}
-		);
+		return dataset()->container()->taskManager().execAsync(
+				std::bind(&ParticleImporter::discoverFramesInFile, this, sourceUrl, std::placeholders::_1));
 	}
 	else {
-		return FileSourceImporter::findFrames(sourceUrl);
+		return FileSourceImporter::discoverFrames(sourceUrl);
 	}
 }
 
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-QVector<FileSourceImporter::Frame> ParticleImporter::scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl)
+QVector<FileSourceImporter::Frame> ParticleImporter::discoverFramesInFile(const QUrl sourceUrl, FutureInterfaceBase& futureInterface)
 {
 	QVector<FileSourceImporter::Frame> result;
 
 	// Check if filename is a wildcard pattern.
-	// If yes, find all matching files and scan each one of them.
+	// If yes, find all matching files and scan each of them.
 	QFileInfo fileInfo(sourceUrl.path());
 	if(fileInfo.fileName().contains('*') || fileInfo.fileName().contains('?')) {
 		auto findFilesFuture = FileSourceImporter::findWildcardMatches(sourceUrl, dataset()->container());
 		if(!futureInterface.waitForSubTask(findFilesFuture))
 			return result;
 		for(auto item : findFilesFuture.result()) {
-			result += scanMultiTimestepFile(futureInterface, item.sourceFile);
+			result += discoverFramesInFile(item.sourceFile, futureInterface);
 		}
 		return result;
 	}

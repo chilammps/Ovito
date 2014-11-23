@@ -33,7 +33,7 @@ TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWin
 		_progressBar(nullptr), _cancelTaskButton(nullptr), _progressWidget(nullptr),
 		_progressTextDisplay(nullptr)
 {
-	qRegisterMetaType<FutureInterfacePointer>("FutureInterfacePointer");
+	qRegisterMetaType<std::shared_ptr<FutureInterfaceBase>>("FutureInterfacePointer");
 
 	_indicatorVisible = false;
 
@@ -46,7 +46,7 @@ TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWin
 /******************************************************************************
 * Registers a future with the progress manager.
 ******************************************************************************/
-void TaskManager::addTaskInternal(FutureInterfacePointer futureInterface)
+void TaskManager::addTaskInternal(std::shared_ptr<FutureInterfaceBase> futureInterface)
 {
 	FutureWatcher* watcher = new FutureWatcher(this);
 	connect(watcher, &FutureWatcher::started, &_taskStartedSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
@@ -207,7 +207,7 @@ void TaskManager::waitForAll()
 * Waits for the given task to finish and displays a modal progress dialog
 * to show the task's progress.
 ******************************************************************************/
-bool TaskManager::waitForTask(const FutureInterfacePointer& futureInterface)
+bool TaskManager::waitForTask(const std::shared_ptr<FutureInterfaceBase>& futureInterface)
 {
 	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "TaskManager::waitForTask", "Function can only be called from the GUI thread.");
 

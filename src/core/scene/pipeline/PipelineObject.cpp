@@ -254,7 +254,7 @@ void PipelineObject::referenceInserted(const PropertyFieldDescriptor& field, Ref
 		// because it is being inserted into a pipeline.
 		ModifierApplication* app = static_object_cast<ModifierApplication>(newTarget);
 		if(app && app->modifier())
-			app->modifier()->inputDataChanged(app);
+			app->modifier()->upstreamPipelineChanged(app);
 
 		// Inform all subsequent modifiers that their input has changed.
 		modifierChanged(listIndex);
@@ -313,7 +313,7 @@ void PipelineObject::modifierChanged(int changedIndex)
 	while(++changedIndex < modifierApplications().size()) {
 		ModifierApplication* app = modifierApplications()[changedIndex];
 		if(app && app->modifier())
-			app->modifier()->inputDataChanged(app);
+			app->modifier()->upstreamPipelineChanged(app);
 	}
 }
 

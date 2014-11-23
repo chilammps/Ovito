@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -61,7 +61,7 @@ ConstructSurfaceModifier::ConstructSurfaceModifier(DataSet* dataset) : Asynchron
 
 	// Create the output object.
 	_surfaceMeshObj = new SurfaceMesh(dataset);
-	_surfaceMeshObj->setSaveWithScene(storeResultsWithScene());
+	_surfaceMeshObj->setSaveWithScene(false);
 	_surfaceMeshDisplay = static_object_cast<SurfaceMeshDisplay>(_surfaceMeshObj->displayObjects().front());
 }
 
@@ -70,21 +70,13 @@ ConstructSurfaceModifier::ConstructSurfaceModifier(DataSet* dataset) : Asynchron
 ******************************************************************************/
 void ConstructSurfaceModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute results when the parameters have changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(ConstructSurfaceModifier::_smoothingLevel)
-				|| field == PROPERTY_FIELD(ConstructSurfaceModifier::_radius)
-				|| field == PROPERTY_FIELD(ConstructSurfaceModifier::_onlySelectedParticles))
-			invalidateCachedResults();
-	}
-
-	// Adopt "Save with scene" flag.
-	if(field == PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults)) {
-		if(surfaceMesh())
-			surfaceMesh()->setSaveWithScene(storeResultsWithScene());
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute results when the parameters have changed.
+	if(field == PROPERTY_FIELD(ConstructSurfaceModifier::_smoothingLevel)
+			|| field == PROPERTY_FIELD(ConstructSurfaceModifier::_radius)
+			|| field == PROPERTY_FIELD(ConstructSurfaceModifier::_onlySelectedParticles))
+		invalidateCachedResults();
 }
 
 /******************************************************************************
@@ -102,7 +94,7 @@ bool ConstructSurfaceModifier::referenceEvent(RefTarget* source, ReferenceEvent*
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> ConstructSurfaceModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> ConstructSurfaceModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get modifier inputs.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -112,14 +104,15 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> ConstructSurfaceModifier::
 	SimulationCell* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<ConstructSurfaceEngine>(posProperty->storage(), selProperty ? selProperty->storage() : nullptr,
+	return std::make_shared<ConstructSurfaceEngine>(validityInterval, posProperty->storage(),
+			selProperty ? selProperty->storage() : nullptr,
 			simCell->data(), radius(), smoothingLevel());
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void ConstructSurfaceModifier::retrieveModifierResults(Engine* engine)
+void ConstructSurfaceModifier::transferComputationResults(ComputeEngine* engine)
 {
 	ConstructSurfaceEngine* eng = static_cast<ConstructSurfaceEngine*>(engine);
 	if(surfaceMesh()) {
@@ -133,9 +126,10 @@ void ConstructSurfaceModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* This lets the modifier insert the previously computed results into the pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus ConstructSurfaceModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ConstructSurfaceModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
 	// Insert output object into pipeline.
 	if(surfaceMesh()) {
@@ -149,9 +143,9 @@ PipelineStatus ConstructSurfaceModifier::applyModifierResults(TimePoint time, Ti
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBase& futureInterface)
+void ConstructSurfaceModifier::ConstructSurfaceEngine::perform()
 {
-	futureInterface.setProgressText(tr("Constructing surface mesh"));
+	setProgressText(tr("Constructing surface mesh"));
 	double alpha = _radius * _radius;
 
 	// Generate the list of input vertices.
@@ -188,15 +182,15 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		return;
 
 	// Generate Delaunay tessellation.
-	futureInterface.setProgressText(tr("Constructing surface mesh (Delaunay tessellation step)"));
+	setProgressText(tr("Constructing surface mesh (Delaunay tessellation step)"));
 	DelaunayTessellation tessellation;
 	tessellation.generateTessellation(_simCell, inputPositions, inputCount, ghostLayerSize);
-	if(futureInterface.isCanceled())
+	if(isCanceled())
 		return;
 
-	futureInterface.setProgressRange(tessellation.number_of_tetrahedra());
-	futureInterface.setProgressValue(0);
-	futureInterface.setProgressText(tr("Constructing surface mesh (cell classification step)"));
+	setProgressRange(tessellation.number_of_tetrahedra());
+	setProgressValue(0);
+	setProgressText(tr("Constructing surface mesh (cell classification step)"));
 
 	// Classify cells into solid and open tetrahedra.
 	int nghost = 0, ntotal = 0;
@@ -221,9 +215,9 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 			cell->info().index = -1;
 		}
 
-		futureInterface.incrementProgressValue(0);
+		incrementProgressValue(0);
 	}
-	if(futureInterface.isCanceled())
+	if(isCanceled())
 		return;
 
 	// Stores pointers to the mesh facets generated for a solid, local
@@ -237,8 +231,8 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 	std::vector<std::map<std::array<int,4>, Tetrahedron>::const_iterator> tetrahedraList;
 	tetrahedraList.reserve(solidCellCount);
 
-	futureInterface.setProgressRange(solidCellCount);
-	futureInterface.setProgressText(tr("Constructing surface mesh (facet construction step)"));
+	setProgressRange(solidCellCount);
+	setProgressText(tr("Constructing surface mesh (facet construction step)"));
 
 	// Create the triangular mesh facets separating solid and open tetrahedra.
 	std::vector<HalfEdgeMesh::Vertex*> vertexMap(inputCount, nullptr);
@@ -250,8 +244,8 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		OVITO_ASSERT(cell->info().flag);
 
 		if((cell->info().index % 1000) == 0) {
-			futureInterface.setProgressValue(cell->info().index);
-			if(futureInterface.isCanceled())
+			setProgressValue(cell->info().index);
+			if(isCanceled())
 				return;
 		}
 
@@ -300,17 +294,17 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		std::sort(vertexIndices.begin(), vertexIndices.end());
 		tetrahedraList.push_back(tetrahedra.insert(std::make_pair(vertexIndices, tet)).first);
 	}
-	if(futureInterface.isCanceled())
+	if(isCanceled())
 		return;
 
 	// Links half-edges to opposite half-edges.
-	futureInterface.setProgressText(tr("Constructing surface mesh (facet linking step)"));
+	setProgressText(tr("Constructing surface mesh (facet linking step)"));
 	for(auto tetIter = tetrahedra.cbegin(); tetIter != tetrahedra.cend(); ++tetIter) {
 
 		const Tetrahedron& tet = tetIter->second;
 		if((tet.cell->info().index % 1000) == 0) {
-			futureInterface.setProgressValue(tet.cell->info().index);
-			if(futureInterface.isCanceled())
+			setProgressValue(tet.cell->info().index);
+			if(isCanceled())
 				return;
 		}
 
@@ -394,8 +388,8 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		}
 	}
 
-	futureInterface.setProgressText(tr("Constructing surface mesh (smoothing step)"));
-	futureInterface.setProgressRange(0);
+	setProgressText(tr("Constructing surface mesh (smoothing step)"));
+	setProgressRange(0);
 	SurfaceMesh::smoothMesh(_mesh, _simCell, _smoothingLevel);
 
 	// Compute surface area.

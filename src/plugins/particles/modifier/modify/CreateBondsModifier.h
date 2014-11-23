@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -44,19 +44,22 @@ public:
 	/// The container type used to store the pair-wise cutoffs.
 	typedef QMap<QPair<QString,QString>, FloatType> PairCutoffsList;
 
+private:
+
 	/// Engine that determines the bonds between particles.
-	class BondGenerationEngine : public AsynchronousParticleModifier::Engine
+	class BondsEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		BondGenerationEngine(ParticleProperty* positions, ParticleProperty* particleTypes, const SimulationCellData& simCell, CutoffMode cutoffMode,
+		BondsEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* particleTypes, const SimulationCellData& simCell, CutoffMode cutoffMode,
 				FloatType uniformCutoff, std::vector<std::vector<FloatType>>&& pairCutoffs) :
-			_positions(positions), _particleTypes(particleTypes), _simCell(simCell), _cutoffMode(cutoffMode), _uniformCutoff(uniformCutoff),
-			_pairCutoffs(std::move(pairCutoffs)), _bonds(new BondsStorage()) {}
+					ComputeEngine(validityInterval),
+					_positions(positions), _particleTypes(particleTypes), _simCell(simCell), _cutoffMode(cutoffMode),
+					_uniformCutoff(uniformCutoff), _pairCutoffs(std::move(pairCutoffs)), _bonds(new BondsStorage()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the generated bonds.
 		BondsStorage* bonds() { return _bonds.data(); }
@@ -103,9 +106,6 @@ public:
 	/// \brief Returns the display object that is responsible for rendering the bonds.
 	BondsDisplay* bondsDisplay() const { return _bondsDisplay; }
 
-	/// \brief Returns the data object that stores the generated bonds.
-	BondsObject* bondsObject() const { return _bondsObj; }
-
 protected:
 
 	/// Saves the class' contents to the given stream.
@@ -126,14 +126,16 @@ protected:
 	/// Resets the modifier's result cache.
 	virtual void invalidateCachedResults() override;
 
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
 
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
 
-	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
+private:
 
 	/// The mode of choosing the cutoff radius.
 	PropertyField<CutoffMode, int> _cutoffMode;
@@ -148,7 +150,7 @@ protected:
 	ReferenceField<BondsDisplay> _bondsDisplay;
 
 	/// This stores the cached results of the modifier, i.e. the bonds information.
-	ReferenceField<BondsObject> _bondsObj;
+	QExplicitlySharedDataPointer<BondsStorage> _bonds;
 
 private:
 
@@ -161,7 +163,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_cutoffMode);
 	DECLARE_PROPERTY_FIELD(_uniformCutoff);
 	DECLARE_REFERENCE_FIELD(_bondsDisplay);
-	DECLARE_REFERENCE_FIELD(_bondsObj);
 };
 
 namespace Internal {

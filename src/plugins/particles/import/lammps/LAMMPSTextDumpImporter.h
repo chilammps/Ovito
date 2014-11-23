@@ -75,26 +75,36 @@ public:
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent);
 
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<LAMMPSTextDumpImportTask>(dataset()->container(), frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
+	}
+
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	static std::shared_ptr<FrameLoader> createFrameLoader(DataSetContainer* container, const Frame& frame, bool isNewFile, bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping) {
+		return std::make_shared<LAMMPSTextDumpImportTask>(container, frame, isNewFile, useCustomColumnMapping, customColumnMapping);
+	}
+
 public:
 
 	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
 	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
 
-public:
+private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class OVITO_PARTICLES_EXPORT LAMMPSTextDumpImportTask : public ParticleImportTask
+	class OVITO_PARTICLES_EXPORT LAMMPSTextDumpImportTask : public ParticleFrameLoader
 	{
 	public:
 
 		/// Normal constructor.
-		LAMMPSTextDumpImportTask(const FileSourceImporter::Frame& frame, bool isNewFile,
+		LAMMPSTextDumpImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile,
 				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
-			: ParticleImportTask(frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
+			: ParticleFrameLoader(container, frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
 
 		/// Constructor used when reading only the file header information.
-		LAMMPSTextDumpImportTask(const FileSourceImporter::Frame& frame)
-			: ParticleImportTask(frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
+		LAMMPSTextDumpImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame)
+			: ParticleFrameLoader(container, frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
@@ -102,7 +112,7 @@ public:
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 
 	private:
 
@@ -121,11 +131,6 @@ protected:
 
 	/// \brief Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
-	/// \brief Creates an import task object to read the given frame.
-	virtual std::shared_ptr<FrameLoader> createImportTask(const Frame& frame) override {
-		return std::make_shared<LAMMPSTextDumpImportTask>(frame, isNewlySelectedFile(), _useCustomColumnMapping, _customColumnMapping);
-	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream) override;

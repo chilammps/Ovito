@@ -48,19 +48,6 @@ public:
 	};
 	Q_ENUMS(StructureType);
 
-	/// Analysis engine that performs the structure identification
-	class Engine : public StructureIdentificationModifier::StructureIdentificationEngine
-	{
-	public:
-
-		/// Constructor.
-		Engine(ParticleProperty* positions, const SimulationCellData& simCell) :
-			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
-
-		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
-	};
-
 public:
 
 	/// Constructor.
@@ -69,9 +56,22 @@ public:
 protected:
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<AsynchronousParticleModifier::Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
 
 private:
+
+	/// Analysis engine that performs the structure identification
+	class DiamondIdentificationEngine : public StructureIdentificationEngine
+	{
+	public:
+
+		/// Constructor.
+		DiamondIdentificationEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell) :
+			StructureIdentificationEngine(validityInterval, positions, simCell) {}
+
+		/// Computes the modifier's results and stores them in this object for later retrieval.
+		virtual void perform() override;
+	};
 
 	Q_OBJECT
 	OVITO_OBJECT

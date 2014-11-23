@@ -45,9 +45,9 @@ bool IMDImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextReader& stream)
+void IMDImporter::IMDImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading IMD file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading IMD file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
@@ -140,11 +140,11 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		if(stream.readLine()[0] == '\0') break;
 		numAtoms++;
 
-		if((numAtoms % 1000) == 0 && futureInterface.isCanceled())
+		if((numAtoms % 1000) == 0 && isCanceled())
 			return;
 	}
 
-	futureInterface.setProgressRange(numAtoms);
+	setProgressRange(numAtoms);
 
 	// Jump back to beginning of atom list.
 	stream.seek(headerOffset);
@@ -152,12 +152,8 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	// Parse data columns.
 	InputColumnReader columnParser(columnMapping, *this, numAtoms);
 	for(size_t i = 0; i < numAtoms; i++) {
+		if(!reportProgress(i)) return;
 		try {
-			if((i % 4096) == 0) {
-				if(futureInterface.isCanceled())
-					return;	// Abort!
-				futureInterface.setProgressValue((int)i);
-			}
 			columnParser.readParticle(i, stream.readLine());
 		}
 		catch(Exception& ex) {
@@ -165,7 +161,7 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 	}
 
-	setInfoText(tr("Number of particles: %1").arg(numAtoms));
+	setStatus(tr("Number of particles: %1").arg(numAtoms));
 }
 
 }}}}}	// End of namespace

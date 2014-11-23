@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -45,26 +45,38 @@ public:
 	/// \brief Sets the cutoff radius used to build the neighbor lists for the analysis.
 	void setCutoff(FloatType newCutoff) { _cutoff = newCutoff; }
 
-	/// Returns the cluster numbers assigned to particles.
-	const ParticleProperty& particleClusters() const { OVITO_CHECK_POINTER(_particleClusters.constData()); return *_particleClusters; }
-
 	/// Returns the number of clusters found during the last successful evaluation of the modifier.
 	size_t clusterCount() const { return _numClusters; }
+
+protected:
+
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 
 	/// Computes the modifier's results.
-	class ClusterAnalysisEngine : public AsynchronousParticleModifier::Engine
+	class ClusterAnalysisEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		ClusterAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
+		ClusterAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
+			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell), _cutoff(cutoff),
 			_particleClusters(new ParticleProperty(positions->size(), ParticleProperty::ClusterProperty, 0, false)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -89,20 +101,6 @@ private:
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _particleClusters;
 	};
-
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This stores the cached results of the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _particleClusters;
