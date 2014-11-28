@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_SIMULATION_CELL_DATA_H
-#define __OVITO_SIMULATION_CELL_DATA_H
+#ifndef __OVITO_SIMULATION_CELL_H
+#define __OVITO_SIMULATION_CELL_H
 
 #include <plugins/particles/Particles.h>
 
@@ -32,7 +32,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
  * The simulation box geometry is a parallelepiped defined by three edge vectors.
  * A fourth vector specifies the origin of the simulation box in space.
  */
-class OVITO_PARTICLES_EXPORT SimulationCellData
+class OVITO_PARTICLES_EXPORT SimulationCell
 {
 public:
 
@@ -64,7 +64,7 @@ public:
 	}
 
 	/// Checks if two simulation cells are identical.
-	bool operator==(const SimulationCellData& other) const {
+	bool operator==(const SimulationCell& other) const {
 		return (_simulationCell == other._simulationCell && _pbcFlags == other._pbcFlags);
 	}
 
@@ -156,4 +156,4 @@ private:
 
 }}}}	// End of namespace
 
-#endif // __OVITO_SIMULATION_CELL_DATA_H
+#endif // __OVITO_SIMULATION_CELL_H

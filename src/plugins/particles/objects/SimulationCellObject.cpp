@@ -25,7 +25,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/viewport/ViewportConfiguration.h>
 
-#include "SimulationCell.h"
+#include "SimulationCellObject.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 
@@ -33,39 +33,39 @@ namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellEditor, PropertiesEditor);
 }
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCell, DataObject);
-SET_OVITO_OBJECT_EDITOR(SimulationCell, Internal::SimulationCellEditor);
-DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector1, "CellVector1");
-DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector2, "CellVector2");
-DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector3, "CellVector3");
-DEFINE_PROPERTY_FIELD(SimulationCell, _cellOrigin, "CellTranslation");
-DEFINE_PROPERTY_FIELD(SimulationCell, _pbcX, "PeriodicX");
-DEFINE_PROPERTY_FIELD(SimulationCell, _pbcY, "PeriodicY");
-DEFINE_PROPERTY_FIELD(SimulationCell, _pbcZ, "PeriodicZ");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _cellVector1, "Cell vector 1");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _cellVector2, "Cell vector 2");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _cellVector3, "Cell vector 3");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _cellOrigin, "Cell origin");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _pbcX, "Periodic boundary conditions (X)");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _pbcY, "Periodic boundary conditions (Y)");
-SET_PROPERTY_FIELD_LABEL(SimulationCell, _pbcZ, "Periodic boundary conditions (Z)");
-SET_PROPERTY_FIELD_UNITS(SimulationCell, _cellVector1, WorldParameterUnit);
-SET_PROPERTY_FIELD_UNITS(SimulationCell, _cellVector2, WorldParameterUnit);
-SET_PROPERTY_FIELD_UNITS(SimulationCell, _cellVector3, WorldParameterUnit);
-SET_PROPERTY_FIELD_UNITS(SimulationCell, _cellOrigin, WorldParameterUnit);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCellObject, DataObject);
+SET_OVITO_OBJECT_EDITOR(SimulationCellObject, Internal::SimulationCellEditor);
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellVector1, "CellVector1");
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellVector2, "CellVector2");
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellVector3, "CellVector3");
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellOrigin, "CellTranslation");
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _pbcX, "PeriodicX");
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _pbcY, "PeriodicY");
+DEFINE_PROPERTY_FIELD(SimulationCellObject, _pbcZ, "PeriodicZ");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _cellVector1, "Cell vector 1");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _cellVector2, "Cell vector 2");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _cellVector3, "Cell vector 3");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _cellOrigin, "Cell origin");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _pbcX, "Periodic boundary conditions (X)");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _pbcY, "Periodic boundary conditions (Y)");
+SET_PROPERTY_FIELD_LABEL(SimulationCellObject, _pbcZ, "Periodic boundary conditions (Z)");
+SET_PROPERTY_FIELD_UNITS(SimulationCellObject, _cellVector1, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SimulationCellObject, _cellVector2, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SimulationCellObject, _cellVector3, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SimulationCellObject, _cellOrigin, WorldParameterUnit);
 
 /******************************************************************************
 * Creates the storage for the internal parameters.
 ******************************************************************************/
-void SimulationCell::init()
+void SimulationCellObject::init()
 {
-	INIT_PROPERTY_FIELD(SimulationCell::_cellVector1);
-	INIT_PROPERTY_FIELD(SimulationCell::_cellVector2);
-	INIT_PROPERTY_FIELD(SimulationCell::_cellVector3);
-	INIT_PROPERTY_FIELD(SimulationCell::_cellOrigin);
-	INIT_PROPERTY_FIELD(SimulationCell::_pbcX);
-	INIT_PROPERTY_FIELD(SimulationCell::_pbcY);
-	INIT_PROPERTY_FIELD(SimulationCell::_pbcZ);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_cellVector1);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_cellVector2);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_cellVector3);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_cellOrigin);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_pbcX);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_pbcY);
+	INIT_PROPERTY_FIELD(SimulationCellObject::_pbcZ);
 }
 
 namespace Internal {
@@ -90,15 +90,15 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2->setContentsMargins(4,4,4,4);
 		layout2->setSpacing(2);
 
-		BooleanParameterUI* pbcxPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SimulationCell::_pbcX));
+		BooleanParameterUI* pbcxPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_pbcX));
 		pbcxPUI->checkBox()->setText("X");
 		layout2->addWidget(pbcxPUI->checkBox(), 0, 0);
 
-		BooleanParameterUI* pbcyPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SimulationCell::_pbcY));
+		BooleanParameterUI* pbcyPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_pbcY));
 		pbcyPUI->checkBox()->setText("Y");
 		layout2->addWidget(pbcyPUI->checkBox(), 0, 1);
 
-		BooleanParameterUI* pbczPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SimulationCell::_pbcZ));
+		BooleanParameterUI* pbczPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_pbcZ));
 		pbczPUI->checkBox()->setText("Z");
 		layout2->addWidget(pbczPUI->checkBox(), 0, 2);
 	}
@@ -162,7 +162,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 			layout2->setSpacing(0);
 			sublayout->addLayout(layout2);
 			for(int i = 0; i < 3; i++) {
-				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector1), i);
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_cellVector1), i);
 				layout2->addWidget(vPUI->textBox(), 0, i*3);
 				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
 				layout2->setColumnStretch(i*4+1, 1);
@@ -179,7 +179,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 			layout2->setSpacing(0);
 			sublayout->addLayout(layout2);
 			for(int i = 0; i < 3; i++) {
-				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector2), i);
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_cellVector2), i);
 				layout2->addWidget(vPUI->textBox(), 0, i*3);
 				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
 				layout2->setColumnStretch(i*4+1, 1);
@@ -196,7 +196,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 			layout2->setSpacing(0);
 			sublayout->addLayout(layout2);
 			for(int i = 0; i < 3; i++) {
-				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector3), i);
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_cellVector3), i);
 				layout2->addWidget(vPUI->textBox(), 0, i*3);
 				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
 				layout2->setColumnStretch(i*4+1, 1);
@@ -213,7 +213,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 			layout2->setSpacing(0);
 			sublayout->addLayout(layout2);
 			for(int i = 0; i < 3; i++) {
-				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellOrigin), i);
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCellObject::_cellOrigin), i);
 				layout2->addWidget(vPUI->textBox(), 0, i*3);
 				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
 				layout2->setColumnStretch(i*4+1, 1);
@@ -232,7 +232,7 @@ void SimulationCellEditor::changeSimulationBoxSize(int dim)
 {
 	OVITO_ASSERT(dim >=0 && dim < 3);
 
-	SimulationCell* cell = static_object_cast<SimulationCell>(editObject());
+	SimulationCellObject* cell = static_object_cast<SimulationCellObject>(editObject());
 	if(!cell) return;
 
 	AffineTransformation cellTM = cell->cellMatrix();
@@ -247,7 +247,7 @@ void SimulationCellEditor::changeSimulationBoxSize(int dim)
 ******************************************************************************/
 void SimulationCellEditor::updateSimulationBoxSize()
 {
-	SimulationCell* cell = static_object_cast<SimulationCell>(editObject());
+	SimulationCellObject* cell = static_object_cast<SimulationCellObject>(editObject());
 	if(!cell) return;
 
 	AffineTransformation cellTM = cell->cellMatrix();

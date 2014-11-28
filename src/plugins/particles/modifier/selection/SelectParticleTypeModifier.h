@@ -27,9 +27,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
-/******************************************************************************
-* Selects particles of of one or more types.
-******************************************************************************/
+/**
+ * \brief Selects particles of one or more types.
+ */
 class OVITO_PARTICLES_EXPORT SelectParticleTypeModifier : public ParticleModifier
 {
 public:

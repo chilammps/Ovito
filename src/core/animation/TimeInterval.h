@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -29,37 +29,40 @@
 namespace Ovito { namespace Anim {
 
 /** 
- * \fn typedef TimePoint
+ * \brief A point in animation time.
+ *
+ * One animation time unit is 1/4800 of a second in real time.
  * 
- * This is the data type used for animation time values.
- * One time tick unit is 1/4800 of a second in real time.
- * 
- * Please note that this is an integer data type. Internal times are measured
- * in discrete steps of 1/4800 of a second to avoid rounding errors. There is no finer resolution.
+ * Note that this is an integer data type. Times are measured
+ * in discrete steps of 1/4800 of a second to avoid rounding errors.
  */
 typedef int TimePoint;
 
-/// This is the number of ticks per second.
-#define TICKS_PER_SECOND		4800
+/// Returns the number of time ticks per second.
+constexpr int TICKS_PER_SECOND = 4800;
 
-/// Returns a special time point that represents an infinite negative value on the time axis.
-Q_DECL_CONSTEXPR inline TimePoint TimeNegativeInfinity() { return INT_MIN; }
+/// Returns the smallest possible time value.
+constexpr TimePoint TimeNegativeInfinity() {
+	return std::numeric_limits<TimePoint>::lowest();
+}
 
-/// Returns a special time point that represents an infinite positive value on the time axis.
-Q_DECL_CONSTEXPR inline TimePoint TimePositiveInfinity() { return INT_MAX; }
+/// Returns the largest possible time value.
+constexpr TimePoint TimePositiveInfinity() {
+	return std::numeric_limits<TimePoint>::max();
+}
 
-/// \brief This is a function to convert internal time units to real seconds.
-/// \param time The time in internal time units.
-/// \return The same time in seconds.
-Q_DECL_CONSTEXPR inline FloatType timeToSeconds(TimePoint time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
+/// Converts time tick units to seconds.
+constexpr FloatType TimeToSeconds(TimePoint t) {
+	return (FloatType)t / TICKS_PER_SECOND;
+}
 
-// \brief This is a function to convert seconds to internal time units.
-/// \param timeInSeconds The time in seconds.
-/// \return The same time in internal time units.
-inline TimePoint secondsToTime(FloatType timeInSeconds) { return (TimePoint)std::ceil(timeInSeconds * (FloatType)TICKS_PER_SECOND + (FloatType)0.5); }
+/// Converts seconds to internal time ticks.
+constexpr TimePoint TimeFromSeconds(FloatType timeInSeconds) {
+	return (TimePoint)std::ceil(timeInSeconds * TICKS_PER_SECOND + FloatType(0.5));
+}
 
 /**
- * \brief Represents an interval in time.
+ * \brief An interval in (animation) time, which is defined by a start and an end time.
  */
 class TimeInterval
 {
@@ -73,11 +76,11 @@ public:
 	/// \brief Initializes the interval with start and end values.
 	/// \param start The start time of the time interval.
 	/// \param end The end time (including) of the time interval.
-	Q_DECL_CONSTEXPR TimeInterval(const TimePoint& start, const TimePoint& end) : _start(start), _end(end) {}
+	Q_DECL_CONSTEXPR TimeInterval(TimePoint start, TimePoint end) : _start(start), _end(end) {}
 	
 	/// \brief Initializes the interval to an instant time.
 	/// \param time The time where the interval starts and ends.
-	Q_DECL_CONSTEXPR TimeInterval(const TimePoint& time) : _start(time), _end(time) {}
+	Q_DECL_CONSTEXPR TimeInterval(TimePoint time) : _start(time), _end(time) {}
 
 	/// \brief Returns the start time of the interval.
 	/// \return The beginning of the time interval.
@@ -89,11 +92,11 @@ public:
 
 	/// \brief Sets the start time of the interval.
 	/// \param start The new start time.
-	void setStart(const TimePoint& start) { _start = start; }
+	void setStart(TimePoint start) { _start = start; }
 	
 	/// \brief Sets the end time of the interval.
 	/// \param end The new end time.
-	void setEnd(const TimePoint& end) { _end = end; }
+	void setEnd(TimePoint end) { _end = end; }
 
 	/// \brief Checks if this is an empty time interval.
 	/// \return \c true if the start time of the interval is behind the end time or if the
@@ -202,6 +205,7 @@ private:
 /// \param stream The output stream.
 /// \param iv The time interval to write to the output stream \a stream.
 /// \return The output stream \a stream.
+/// \relates TimeInterval
 inline SaveStream& operator<<(SaveStream& stream, const TimeInterval& iv)
 {
 	return stream << iv.start() << iv.end();
@@ -211,6 +215,7 @@ inline SaveStream& operator<<(SaveStream& stream, const TimeInterval& iv)
 /// \param stream The input stream.
 /// \param iv Reference to a variable where the parsed data will be stored.
 /// \return The input stream \a stream.
+/// \relates TimeInterval
 inline LoadStream& operator>>(LoadStream& stream, TimeInterval& iv)
 {
 	stream >> iv._start >> iv._end;
@@ -218,6 +223,7 @@ inline LoadStream& operator>>(LoadStream& stream, TimeInterval& iv)
 }
 
 /// \brief Writes a time interval to the debug stream.
+/// \relates TimeInterval
 inline QDebug operator<<(QDebug stream, const TimeInterval& iv)
 {
 	stream.nospace() << "[" << iv.start() << ", " << iv.end() << "]";

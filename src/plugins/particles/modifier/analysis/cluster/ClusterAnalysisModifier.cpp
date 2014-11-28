@@ -52,7 +52,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> ClusterAnalysisModi
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 	// Get simulation cell.
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<ClusterAnalysisEngine>(validityInterval, posProperty->storage(), inputCell->data(), cutoff());

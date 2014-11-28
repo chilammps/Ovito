@@ -30,7 +30,7 @@
 #include <plugins/particles/objects/SurfaceMeshDisplay.h>
 #include <plugins/particles/objects/BondsObject.h>
 #include <plugins/particles/objects/BondsDisplay.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/objects/SurfaceMesh.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
@@ -298,23 +298,25 @@ BOOST_PYTHON_MODULE(Particles)
 		.staticmethod("getDefaultParticleColorFromName")
 	;
 
-	ovito_class<SimulationCell, DataObject>(
+	ovito_class<SimulationCellObject, DataObject>(
 			":Base: :py:class:`ovito.data.DataObject`\n\n"
 			"Stores the geometry and the boundary conditions of the simulation cell."
 			"\n\n"
 			"Instances of this class are associated with a :py:class:`~ovito.vis.SimulationCellDisplay` "
 			"that controls the visual appearance of the simulation cell. It can be accessed through "
-			"the :py:attr:`~DataObject.display` attribute of the :py:class:`~DataObject` base class.")
-		.add_property("pbc_x", &SimulationCell::pbcX)
-		.add_property("pbc_y", &SimulationCell::pbcY)
-		.add_property("pbc_z", &SimulationCell::pbcZ)
-		.add_property("matrix", &SimulationCell::cellMatrix, &SimulationCell::setCellMatrix,
+			"the :py:attr:`~DataObject.display` attribute of the :py:class:`~DataObject` base class.",
+			// Python class name:
+			"SimulationCell")
+		.add_property("pbc_x", &SimulationCellObject::pbcX)
+		.add_property("pbc_y", &SimulationCellObject::pbcY)
+		.add_property("pbc_z", &SimulationCellObject::pbcZ)
+		.add_property("matrix", &SimulationCellObject::cellMatrix, &SimulationCellObject::setCellMatrix,
 				"A 3x4 matrix containing the three edge vectors of the cell (matrix columns 0-2) "
 				"and the cell origin (matrix column 3).")
-		.add_property("vector1", make_function(&SimulationCell::edgeVector1, return_value_policy<copy_const_reference>()))
-		.add_property("vector2", make_function(&SimulationCell::edgeVector2, return_value_policy<copy_const_reference>()))
-		.add_property("vector3", make_function(&SimulationCell::edgeVector3, return_value_policy<copy_const_reference>()))
-		.add_property("origin", make_function(&SimulationCell::origin, return_value_policy<copy_const_reference>()))
+		.add_property("vector1", make_function(&SimulationCellObject::edgeVector1, return_value_policy<copy_const_reference>()))
+		.add_property("vector2", make_function(&SimulationCellObject::edgeVector2, return_value_policy<copy_const_reference>()))
+		.add_property("vector3", make_function(&SimulationCellObject::edgeVector3, return_value_policy<copy_const_reference>()))
+		.add_property("origin", make_function(&SimulationCellObject::origin, return_value_policy<copy_const_reference>()))
 	;
 
 	ovito_class<BondsObject, DataObject>(
@@ -404,7 +406,7 @@ BOOST_PYTHON_MODULE(Particles)
 
 	ovito_class<SimulationCellDisplay, DisplayObject>(
 			":Base: :py:class:`ovito.vis.Display`\n\n"
-			"Controls the visual appearance of :py:class:`~ovito.data.SimulationCell` data objects.")
+			"Controls the visual appearance of :py:class:`~ovito.data.SimulationCellObject` data objects.")
 		.add_property("line_width", &SimulationCellDisplay::simulationCellLineWidth, &SimulationCellDisplay::setSimulationCellLineWidth,
 				"The width of the simulation cell line (in natural length units)."
 				"\n\n"

@@ -29,10 +29,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/******************************************************************************
-* Calculates the per-particle displacement vectors by comparing the current
-* positions to a reference configuration.
-******************************************************************************/
+/**
+ * \brief Calculates the per-particle displacement vectors based on a reference configuration.
+ */
 class OVITO_PARTICLES_EXPORT CalculateDisplacementsModifier : public ParticleModifier
 {
 public:

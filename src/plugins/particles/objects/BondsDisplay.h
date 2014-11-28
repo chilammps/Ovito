@@ -29,7 +29,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include "BondsObject.h"
 #include "ParticlePropertyObject.h"
-#include "SimulationCell.h"
+#include "SimulationCellObject.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
 
@@ -114,7 +114,7 @@ protected:
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle color property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle type property + revision number
-		WeakVersionedOORef<SimulationCell>,				// Simulation cell + revision number
+		WeakVersionedOORef<SimulationCellObject>,				// Simulation cell + revision number
 		FloatType,										// Bond width
 		Color,											// Bond color
 		bool											// Use particle colors
@@ -128,7 +128,7 @@ protected:
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<BondsObject>,				// The bonds data object + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
-		WeakVersionedOORef<SimulationCell>,				// Simulation cell + revision number
+		WeakVersionedOORef<SimulationCellObject>,				// Simulation cell + revision number
 		FloatType										// Bond width
 	> _boundingBoxCacheHelper;
 

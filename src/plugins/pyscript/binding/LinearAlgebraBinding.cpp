@@ -98,7 +98,7 @@ struct python_to_matrix_conversion
 				throw_error_already_set();
 			}
 			for(size_t j = 0; j < numCols; j++) {
-				m(i,j) = extract<typename T::value_type>(row[j]);
+				m(i,j) = extract<typename T::element_type>(row[j]);
 			}
 		}
 	}
@@ -109,12 +109,12 @@ dict Matrix__array_interface__(T& m)
 {
 	dict ai;
 	ai["shape"] = boost::python::make_tuple(m.row_count(), m.col_count());
-	ai["strides"] = boost::python::make_tuple(sizeof(typename T::value_type), sizeof(typename T::column_type));
+	ai["strides"] = boost::python::make_tuple(sizeof(typename T::element_type), sizeof(typename T::column_type));
 	OVITO_STATIC_ASSERT(sizeof(T) == T::col_count() * sizeof(typename T::column_type));
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-	ai["typestr"] = str("<f") + str(sizeof(typename T::value_type));
+	ai["typestr"] = str("<f") + str(sizeof(typename T::element_type));
 #else
-	ai["typestr"] = str(">f") + str(sizeof(typename T::value_type));
+	ai["typestr"] = str(">f") + str(sizeof(typename T::element_type));
 #endif
 	ai["data"] = boost::python::make_tuple((std::intptr_t)m.data(), false);
 	ai["version"] = 3;

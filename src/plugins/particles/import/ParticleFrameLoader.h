@@ -27,12 +27,12 @@
 #include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 
 /**
- * Background loading task and data container used by a ParticleImporter derived class.
+ * \brief Background loading task and data container used by a ParticleImporter.
  */
 class OVITO_PARTICLES_EXPORT ParticleFrameLoader : public FileSourceImporter::FrameLoader
 {
@@ -59,13 +59,13 @@ public:
 
 	/// Inserts the data loaded by perform() into the provided container object. This function is
 	/// called by the system from the main thread after the asynchronous loading task has finished.
-	virtual void handOver(FileSource* container) override;
+	virtual void handOver(CompoundObject* container) override;
 
 	/// Returns the current simulation cell matrix.
-	const SimulationCellData& simulationCell() const { return _simulationCell; }
+	const SimulationCell& simulationCell() const { return _simulationCell; }
 
 	/// Returns a reference to the simulation cell.
-	SimulationCellData& simulationCell() { return _simulationCell; }
+	SimulationCell& simulationCell() { return _simulationCell; }
 
 	/// Returns the list of particle properties.
 	const std::vector<std::unique_ptr<ParticleProperty>>& particleProperties() const { return _properties; }
@@ -166,7 +166,7 @@ protected:
 private:
 
 	/// The simulation cell.
-	SimulationCellData _simulationCell;
+	SimulationCell _simulationCell;
 
 	/// Particle properties.
 	std::vector<std::unique_ptr<ParticleProperty>> _properties;

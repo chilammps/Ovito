@@ -345,8 +345,10 @@ PipelineFlowState FileSource::requestFrame(int frame)
 	}
 
 	if(frame >= 0 && loadedFrameIndex() == frame) {
-		if(oldLoadingTaskWasCanceled)
+		if(oldLoadingTaskWasCanceled) {
+			setStatus(PipelineStatus::Success);
 			notifyDependents(ReferenceEvent::PendingStateChanged);
+		}
 
 		// The requested frame has already been loaded and is available immediately.
 		return PipelineFlowState(status(), dataObjects(), interval, attrs);

@@ -57,7 +57,7 @@ void TriMeshImportData::perform()
 * This function is called by the system from the main thread after the
 * asynchronous loading task has finished.
 ******************************************************************************/
-void TriMeshImportData::handOver(FileSource* container)
+void TriMeshImportData::handOver(CompoundObject* container)
 {
 	OORef<TriMeshObject> triMeshObj = container->findDataObject<TriMeshObject>();
 	if(!triMeshObj) {

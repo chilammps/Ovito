@@ -91,7 +91,9 @@ private:
     QList<OpenGLContextInfo *> _contexts;
 };
 
-#include "OpenGLSharedResource.moc"
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+	#include "OpenGLSharedResource.moc"
+#endif
 
 static QThreadStorage<OpenGLContextManager*> glContextManagerStorage;
 

@@ -68,7 +68,7 @@ private:
 	public:
 
 		/// Constructor.
-		CentroSymmetryEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell, int nneighbors) :
+		CentroSymmetryEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell, int nneighbors) :
 			ComputeEngine(validityInterval),
 			_nneighbors(nneighbors),
 			_positions(positions),
@@ -85,12 +85,12 @@ private:
 		ParticleProperty* csp() const { return _csp.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 	private:
 
 		int _nneighbors;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _csp;
 	};

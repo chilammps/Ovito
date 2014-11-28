@@ -54,7 +54,7 @@ OORef<RefTarget> SurfaceMesh::clone(bool deepCopy, CloneHelper& cloneHelper)
 /******************************************************************************
 * Fairs a closed triangle mesh.
 ******************************************************************************/
-void SurfaceMesh::smoothMesh(HalfEdgeMesh& mesh, const SimulationCellData& cell, int numIterations, FloatType k_PB, FloatType lambda)
+void SurfaceMesh::smoothMesh(HalfEdgeMesh& mesh, const SimulationCell& cell, int numIterations, FloatType k_PB, FloatType lambda)
 {
 	// This is the implementation of the mesh smoothing algorithm:
 	//
@@ -73,7 +73,7 @@ void SurfaceMesh::smoothMesh(HalfEdgeMesh& mesh, const SimulationCellData& cell,
 /******************************************************************************
 * Performs one iteration of the smoothing algorithm.
 ******************************************************************************/
-void SurfaceMesh::smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCellData& cell)
+void SurfaceMesh::smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCell& cell)
 {
 	const AffineTransformation absoluteToReduced = cell.matrix().inverse();
 	const AffineTransformation reducedToAbsolute = cell.matrix();

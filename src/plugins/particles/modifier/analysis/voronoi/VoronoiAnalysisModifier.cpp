@@ -85,7 +85,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> VoronoiAnalysisModi
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 	// Get simulation cell.
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// Get selection particle property.
 	ParticlePropertyObject* selectionProperty = nullptr;

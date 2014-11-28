@@ -28,9 +28,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
-/******************************************************************************
-* This UI lets the user select a particle property.
-******************************************************************************/
+/**
+ * \brief This parameter UI lets the user select a particle property.
+ */
 class OVITO_PARTICLES_EXPORT ParticlePropertyParameterUI : public PropertyParameterUI
 {
 public:

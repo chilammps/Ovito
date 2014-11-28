@@ -9,10 +9,7 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Developer information</title>
 
-  <para>The source code of OVITO is hosted in a <link xlink:href="https://sourceforge.net/p/ovito/git/ci/master/tree/">Git repository on SourceForge</link>.</para>
-
-  <simplesect xml:id="development.requirements">
-    <title>Requirements</title>
+<!-- 
     <para>OVITO is written in C++ and makes use of the C++11 language standard. 
     The following platform/compiler combinations are known to work and are used to build the official binaries:
 	<itemizedlist>
@@ -36,11 +33,81 @@
     <para>Finally, to compile OVITO, the CMake cross-platform build system is required, which is available
     from the offical website <link xlink:href="http://cmake.org">www.cmake.org</link>, or through a Linux package manager and
     MacPorts on Mac OS X. At least version 2.8.11 of CMake is required.</para>
-
-    <para>Take a look at the text files in the <link xlink:href="https://sourceforge.net/p/ovito/git/ci/master/tree/doc/develop/">
-    <filename>/doc/develop/</filename> directory</link>, which 
-    contain more instructions on how to build OVITO from source on different platforms.</para>
+ -->
+ 
+   <para>
+   For further instructions see:
+   <itemizedlist>   
+   	<listitem><link linkend="development.build_linux">Compiling OVITO on Linux</link></listitem>
+   	<listitem><link linkend="development.build_windows">Compiling OVITO on Windows</link></listitem>
+   	<listitem><link linkend="development.build_macosx">Compiling OVITO on Mac OS X</link></listitem>
+   	<listitem><link xlink:href="http://ovito.org/apidoc/">OVITO C++ API documentation</link></listitem>
+   </itemizedlist>
+   </para>
+ 
+  <simplesect xml:id="development.requirements">
+    <title>Requirements</title>
+    <para>
+    The required tools to build OVITO are:
+    <informaltable>
+    <tgroup cols="3"><thead><row><entry>Tool</entry><entry>Requirement</entry><entry>Notes</entry></row></thead>
+    <tbody>
+		<row><entry>C++ compiler</entry><entry>required</entry>
+		<entry>Compiler must support the C++11 standard (e.g. GNU g++ 4.8 or newer)</entry></row>
+		<row><entry><link xlink:href="http://cmake.org/">CMake</link></entry><entry>required</entry>
+		<entry>The build system used by OVITO (CMake 2.8 or newer required)</entry></row>
+		<row><entry><link xlink:href="http://git-scm.com/">Git</link></entry><entry>required</entry>
+		<entry>The distributed version control system needed to retrieve OVITO's source code</entry></row>
+		<row><entry><link xlink:href="http://xmlsoft.org/XSLT/xsltproc2.html">xsltproc</link></entry><entry>optional</entry>
+		<entry>The XSLT processor for generating the user manual</entry></row>
+		<row><entry><link xlink:href="http://www.docbook.org/">DocBook</link></entry><entry>optional</entry>
+		<entry>The XSL stylesheets required to generate the user manual in HTML format</entry></row>
+		<row><entry><link xlink:href="">Doxygen</link></entry><entry>optional</entry>
+		<entry>Generates the C++ API documentation from OVITO's source code</entry></row>
+		<row><entry><link xlink:href="http://python.org/">Python 2.x</link></entry><entry>optional</entry>
+		<entry>Required by OVITO's Python scripting interface (<literal>pyscript</literal> plugin)</entry></row>
+		<row><entry><link xlink:href="http://www.numpy.org/">NumPy</link></entry><entry>optional</entry>
+		<entry>Required for the Python scripting interface</entry></row>
+		<row><entry><link xlink:href="http://sphinx-doc.org/">Sphinx</link></entry><entry>optional</entry>
+		<entry>Tool for creating the Python scripting interface documentation</entry></row>
+	</tbody></tgroup>
+	</informaltable> 
+    The library dependencies are:
+	<informaltable>
+    <tgroup cols="3"><thead><row><entry>Library</entry><entry>Requirement</entry><entry>Notes</entry></row></thead>
+    <tbody>
+		<row><entry><link xlink:href="http://www.qt.io/developers/">Qt5</link></entry><entry>required</entry>
+		<entry>Used for OVITO's graphical user interface (version 5.2 or higher required)</entry></row>
+		<row><entry><link xlink:href="http://www.boost.org/">Boost</link></entry><entry>required</entry>
+		<entry>OVITO uses some utility classes from this C++ library.</entry></row>
+		<row><entry><link xlink:href="http://www.boost.org/">Boost.Python</link></entry><entry>optional</entry>
+		<entry>Required by OVITO's Python scripting interface (<literal>pyscript</literal> plugin). Is part of the Boost library.</entry></row>
+		<row><entry><link xlink:href="http://cgal.org/">CGAL</link></entry><entry>optional</entry>
+		<entry>Computational Geometry Algorithms Library, which is used by OVITO to compute Delaunay tessellations. This is required to build the <literal>CrystalAnalysis</literal> plugin with the <link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link> modifier.</entry></row>
+		<row><entry><link xlink:href="http://libav.org/">libav</link> and <link xlink:href="https://www.ffmpeg.org/libswscale.html">Libswscale</link></entry><entry>optional</entry>
+		<entry>Audio and video processing libraries used by OVITO to write movie files.</entry></row>
+		<row><entry><link xlink:href="http://www.unidata.ucar.edu/software/netcdf/">libnetcdf</link></entry><entry>optional</entry>
+		<entry>Required by the <literal>NetCDF</literal> plugin to read NetCDF files</entry></row>
+		<row><entry><link xlink:href="http://muparser.beltoforion.de/">muparser</link></entry><entry>included</entry>
+		<entry>A math expression parser library. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
+		<row><entry><link xlink:href="http://www.qcustomplot.com/">QCustomPlot</link></entry><entry>included</entry>
+		<entry>For plotting and data visualization. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
+		<row><entry><link xlink:href="http://botan.randombit.net/">Botan</link></entry><entry>included</entry>
+		<entry>A crypto library used by OVITO's built-in SSH client. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
+		<row><entry><link xlink:href="https://github.com/lvklabs/QSsh">QSsh</link></entry><entry>included</entry>
+		<entry>Required for the built-in SSH client. OVITO's source distribution contains a slightly modified copy of this library, which is automatically used.</entry></row>
+		<row><entry><link xlink:href="http://jedi.ks.uiuc.edu/~johns/raytracer/">Tachyon</link></entry><entry>included</entry>
+		<entry>Required to build the <literal>Tachyon</literal> renderer plugin. OVITO's source distribution contains a slightly modified copy of this library, which is automatically used.</entry></row>
+		<row><entry><link xlink:href="http://math.lbl.gov/voro++/">Voro++</link></entry><entry>included</entry>
+		<entry>Voronoi cell construction routine required by the <link linkend="particles.modifiers.voronoi_analysis">Voronoi analysis</link> modifier. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
+	</tbody></tgroup>
+	</informaltable> 
+    </para>
     
   </simplesect>
+
+  <xi:include href="build_linux.docbook"/>
+  <xi:include href="build_windows.docbook"/>
+  <xi:include href="build_macosx.docbook"/>
 
 </chapter>

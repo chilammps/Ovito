@@ -110,7 +110,7 @@ void FloatParameterUI::updateUI()
 ******************************************************************************/
 FloatType FloatParameterUI::minValue() const
 {
-	return (spinner() ? spinner()->minValue() : -FLOATTYPE_MAX);
+	return (spinner() ? spinner()->minValue() : FLOATTYPE_MIN);
 }
 
 /******************************************************************************

@@ -27,10 +27,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
 
-/******************************************************************************
-* This dialog box lets the user edit the mapping from data columns
-* in an input file to particle properties.
-******************************************************************************/
+/**
+ * \brief Dialog box that lets the user edit an InputColumnMapping.
+ */
 class OVITO_PARTICLES_EXPORT InputColumnMappingDialog : public QDialog
 {
 	Q_OBJECT

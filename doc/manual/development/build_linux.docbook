@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="development.build_linux" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Building OVITO on Linux</title>
+
+  <para>
+  Note that the following instructions apply to Ubuntu Linux 14.04 or later. 
+  If you are using a different Linux distribution, some steps might need to be slightly changed. 
+  </para>
+  
+ <simplesect>
+    <title>Install dependencies</title>
+    <para>
+    To install the <link linkend="development.requirements">build tools and third-party libraries required by OVITO</link>, run the following  
+    on Ubuntu or other Debian-based Linux distributions:
+<screen><command>
+sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-dev libboost-dev \
+                     libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
+                     libavutil-dev libswscale-dev libnetcdf-dev libhdf5-dev libhdf5-serial-dev \
+                     libbotan1.10-dev libmuparser-dev python-dev libboost-python-dev python-sphinx python-numpy \
+                     xsltproc docbook-xml docbook-xsl docbook-xsl-doc-html doxygen
+</command></screen>
+  </para>
+  </simplesect>
+
+ <simplesect>
+    <title>Download the source code</title>
+    <para>
+    To download OVITO's source code into a new subdirectory named <filename>ovito</filename>: 
+<screen><command>git clone git://git.code.sf.net/p/ovito/git ovito</command></screen>
+  </para>
+  </simplesect>
+
+  <simplesect>
+    <title>Compile OVITO</title>
+    <para>
+    Create a build directory and let CMake generate the Makefile: 
+<screen>
+<command>cd ovito
+mkdir build
+cd build
+cmake -DOVITO_BUILD_DOCUMENTATION=ON \
+      -DOVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON \
+      -DOVITO_BUILD_PLUGIN_NETCDF=ON \
+      -DOVITO_BUILD_PLUGIN_PYSCRIPT=ON \
+      -DOVITO_VIDEO_OUTPUT_SUPPORT=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      ..
+</command></screen>
+  </para>
+  <para>
+    If this step fails, or if you want to enable/disable individual components of OVITO, you can now run "<command>ccmake .</command>" to open the CMake configuration program.    
+    Finally build OVITO by running 
+<screen>
+<command>make -j4</command></screen>
+After successful compilation, the executable can be found in the <filename>bin</filename> subdirectory.
+  </para>
+  </simplesect>
+  
+</section>

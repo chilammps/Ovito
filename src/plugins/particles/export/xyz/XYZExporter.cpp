@@ -21,7 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "XYZExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
@@ -95,7 +95,7 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 		throw Exception(tr("No particle properties have been selected for export to the XYZ file. Cannot write file with zero columns."));
 	OutputColumnWriter columnWriter(mapping, state, true);
 
-	SimulationCell* simulationCell = state.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = state.findObject<SimulationCellObject>();
 
 	if(subFormat() == ParcasFormat) {
 		textStream() << QStringLiteral("Frame %1").arg(frameNumber);

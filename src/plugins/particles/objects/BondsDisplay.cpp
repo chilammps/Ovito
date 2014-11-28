@@ -29,7 +29,7 @@
 
 #include "BondsDisplay.h"
 #include "ParticleDisplay.h"
-#include "SimulationCell.h"
+#include "SimulationCellObject.h"
 #include "ParticleTypeProperty.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
@@ -74,7 +74,7 @@ Box3 BondsDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNod
 {
 	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(dataObject);
 	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
-	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = flowState.findObject<SimulationCellObject>();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
@@ -117,7 +117,7 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 {
 	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(dataObject);
 	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
-	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = flowState.findObject<SimulationCellObject>();
 	ParticlePropertyObject* colorProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::ColorProperty);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
 	if(!useParticleColors()) {

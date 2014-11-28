@@ -29,7 +29,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace AtomEye {
 
 /**
- * \brief File parser for IMD atom files.
+ * \brief File parser for AtomEye CFG files.
  */
 class OVITO_PARTICLES_EXPORT CFGImporter : public ParticleImporter
 {

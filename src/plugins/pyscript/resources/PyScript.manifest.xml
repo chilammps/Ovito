@@ -23,12 +23,6 @@
 	Plugin manifest for the Python scripting plugin.
 -->
      
-<Plugin-Manifest xmlns="http://www.ovito.org/schema/pluginmanifest/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	Plugin-Id="PyScript"
-	Plugin-Version="1.0"
-	Plugin-Vendor="Alexander Stukowski">
-	
-	<NativePlugin Library="PyScript" />
-	
-</Plugin-Manifest>
+<ovito-plugin id="PyScript" vendor="Alexander Stukowski">	
+	<native-library>PyScript</native-library>
+</ovito-plugin>

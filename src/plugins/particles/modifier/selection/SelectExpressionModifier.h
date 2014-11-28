@@ -28,9 +28,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
-/******************************************************************************
-* Selects particles based on a user-defined Boolean expression.
-******************************************************************************/
+/**
+ * \brief Selects particles based on a user-defined Boolean expression.
+ */
 class OVITO_PARTICLES_EXPORT SelectExpressionModifier : public ParticleModifier
 {
 public:

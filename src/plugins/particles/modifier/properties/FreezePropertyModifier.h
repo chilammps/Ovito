@@ -27,9 +27,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
 
-/******************************************************************************
-* Saves the current state of a particle property and preserves it over time.
-******************************************************************************/
+/**
+ * \brief Saves the current state of a particle property and preserves it over time.
+ */
 class OVITO_PARTICLES_EXPORT FreezePropertyModifier : public ParticleModifier
 {
 public:

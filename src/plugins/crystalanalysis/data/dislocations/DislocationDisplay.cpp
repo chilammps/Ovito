@@ -23,7 +23,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "DislocationDisplay.h"
 #include "DislocationNetwork.h"
 
@@ -54,7 +54,7 @@ DislocationDisplay::DislocationDisplay(DataSet* dataset) : DisplayObject(dataset
 ******************************************************************************/
 Box3 DislocationDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return Box3();
 
@@ -72,7 +72,7 @@ Box3 DislocationDisplay::boundingBox(TimePoint time, DataObject* dataObject, Obj
 void DislocationDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get the simulation cell.
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return;
 
@@ -101,7 +101,7 @@ void DislocationDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 
 	// Update buffer contents.
 	if(updateContents) {
-		SimulationCellData cellData = cellObject->data();
+		SimulationCell cellData = cellObject->data();
 		if(OORef<DislocationNetwork> dislocationObj = dataObject->convertTo<DislocationNetwork>(time)) {
 			int lineSegmentCount = 0, cornerCount = 0;
 			for(DislocationSegment* segment : dislocationObj->segments()) {
@@ -168,10 +168,10 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, DataObject* dataObj
 		return;
 
 	// Get the simulation cell.
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return;
-	SimulationCellData cellData = cellObject->data();
+	SimulationCell cellData = cellObject->data();
 
 	// Get the dislocations.
 	OORef<DislocationNetwork> dislocationObj = dataObject->convertTo<DislocationNetwork>(time);
@@ -231,7 +231,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, DataObject* dataObj
 /******************************************************************************
 * Clips a dislocation line at the periodic box boundaries.
 ******************************************************************************/
-void DislocationDisplay::clipDislocationLine(const QVector<Point3>& line, const SimulationCellData& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback)
+void DislocationDisplay::clipDislocationLine(const QVector<Point3>& line, const SimulationCell& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback)
 {
 	auto v1 = line.cbegin();
 	Point3 rp1 = simulationCell.absoluteToReduced(*v1);

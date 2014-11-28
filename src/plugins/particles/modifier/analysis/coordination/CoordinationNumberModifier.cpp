@@ -56,7 +56,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CoordinationNumberM
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 	// Get simulation cell.
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// The number of sampling intervals for the radial distribution function.
 	int rdfSampleCount = 500;

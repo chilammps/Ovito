@@ -187,8 +187,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                     FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                     int binIndexX = int( fractionalPosX * binDataSizeX );
                     int binIndexY = int( fractionalPosY * binDataSizeY );
-                    if (pbc[binDirX]) binIndexX = SimulationCell::modulo(binIndexX, binDataSizeX);
-                    if (pbc[binDirY]) binIndexY = SimulationCell::modulo(binIndexY, binDataSizeY);
+                    if (pbc[binDirX]) binIndexX = SimulationCellObject::modulo(binIndexX, binDataSizeX);
+                    if (pbc[binDirY]) binIndexY = SimulationCellObject::modulo(binIndexY, binDataSizeY);
                     if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                         size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                         if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
@@ -224,8 +224,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                 FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                 int binIndexX = int( fractionalPosX * binDataSizeX );
                 int binIndexY = int( fractionalPosY * binDataSizeY );
-                if (pbc[binDirX])  binIndexX = SimulationCell::modulo(binIndexX, binDataSizeX);
-                if (pbc[binDirY])  binIndexY = SimulationCell::modulo(binIndexY, binDataSizeY);
+                if (pbc[binDirX])  binIndexX = SimulationCellObject::modulo(binIndexX, binDataSizeX);
+                if (pbc[binDirY])  binIndexY = SimulationCellObject::modulo(binIndexY, binDataSizeY);
                 if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                     size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                     if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {

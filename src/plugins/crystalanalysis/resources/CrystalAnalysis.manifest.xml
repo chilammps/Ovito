@@ -23,17 +23,10 @@
 	Plugin manifest for the crystal analysis plugin.
 -->
      
-<Plugin-Manifest xmlns="http://www.ovito.org/schema/pluginmanifest/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	Plugin-Id="CrystalAnalysis"
-	Plugin-Version="1.0"
-	Plugin-Vendor="Alexander Stukowski">
-	
-	<NativePlugin Library="CrystalAnalysis" />
-	
-	<Plugin-Dependencies>
-		<Plugin-Dependency Plugin-Id="Particles" />
-		<Plugin-Dependency Plugin-Id="PyScript" Enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
-	</Plugin-Dependencies>
-	
-</Plugin-Manifest>
+<ovito-plugin id="CrystalAnalysis" vendor="Alexander Stukowski">	
+	<native-library>CrystalAnalysis</native-library>	
+	<dependencies>
+		<plugin-dependency id="Particles" />
+		<plugin-dependency id="PyScript" enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
+	</dependencies>
+</ovito-plugin>

@@ -23,17 +23,10 @@
 	Plugin manifest for the netCDF import plugin.
 -->
      
-<Plugin-Manifest xmlns="http://www.ovito.org/schema/pluginmanifest/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	Plugin-Id="NetCDF"
-	Plugin-Version="1.0"
-	Plugin-Vendor="Lars Pastewka">
-	
-	<NativePlugin Library="NetCDFImporter" />
-	
-	<Plugin-Dependencies>
-		<Plugin-Dependency Plugin-Id="Particles" />
-		<Plugin-Dependency Plugin-Id="PyScript" Enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
-	</Plugin-Dependencies>
-	
-</Plugin-Manifest>
+<ovito-plugin id="NetCDF" vendor="Lars Pastewka">
+	<native-library>NetCDFImporter</native-library>	
+	<dependencies>
+		<plugin-dependency id="Particles" />
+		<plugin-dependency id="PyScript" enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
+	</dependencies>	
+</ovito-plugin>

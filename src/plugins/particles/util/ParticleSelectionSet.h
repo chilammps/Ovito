@@ -29,7 +29,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
- * Stores a particle selection set and provides modification functions.
+ * \brief Stores a particle selection set and provides modification functions.
  *
  * This class is used by some modifiers to store the selection state of particles.
  *

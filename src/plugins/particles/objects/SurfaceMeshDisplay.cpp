@@ -27,7 +27,7 @@
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/utilities/mesh/TriMesh.h>
 #include <core/animation/controller/Controller.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/util/CapPolygonTessellator.h>
 #include "SurfaceMeshDisplay.h"
 #include "SurfaceMesh.h"
@@ -77,7 +77,7 @@ SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset
 ******************************************************************************/
 Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return Box3();
 
@@ -95,7 +95,7 @@ Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, Obj
 void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get the simulation cell.
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return;
 
@@ -162,7 +162,7 @@ void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 /******************************************************************************
 * Generates the final triangle mesh, which will be rendered.
 ******************************************************************************/
-bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
+bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output)
 {
 	// Convert half-edge mesh to triangle mesh.
 	input.convertToTriMesh(output);
@@ -219,7 +219,7 @@ bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 * Splits a triangle face at a periodic boundary.
 ******************************************************************************/
 bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices,
-		std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim)
+		std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCell& cell, size_t dim)
 {
 	OVITO_ASSERT(face.vertex(0) != face.vertex(1));
 	OVITO_ASSERT(face.vertex(1) != face.vertex(2));
@@ -300,7 +300,7 @@ bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 /******************************************************************************
 * Generates the triangle mesh for the PBC caps.
 ******************************************************************************/
-void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, bool isCompletelySolid, TriMesh& output)
+void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output)
 {
 	// Convert vertex positions to reduced coordinates.
 	std::vector<Point3> reducedPos(input.vertexCount());
@@ -439,7 +439,7 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 /******************************************************************************
 * Traces the closed contour of the surface-boundary intersection.
 ******************************************************************************/
-std::vector<Point2> SurfaceMeshDisplay::traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCellData& cell, size_t dim)
+std::vector<Point2> SurfaceMeshDisplay::traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCell& cell, size_t dim)
 {
 	size_t dim1 = (dim + 1) % 3;
 	size_t dim2 = (dim + 2) % 3;

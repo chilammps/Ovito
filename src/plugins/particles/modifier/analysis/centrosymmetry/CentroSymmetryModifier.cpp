@@ -55,7 +55,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CentroSymmetryModif
 {
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	SimulationCell* simCell = expectSimulationCell();
+	SimulationCellObject* simCell = expectSimulationCell();
 
 	if(numNeighbors() < 2)
 		throw Exception(tr("The selected number of neighbors to take into account for the centrosymmetry calculation is invalid."));

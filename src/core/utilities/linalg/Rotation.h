@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Math::RotationT class template.
+ * \brief Contains the definition of the Ovito::Util::Math::RotationT class template.
  */
 
 #ifndef __OVITO_ROTATION_H
@@ -34,17 +34,43 @@
 #include "Quaternion.h"
 #include "Matrix3.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 /**
- * \brief A rotation in 3D space described by an axis of rotation and an angle.
+ * \brief A rotation in 3d space, described by a rotation axis and an angle.
  *
- * The rotation is defined by an unit vector that specifies the axis of rotation
- * and an angle.
+ * OVITO supports four different ways of representing rotations in 3d space:
  *
- * Rotations can also be described by the Quaternion and the AffineTransformation
- * class but only the Rotation class is able to represent rotations with more than
- * one revolution, i.e. rotation angles larger than 360 degrees.
+ * 1. axis and angle (this class),
+ * 2. quaternions (QuaternionT),
+ * 3. transformation matrices (AffineTransformationT and Matrix_3),
+ * 4. Euler angles (RotationT::toEuler() and Matrix_3::toEuler()).
+ *
+ * The different representations can be converted into each other. The axis-angle
+ * representation is the only one that can represent multiple revolutions
+ * (i.e. angles of rotation larger than 360 degrees) and also supports interpolation.
+ *
+ * The class template parameter \a T specifies the data type used for spatial coordinates and the angle.
+ * The template instantiation for standard floating-point values is predefined as follows:
+ *
+ * \code
+ *      typedef RotationT<FloatType> Rotation;
+ * \endcode
+ *
+ * Note that the default constructor does not initialize the fields of the RotationT class for performance reasons.
+ * The nested type Identity can be used to construct the null rotation (angle = 0):
+ *
+ * \code
+ *      Rotation rot = Rotation::Identity();
+ * \endcode
+ *
+ * Linear and spherical quadratic interpolation between two rotations is done with the interpolate()
+ * and interpolateQuad() methods. The toEuler() and fromEuler() methods allow conversion to and from
+ * an Euler angle representations.
+ *
+ * Two rotations can be concatenated using the overloaded multiplication operator.
+ *
+ * \sa QuaternionT, AffineTransformationT
  */
 template<typename T>
 class RotationT
@@ -64,25 +90,24 @@ public:
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
-	/// \brief Constructs a Rotation object without initializing its components.
-	/// \note The axis and the angle are left uninitialized by this constructor and will therefore have an undefined value!
+	/// Empty default constructor that does not initialize the fields of the object for performance reasons!
+	/// Both the axis and the angle are left undefined and need to be initialized later.
 	RotationT() {}
 
-	/// \brief Constructor that builds up a rotation from an axis and an angle.
-	/// \param _axis The vector that specifies the rotation axis. It does not have to be a unit vector.
-	///              It is automatically normalized by the Rotation constructor.
-	/// \param _angle The rotation angle in radians.
+	/// \brief Constructs a rotation from an axis and an angle.
+	/// \param axis The axis of rotation. It is automatically normalized to a unit vector unless \a normalize is \c false.
+	/// \param angle The angle of rotation in radians.
+	/// \param normalize Controls the automatic normalization of the axis vector.
 	Q_DECL_CONSTEXPR RotationT(const Vector_3<T>& axis, T angle, bool normalize = true) : _axis(normalize ? axis.normalized() : axis), _angle(angle) {}
 
-	/// \brief Initializes the object to the null rotation.
-	/// The axis is initialized with the (0,0,1) vector and the angle is set to zero.
+	/// \brief Constructs a the null rotation.
+	/// The axis vector is set to (0,0,1) vector and the angle to zero.
 	Q_DECL_CONSTEXPR RotationT(Identity) : _axis{T(0),T(0),T(1)}, _angle(T(0)) {}
 
-	/// \brief Initializes the object from rotational part of the matrix.
-	/// \param tm A rotation matrix.
+	/// \brief Initializes the object from the rotational part of a matrix.
+	/// \param tm A pure rotation matrix.
 	///
-	/// It is assumed that \a tm is a pure rotation matrix.
-	/// The calculated rotation angle will be in the range [-pi, +pi].
+	/// The rotation angle calculated from the matrix will be in the range [-pi, +pi].
     explicit RotationT(const AffineTransformationT<T>& tm) {
     	_axis.x() = tm(2,1) - tm(1,2);
     	_axis.y() = tm(0,2) - tm(2,0);
@@ -100,9 +125,9 @@ public:
     }
 
 	/// \brief Initializes the object from a quaternion.
-	/// \param q The input rotation.
+	/// \param q The input quaternion.
 	///
-	/// The calculated rotation angle will be in the range [0, 2*pi].
+	/// The rotation angle calculated from the quaternion will be in the range [0, 2*pi].
 	explicit RotationT(const QuaternionT<T>& q) {
 		T scaleSquared = q.x()*q.x() + q.y()*q.y() + q.z()*q.z();
 		if(scaleSquared <= T(FLOATTYPE_EPSILON)) {
@@ -121,9 +146,9 @@ public:
 		}
 	}
 
-	/// \brief Constructs a rotation that rotates one vector into a second vector.
-	/// \param a The vector to be rotated. Can be of any length but must not be the null vector.
-	/// \param b The target vector. Can be of any length but must not be the null vector.
+	/// \brief Constructs a rotation that rotates one vector such that it becomes parallel with a second vector.
+	/// \param a The vector to be rotated. Can be of any length, but must not be the null vector.
+	/// \param b The target vector. Can be of any length, but must not be the null vector.
 	RotationT(const Vector_3<T>& a, const Vector_3<T>& b) {
 		Vector_3<T> an = a.normalized();
 		Vector_3<T> bn = b.normalized();
@@ -144,28 +169,31 @@ public:
 
 	/////////////////////////////// Component access //////////////////////////////
 
-	/// \brief Returns the axis of rotation.
+	/// \brief Returns the axis of rotation (a unit vector).
 	Q_DECL_CONSTEXPR const Vector_3<T>& axis() const { return _axis; }
 
-	/// \brief Returns the angle of rotation.
+	/// \brief Returns the angle of rotation in radians.
 	Q_DECL_CONSTEXPR T angle() const { return _angle; }
 
 	/// \brief Changes the axis of rotation.
+	/// \param axis The new axis of rotation. Must be a unit vector.
 	void setAxis(const Vector_3<T>& axis) { _axis = axis; }
 
 	/// \brief Changes the angle of rotation.
+	/// \param angle The new angle in radians.
 	void setAngle(T angle) { _angle = angle; }
 
 	/////////////////////////////// Unary operators //////////////////////////////
 
 	/// \brief Returns the inverse of this rotation.
-	/// \return A rotation with the same axis but negative rotation angle.
+	/// \return A rotation with the same axis vector but an inverted rotation angle.
 	Q_DECL_CONSTEXPR RotationT inverse() const  { return RotationT(_axis, -_angle, false); }
 
-	/// \brief Converts the rotation to a Quaternion.
-	/// \return A quaternion that represents the same rotation.
+	/// \brief Converts the axis-angle representation to a quaternion representation.
+	/// \return A quaternion that represents the same rotation as this object.
 	///
-	/// Please note that any extra revolutions are lost by this conversion.
+	/// Note that any extra revolutions are lost during the conversion, because quaternions
+	/// cannot represent multiple revolutions.
 	explicit operator QuaternionT<T>() const {
 		T omega = _angle * T(0.5);
 		T s = sin(omega);
@@ -176,29 +204,31 @@ public:
 
 	/// \brief Adds the given rotation to this rotation.
 	/// \param r2 The rotation to add to this rotation.
-	/// \return This resulting rotation which is equal to \c r2*(*this).
+	/// The new rotation is equal to \c r2*(*this).
 	RotationT& operator+=(const RotationT& r2) { *this = r2 * (*this); return *this; }
 
 	/// \brief Adds the inverse of another rotation to this rotation.
 	/// \param r2 The rotation to subtract from this rotation.
-	/// \return This resulting rotation which is equal to \c (*this)*r2.inverse().
+	/// The new rotation is equal to \c (*this)*r2.inverse().
 	RotationT& operator-=(const RotationT& r2) { *this = (*this) * r2.inverse(); return *this; }
 
 	/// \brief Sets the rotation to the identity rotation.
-	RotationT& setIdentity() {
+	void setIdentity() {
 		_axis = Vector_3<T>(T(0),T(0),T(1));
 		_angle = T(0);
-		return *this;
 	}
 
 	/// \brief Sets the rotation to the identity rotation.
-	RotationT& operator=(Identity) { return setIdentity(); }
+	RotationT& operator=(Identity) {
+		setIdentity();
+		return *this;
+	}
 
 	////////////////////////////////// Comparison ////////////////////////////////
 
-	/// \brief Returns whether two rotations are the same.
+	/// \brief Tests whether two rotations are the same.
 	/// \param r The rotation to compare with.
-	/// \return \c true if the axis and the angle of both rotations are either equal or opposite;
+	/// \return \c true if the axis and the angle of the two rotations are either both equal or both equal to their opposite;
 	///         \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator==(const RotationT& r) const { return ((r._axis==_axis) && (r._angle==_angle)) || ((r._axis==-_axis) && (r._angle==-_angle)); }
 
@@ -206,22 +236,22 @@ public:
 	/// \param r The rotation to compare with.
 	/// \return \c true if the axis or the angle of both rotations are neither equal or opposite;
 	///         \c false otherwise.
-	Q_DECL_CONSTEXPR bool operator!=(const RotationT& r) const { return ((r._axis!=_axis) || (r._angle!=_angle)) && ((r._axis!=-_axis) || (r._angle!=-_angle)); }
+	Q_DECL_CONSTEXPR bool operator!=(const RotationT& r) const { return !(*this == r); }
 
-	/// \brief Returns whether the rotation angle is zero.
-	/// \return \c true if the rotation angle is zero; \c false otherwise.
+	/// \brief Returns whether the angle of rotation is zero.
+	/// \return \c true if the angle is zero; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator==(Identity) const { return (_angle == T(0)); }
 
-	/// \brief Returns whether the rotation angle is not zero.
-	/// \return \c true if the rotation angle is not zero; \c false otherwise.
+	/// \brief Returns whether the angle of rotation is not zero.
+	/// \return \c true if the angle is not zero; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator!=(Identity) const { return (_angle != T(0)); }
 
-	/// \brief Checks whether two rotations are equal within a given tolerance.
-	/// \param r The rotation that should be compared to this rotation.
+	/// \brief Tests whether two rotations are equal within a specified tolerance.
+	/// \param r The rotation to compare with.
 	/// \param tolerance A non-negative threshold for the equality test. The two rotations are considered equal when
-	///        the differences in the X, Y, and Z components of the rotation axis and the angle are all smaller than this tolerance value.
-	///        Two rotations with equal but opposite axis and angle are considered equal.
-	/// \return true if this rotation is equal to the given rotation within the given tolerance.
+	///        the absolute differences in the X, Y, and Z components of the rotation vector and the angle are all smaller than this tolerance value.
+	///        Note that rotations with equal but opposite axis and angle are also considered equal.
+	/// \return \c true if this rotation is equal to the rotation \a r within the given tolerance.
 	Q_DECL_CONSTEXPR bool equals(const RotationT& r, T tolerance = T(FLOATTYPE_EPSILON)) const {
 		return (std::abs(angle() - r.angle()) <= tolerance && axis().equals( r.axis(), tolerance)) ||
 			   (std::abs(angle() + r.angle()) <= tolerance && axis().equals(-r.axis(), tolerance));
@@ -295,8 +325,9 @@ public:
     }
 
 	/// \brief Constructs a rotation from three Euler angles.
-	static RotationT fromEuler(const Vector_3<T>& eulerAngles, typename Matrix_3<T>::EulerAxisSequence axisSequence) {
-		OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
+    /// \param eulerAngles The input Euler angles.
+	static RotationT fromEuler(const Vector_3<T>& eulerAngles, typename Matrix_3<T>::EulerAxisSequence axisSequence = Matrix_3<T>::szyx) {
+		OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);	// TODO: Other orders not implemented yet!
 		return RotationT(Vector3(1,0,0), eulerAngles[2]) * RotationT(Vector3(0,1,0), eulerAngles[1]) * RotationT(Vector3(0,0,1), eulerAngles[0]);
 	}
 
@@ -309,8 +340,8 @@ public:
 		// Since the Euler-angle decomposition routine cannot handle this case directly,
 		// we have to determine the correct revolution number for each Euler axis in a trial-and-error
 		// fashion. To this end, we test all possible combinations of revolutions until
-		// we the one that yields the original axis-angle rotation. Multiple equivalent decompositions
-		// are ranked, because we prefer Euler decompositions that rotate only about a single axis.
+		// we find the one that yields the original axis-angle rotation. Multiple equivalent decompositions
+		// are ranked, because we prefer Euler decompositions that rotate about a single axis.
 		int maxRevolutions = (int)std::floor(std::abs(angle()) / T(M_PI*2) + T(0.5 + FLOATTYPE_EPSILON));
 		if(maxRevolutions == 0) return euler;
 		Vector_3<T> bestDecomposition = euler;
@@ -436,7 +467,7 @@ inline RotationT<T> operator*(const RotationT<T>& r1, const RotationT<T>& r2) {
 	return result;
 }
 
-/// \brief Writes the Rotation to a text output stream.
+/// \brief Prints a rotation to a text output stream.
 /// \param os The output stream.
 /// \param r The rotation to write to the output stream \a os.
 /// \return The output stream \a os.
@@ -446,7 +477,7 @@ inline std::ostream& operator<<(std::ostream &os, const RotationT<T>& r) {
 	return os << '[' << r.axis().x() << ' ' << r.axis().y()  << ' ' << r.axis().z() << "], " << r.angle();
 }
 
-/// \brief Writes the rotation to the Qt debug stream.
+/// \brief Prints a rotation to a Qt debug stream.
 /// \relates RotationT
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const RotationT<T>& r) {
@@ -454,26 +485,23 @@ inline QDebug operator<<(QDebug dbg, const RotationT<T>& r) {
     return dbg.space();
 }
 
-
-/// \brief Writes a Rotation to a binary output stream.
+/// \brief Writes a rotation to a binary output stream.
 /// \param stream The output stream.
 /// \param r The rotation to write to the output stream \a stream.
 /// \return The output stream \a stream.
 /// \relates RotationT
 template<typename T>
-inline SaveStream& operator<<(SaveStream& stream, const RotationT<T>& r)
-{
+inline SaveStream& operator<<(SaveStream& stream, const RotationT<T>& r) {
 	return stream << r.axis() << r.angle();
 }
 
-/// \brief Reads a Rotation from a binary input stream.
+/// \brief Reads a rotation from a binary input stream.
 /// \param stream The input stream.
 /// \param r Reference to a rotation variable where the parsed data will be stored.
 /// \return The input stream \a stream.
 /// \relates RotationT
 template<typename T>
-inline LoadStream& operator>>(LoadStream& stream, RotationT<T>& r)
-{
+inline LoadStream& operator>>(LoadStream& stream, RotationT<T>& r) {
 	Vector_3<T> axis;
 	T angle;
 	stream >> axis >> angle;
@@ -502,16 +530,16 @@ inline QDataStream& operator>>(QDataStream& stream, RotationT<T>& r) {
 }
 
 /**
- * \brief Template class instance of the RotationT template.
+ * \brief Instantiation of the RotationT class template with the default floating-point type.
  * \relates RotationT
  */
 typedef RotationT<FloatType>		Rotation;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Rotation);
-Q_DECLARE_METATYPE(Ovito::Math::Rotation*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Rotation, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Rotation*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Rotation);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Rotation*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Rotation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Rotation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ROTATION_H

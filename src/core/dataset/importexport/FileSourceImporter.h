@@ -81,7 +81,7 @@ public:
 		///       to remove unneeded data objects from the container so that it contains only
 		///       the newly loaded data when the function returns. Existing data objects may be
 		///       re-used to preserve certain setting if appropriate.
-		virtual void handOver(FileSource* container) = 0;
+		virtual void handOver(CompoundObject* container) = 0;
 
 		/// Returns the source file information.
 		const Frame& frame() const { return _frame; }
@@ -174,6 +174,7 @@ private:
 };
 
 /// \brief Writes an animation frame information record to a binary output stream.
+/// \relates FileSourceImporter::Frame
 inline SaveStream& operator<<(SaveStream& stream, const FileSourceImporter::Frame& frame)
 {
 	stream.beginChunk(0x02);
@@ -183,6 +184,7 @@ inline SaveStream& operator<<(SaveStream& stream, const FileSourceImporter::Fram
 }
 
 /// \brief Reads a box from a binary input stream.
+/// \relates FileSourceImporter::Frame
 inline LoadStream& operator>>(LoadStream& stream, FileSourceImporter::Frame& frame)
 {
 	int version = stream.expectChunkRange(0, 2);

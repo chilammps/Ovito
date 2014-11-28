@@ -27,9 +27,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
 
-/******************************************************************************
-* This modifier deletes the selected particles.
-******************************************************************************/
+/**
+ * \brief This modifier deletes the selected particles.
+ */
 class OVITO_PARTICLES_EXPORT DeleteParticlesModifier : public ParticleModifier
 {
 public:

@@ -44,6 +44,6 @@
 #include "Box3.h"
 #include "Ray.h"
 #include "Plane.h"
-#include "Tensor.h"
+#include "SymmetricTensor.h"
 
 #endif // __OVITO_LINALG_H

@@ -44,7 +44,7 @@ public:
 	public:
 
 		/// Constructor.
-		StructureIdentificationEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell) :
+		StructureIdentificationEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell) :
 			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_structures(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty, 0, false)) {}
@@ -56,13 +56,13 @@ public:
 		ParticleProperty* structures() const { return _structures.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 	private:
 
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _structures;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 	};
 
 public:

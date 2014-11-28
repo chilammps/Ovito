@@ -20,7 +20,7 @@
 ###############################################################################
 
 SET(OVITO_PARTICLES_SOURCE_FILES 
-	objects/SimulationCell.cpp
+	objects/SimulationCellObject.cpp
 	objects/SimulationCellDisplay.cpp
 	objects/ParticlePropertyObject.cpp
 	objects/ParticleDisplay.cpp

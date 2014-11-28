@@ -27,6 +27,9 @@
 
 namespace Ovito { namespace ObjectSystem { namespace Scene {
 
+/**
+ * \brief A DataObject that stores a collection of other \ref DataObject "DataObjects".
+ */
 class OVITO_CORE_EXPORT CompoundObject : public DataObject
 {
 public:

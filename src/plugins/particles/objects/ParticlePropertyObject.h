@@ -43,7 +43,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
  * An entire particle dataset usually consists of multiple ParticlePropertyObject instances, each storing a
  * different property such as position, type, identifier etc. A particle dataset is normally kept
  * in a PipelineFlowState structure, which consists of a collection of data objects (with some of them
- * being ParticlePropertyObject instances and perhaps a instance of the SimulationCell class).
+ * being ParticlePropertyObject instances and perhaps a instance of the SimulationCellObject class).
  *
  * The ParticlePropertyObject class keeps the actual per-particle data in an internal storage object
  * (see ParticleProperty class). The reason is that ParticlePropertyObject instances can only be created and

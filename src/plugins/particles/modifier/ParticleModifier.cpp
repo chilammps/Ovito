@@ -148,9 +148,9 @@ ParticlePropertyObject* ParticleModifier::expectStandardProperty(ParticlePropert
 /******************************************************************************
 * Returns the input simulation cell.
 ******************************************************************************/
-SimulationCell* ParticleModifier::expectSimulationCell() const
+SimulationCellObject* ParticleModifier::expectSimulationCell() const
 {
-	SimulationCell* cell = _input.findObject<SimulationCell>();
+	SimulationCellObject* cell = _input.findObject<SimulationCellObject>();
 	if(!cell)
 		throw Exception(tr("The modifier cannot be evaluated because the input does not contain a simulation cell."));
 	return cell;
@@ -342,12 +342,12 @@ void ParticleModifier::removeOutputProperty(ParticlePropertyObject* property)
 /******************************************************************************
 * Returns the modifier's output simulation cell.
 ******************************************************************************/
-SimulationCell* ParticleModifier::outputSimulationCell()
+SimulationCellObject* ParticleModifier::outputSimulationCell()
 {
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// Check if cell already exists in the output.
-	OORef<SimulationCell> outputCell = output().findObject<SimulationCell>();
+	OORef<SimulationCellObject> outputCell = output().findObject<SimulationCellObject>();
 	if(outputCell) {
 		// Is the existing output property still a shallow copy of the input?
 		if(outputCell == inputCell) {
@@ -358,7 +358,7 @@ SimulationCell* ParticleModifier::outputSimulationCell()
 	}
 	else {
 		// Create a new particle property in the output.
-		outputCell = new SimulationCell(dataset());
+		outputCell = new SimulationCellObject(dataset());
 		_output.addObject(outputCell);
 	}
 

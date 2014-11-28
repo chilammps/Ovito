@@ -34,7 +34,7 @@
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "SliceModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
@@ -347,7 +347,7 @@ void SliceModifier::initializeModifier(PipelineObject* pipeline, ModifierApplica
 	// Get the input simulation cell to initially place the slicing plane in
 	// the center of the cell.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-	SimulationCell* cell = input.findObject<SimulationCell>();
+	SimulationCellObject* cell = input.findObject<SimulationCellObject>();
 	if(cell) {
 		Point3 centerPoint = cell->cellMatrix() * Point3(0.5, 0.5, 0.5);
 		FloatType centerDistance = normal().dot(centerPoint - Point3::Origin());
@@ -544,7 +544,7 @@ void SliceModifierEditor::onCenterOfBox()
 	// Get the simulation cell from the input object to center the slicing plane in
 	// the center of the simulation cell.
 	PipelineFlowState input = mod->getModifierInput();
-	SimulationCell* cell = input.findObject<SimulationCell>();
+	SimulationCellObject* cell = input.findObject<SimulationCellObject>();
 	if(!cell) return;
 
 	Point3 centerPoint = cell->cellMatrix() * Point3(0.5, 0.5, 0.5);

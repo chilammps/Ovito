@@ -29,7 +29,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 /******************************************************************************
 * Prepares the neighbor list builder.
 ******************************************************************************/
-bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData)
+bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData)
 {
 	OVITO_CHECK_POINTER(posProperty);
 

@@ -29,7 +29,7 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 
 namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
@@ -119,7 +119,7 @@ public:
 protected:
 
 	/// Clips a dislocation line at the periodic box boundaries.
-	void clipDislocationLine(const QVector<Point3>& line, const SimulationCellData& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback);
+	void clipDislocationLine(const QVector<Point3>& line, const SimulationCell& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback);
 
 protected:
 
@@ -133,7 +133,7 @@ protected:
 	/// that require updating the geometry buffers.
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<DataObject>,		// Source object + revision number
-		SimulationCellData,						// Simulation cell geometry
+		SimulationCell,						// Simulation cell geometry
 		FloatType								// Line width
 		> _geometryCacheHelper;
 
@@ -144,7 +144,7 @@ protected:
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<DataObject>,		// Source object + revision number
-		SimulationCellData,						// Simulation cell geometry
+		SimulationCell,						// Simulation cell geometry
 		FloatType								// Line width
 		> _boundingBoxCacheHelper;
 

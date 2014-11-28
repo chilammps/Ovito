@@ -150,7 +150,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CreateBondsModifier
 {
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	SimulationCell* simCell = expectSimulationCell();
+	SimulationCellObject* simCell = expectSimulationCell();
 
 	// Build table of pair-wise cutoff radii.
 	ParticleTypeProperty* typeProperty = nullptr;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Math::Matrix_3 class template.
+ * \brief Contains the definition of the Ovito::Util::Math::Matrix_3 class template.
  */
  
 #ifndef __OVITO_MATRIX3_H
@@ -34,25 +34,30 @@
 #include "Vector3.h"
 #include "Point3.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 template<typename T> class RotationT;
 template<typename T> class QuaternionT;
 template<typename T> class ScalingT;
 
 /**
- * \brief A 3x3 transformation matrix.
+ * \brief A 3x3 matrix.
+ *
+ * The matrix is stored in column-major order. Matrix_3 is derived from std::array< Vector_3<T>, 3 >. Thus, it is an array of three column vectors.
+ *
+ * The template parameter \a T specifies the data type of the matrix elements.
+ * The typedef \c Matrix3 for matrices with floating-point elements is predefined:
+ *
+ * \code
+ *      typedef Matrix_3<FloatType>  Matrix3;
+ * \endcode
+ *
+ * \sa Vector_3, Point_3
+ * \sa AffineTransformationT, Matrix_4
  */
 template<typename T>
-class Matrix_3
+class Matrix_3 : public std::array<Vector_3<T>,3>
 {
-private:
-
-	/// The 3 x 3 elements of the matrix.
-	/// Elements are stored in column-major order, i.e. the first 
-	/// array index specifies the column and the second the row.
-	Vector_3<T> _m[3];
-
 public:
 
 	/// An empty type that denotes a 3x3 matrix with all elements equal to zero.
@@ -61,9 +66,17 @@ public:
 	/// An empty type that denotes the 3x3 identity matrix.
 	struct Identity {};
 
-	typedef T value_type;
+	/// The type of a single element of the matrix.
+	typedef T element_type;
+
+	/// The type of a single column of the matrix.
 	typedef Vector_3<T> column_type;
-	typedef std::size_t size_type;
+
+	using typename std::array<Vector_3<T>, 3>::size_type;
+	using typename std::array<Vector_3<T>, 3>::difference_type;
+	using typename std::array<Vector_3<T>, 3>::value_type;
+	using typename std::array<Vector_3<T>, 3>::iterator;
+	using typename std::array<Vector_3<T>, 3>::const_iterator;
 
 	enum EulerAxisSequence {
 		sxyz, sxyx, sxzy, sxzx, syzx, syzy, syxz, syxy, szxy, szxz, szyx, szyz,
@@ -72,33 +85,46 @@ public:
 
 public:
 
-	/// \brief Constructs a matrix without initializing its elements.
-	/// \note All elements are left uninitialized by this constructor and have therefore an undefined value!
+	/// \brief Empty default constructor that does not initialize the matrix elements (for performance reasons).
+	///        The matrix elements will have an undefined value and need to be initialized later.
 	Matrix_3() {}
 
 	/// \brief Constructor that initializes all 9 elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
 	Q_DECL_CONSTEXPR Matrix_3(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
-					   T m31, T m32, T m33) :
-		_m{Vector_3<T>(m11,m21,m31),Vector_3<T>(m12,m22,m32),Vector_3<T>(m13,m23,m33)} {}
+					   T m31, T m32, T m33)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<Vector_3<T>,3>{{Vector_3<T>(m11,m21,m31),
+									 Vector_3<T>(m12,m22,m32),
+									 Vector_3<T>(m13,m23,m33)}}
+#endif
+		{}
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
-	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3) : _m{c1, c2, c3} {}
+	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<Vector_3<T>,3>{{c1, c2, c3}}
+#endif
+		{}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	Q_DECL_CONSTEXPR Matrix_3(Zero) : _m{
-		typename Vector_3<T>::Zero(),
-		typename Vector_3<T>::Zero(),
-		typename Vector_3<T>::Zero()} {}
+	Q_DECL_CONSTEXPR Matrix_3(Zero)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<Vector_3<T>,3>{{typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero()}}
+#endif
+		{}
 
 	/// \brief Initializes the matrix to the identity matrix.
-	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	Q_DECL_CONSTEXPR Matrix_3(Identity) : _m{
-				Vector_3<T>(T(1),T(0),T(0)),
-				Vector_3<T>(T(0),T(1),T(0)),
-				Vector_3<T>(T(0),T(0),T(1))} {}
+	/// All diagonal elements are set to one, and all off-diagonal elements are set to zero.
+	Q_DECL_CONSTEXPR Matrix_3(Identity)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<Vector_3<T>,3>{{Vector_3<T>(T(1),T(0),T(0)),
+									 Vector_3<T>(T(0),T(1),T(0)),
+									 Vector_3<T>(T(0),T(0),T(1))}}
+#endif
+		{}
 
 	/// \brief Casts the matrix to a matrix with another data type.
 	template<typename U>
@@ -109,180 +135,194 @@ public:
 				static_cast<U>((*this)(2,0)), static_cast<U>((*this)(2,1)), static_cast<U>((*this)(2,2)));
 	}
 
-	/// \brief Returns the number of rows in this matrix.
+	/// \brief Returns the number of rows of this matrix.
 	static Q_DECL_CONSTEXPR size_type row_count() { return 3; }
 
-	/// \brief Returns the columns of rows in this matrix.
+	/// \brief Returns the number of columns of this matrix.
 	static Q_DECL_CONSTEXPR size_type col_count() { return 3; }
 
 	/// \brief Returns the value of a matrix element.
-	/// \param row The row of the element to return.
-	/// \param col The column of the element to return.
+	/// \param row The matrix row of the element.
+	/// \param col The matrix column of the element.
 	/// \return The value of the matrix element.
 	Q_DECL_CONSTEXPR inline T operator()(size_type row, size_type col) const {
-		return _m[col][row];
+		return (*this)[col][row];
 	}
 
 	/// \brief Returns a reference to a matrix element.
-	/// \param row The row of the element to return.
-	/// \param col The column of the element to return.
+	/// \param row The row of the element.
+	/// \param col The column of the element.
+	/// \return A non-const reference to the matrix element, which may be written to.
 	inline T& operator()(size_type row, size_type col) {
-		return _m[col][row];
+		return (*this)[col][row];
 	}
 
-	/// \brief Returns a column vector in the matrix.
+	/// \brief Returns a column vector of the matrix.
 	/// \param col The index of the column to return.
-	/// \return The i-th column of the matrix as a vector.
+	/// \return A vector containing the matrix elements of the column \a col.
 	Q_DECL_CONSTEXPR const column_type& column(size_type col) const {
-		return _m[col];
+		return (*this)[col];
 	}
 
 	/// \brief Returns a reference to a column vector of the matrix.
 	/// \param col The column to return.
-	/// \return The i-th column of the matrix as a vector reference. Modifying the vector modifies the matrix.
+	/// \return A reference to the vector containing the matrix elements of the column \a col.
+	/// \note Modifying the elements of the returned vector will modify the matrix elements.
+	/// \sa row()
 	column_type& column(size_type col) {
-		return _m[col];
+		return (*this)[col];
 	}
 	
 	/// \brief Returns a row from the matrix.
 	/// \param row The row to return.
-	/// \return The i-th row of the matrix as a vector.
+	/// \return The requested row of the matrix as a vector.
+	/// \note The returned vector is a copy of the matrix row elements.
+	/// \sa column()
 	Q_DECL_CONSTEXPR Vector_3<T> row(size_type row) const {
-		return { _m[0][row], _m[1][row], _m[2][row] };
+		return { (*this)[0][row], (*this)[1][row], (*this)[2][row] };
 	}
 
-	/// \brief Sets all components of the matrix to zero.
-	Matrix_3& setZero() {
-		_m[0].setZero();
-		_m[1].setZero();
-		_m[2].setZero();
-		return *this;
+	/// Returns a pointer to the 9 elements of the matrix (stored in column-major order).
+	const element_type* elements() const {
+		OVITO_STATIC_ASSERT(sizeof(*this) == sizeof(element_type)*9);
+		return column(0).data();
 	}
 
-	/// \brief Sets all components of the matrix to zero.
+	/// Returns a pointer to the 9 elements of the matrix (stored in column-major order).
+	element_type* elements() {
+		OVITO_STATIC_ASSERT(sizeof(*this) == sizeof(element_type)*9);
+		return column(0).data();
+	}
+
+	/// Sets all elements of the matrix to zero.
+	void setZero() {
+		(*this)[0].setZero();
+		(*this)[1].setZero();
+		(*this)[2].setZero();
+	}
+
+	/// Sets all elements of the matrix to zero.
 	Matrix_3& operator=(Zero) {
-		return setZero();
-	}
-
-	/// \brief Sets the matrix to the identity matrix.
-	Matrix_3& setIdentity() {
-		_m[0] = Vector_3<T>(1,0,0);
-		_m[1] = Vector_3<T>(0,1,0);
-		_m[2] = Vector_3<T>(0,0,1);
+		setZero();
 		return *this;
 	}
 
-	/// \brief Sets the matrix to the identity matrix.
+	/// Sets the matrix to the identity matrix.
+	void setIdentity() {
+		(*this)[0] = Vector_3<T>(1,0,0);
+		(*this)[1] = Vector_3<T>(0,1,0);
+		(*this)[2] = Vector_3<T>(0,0,1);
+	}
+
+	/// Sets the matrix to the identity matrix.
 	Matrix_3& operator=(Identity) {
-		return setIdentity();
-	}
-
-	/// \brief Returns a pointer to the element data of the matrix.
-	/// \sa constData()
-	T* data() {
-		return reinterpret_cast<T*>(&_m);
-	}
-
-	/// \brief Returns a pointer to the element data of the matrix.
-	/// \sa data()
-	const T* constData() const {
-		return reinterpret_cast<const T*>(&_m);
+		setIdentity();
+		return *this;
 	}
 
 	////////////////////////////////// Comparison ///////////////////////////////////
 
 	/// \brief Compares two matrices for exact equality.
-	/// \return true if all elements are equal; false otherwise.
+	/// \return \c true if all elements are equal; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator==(const Matrix_3& b) const {
-		return (b._m[0] == _m[0]) && (b._m[1] == _m[1]) && (b._m[2] == _m[2]);
+		return (b[0] == (*this)[0]) && (b[1] == (*this)[1]) && (b[2] == (*this)[2]);
 	}
 
 	/// \brief Compares two matrices for inequality.
-	/// \return true if not all elements are equal; false if all are equal.
+	/// \return \c true if not all elements are equal; \c false if all are equal.
 	Q_DECL_CONSTEXPR bool operator!=(const Matrix_3& b) const {
-		return (b._m[0] != _m[0]) || (b._m[1] != _m[1]) || (b._m[2] != _m[2]);
+		return !(*this == b);
 	}
 
 	////////////////////////////////// Computations ///////////////////////////////////
 
-	/// \brief Computes the inverse of the matrix. 
+	/// Computes the inverse of the matrix.
 	/// \throw Exception if matrix is not invertible because it is singular.
+	/// \sa determinant()
 	Matrix_3 inverse() const {
 		T det = determinant();
 		OVITO_ASSERT_MSG(det != T(0), "Matrix3::inverse()", "Singular matrix cannot be inverted: Determinant is zero.");
 		if(det == 0) throw Exception("Matrix3 cannot be inverted: determinant is zero.");
-		return Matrix_3((_m[1][1]*_m[2][2] - _m[1][2]*_m[2][1])/det,
-						(_m[2][0]*_m[1][2] - _m[1][0]*_m[2][2])/det,
-						(_m[1][0]*_m[2][1] - _m[1][1]*_m[2][0])/det,
-						(_m[2][1]*_m[0][2] - _m[0][1]*_m[2][2])/det,
-						(_m[0][0]*_m[2][2] - _m[2][0]*_m[0][2])/det,
-						(_m[0][1]*_m[2][0] - _m[0][0]*_m[2][1])/det,
-						(_m[0][1]*_m[1][2] - _m[1][1]*_m[0][2])/det,
-						(_m[0][2]*_m[1][0] - _m[0][0]*_m[1][2])/det,
-						(_m[0][0]*_m[1][1] - _m[1][0]*_m[0][1])/det);
+		return Matrix_3(((*this)[1][1]*(*this)[2][2] - (*this)[1][2]*(*this)[2][1])/det,
+						((*this)[2][0]*(*this)[1][2] - (*this)[1][0]*(*this)[2][2])/det,
+						((*this)[1][0]*(*this)[2][1] - (*this)[1][1]*(*this)[2][0])/det,
+						((*this)[2][1]*(*this)[0][2] - (*this)[0][1]*(*this)[2][2])/det,
+						((*this)[0][0]*(*this)[2][2] - (*this)[2][0]*(*this)[0][2])/det,
+						((*this)[0][1]*(*this)[2][0] - (*this)[0][0]*(*this)[2][1])/det,
+						((*this)[0][1]*(*this)[1][2] - (*this)[1][1]*(*this)[0][2])/det,
+						((*this)[0][2]*(*this)[1][0] - (*this)[0][0]*(*this)[1][2])/det,
+						((*this)[0][0]*(*this)[1][1] - (*this)[1][0]*(*this)[0][1])/det);
 	}
 
 	/// \brief Computes the inverse of the matrix.
-	/// \return False if matrix is not invertible because it is singular; true if the inverse has been calculated
-	///         and stored in the output parameter.
+	/// \param result A reference to an output matrix that will receive the computed inverse.
+	/// \param epsilon A threshold that is used to determine if the matrix is invertible. The matrix is considered singular if |det|<=epsilon.
+	/// \return \c false if the matrix is not invertible because it is singular; \c true if the inverse has been calculated
+	///         and was stored in \a result.
+	/// \sa determinant()
 	bool inverse(Matrix_3& result, FloatType epsilon = FLOATTYPE_EPSILON) const {
 		T det = determinant();
 		if(std::abs(det) <= epsilon) return false;
-		result = Matrix_3((_m[1][1]*_m[2][2] - _m[1][2]*_m[2][1])/det,
-						(_m[2][0]*_m[1][2] - _m[1][0]*_m[2][2])/det,
-						(_m[1][0]*_m[2][1] - _m[1][1]*_m[2][0])/det,
-						(_m[2][1]*_m[0][2] - _m[0][1]*_m[2][2])/det,
-						(_m[0][0]*_m[2][2] - _m[2][0]*_m[0][2])/det,
-						(_m[0][1]*_m[2][0] - _m[0][0]*_m[2][1])/det,
-						(_m[0][1]*_m[1][2] - _m[1][1]*_m[0][2])/det,
-						(_m[0][2]*_m[1][0] - _m[0][0]*_m[1][2])/det,
-						(_m[0][0]*_m[1][1] - _m[1][0]*_m[0][1])/det);
+		result = Matrix_3(((*this)[1][1]*(*this)[2][2] - (*this)[1][2]*(*this)[2][1])/det,
+						((*this)[2][0]*(*this)[1][2] - (*this)[1][0]*(*this)[2][2])/det,
+						((*this)[1][0]*(*this)[2][1] - (*this)[1][1]*(*this)[2][0])/det,
+						((*this)[2][1]*(*this)[0][2] - (*this)[0][1]*(*this)[2][2])/det,
+						((*this)[0][0]*(*this)[2][2] - (*this)[2][0]*(*this)[0][2])/det,
+						((*this)[0][1]*(*this)[2][0] - (*this)[0][0]*(*this)[2][1])/det,
+						((*this)[0][1]*(*this)[1][2] - (*this)[1][1]*(*this)[0][2])/det,
+						((*this)[0][2]*(*this)[1][0] - (*this)[0][0]*(*this)[1][2])/det,
+						((*this)[0][0]*(*this)[1][1] - (*this)[1][0]*(*this)[0][1])/det);
 		return true;
 	}
 
-	/// \brief Computes the determinant of the matrix.
+	/// Calculates the determinant of the matrix.
 	Q_DECL_CONSTEXPR inline T determinant() const {
-		return((_m[0][0]*_m[1][1] - _m[0][1]*_m[1][0])*(_m[2][2])
-			  -(_m[0][0]*_m[1][2] - _m[0][2]*_m[1][0])*(_m[2][1])
-			  +(_m[0][1]*_m[1][2] - _m[0][2]*_m[1][1])*(_m[2][0]));
+		return(((*this)[0][0]*(*this)[1][1] - (*this)[0][1]*(*this)[1][0])*((*this)[2][2])
+			  -((*this)[0][0]*(*this)[1][2] - (*this)[0][2]*(*this)[1][0])*((*this)[2][1])
+			  +((*this)[0][1]*(*this)[1][2] - (*this)[0][2]*(*this)[1][1])*((*this)[2][0]));
 	}
 
-	/// \brief Returns the transpose of this matrix.
-	/// \return A new matrix with columns and rows swapped.
+	/// Returns the transpose of the matrix.
 	Q_DECL_CONSTEXPR Matrix_3 transposed() const {
-		return Matrix_3(_m[0][0], _m[0][1], _m[0][2],
-						_m[1][0], _m[1][1], _m[1][2],
-						_m[2][0], _m[2][1], _m[2][2]);
+		return Matrix_3((*this)[0][0], (*this)[0][1], (*this)[0][2],
+						(*this)[1][0], (*this)[1][1], (*this)[1][2],
+						(*this)[2][0], (*this)[2][1], (*this)[2][2]);
 	}
 
-	/// Multiplies a 3x3 matrix with a Point3 and returns one component of the resulting point.
+	/// Computes the product of the matrix and a point and returns one coordinate of the resulting point.
+	/// \param p The point to transform with the matrix.
+	/// \param index The component (0-2) of the transformed point to return.
+	/// \return ((*this)*p)[index]
 	inline Q_DECL_CONSTEXPR T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
-		return _m[0][index] * p[0] + _m[1][index] * p[1] + _m[2][index] * p[2];
+		return (*this)[0][index] * p[0] + (*this)[1][index] * p[1] + (*this)[2][index] * p[2];
 	}
 
-	/// Multiplies a 3x3 matrix with a Vector3 and returns one component of the resulting vector.
+	/// Computes the product of the matrix and a vector and returns one component of the resulting vector.
+	/// \param v The vector to transform with the matrix.
+	/// \param index The component (0-2) of the transformed vector to return.
+	/// \return ((*this)*v)[index]
 	inline Q_DECL_CONSTEXPR T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
-		return _m[0][index] * v[0] + _m[1][index] * v[1] + _m[2][index] * v[2];
+		return (*this)[0][index] * v[0] + (*this)[1][index] * v[1] + (*this)[2][index] * v[2];
 	}
 
 	/// \brief Tests whether the matrix is a pure rotation matrix.
-	/// \return \c If the matrix is a pure rotation matrix; \c false otherwise.
+	/// \return \c true if the matrix is a pure rotation matrix; \c false otherwise.
 	///
 	/// The matrix A is a pure rotation matrix if:
-	///   (1) det(A) = 1  and 
-	///   (2) A * A^T = I
+	///   1. det(A) = 1  and
+	///   2. A * A^T = I
 	Q_DECL_CONSTEXPR bool isRotationMatrix(T epsilon = T(FLOATTYPE_EPSILON)) const {
 		return
-			(std::abs(_m[0][0]*_m[1][0] + _m[0][1]*_m[1][1] + _m[0][2]*_m[1][2]) <= epsilon) &&
-			(std::abs(_m[0][0]*_m[2][0] + _m[0][1]*_m[2][1] + _m[0][2]*_m[2][2]) <= epsilon) &&
-			(std::abs(_m[1][0]*_m[2][0] + _m[1][1]*_m[2][1] + _m[1][2]*_m[2][2]) <= epsilon) &&
-			(std::abs(_m[0][0]*_m[0][0] + _m[0][1]*_m[0][1] + _m[0][2]*_m[0][2] - T(1)) <= epsilon) &&
-			(std::abs(_m[1][0]*_m[1][0] + _m[1][1]*_m[1][1] + _m[1][2]*_m[1][2] - T(1)) <= epsilon) &&
-			(std::abs(_m[2][0]*_m[2][0] + _m[2][1]*_m[2][1] + _m[2][2]*_m[2][2] - T(1)) <= epsilon) &&
+			(std::abs((*this)[0][0]*(*this)[1][0] + (*this)[0][1]*(*this)[1][1] + (*this)[0][2]*(*this)[1][2]) <= epsilon) &&
+			(std::abs((*this)[0][0]*(*this)[2][0] + (*this)[0][1]*(*this)[2][1] + (*this)[0][2]*(*this)[2][2]) <= epsilon) &&
+			(std::abs((*this)[1][0]*(*this)[2][0] + (*this)[1][1]*(*this)[2][1] + (*this)[1][2]*(*this)[2][2]) <= epsilon) &&
+			(std::abs((*this)[0][0]*(*this)[0][0] + (*this)[0][1]*(*this)[0][1] + (*this)[0][2]*(*this)[0][2] - T(1)) <= epsilon) &&
+			(std::abs((*this)[1][0]*(*this)[1][0] + (*this)[1][1]*(*this)[1][1] + (*this)[1][2]*(*this)[1][2] - T(1)) <= epsilon) &&
+			(std::abs((*this)[2][0]*(*this)[2][0] + (*this)[2][1]*(*this)[2][1] + (*this)[2][2]*(*this)[2][2] - T(1)) <= epsilon) &&
 			(std::abs(determinant() - T(1)) <= epsilon);
 	}
 
-	/// \brief Converts this matrix to a Qt 3x3 matrix object.
+	/// \brief Converts this matrix to a Qt matrix.
 	operator QMatrix3x3() const {
 		QMatrix3x3 qtm;
 		for(size_type row = 0; row < 3; row++)
@@ -291,37 +331,41 @@ public:
 		return qtm;
 	}
 
-    // Algorithm uses Gram-Schmidt orthogonalization.  If 'this' matrix is
-    // M = [m0|m1|m2], then orthonormal output matrix is Q = [q0|q1|q2],
-    //
-    //   q0 = m0/|m0|
-    //   q1 = (m1-(q0*m1)q0)/|m1-(q0*m1)q0|
-    //   q2 = (m2-(q0*m2)q0-(q1*m2)q1)/|m2-(q0*m2)q0-(q1*m2)q1|
-    //
-    // where |V| indicates length of vector V and A*B indicates dot
-    // product of vectors A and B.
+	/// Orthonormalizes the matrix.
+	///
+    /// Algorithm uses Gram-Schmidt orthogonalization.  If this matrix is
+    /// M = [m0|m1|m2], then the orthonormal output matrix is Q = [q0|q1|q2], with
+    ///
+    ///     q0 = m0/|m0|
+    ///     q1 = (m1-(q0*m1)q0)/|m1-(q0*m1)q0|
+    ///     q2 = (m2-(q0*m2)q0-(q1*m2)q1)/|m2-(q0*m2)q0-(q1*m2)q1|
+    ///
+    /// where |V| denotes length of vector V and A*B denotes dot
+    /// product of vectors A and B.
 	void orthonormalize() {
 
 		// Compute q0.
-		_m[0].normalize();
+		(*this)[0].normalize();
 
 	    // Compute q1.
-		T dot0 = _m[0].dot(_m[1]);
-		_m[1][0] -= dot0 * _m[0][0];
-		_m[1][1] -= dot0 * _m[0][1];
-		_m[1][2] -= dot0 * _m[0][2];
-		_m[1].normalize();
+		T dot0 = (*this)[0].dot((*this)[1]);
+		(*this)[1][0] -= dot0 * (*this)[0][0];
+		(*this)[1][1] -= dot0 * (*this)[0][1];
+		(*this)[1][2] -= dot0 * (*this)[0][2];
+		(*this)[1].normalize();
 
 	    // compute q2
-	    dot0 = _m[0].dot(_m[2]);
-	    T dot1 = _m[1].dot(_m[2]);
-	    _m[2][0] -= dot0*_m[0][0] + dot1*_m[1][0];
-	    _m[2][1] -= dot0*_m[0][1] + dot1*_m[1][1];
-	    _m[2][2] -= dot0*_m[0][2] + dot1*_m[1][2];
-	    _m[2].normalize();
+	    dot0 = (*this)[0].dot((*this)[2]);
+	    T dot1 = (*this)[1].dot((*this)[2]);
+	    (*this)[2][0] -= dot0*(*this)[0][0] + dot1*(*this)[1][0];
+	    (*this)[2][1] -= dot0*(*this)[0][1] + dot1*(*this)[1][1];
+	    (*this)[2][2] -= dot0*(*this)[0][2] + dot1*(*this)[1][2];
+	    (*this)[2].normalize();
 	}
 
-	/// \brief Returns the Euler angles from a rotation matrix.
+	/// \brief Calculates the Euler angles from a rotation matrix.
+	/// \param axisSequence Selects the order of rotations around the X, Y, and Z axes.
+	/// \return A 3-vector containing the three Euler angles.
 	Vector_3<T> toEuler(EulerAxisSequence axisSequence) const;
 
 	////////////////////////////////// Generation ///////////////////////////////////
@@ -356,28 +400,30 @@ public:
 				T(0),  T(0), T(1)};
 	}
 
-	/// \brief Generates a rotation matrix from an axis and an angle.
-	/// \param rot The rotation specified in the Rotation structure.
+	/// \brief Generates a rotation matrix from an axis-angle representation.
 	static Matrix_3 rotation(const RotationT<T>& rot);
 
 	/// \brief Generates a rotation matrix from a quaternion.
-	/// \param q The Quaternion describing the 3d rotation.
 	static Matrix_3 rotation(const QuaternionT<T>& q);
 
-	/// \brief Generates a rotation matrix from Euler angles and an axis sequence.
+	/// \brief Generates a rotation matrix from Euler angles.
+	/// \param ai The first Euler angle.
+	/// \param aj The second Euler angle.
+	/// \param ak The third Euler angle.
+	/// \param axisSequence Determines the order in which the rotations about the three axes are performed.
 	static Matrix_3 rotation(T ai, T aj, T ak, EulerAxisSequence axisSequence);
 
 	/// \brief Generates a scaling matrix.
 	static Matrix_3 scaling(const ScalingT<T>& scaling);
 };
 
-}};		// End of namespace
+}}}	// End of namespace
 
 #include "Quaternion.h"
 #include "Scaling.h"
 #include "Rotation.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 // Generates a rotation matrix from an axis and an angle.
 template<typename T>
@@ -413,7 +459,7 @@ inline Matrix_3<T> Matrix_3<T>::rotation(const QuaternionT<T>& q)
 
 // Generates a rotation matrix from Euler angles and an axis sequence.
 template<typename T>
-inline Matrix_3<T> Matrix_3<T>::rotation(T ai, T aj, T ak, Matrix_3<T>::EulerAxisSequence axisSequence)
+inline Matrix_3<T> Matrix_3<T>::rotation(T ai, T aj, T ak, EulerAxisSequence axisSequence)
 {
 	OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
 	int firstaxis = 2;
@@ -517,7 +563,7 @@ inline Vector_3<T> Matrix_3<T>::toEuler(Matrix_3<T>::EulerAxisSequence axisSeque
     return Vector_3<T>(ax, ay, az);
 }
 
-// Generates a scaling matrix.
+// Creates a transformation matrix that describes a scaling of coordinates.
 template<typename T>
 inline Matrix_3<T> Matrix_3<T>::scaling(const ScalingT<T>& scaling)
 {
@@ -530,7 +576,7 @@ inline Matrix_3<T> Matrix_3<T>::scaling(const ScalingT<T>& scaling)
 	return U * K * U.transposed();
 }
 
-/// \brief Multiplies a 3x3 matrix with a Vector3.
+/// \brief Computes the product of a matrix and a vector.
 /// \relates Matrix_3
 template<typename T>
 Q_DECL_CONSTEXPR inline Vector_3<T> operator*(const Matrix_3<T>& m, const Vector_3<T>& v)
@@ -540,7 +586,7 @@ Q_DECL_CONSTEXPR inline Vector_3<T> operator*(const Matrix_3<T>& m, const Vector
 			 m(2,0)*v[0] + m(2,1)*v[1] + m(2,2)*v[2] };
 }
 
-/// \brief Multiplies a 3x3 matrix with a Point3.
+/// \brief Computes the product of a matrix and a point. This is the same as a matrix-vector product.
 /// \relates Matrix_3
 template<typename T>
 Q_DECL_CONSTEXPR inline Point_3<T> operator*(const Matrix_3<T>& m, const Point_3<T>& p)
@@ -550,7 +596,7 @@ Q_DECL_CONSTEXPR inline Point_3<T> operator*(const Matrix_3<T>& m, const Point_3
 			 m(2,0)*p[0] + m(2,1)*p[1] + m(2,2)*p[2] };
 }
 
-/// \brief Multiplies a 3x3 matrix with a 3x3 Matrix.
+/// \brief Computes the product of two matrices.
 /// \relates Matrix_3
 template<typename T>
 Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
@@ -583,8 +629,7 @@ Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix
 #endif
 }
 
-/// \brief Multiplies a 3x3 matrix with a scalar value. 
-/// Each element of the matrix is multiplied by the scalar value.
+/// \brief Multiplies a matrix with a scalar value.
 /// \relates Matrix_3
 template<typename T>
 Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
@@ -606,15 +651,14 @@ Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
 #endif
 }
 
-/// \brief Multiplies a 3x3 matrix with a scalar value. 
-/// Each element of the matrix is multiplied by the scalar value.
+/// \brief Multiplies a matrix with a scalar value.
 /// \relates Matrix_3
 template<typename T>
 Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(T s, const Matrix_3<T>& a) {
 	return a * s;
 }
 
-/// \brief Writes the matrix to a text output stream.
+/// \brief Prints a matrix to a text output stream.
 /// \relates Matrix_3
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const Matrix_3<T>& m) {
@@ -623,33 +667,13 @@ inline std::ostream& operator<<(std::ostream &os, const Matrix_3<T>& m) {
 	return os;
 }
 
-/// \brief Writes the matrix to the Qt debug stream.
+/// \brief Prints a matrix to a Qt debug stream.
 /// \relates Matrix_3
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const Matrix_3<T>& m) {
 	for(typename Matrix_3<T>::size_type row = 0; row < m.row_count(); row++)
 		dbg.nospace() << m(row,0) << " " << m(row,1) << " " << m(row,2) << "\n";
     return dbg.space();
-}
-
-/// \brief Writes a matrix to a binary output stream.
-/// \relates Matrix_3
-template<typename T>
-inline SaveStream& operator<<(SaveStream& stream, const Matrix_3<T>& m)
-{
-	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
-		stream << m.column(col);
-	return stream;
-}
-
-/// \brief Reads a matrix from a binary input stream.
-/// \relates Matrix_3
-template<typename T>
-inline LoadStream& operator>>(LoadStream& stream, Matrix_3<T>& m)
-{
-	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
-		stream >> m.column(col);
-	return stream;
 }
 
 /// \brief Writes a matrix to a Qt data stream.
@@ -671,16 +695,16 @@ inline QDataStream& operator>>(QDataStream& stream, Matrix_3<T>& m) {
 }
 
 /**
- * \brief Template class instance of the Matrix_3 class.
+ * \brief Instantiation of the Matrix_3 class template with the default floating-point type.
  * \relates Matrix_3
  */
 typedef Matrix_3<FloatType>		Matrix3;
 
-}}	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Matrix3);
-Q_DECLARE_METATYPE(Ovito::Math::Matrix3*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Matrix3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Matrix3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Matrix3);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Matrix3*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Matrix3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Matrix3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX3_H

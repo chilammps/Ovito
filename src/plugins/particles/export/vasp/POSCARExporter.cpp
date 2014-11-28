@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "POSCARExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
@@ -51,7 +51,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 		throw Exception(tr("No particle positions available. Cannot write POSCAR file."));
 
 	// Get simulation cell info.
-	SimulationCell* simulationCell = state.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = state.findObject<SimulationCellObject>();
 	if(!simulationCell)
 		throw Exception(tr("No simulation cell available. Cannot write POSCAR file."));
 

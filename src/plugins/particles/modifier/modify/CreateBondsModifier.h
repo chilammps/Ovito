@@ -52,7 +52,7 @@ private:
 	public:
 
 		/// Constructor.
-		BondsEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* particleTypes, const SimulationCellData& simCell, CutoffMode cutoffMode,
+		BondsEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* particleTypes, const SimulationCell& simCell, CutoffMode cutoffMode,
 				FloatType uniformCutoff, std::vector<std::vector<FloatType>>&& pairCutoffs) :
 					ComputeEngine(validityInterval),
 					_positions(positions), _particleTypes(particleTypes), _simCell(simCell), _cutoffMode(cutoffMode),
@@ -75,7 +75,7 @@ private:
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _particleTypes;
 		QExplicitlySharedDataPointer<BondsStorage> _bonds;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 	};
 
 public:

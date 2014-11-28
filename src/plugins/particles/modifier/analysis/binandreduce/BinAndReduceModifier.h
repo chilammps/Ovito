@@ -36,9 +36,8 @@ class QCPItemStraightLine;
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * This modifier computes a spatial average (over splices) for a particle
- * property.
+/**
+ * \brief This modifier computes a spatial average (over splices) for a particle property.
  */
 class OVITO_PARTICLES_EXPORT BinAndReduceModifier : public ParticleModifier
 {

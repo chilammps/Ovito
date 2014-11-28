@@ -79,7 +79,7 @@ protected:
 
 		/// Inserts the data loaded by perform() into the provided container object. This function is
 		/// called by the system from the main thread after the asynchronous loading task has finished.
-		virtual void handOver(FileSource* container) override;
+		virtual void handOver(CompoundObject* container) override;
 
 	protected:
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Math::Ray_3 class template.
+ * \brief Contains the definition of the Ovito::Util::Math::Ray_3 class template.
  */
 
 #ifndef __OVITO_RAY_H
@@ -34,17 +34,27 @@
 #include "Point3.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 /**
- * \brief An infinite ray in 3D space.
+ * \brief An infinite ray in 3d space, defined by a base point and a direction vector.
  * 
- * A ray is defined by a base point and a direction vector.
+ * This class stores an infinite ray in three-dimensional space, which is described by
+ * a base point #base and a direction vector #dir. The direction vector does not have to be
+ * a unit vector.
+ *
+ * The template parameter \a T specifies the data type used for spatial coordinates.
+ * The standard template instantiation for floating-point coordinates is predefined:
+ *
+ * \code
+ *      typedef Ray_3<FloatType>  Ray3;
+ * \endcode
  */
 template<typename T>
 class Ray_3
 {
-public:	
+public:
+
 	/// A base point on the ray.
 	Point_3<T> base;
 	
@@ -53,59 +63,55 @@ public:
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
-	/// \brief This empty default constructor does not initialize the components!
-	/// \note All components of the ray are left uninitialized by this constructor and 
-	///       will therefore have a random value!
+	/// Empty default constructor that does not initialize the fields of the object for performance reasons!
+	/// Both the base point and the direction vector are undefined.
 	Ray_3() {}
 
 	/// \brief Initializes the ray with a base point and a direction vector.
 	/// \param b A point through which the ray passes.
-	/// \param d A direction vector. This vector should have length 1.
+	/// \param d The ray's direction vector.
 	Q_DECL_CONSTEXPR Ray_3(const Point_3<T>& b, const Vector_3<T>& d) : base(b), dir(d) {}
 
 	/// \brief Initializes the ray from two points.
 	/// \param a The first point on the ray
 	/// \param b The second point on the ray.
 	///
-	/// The direction vector of the ray is initialized to the vector pointing from
-	/// point \a a to point \a b.
+	/// The direction of the ray is initialized to the vector connecting \a a and \a b.
 	Q_DECL_CONSTEXPR Ray_3(const Point_3<T>& a, const Point_3<T>& b) : base(a), dir(b - a) {}
 	
 	////////////////////////////////// Queries ///////////////////////////////////
 	
-	/// \brief Returns a point on the ray at the given parameter position.
-	/// \param t The parameter that specifies the position on the ray
-	///        starting at the base point and going into the direction specified
-	///        by the ray vector.
-	/// \return The point base + dir * t.
+	/// \brief Returns a point on the ray at the specified position.
+	/// \param t Specifies the position along the ray.
+	/// \return The point (#base + #dir * \a t).
 	Q_DECL_CONSTEXPR Point_3<T> point(T t) const { return base + dir * t; }
 
     /////////////////////////////// Unary operators //////////////////////////////
 
-	/// \brief Flips the ray direction.
-	/// \return A new ray with reversed direction vector.
+	/// \brief Flips the ray's direction.
+	/// \return A new ray with a reversed direction vector.
 	Q_DECL_CONSTEXPR Ray_3 operator-() const { return Ray_3(base, -dir); }
 
     ////////////////////////////////// Utilities /////////////////////////////////
 
-	/// \brief Returns a string representation of this ray.
+	/// \brief Generates a string representation of this ray.
 	QString toString() const {
 		return QString("[Base: %1 Dir: %2]").arg(base.toString(), dir.toString());
 	}
 };
 
 /// \brief Transforms a ray.
-/// \param tm The transformation matrix.
+/// \param tm The affine transformation matrix.
 /// \param ray The ray to be transformed.
 /// \return A new ray with transformed base point and direction vector.
-///         The direction is normalized after the transformation.
+///         The direction vector is automatically normalized after the transformation.
 /// \relates Ray_3
 template<typename T>
 inline Ray_3<T> operator*(const AffineTransformationT<T>& tm, const Ray_3<T>& ray) {
 	return { tm * ray.base, (tm * ray.dir).normalized() };
 }
 
-/// \brief Writes the ray to an output stream.
+/// \brief Prints a ray to an output stream.
 /// \param os The output stream.
 /// \param p The ray to write to the output stream \a os.
 /// \return The output stream \a os.
@@ -115,7 +121,7 @@ inline std::ostream& operator<<(std::ostream &os, const Ray_3<T> &r) {
 	return os << '[' << r.base.x() << ' ' << r.base.y()  << ' ' << r.base.z() << "], (" << r.dir.x() << ' ' << r.dir.y()  << ' ' << r.dir.z() << ')';
 }
 
-/// \brief Writes the ray to the Qt debug stream.
+/// \brief Prints a ray to a Qt debug stream.
 /// \relates Ray_3
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const Ray_3<T>& r) {
@@ -123,25 +129,23 @@ inline QDebug operator<<(QDebug dbg, const Ray_3<T>& r) {
     return dbg.space();
 }
 
-/// \brief Writes the ray to a binary output stream.
+/// \brief Writes a ray to a binary output stream.
 /// \param stream The output stream.
 /// \param p The ray to write to the output stream \a stream.
 /// \return The output stream \a stream.
 /// \relates Ray_3
 template<typename T>
-inline SaveStream& operator<<(SaveStream& stream, const Ray_3<T>& r)
-{
+inline SaveStream& operator<<(SaveStream& stream, const Ray_3<T>& r) {
 	return stream << r.base << r.dir;
 }
 
-/// \brief Reads a ray from a binary input stream.
+/// \brief Reads a a from a binary input stream.
 /// \param stream The input stream.
 /// \param p Reference to a ray variable where the parsed data will be stored.
 /// \return The input stream \a stream.
 /// \relates Ray_3
 template<typename T>
-inline LoadStream& operator>>(LoadStream& stream, Ray_3<T>& r)
-{
+inline LoadStream& operator>>(LoadStream& stream, Ray_3<T>& r) {
 	return stream >> r.base >> r.dir;
 }
 
@@ -160,16 +164,16 @@ inline QDataStream& operator>>(QDataStream& stream, Ray_3<T>& r) {
 }
 
 /**
- * \brief Template class instance of the Ray_3 class.
+ * \brief Instantiation of the Ray_3 class template with the default floating-point type.
  * \relates Ray_3
  */
 typedef Ray_3<FloatType> Ray3;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Ray3);
-Q_DECLARE_METATYPE(Ovito::Math::Ray3*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Ray3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Ray3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Ray3);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Ray3*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Ray3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Ray3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_RAY_H

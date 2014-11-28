@@ -35,7 +35,7 @@ OnTheFlyNeighborListBuilder::OnTheFlyNeighborListBuilder(FloatType cutoffRadius)
 /******************************************************************************
 * Initialization function.
 ******************************************************************************/
-bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData, bool* hasWrappedParticles)
+bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData, bool* hasWrappedParticles)
 {
 	OVITO_CHECK_POINTER(posProperty);
 
@@ -159,7 +159,7 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 						shift = -binLocation[k]/binDim[k];
 					a.pbcShift[k] = (int8_t)shift;
 					a.pos += (FloatType)shift * simCell.matrix().column(k);
-					binLocation[k] = SimulationCellData::modulo(binLocation[k], binDim[k]);
+					binLocation[k] = SimulationCell::modulo(binLocation[k], binDim[k]);
 					if(hasWrappedParticles)
 						*hasWrappedParticles = true;
 				}

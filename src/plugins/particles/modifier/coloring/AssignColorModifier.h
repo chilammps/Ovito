@@ -30,7 +30,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
 /**
- * This modifier assigns a certain color to all selected particles.
+ * \brief This modifier assigns a certain color to all selected particles.
  */
 class OVITO_PARTICLES_EXPORT AssignColorModifier : public ParticleModifier
 {

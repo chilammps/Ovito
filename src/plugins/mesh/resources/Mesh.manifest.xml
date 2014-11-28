@@ -23,16 +23,9 @@
 	Plugin manifest for the Mesh plugin.
 -->
      
-<Plugin-Manifest xmlns="http://www.ovito.org/schema/pluginmanifest/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	Plugin-Id="Mesh"
-	Plugin-Version="1.0"
-	Plugin-Vendor="Alexander Stukowski">
-	
-	<NativePlugin Library="Mesh" />
-	
-	<Plugin-Dependencies>
-		<Plugin-Dependency Plugin-Id="PyScript" Enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
-	</Plugin-Dependencies>	
-	
-</Plugin-Manifest>
+<ovito-plugin id="Mesh" vendor="Alexander Stukowski">	
+	<native-library>Mesh</native-library>	
+	<dependencies>
+		<plugin-dependency id="PyScript" enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
+	</dependencies>
+</ovito-plugin>

@@ -22,7 +22,7 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/particles/objects/SurfaceMesh.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "SmoothSurfaceModifier.h"
 
 namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
@@ -58,8 +58,8 @@ PipelineStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierAppli
 		return PipelineStatus::Success;
 
 	// Get simulation cell geometry and periodic boundary flags.
-	SimulationCellData cell;
-	if(SimulationCell* simulationCellObj = state.findObject<SimulationCell>())
+	SimulationCell cell;
+	if(SimulationCellObject* simulationCellObj = state.findObject<SimulationCellObject>())
 		cell = simulationCellObj->data();
 	else
 		cell.setPbcFlags(false, false, false);

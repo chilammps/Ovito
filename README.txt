@@ -10,6 +10,8 @@ See website for more information:
 
    http://www.ovito.org/
 
+If you want to build OVITO from source, see http://www.ovito.org/manual/development.html
+
 ****************************************************************************************
 Change Log 
 ****************************************************************************************

@@ -29,7 +29,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace Parcas {
 
 /**
- * \brief File parser for IMD atom files.
+ * \brief File parser for simulation files written by the Parcas MD code.
  */
 class OVITO_PARTICLES_EXPORT ParcasFileImporter : public ParticleImporter
 {

@@ -33,9 +33,10 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
-/*
- * Abstract base class for color gradients that can be used with the ColorCodingModifier.
- * It converts a scalar value in the range [0,1] to a color value.
+/**
+ * \brief Abstract base class for color gradients that can be used with a ColorCodingModifier.
+ *
+ * Implementations of this class convert a scalar value in the range [0,1] to a color value.
  */
 class OVITO_PARTICLES_EXPORT ColorCodingGradient : public RefTarget
 {
@@ -57,8 +58,8 @@ private:
 	OVITO_OBJECT
 };
 
-/*
- * Converts a scalar value to a color using the HSV color system.
+/**
+ * \brief Converts a scalar value to a color using the HSV color system.
  */
 class ColorCodingHSVGradient : public ColorCodingGradient
 {
@@ -79,8 +80,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Rainbow");
 };
 
-/*
- * Converts a scalar value to a color using a gray-scale ramp.
+/**
+ * \brief Converts a scalar value to a color using a gray-scale ramp.
  */
 class ColorCodingGrayscaleGradient : public ColorCodingGradient
 {
@@ -101,8 +102,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Grayscale");
 };
 
-/*
- * Converts a scalar value to a color.
+/**
+ * \brief Converts a scalar value to a color.
  */
 class ColorCodingHotGradient : public ColorCodingGradient
 {
@@ -127,8 +128,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Hot");
 };
 
-/*
- * Converts a scalar value to a color.
+/**
+ * \brief Converts a scalar value to a color.
  */
 class ColorCodingJetGradient : public ColorCodingGradient
 {
@@ -155,8 +156,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Jet");
 };
 
-/*
- * Converts a scalar value to a color based on a user-defined image.
+/**
+ * \brief Converts a scalar value to a color based on a user-defined image.
  */
 class ColorCodingImageGradient : public ColorCodingGradient
 {
@@ -194,9 +195,8 @@ private:
 };
 
 
-/*
- * This modifier assigns a colors to the particles based on the value of a
- * selected particle property.
+/**
+ * \brief This modifier assigns a colors to the particles based on the value of a particle property.
  */
 class ColorCodingModifier : public ParticleModifier
 {
@@ -316,7 +316,7 @@ private:
 
 namespace Internal {
 
-/*
+/**
  * A properties editor for the ColorCodingModifier class.
  */
 class ColorCodingModifierEditor : public ParticleModifierEditor

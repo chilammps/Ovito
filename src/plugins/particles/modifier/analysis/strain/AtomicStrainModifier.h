@@ -29,10 +29,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/******************************************************************************
-* Calculates the per-particle displacement vectors by comparing the current
-* positions to a reference configuration.
-******************************************************************************/
+/**
+ * \brief Calculates the per-particle strain tensors based on a reference configuration.
+ */
 class OVITO_PARTICLES_EXPORT AtomicStrainModifier : public AsynchronousParticleModifier
 {
 public:
@@ -149,8 +148,8 @@ private:
 	public:
 
 		/// Constructor.
-		AtomicStrainEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell,
-				ParticleProperty* refPositions, const SimulationCellData& simCellRef,
+		AtomicStrainEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell,
+				ParticleProperty* refPositions, const SimulationCell& simCellRef,
 				ParticleProperty* identifiers, ParticleProperty* refIdentifiers,
 				FloatType cutoff, bool eliminateCellDeformation, bool assumeUnwrappedCoordinates,
 				bool calculateDeformationGradients, bool calculateStrainTensors,
@@ -181,10 +180,10 @@ private:
 		ParticleProperty* refPositions() const { return _refPositions.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 		/// Returns the reference simulation cell data.
-		const SimulationCellData& refCell() const { return _simCellRef; }
+		const SimulationCell& refCell() const { return _simCellRef; }
 
 		/// Returns the property storage that contains the computed per-particle shear strain values.
 		ParticleProperty* shearStrains() const { return _shearStrains.data(); }
@@ -213,8 +212,8 @@ private:
 		bool computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
 
 		FloatType _cutoff;
-		SimulationCellData _simCell;
-		SimulationCellData _simCellRef;
+		SimulationCell _simCell;
+		SimulationCell _simCellRef;
 		AffineTransformation _currentSimCellInv;
 		AffineTransformation _reducedToAbsolute;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;

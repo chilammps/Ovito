@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
@@ -59,7 +59,7 @@ public:
 	/// \return \c false when the operation has been canceled by the user;
 	///         \c true on success.
 	/// \throw Exception on error.
-	bool prepare(ParticleProperty* posProperty, const SimulationCellData& cellData, bool* hasWrappedParticles = nullptr);
+	bool prepare(ParticleProperty* posProperty, const SimulationCell& cellData, bool* hasWrappedParticles = nullptr);
 
 	/// Returns the neighbor cutoff radius.
 	FloatType cutoffRadius() const { return _cutoffRadius; }
@@ -123,7 +123,7 @@ private:
 	FloatType _cutoffRadiusSquared;
 
 	// Simulation cell.
-	SimulationCellData simCell;
+	SimulationCell simCell;
 
 	/// Number of bins in each spatial direction.
 	int binDim[3];

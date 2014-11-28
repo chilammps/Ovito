@@ -66,7 +66,7 @@ private:
 	public:
 
 		/// Constructor.
-		BondAngleAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell) :
+		BondAngleAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell) :
 			StructureIdentificationEngine(validityInterval, positions, simCell) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.

@@ -27,7 +27,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 
 #include "SimulationCellDisplay.h"
-#include "SimulationCell.h"
+#include "SimulationCellObject.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
 
@@ -63,7 +63,7 @@ SimulationCellDisplay::SimulationCellDisplay(DataSet* dataset) : DisplayObject(d
 ******************************************************************************/
 Box3 SimulationCellDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCell* cellObject = dynamic_object_cast<SimulationCell>(dataObject);
+	SimulationCellObject* cellObject = dynamic_object_cast<SimulationCellObject>(dataObject);
 	OVITO_CHECK_OBJECT_POINTER(cellObject);
 
 	return cellObject->boundingBox().padBox(simulationCellLineWidth());
@@ -74,7 +74,7 @@ Box3 SimulationCellDisplay::boundingBox(TimePoint time, DataObject* dataObject, 
 ******************************************************************************/
 void SimulationCellDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	SimulationCell* cell = dynamic_object_cast<SimulationCell>(dataObject);
+	SimulationCellObject* cell = dynamic_object_cast<SimulationCellObject>(dataObject);
 	OVITO_CHECK_OBJECT_POINTER(cell);
 
 	if(renderer->isInteractive() && !renderer->viewport()->renderPreviewMode()) {
@@ -91,7 +91,7 @@ void SimulationCellDisplay::render(TimePoint time, DataObject* dataObject, const
 /******************************************************************************
 * Renders the given simulation cell using lines.
 ******************************************************************************/
-void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
+void SimulationCellDisplay::renderWireframe(SimulationCellObject* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	ColorA color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_UNSELECTED);
 
@@ -143,7 +143,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 /******************************************************************************
 * Renders the given simulation cell using solid shading mode.
 ******************************************************************************/
-void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
+void SimulationCellDisplay::renderSolid(SimulationCellObject* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	if(_solidGeometryCacheHelper.updateState(cell, simulationCellLineWidth(), simulationCellRenderingColor())
 			|| !_edgeGeometry || !_cornerGeometry

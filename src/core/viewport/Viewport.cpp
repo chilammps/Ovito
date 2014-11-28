@@ -342,8 +342,8 @@ void Viewport::zoomToBox(const Box3& box)
 		}
 		ViewProjectionParameters projParams = projectionParameters(dataset()->animationSettings()->time(), aspectRatio, box);
 
-		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
-		FloatType maxX = -FLOATTYPE_MAX, maxY = -FLOATTYPE_MAX;
+		FloatType minX = FLOATTYPE_MAX, minY = FLOATTYPE_MAX;
+		FloatType maxX = FLOATTYPE_MIN, maxY = FLOATTYPE_MIN;
 		for(int i = 0; i < 8; i++) {
 			Point3 trans = projParams.viewMatrix * box[i];
 			if(trans.x() < minX) minX = trans.x();

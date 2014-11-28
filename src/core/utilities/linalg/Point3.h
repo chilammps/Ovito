@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Math::Point_3 class template.
+ * \brief Contains the definition of the Ovito::Util::Math::Point_3 class template.
  */
 
 #ifndef __OVITO_POINT3_H
@@ -32,13 +32,59 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 /**
- * \brief A point in 3D space.
+ * \brief A point in 3d space.
+ *
+ * Point_3 represents a point in three-dimensional space with three coordinates x,y, and z.
+ * Note that there exists a corresponding class Vector_3, which represents a *vector* in three-dimensional space.
+ *
+ * The template parameter \a T specifies the data type of the points's components.
+ * Two standard instantiations of Point_3 for floating-point and integer coordinates are predefined:
+ *
+ * \code
+ *      typedef Point_3<FloatType>  Point3;
+ *      typedef Point_3<int>        Point3I;
+ * \endcode
+ *
+ * Point_3 derives from std::array<T,3>. Thus, the point coordinates can be accessed via indices, but also via names:
+ *
+ * \code
+ *      p[1]  = 10.0f;
+ *      p.y() = 10.0f;
+ * \endcode
+ *
+ * Note that the default constructor does not initialize the components of the point for performance reasons.
+ * The nested type Origin can be used to construct the point (0,0,0):
+ *
+ * \code
+ *      Point3 p = Point3::Origin()
+ * \endcode
+ *
+ * Origin can also be used to convert between points and vectors:
+ *
+ * \code
+ *      Vector3 v0(1, 2, 3);
+ *      Point3 p1 = Point3::Origin() + v0;   // Vector to point conversion
+ *      Point3 p2 = p1 + v0;                 // Adding a vector to a point
+ *      Vector3 delta = p2 - p1;             // Vector connecting two points
+ *      Vector3 v1 = p2 - Point3::Origin();  // Point to vector conversion
+ *      FloatType r = (p2 - p1).length();    // Distance between two points
+ * \endcode
+ *
+ * Note that points and vectors behave differently under affine transformations:
+ *
+ * \code
+ *      AffineTransformation tm = AffineTransformation::rotationZ(angle) * AffineTransformation::translation(t);
+ *      Point3  p = tm *  Point3(1,2,3);    // Translates and rotates the point (1,2,3).
+ *      Vector3 v = tm * Vector3(1,2,3);    // Only rotates the vector (1,2,3). Translation doesn't change a vector.
+ * \endcode
+ *
+ * \sa Vector_3, Point_2
  */
 template<typename T>
-class Point_3 : private std::array<T, 3>
+class Point_3 : public std::array<T, 3>
 {
 public:
 
@@ -48,64 +94,60 @@ public:
 	using typename std::array<T, 3>::size_type;
 	using typename std::array<T, 3>::difference_type;
 	using typename std::array<T, 3>::value_type;
-	using std::array<T, 3>::data;
-	using std::array<T, 3>::size;
-	using std::array<T, 3>::operator[];
 	using typename std::array<T, 3>::iterator;
 	using typename std::array<T, 3>::const_iterator;
-	using std::array<T, 3>::begin;
-	using std::array<T, 3>::end;
-	using std::array<T, 3>::cbegin;
-	using std::array<T, 3>::cend;
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
-	/// \brief Constructs a point without initializing its coordinates.
-	/// \note All coordinates are left uninitialized by this constructor and will therefore have an undefined value!
+	/// Constructs a point without initializing its components. The components will have an undefined value!
 	Point_3() {}
 
-	/// \brief Constructs a point with all three coordinates set to the given value.
-	Q_DECL_CONSTEXPR explicit Point_3(T val) : std::array<T, 3>{{val,val,val}} {}
+	/// Constructs a point with all three components initialized to the given value.
+	Q_DECL_CONSTEXPR explicit Point_3(T val)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 3>{{val,val,val}}
+#endif
+		{}
 
-	/// \brief Initializes the coordinates of the point with the given component values.
-	Q_DECL_CONSTEXPR Point_3(T x, T y, T z) : std::array<T, 3>{{x, y, z}} {}
+	/// Initializes the coordinates of the point with the given values.
+	Q_DECL_CONSTEXPR Point_3(T x, T y, T z)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 3>{{x, y, z}}
+#endif
+		{}
 
-	/// \brief Initializes the point to the origin. All coordinates are set to zero.
-	Q_DECL_CONSTEXPR Point_3(Origin) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
+	/// Initializes the point to the origin. All coordinates are set to zero.
+	Q_DECL_CONSTEXPR Point_3(Origin)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 3>{{T(0), T(0), T(0)}}
+#endif
+		{}
 
-	/// \brief Initializes the point from an array.
+	/// Initializes the point from an array of three coordinates.
 	Q_DECL_CONSTEXPR explicit Point_3(const std::array<T, 3>& a) : std::array<T, 3>(a) {}
 
-	/// \brief Casts the point to a point with another data type.
+	/// Casts the point to another coordinate type \a U.
 	template<typename U>
 	Q_DECL_CONSTEXPR explicit operator Point_3<U>() const { return Point_3<U>(static_cast<U>(x()), static_cast<U>(y()), static_cast<U>(z())); }
 
 	///////////////////////////// Assignment operators ///////////////////////////
 
-	/// \brief Adds a vector to this point and stores the result in this object.
-	/// \param v The vector to add to this point.
-	/// \return A reference to \c this point, which has been changed.
+	/// Adds a vector to this point.
 	Point_3& operator+=(const Vector_3<T>& v) { x() += v.x(); y() += v.y(); z() += v.z(); return *this; }
 
-	/// \brief Subtracts a vector from this point and stores the result in this object.
-	/// \param v The vector to subtract from this point.
-	/// \return A reference to \c this point, which has been changed.
+	/// Subtracts a vector from this point.
 	Point_3& operator-=(const Vector_3<T>& v) { x() -= v.x(); y() -= v.y(); z() -= v.z(); return *this; }
 
-	/// \brief Multiplies all coordinates of the point with a scalar value and stores the result in this object.
-	/// \param s The scalar value to multiply this point with.
-	/// \return A reference to \c this point, which has been changed.
+	/// Multiplies all coordinates of the point with a scalar value.
 	Point_3& operator*=(T s) { x() *= s; y() *= s; z() *= s; return *this; }
 
-	/// \brief Divides all coordinates of the point by a scalar value and stores the result in this object.
-	/// \param s The scalar value.
-	/// \return A reference to \c this object, which has been changed.
+	/// Divides all coordinates of the point by a scalar value.
 	Point_3& operator/=(T s) { x() /= s; y() /= s; z() /= s; return *this; }
 
-	/// \brief Sets all coordinates of the point to zero.
+	/// Sets all coordinates of the point to zero.
 	Point_3& operator=(Origin) { z() = y() = x() = T(0); return *this; }
 
-	/// \brief Converts a point to a vector.
+	/// Converts a point to a vector.
 	const Vector_3<T>& operator-(Origin) const {
 		// Implement this as a simple cast to Vector3 for best performance.
 		OVITO_STATIC_ASSERT(sizeof(Vector_3<T>) == sizeof(Point_3<T>));
@@ -135,33 +177,33 @@ public:
 	////////////////////////////////// Comparison ////////////////////////////////
 
 	/// \brief Compares two points for exact equality.
-	/// \return true if all coordinates are equal; false otherwise.
+	/// \return \c true if all coordinates are equal; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator==(const Point_3& p) const { return (p.x()==x()) && (p.y()==y()) && (p.z()==z()); }
 
-	/// \brief Compares two vectors for inequality.
-	/// \return true if any of the coordinates is not equal; false if all are equal.
+	/// \brief Compares two points for inequality.
+	/// \return \c true if any of the coordinates is not equal; \c false if all are equal.
 	Q_DECL_CONSTEXPR bool operator!=(const Point_3& p) const { return (p.x()!=x()) || (p.y()!=y()) || (p.z()!=z()); }
 
-	/// \brief Checks whether the point is origin, i.e. all coordinates are zero.
-	/// \return true if all of the coordinates are exactly zero; false otherwise.
+	/// \brief Tests whether this point is at the origin, i.e. all of its coordinates are zero.
+	/// \return \c true if all of the coordinates are exactly zero; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator==(Origin) const { return (x()==T(0)) && (y()==T(0)) && (z()==T(0)); }
 
-	/// \brief Checks whether the point is not the origin, i.e. any of the coordinates is nonzero.
-	/// \return true if any of the coordinates is nonzero; false if this is the origin point otherwise.
+	/// \brief Tests whether the point is not at the origin, i.e. any of the coordinates is nonzero.
+	/// \return \c true if any of the coordinates is nonzero; \c false if this is the origin point.
 	Q_DECL_CONSTEXPR bool operator!=(Origin) const { return (x()!=T(0)) || (y()!=T(0)) || (z()!=T(0)); }
 
-	/// \brief Checks whether two points are equal within a given tolerance.
-	/// \param p The point that should be compared to this object.
-	/// \param tolerance A non-negative threshold for the equality test. The two points are considered equal when
-	///        the differences in the X, Y, and Z directions are all smaller than this tolerance value.
-	/// \return true if this point is equal to the given point within the given tolerance.
+	/// \brief Tests if two points are equal within a specified tolerance.
+	/// \param p The second point.
+	/// \param tolerance A non-negative threshold for the equality test. The two points are considered equal if
+	///        the absolute differences in their X, Y, and Z coordinates are all smaller than this tolerance.
+	/// \return \c true if this point is equal to the second point within the specified tolerance; \c false otherwise.
 	Q_DECL_CONSTEXPR bool equals(const Point_3& p, T tolerance = T(FLOATTYPE_EPSILON)) const {
 		return std::abs(p.x() - x()) <= tolerance && std::abs(p.y() - y()) <= tolerance && std::abs(p.z() - z()) <= tolerance;
 	}
 
-	/// \brief Checks whether the point is the origin within a given tolerance.
+	/// \brief Tests whether this point is at the origin within a specified tolerance.
 	/// \param tolerance A non-negative threshold.
-	/// \return true if the absolute value of all components is smaller than the tolerance.
+	/// \return \c true if the absolute values of the point's coordinates are all below \a tolerance.
 	Q_DECL_CONSTEXPR bool isOrigin(T tolerance = T(FLOATTYPE_EPSILON)) const {
 		return std::abs(x()) <= tolerance && std::abs(y()) <= tolerance && std::abs(z()) <= tolerance;
 	}
@@ -178,8 +220,7 @@ public:
 	    return ((x() <= y()) ? ((x() <= z()) ? 0 : 2) : ((y() <= z()) ? 1 : 2));
 	}
 
-	/// \brief Produces a string representation of this point.
-	/// \return A string that contains the coordinate of the point.
+	/// \brief Generates a string representation of this point of the form (x y z).
 	QString toString() const {
 		return QString("(%1 %2 %3)").arg(x()).arg(y()).arg(z());
 	}
@@ -208,49 +249,49 @@ Q_DECL_CONSTEXPR Point_3<T> operator+(const Vector_3<T>& a, const Point_3<T>& b)
 	return b + a;
 }
 
-/// \brief Computes the difference of a point and a vector.
+/// \brief Subtracts a vector from a point.
 /// \relates Point_3
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator-(const Point_3<T>& a, const Vector_3<T>& b) {
 	return Point_3<T>{ a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
 }
 
-/// \brief Computes the difference vector of two points.
+/// \brief Computes the vector connecting to two points.
 /// \relates Point_3
 template<typename T>
 Q_DECL_CONSTEXPR Vector_3<T> operator-(const Point_3<T>& a, const Point_3<T>& b) {
 	return Vector_3<T>{ a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
 }
 
-/// \brief Computes the product of a point and a scalar value.
+/// \brief Computes the component-wise product of a point and a scalar value.
 /// \relates Point_3
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator*(const Point_3<T>& a, T s) {
 	return Point_3<T>{ a.x() * s, a.y() * s, a.z() * s };
 }
 
-/// \brief Computes the product of a point and a scalar value.
+/// \brief Computes the component-wise product of a point and a scalar value.
 /// \relates Point_3
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator*(T s, const Point_3<T>& a) {
 	return Point_3<T>{ a.x() * s, a.y() * s, a.z() * s };
 }
 
-/// \brief Computes the division of a vector by a scalar value.
+/// \brief Computes the component-wise division of a point by a scalar value.
 /// \relates Point_3
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator/(const Point_3<T>& a, T s) {
 	return Point_3<T>{ a.x() / s, a.y() / s, a.z() / s };
 }
 
-/// \brief Writes the point to a text output stream.
+/// \brief Writes a point to a text output stream.
 /// \relates Point_3
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Point_3<T>& v) {
 	return os << "(" << v.x() << ", " << v.y()  << ", " << v.z() << ")";
 }
 
-/// \brief Writes the point to the Qt debug stream.
+/// \brief Writes a point to a Qt debug stream.
 /// \relates Point_3
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const Point_3<T>& v) {
@@ -287,13 +328,13 @@ inline QDataStream& operator>>(QDataStream& stream, Point_3<T>& v) {
 }
 
 /**
- * \brief Template class instance of the Point_3 class used for floating-point points.
+ * \brief Instantiation of the Point_3 class template with the default floating-point type.
  * \relates Point_3
  */
 typedef Point_3<FloatType>		Point3;
 
 /**
- * \brief Template class instance of the Point_3 class used for integer points.
+ * \brief Instantiation of the Point_3 class template with the default integer type.
  * \relates Point_3
  */
 typedef Point_3<int>			Point3I;
@@ -301,15 +342,15 @@ typedef Point_3<int>			Point3I;
 inline void glVertex(const Point_3<GLdouble>& v) { glVertex3dv(v.data()); }
 inline void glVertex(const Point_3<GLfloat>& v) { glVertex3fv(v.data()); }
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Point3);
-Q_DECLARE_METATYPE(Ovito::Math::Point3I);
-Q_DECLARE_METATYPE(Ovito::Math::Point3*);
-Q_DECLARE_METATYPE(Ovito::Math::Point3I*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Point3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Point3I, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Point3*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Point3I*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Point3);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Point3I);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Point3*);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Point3I*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_POINT3_H

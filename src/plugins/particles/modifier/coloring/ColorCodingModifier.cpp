@@ -275,8 +275,8 @@ bool ColorCodingModifier::adjustRange()
 	int stride = property->stride() / property->dataTypeSize();
 
 	// Iterate over all atoms.
-	FloatType maxValue = -FLOATTYPE_MAX;
-	FloatType minValue = +FLOATTYPE_MAX;
+	FloatType maxValue = FLOATTYPE_MIN;
+	FloatType minValue = FLOATTYPE_MAX;
 	if(property->dataType() == qMetaTypeId<FloatType>()) {
 		const FloatType* v = property->constDataFloat() + vecComponent;
 		const FloatType* vend = v + (property->size() * stride);

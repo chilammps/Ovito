@@ -29,7 +29,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace XYZ {
 
 /**
- * Exporter service that writes the particles to a LAMMPS data file.
+ * \brief Exporter that writes the particles to a LAMMPS data file.
  */
 class OVITO_PARTICLES_EXPORT XYZExporter : public ParticleExporter
 {

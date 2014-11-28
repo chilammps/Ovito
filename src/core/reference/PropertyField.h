@@ -31,9 +31,9 @@
 
 namespace Ovito { namespace ObjectSystem {
 
-/******************************************************************************
-* RefMaker derived classes use this helper class to store their properties.
-******************************************************************************/
+/**
+ * RefMaker derived classes use this implement their properties and reference fields.
+ */
 class OVITO_CORE_EXPORT PropertyFieldBase
 {
 public:
@@ -77,10 +77,9 @@ private:
 	PropertyFieldDescriptor* _descriptor;
 };
 
-/******************************************************************************
-* An instance of this helper class stores a non-animatable property value
-* with a primitive type.
-******************************************************************************/
+/**
+ * Stores a non-animatable property of a RefTarget derived class.
+ */
 template<typename property_data_type, typename qvariant_data_type = property_data_type, int additionalChangeMessage = 0>
 class PropertyField : public PropertyFieldBase
 {
@@ -176,9 +175,9 @@ private:
 	property_type _value;
 };
 
-/******************************************************************************
-* An instance of this helper class stores a pointer to a RefTarget derived class.
-******************************************************************************/
+/**
+ * \brief Manages a pointer to a RefTarget derived class held by a RefMaker derived class.
+ */
 class OVITO_CORE_EXPORT SingleReferenceFieldBase : public PropertyFieldBase
 {
 public:
@@ -228,11 +227,9 @@ protected:
 	};
 };
 
-/******************************************************************************
-* This is the templated version of the SingleReferenceFieldBase helper class.
-* It stores a pointer to a RefTarget derived class given as the template
-* parameter.
-******************************************************************************/
+/**
+ * \brief Templated version of the SingleReferenceFieldBase class.
+ */
 template<typename RefTargetType>
 class ReferenceField : public SingleReferenceFieldBase
 {
@@ -278,11 +275,9 @@ inline T* dynamic_object_cast(const ReferenceField<U>& field) {
 	return dynamic_object_cast<T,U>(field.value());
 }
 
-/******************************************************************************
-* An instance of this helper class stores a list of pointers to a RefTarget derived classes.
-* RefMaker derived classes must use this helper class to store their
-* vector reference lists.
-******************************************************************************/
+/**
+ * \brief Manages a list of references to RefTarget objects held by a RefMaker derived class.
+ */
 class OVITO_CORE_EXPORT VectorReferenceFieldBase : public PropertyFieldBase
 {
 public:
@@ -392,11 +387,9 @@ protected:
 	friend class RefTarget;
 };
 
-/******************************************************************************
-* This is the templated version of the VectorReferenceFieldBase helper class.
-* It stores a list of pointers to a RefTarget derived objects given as the template
-* parameter.
-******************************************************************************/
+/**
+ * \brief Templated version of the VectorReferenceFieldBase class.
+ */
 template<typename RefTargetType>
 class VectorReferenceField : public VectorReferenceFieldBase
 {

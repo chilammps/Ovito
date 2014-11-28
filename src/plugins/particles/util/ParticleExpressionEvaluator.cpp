@@ -21,7 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "ParticleExpressionEvaluator.h"
 
 #include <QtConcurrent>
@@ -92,12 +92,12 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 		propertyIndex++;
 	}
 
-	SimulationCell* simCell = inputState.findObject<SimulationCell>();
+	SimulationCellObject* simCell = inputState.findObject<SimulationCellObject>();
 
 	// Create variable for reduced particle coordinates.
 	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(inputState, ParticleProperty::PositionProperty);
 	if(posProperty && simCell) {
-		SimulationCellData cellData = simCell->data();
+		SimulationCell cellData = simCell->data();
 		ExpressionVariable v;
 		v.type = DERIVED_PARTICLE_PROPERTY;
 		v.name = "ReducedPosition.X";

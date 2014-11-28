@@ -24,7 +24,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/export/ParticleExporter.h>
 #include <plugins/particles/export/imd/IMDExporter.h>
 #include <plugins/particles/export/vasp/POSCARExporter.h>

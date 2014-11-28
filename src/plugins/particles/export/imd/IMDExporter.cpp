@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "IMDExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 #include "../OutputColumnMapping.h"
@@ -56,7 +56,7 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	ParticlePropertyObject* massProperty = ParticlePropertyObject::findInState(state, ParticleProperty::MassProperty);
 
 	// Get simulation cell info.
-	SimulationCell* simulationCell = state.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = state.findObject<SimulationCellObject>();
 	if(!simulationCell)
 		throw Exception(tr("No simulation cell available. Cannot write IMD file."));
 

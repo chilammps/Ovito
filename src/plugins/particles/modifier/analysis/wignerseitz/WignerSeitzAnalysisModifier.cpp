@@ -118,8 +118,8 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> WignerSeitzAnalysis
 		throw Exception(tr("The reference configuration does not contain particle positions."));
 
 	// Get simulation cells.
-	SimulationCell* inputCell = expectSimulationCell();
-	SimulationCell* refCell = refState.findObject<SimulationCell>();
+	SimulationCellObject* inputCell = expectSimulationCell();
+	SimulationCellObject* refCell = refState.findObject<SimulationCellObject>();
 	if(!refCell)
 		throw Exception(tr("Reference configuration does not contain simulation cell info."));
 

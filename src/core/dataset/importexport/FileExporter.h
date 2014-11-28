@@ -29,36 +29,43 @@
 namespace Ovito { namespace DataIO {
 
 /**
- * \brief Abstract base class for file export services.
+ * \brief Abstract base class for file exporters that export data from OVITO to an external file.
+ *
+ * To add an exporter for a new file format to OVITO you should derive a new class from FileExporter or
+ * one of its specializations and implement the abstract methods fileFilter(), fileFilterDescription(),
+ * and exportToFile().
+ *
+ * A list of all available exporters can be obtained via FileExporter::availableExporters().
  */
 class OVITO_CORE_EXPORT FileExporter : public RefTarget
 {
 protected:
 	
-	/// \brief The constructor.
+	/// Initializes the object.
 	FileExporter(DataSet* dataset) : RefTarget(dataset) {}
 
 public:
 
-	/// \brief Returns the file filter that specifies the files that can be exported by this service.
-	/// \return A wild-card pattern that specifies the file types that can be handled by this export class.
+	/// \brief Returns the filename filter that specifies the file extension that can be exported by this service.
+	/// \return A wild-card pattern for the file types that can be produced by this export class (e.g. \c "*.xyz" or \c "*").
 	virtual QString fileFilter() = 0;
 
-	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
-	/// \return A string that describes the file format.
+	/// \brief Returns the file type description that is displayed in the drop-down box of the export file dialog.
+	/// \return A human-readable string describing the file format written by this FileExporter.
 	virtual QString fileFilterDescription() = 0;
 
-	/// \brief Exports scene nodes to a file.
+	/// \brief Exports a set of scene nodes to a file.
 	/// \param nodes The list of scene nodes to be exported.
-	/// \param filePath The path of the output file.
-	/// \param noninteractive Specifies whether the export operation should be performed non-interactively,
-	///                       i.e. without showing any dialogs etc.
-	/// \return \c true if the output file has been successfully written.
+	/// \param filePath The output file path selected by the user.
+	/// \param noninteractive Controls whether the export operation should be performed non-interactively,
+	///                       i.e. without showing any dialogs that require user interaction.
+	///                       This will be \c true when called from a Python script.
+	/// \return \c true if the output file has been successfully written;
 	///         \c false if the export operation has been canceled by the user.
-	/// \throw Exception when the export has failed or an error has occurred.
-	Q_INVOKABLE virtual bool exportToFile(const QVector<SceneNode*>& nodes, const QString& filePath, bool noninteractive = true) = 0;
+	/// \throws Util::Exception if the export operation has failed due to an error.
+	virtual bool exportToFile(const QVector<SceneNode*>& nodes, const QString& filePath, bool noninteractive = true) = 0;
 
-	/// Returns a list of all available exporter types.
+	/// Returns the list of all available exporter types installed in the system.
 	static QVector<OvitoObjectType*> availableExporters();
 
 private:

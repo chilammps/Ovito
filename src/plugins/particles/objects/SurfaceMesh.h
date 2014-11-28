@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/objects/DataObject.h>
 #include <core/utilities/mesh/HalfEdgeMesh.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 
@@ -70,13 +70,13 @@ public:
 	}
 
 	/// Fairs the triangle mesh stored in this object.
-	void smoothMesh(const SimulationCellData& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f) {
+	void smoothMesh(const SimulationCell& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f) {
 		smoothMesh(mesh(), cell, numIterations, k_PB, lambda);
 		notifyDependents(ReferenceEvent::TargetChanged);
 	}
 
 	/// Fairs a triangle mesh.
-	static void smoothMesh(HalfEdgeMesh& mesh, const SimulationCellData& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f);
+	static void smoothMesh(HalfEdgeMesh& mesh, const SimulationCell& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f);
 
 protected:
 
@@ -84,7 +84,7 @@ protected:
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// Performs one iteration of the smoothing algorithm.
-	static void smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCellData& cell);
+	static void smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCell& cell);
 
 private:
 

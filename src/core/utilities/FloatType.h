@@ -35,16 +35,19 @@ typedef float FloatType;
 
 #define FLOATTYPE_FLOAT		// This tells the program that we're using 32-bit floating-point numbers.
 
-/// A small epsilon, which is used in OVITO when testing if a number is (almost) zero.
-#define FLOATTYPE_EPSILON	1e-6f
+/// A small epsilon, which is used in OVITO to test if a number is (almost) zero.
+#define FLOATTYPE_EPSILON	Ovito::FloatType(1e-6)
 
 /// The maximum value for floating-point variables of type Ovito::FloatType.
 #define FLOATTYPE_MAX	(std::numeric_limits<FloatType>::max())
 
+/// The lowest value for floating-point variables of type Ovito::FloatType.
+#define FLOATTYPE_MIN	(std::numeric_limits<FloatType>::lowest())
+
 /// The constant PI.
 #define FLOATTYPE_PI	Ovito::FloatType(3.14159265358979323846)
 
-/// The format specifier to be passed to the sscanf() function to parse a floating-point number of type Ovito::FloatType.
+/// The format specifier to be passed to the sscanf() function to parse floating-point numbers of type Ovito::FloatType.
 #define FLOATTYPE_SCANF_STRING 		"%g"
 
 // Type-specific OpenGL functions:

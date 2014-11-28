@@ -484,11 +484,13 @@ inline QDataStream& operator>>(QDataStream& stream, ColorAT<T>& c) {
 
 /**
  * \brief Instantiation of the ColorT class template with the default floating-point type.
+ * \relates ColorT
  */
 typedef ColorT<FloatType>	Color;
 
 /**
  * \brief Instantiation of the ColorAT class template with the default floating-point type.
+ * \relates ColorAT
  */
 typedef ColorAT<FloatType>	ColorA;
 

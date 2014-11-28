@@ -237,7 +237,7 @@ public:
 	///
 	/// If undo recording is active, the object instance is kept alive such that
 	/// the deletion can be undone.
-	void deleteReferenceObject();
+	virtual void deleteReferenceObject();
 
 	/////////////////////////////// Editor interface /////////////////////////////
 

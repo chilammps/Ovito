@@ -31,9 +31,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
 
-/******************************************************************************
-* The slice modifier deletes all particles on one side of a plane.
-******************************************************************************/
+/**
+ * \brief The slice modifier deletes all particles on one side of a 3d plane.
+ */
 class OVITO_PARTICLES_EXPORT SliceModifier : public ParticleModifier
 {
 public:

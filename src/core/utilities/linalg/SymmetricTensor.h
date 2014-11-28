@@ -21,24 +21,18 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Math::SymmetricTensor2T class template.
+ * \brief Contains the definition of the Ovito::Util::Math::SymmetricTensor2T class template.
  */
 
-#ifndef __OVITO_TENSOR_H
-#define __OVITO_TENSOR_H
+#ifndef __OVITO_SYMMETRIC_TENSOR_H
+#define __OVITO_SYMMETRIC_TENSOR_H
 
 #include <core/Core.h>
 #include <core/utilities/io/SaveStream.h>
 #include <core/utilities/io/LoadStream.h>
 #include "Matrix3.h"
 
-namespace Ovito { namespace Math {
-
-/// A first order tensor is simply a one-dimensional vector.
-typedef Vector3 Tensor1;
-
-/// A second order tensor is simply a 3x3 matrix.
-typedef Matrix3 Tensor2;
+namespace Ovito { namespace Util { namespace Math {
 
 /**
  * \brief A symmetric second order tensor (= symmetric 3x3 matrix).
@@ -66,16 +60,32 @@ public:
 	SymmetricTensor2T() {}
 
 	/// \brief Constructor that initializes all tensor components to the same value.
-	explicit SymmetricTensor2T(T val) : std::array<T, 6>{{val,val,val,val,val,val}} {}
+	explicit SymmetricTensor2T(T val)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 6>{{val,val,val,val,val,val}}
+#endif
+		{}
 
 	/// \brief Constructor that initializes the six tensor components.
-	Q_DECL_CONSTEXPR SymmetricTensor2T(T xx, T yy, T zz, T xy, T xz, T yz) : std::array<T, 6>{{xx,yy,zz,xy,xz,yz}} {}
+	Q_DECL_CONSTEXPR SymmetricTensor2T(T xx, T yy, T zz, T xy, T xz, T yz)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 6>{{xx,yy,zz,xy,xz,yz}}
+#endif
+		{}
 
 	/// \brief Initializes the tensor to the null tensor. All components are set to zero.
-	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero) : std::array<T, 6>{{T(0), T(0), T(0), T(0), T(0), T(0)}} {}
+	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 6>{{T(0), T(0), T(0), T(0), T(0), T(0)}}
+#endif
+		{}
 
 	/// \brief Initializes the tensor to the identity tensor.
-	Q_DECL_CONSTEXPR SymmetricTensor2T(Identity) : std::array<T, 6>{{T(1), T(1), T(1), T(0), T(0), T(0)}} {}
+	Q_DECL_CONSTEXPR SymmetricTensor2T(Identity)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 6>{{T(1), T(1), T(1), T(0), T(0), T(0)}}
+#endif
+		{}
 
 	/// \brief Casts the tensor to a tensor with another data type.
 	template<typename U>
@@ -298,11 +308,11 @@ inline LoadStream& operator>>(LoadStream& stream, SymmetricTensor2T<T>& m)
  */
 typedef SymmetricTensor2T<FloatType> SymmetricTensor2;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::SymmetricTensor2);
-Q_DECLARE_METATYPE(Ovito::Math::SymmetricTensor2*);
-Q_DECLARE_TYPEINFO(Ovito::Math::SymmetricTensor2, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::SymmetricTensor2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::SymmetricTensor2);
+Q_DECLARE_METATYPE(Ovito::Util::Math::SymmetricTensor2*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::SymmetricTensor2, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::SymmetricTensor2*, Q_PRIMITIVE_TYPE);
 
-#endif // __OVITO_TENSOR_H
+#endif // __OVITO_SYMMETRIC_TENSOR_H

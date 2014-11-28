@@ -32,9 +32,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
-/******************************************************************************
-* Provides support for picking of atoms.
-******************************************************************************/
+/**
+ * \brief Utility class that supports the picking of particles in the viewports.
+ */
 class OVITO_PARTICLES_EXPORT ParticlePickingHelper
 {
 public:

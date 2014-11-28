@@ -29,8 +29,8 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
+/**
+ * \brief Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
  */
 class OVITO_PARTICLES_EXPORT WignerSeitzAnalysisModifier : public AsynchronousParticleModifier
 {
@@ -105,8 +105,8 @@ private:
 	public:
 
 		/// Constructor.
-		WignerSeitzAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell,
-				ParticleProperty* refPositions, const SimulationCellData& simCellRef, bool eliminateCellDeformation) :
+		WignerSeitzAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell,
+				ParticleProperty* refPositions, const SimulationCell& simCellRef, bool eliminateCellDeformation) :
 			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
@@ -123,10 +123,10 @@ private:
 		ParticleProperty* refPositions() const { return _refPositions.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 		/// Returns the reference simulation cell data.
-		const SimulationCellData& refCell() const { return _simCellRef; }
+		const SimulationCell& refCell() const { return _simCellRef; }
 
 		/// Returns the property storage that contains the computed occupancies.
 		ParticleProperty* occupancyNumbers() const { return _occupancyNumbers.data(); }
@@ -139,8 +139,8 @@ private:
 
 	private:
 
-		SimulationCellData _simCell;
-		SimulationCellData _simCellRef;
+		SimulationCell _simCell;
+		SimulationCell _simCellRef;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _refPositions;
 		QExplicitlySharedDataPointer<ParticleProperty> _occupancyNumbers;

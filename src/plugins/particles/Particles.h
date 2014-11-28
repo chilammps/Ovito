@@ -30,6 +30,31 @@
 #  define OVITO_PARTICLES_EXPORT Q_DECL_IMPORT
 #endif
 
+/*! \namespace Ovito::Plugins::Particles
+    \brief This root namespace of the particles plugin.
+*/
+/*! \namespace Ovito::Plugins::Particles::Data
+    \brief This namespace contains container classes for particle related data.
+*/
+/*! \namespace Ovito::Plugins::Particles::Objects
+    \brief This namespace contains data object classes.
+*/
+/*! \namespace Ovito::Plugins::Particles::Objects::Display
+    \brief This namespace contains display objects for particle-related data.
+*/
+/*! \namespace Ovito::Plugins::Particles::Import
+    \brief This namespace contains file importers for particle data.
+*/
+/*! \namespace Ovito::Plugins::Particles::Export
+    \brief This namespace contains file exporters for particle data.
+*/
+/*! \namespace Ovito::Plugins::Particles::Modifiers
+    \brief This namespace contains modifiers for particle data
+*/
+/*! \namespace Ovito::Plugins::Particles::Util
+    \brief This namespace contains various particle-related utility classes.
+*/
+
 namespace Ovito { namespace Plugins { namespace Particles {
 
 	namespace Objects {

@@ -34,8 +34,8 @@ class QCPItemStraightLine;
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * This modifier computes a scatter plot for two particle properties.
+/**
+ * \brief This modifier computes a scatter plot for two particle properties.
  */
 class OVITO_PARTICLES_EXPORT ScatterPlotModifier : public ParticleModifier
 {

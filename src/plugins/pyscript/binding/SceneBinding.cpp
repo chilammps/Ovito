@@ -86,7 +86,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 			"   <ParticleProperty at 0x11d01d60>\n"
 			"   \n"
 			"   >>> data.cell\n"
-			"   <SimulationCell at 0x24338a0>\n"
+			"   <SimulationCellObject at 0x24338a0>\n"
 			"\n\n"
 			, init<>())
 		.def(init<DataObject*, TimeInterval>())

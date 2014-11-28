@@ -30,7 +30,7 @@
 #include <core/rendering/MeshPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/animation/controller/Controller.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
 
@@ -92,16 +92,16 @@ public:
 protected:
 
 	/// Generates the final triangle mesh, which will be rendered.
-	bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output);
+	bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output);
 
 	/// Splits a triangle face at a periodic boundary.
-	bool splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim);
+	bool splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCell& cell, size_t dim);
 
 	/// Generates the triangle mesh for the PBC cap.
-	void buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, bool isCompletelySolid, TriMesh& output);
+	void buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output);
 
 	/// Traces the closed contour of the surface-boundary intersection.
-	std::vector<Point2> traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCellData& cell, size_t dim);
+	std::vector<Point2> traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCell& cell, size_t dim);
 
 	/// Clips a 2d contour at a periodic boundary.
 	void clipContour(std::vector<Point2>& input, std::array<bool,2> periodic, std::vector<std::vector<Point2>>& openContours, std::vector<std::vector<Point2>>& closedContours);
@@ -143,7 +143,7 @@ protected:
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<DataObject>,		// Source object + revision number
-		SimulationCellData,						// Simulation cell geometry
+		SimulationCell,						// Simulation cell geometry
 		ColorA,									// Surface color
 		ColorA,									// Cap color
 		bool									// Smooth shading
@@ -156,7 +156,7 @@ protected:
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<DataObject>,		// Source object + revision number
-		SimulationCellData						// Simulation cell geometry
+		SimulationCell						// Simulation cell geometry
 		> _boundingBoxCacheHelper;
 
 private:

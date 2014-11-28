@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Math::ScalingT class template.
+ * \brief Contains the definition of the Ovito::Util::Math::ScalingT class template.
  */
 
 #ifndef __OVITO_SCALING_H
@@ -33,7 +33,7 @@
 #include "Vector3.h"
 #include "Quaternion.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 /**
  * \brief A transformation that describes a non-uniform scaling in an arbitrary axis system.
@@ -231,11 +231,11 @@ inline QDataStream& operator>>(QDataStream& stream, ScalingT<T>& s) {
  */
 typedef ScalingT<FloatType>		Scaling;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Scaling);
-Q_DECLARE_METATYPE(Ovito::Math::Scaling*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Scaling, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Scaling*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Scaling);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Scaling*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Scaling, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Scaling*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SCALING_H

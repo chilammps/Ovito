@@ -19,14 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_SIMULATION_CELL_H
-#define __OVITO_SIMULATION_CELL_H
+#ifndef __OVITO_SIMULATION_CELL_OBJECT_H
+#define __OVITO_SIMULATION_CELL_OBJECT_H
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/objects/DataObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
 
@@ -36,19 +36,19 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
  * The simulation box geometry is a parallelepiped defined by three edge vectors.
  * A fourth vector specifies the origin of the simulation box in space.
  */
-class OVITO_PARTICLES_EXPORT SimulationCell : public DataObject
+class OVITO_PARTICLES_EXPORT SimulationCellObject : public DataObject
 {
 public:
 
 	/// \brief Constructor. Creates an empty simulation cell.
-	Q_INVOKABLE SimulationCell(DataSet* dataset) : DataObject(dataset),
+	Q_INVOKABLE SimulationCellObject(DataSet* dataset) : DataObject(dataset),
 		_cellVector1(Vector3::Zero()), _cellVector2(Vector3::Zero()), _cellVector3(Vector3::Zero()),
 		_cellOrigin(Point3::Origin()), _pbcX(false), _pbcY(false), _pbcZ(false) {
 		init();
 	}
 
 	/// \brief Constructs a cell from the given cell data structure.
-	explicit SimulationCell(DataSet* dataset, const SimulationCellData& data) : DataObject(dataset),
+	explicit SimulationCellObject(DataSet* dataset, const SimulationCell& data) : DataObject(dataset),
 			_cellVector1(data.matrix().column(0)), _cellVector2(data.matrix().column(1)), _cellVector3(data.matrix().column(2)),
 			_cellOrigin(Point3::Origin() + data.matrix().column(3)), _pbcX(data.pbcFlags()[0]), _pbcY(data.pbcFlags()[1]), _pbcZ(data.pbcFlags()[2]) {
 		init();
@@ -59,7 +59,7 @@ public:
 	/// \param a2 The second edge vector.
 	/// \param a3 The third edge vector.
 	/// \param origin The origin position.
-	SimulationCell(DataSet* dataset, const Vector3& a1, const Vector3& a2, const Vector3& a3,
+	SimulationCellObject(DataSet* dataset, const Vector3& a1, const Vector3& a2, const Vector3& a3,
 			const Point3& origin = Point3::Origin(), bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
 		DataObject(dataset),
 		_cellVector1(a1), _cellVector2(a2), _cellVector3(a3),
@@ -69,7 +69,7 @@ public:
 
 	/// \brief Constructs a cell from a matrix that specifies its shape and position in space.
 	/// \param cellMatrix The matrix
-	SimulationCell(DataSet* dataset, const AffineTransformation& cellMatrix, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+	SimulationCellObject(DataSet* dataset, const AffineTransformation& cellMatrix, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
 		DataObject(dataset),
 		_cellVector1(cellMatrix.column(0)), _cellVector2(cellMatrix.column(1)), _cellVector3(cellMatrix.column(2)),
 		_cellOrigin(Point3::Origin() + cellMatrix.column(3)), _pbcX(pbcX), _pbcY(pbcY), _pbcZ(pbcZ) {
@@ -81,16 +81,16 @@ public:
 	/// \param pbcX Specifies whether periodic boundary conditions are enabled in the X direction.
 	/// \param pbcY Specifies whether periodic boundary conditions are enabled in the Y direction.
 	/// \param pbcZ Specifies whether periodic boundary conditions are enabled in the Z direction.
-	SimulationCell(DataSet* dataset, const Box3& box, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+	SimulationCellObject(DataSet* dataset, const Box3& box, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
 		DataObject(dataset),
 		_cellVector1(box.sizeX(), 0, 0), _cellVector2(0, box.sizeY(), 0), _cellVector3(0, 0, box.sizeZ()),
 		_cellOrigin(box.minc), _pbcX(pbcX), _pbcY(pbcY), _pbcZ(pbcZ) {
 		init();
-		OVITO_ASSERT_MSG(box.sizeX() >= 0 && box.sizeY() >= 0 && box.sizeZ() >= 0, "SimulationCell constructor", "The simulation box must have a non-negative volume.");
+		OVITO_ASSERT_MSG(box.sizeX() >= 0 && box.sizeY() >= 0 && box.sizeZ() >= 0, "SimulationCellObject constructor", "The simulation box must have a non-negative volume.");
 	}
 
 	/// \brief Sets the cell geometry to match the given cell data structure.
-	void setData(const SimulationCellData& data, bool setPBCFlags = true) {
+	void setData(const SimulationCell& data, bool setPBCFlags = true) {
 		_cellVector1 = data.matrix().column(0);
 		_cellVector2 = data.matrix().column(1);
 		_cellVector3 = data.matrix().column(2);
@@ -103,8 +103,8 @@ public:
 	}
 
 	/// \brief Returns a simulation cell data structure that stores the cell's properties.
-	SimulationCellData data() const {
-		SimulationCellData data;
+	SimulationCell data() const {
+		SimulationCell data;
 		data.setMatrix(cellMatrix());
 		data.setPbcFlags(pbcX(), pbcY(), pbcZ());
 		return data;
@@ -192,7 +192,7 @@ public:
 	/// This function can handle negative numbers k. This allows mapping any number k that is
 	/// outside the interval [0,n) back into the interval. Use this to implement periodic boundary conditions.
 	static inline int modulo(int k, int n) {
-		return SimulationCellData::modulo(k,n);
+		return SimulationCell::modulo(k,n);
 	}
 
 	/// \brief Helper function that computes the modulo operation for two floating-point numbers k and n.
@@ -200,7 +200,7 @@ public:
 	/// This function can handle negative numbers k. This allows mapping any number k that is
 	/// outside the interval [0,n) back into the interval. Use this to implement periodic boundary conditions.
 	static inline FloatType modulo(FloatType k, FloatType n) {
-		return SimulationCellData::modulo(k,n);
+		return SimulationCell::modulo(k,n);
 	}
 
 protected:
@@ -229,6 +229,8 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
+	Q_CLASSINFO("ClassNameAlias", "SimulationCell");	// This for backward compatibility with files written by Ovito 2.4 and older.
+
 	DECLARE_PROPERTY_FIELD(_cellVector1);
 	DECLARE_PROPERTY_FIELD(_cellVector2);
 	DECLARE_PROPERTY_FIELD(_cellVector3);
@@ -241,7 +243,7 @@ private:
 namespace Internal {
 
 /**
- * \brief A properties editor for the SimulationCell class.
+ * \brief A properties editor for the SimulationCellObject class.
  */
 class SimulationCellEditor : public PropertiesEditor
 {
@@ -288,4 +290,4 @@ private:
 
 }}}}	// End of namespace
 
-#endif // __OVITO_SIMULATION_CELL_H
+#endif // __OVITO_SIMULATION_CELL_OBJECT_H

@@ -29,8 +29,8 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * This modifier determines decomposes the particle set into clusters.
+/**
+ * \brief This modifier determines decomposes the particle set into clusters.
  */
 class OVITO_PARTICLES_EXPORT ClusterAnalysisModifier : public AsynchronousParticleModifier
 {
@@ -70,7 +70,7 @@ private:
 	public:
 
 		/// Constructor.
-		ClusterAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
+		ClusterAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell, FloatType cutoff) :
 			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell), _cutoff(cutoff),
 			_particleClusters(new ParticleProperty(positions->size(), ParticleProperty::ClusterProperty, 0, false)) {}
@@ -82,7 +82,7 @@ private:
 		ParticleProperty* positions() const { return _positions.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 		/// Returns the property storage that contains the computed cluster number of each particle.
 		ParticleProperty* particleClusters() const { return _particleClusters.data(); }
@@ -96,7 +96,7 @@ private:
 	private:
 
 		FloatType _cutoff;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		size_t _numClusters;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _particleClusters;

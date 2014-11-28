@@ -29,10 +29,21 @@
 namespace Ovito { namespace Anim {
 
 /**
- * \brief This class stores the animation settings of a scene.
+ * \brief Stores the general animation settings such as the animation length, current frame number, playback rate, etc.
  * 
- * Each DataSet has an instance of this class associated with it. It
- * can be accessed via DataSet::animationSettings().
+ * Each \ref Ovito::ObjectSystem::DataSet "DataSet" holds an instance of this class, which can be accessed via DataSet::animationSettings().
+ *
+ * OVITO measures animation time in time tick units, which correspond to 1/4800 of a second. The ::TimePoint data type, which is an alias for
+ * \c int, is used to store time tick values. Conversion between time ticks and seconds is possible with the TimeToSeconds() and TimeFromSeconds()
+ * global functions.
+ *
+ * The AnimationSettings class stores the conversion factor from animation frames to time tick units, which can be changed by the user (see setTicksPerFrame()).
+ * It determines the animation playback rate, i.e. the number of animation frames per second, which is returned by framesPerSecond().
+ *
+ * Conversion between animation times and animation frames is done with the frameToTime() and timeToFrame() methods.
+ *
+ * The current animation time, which is linked to the time slider in OVITO's main window, can be changed
+ * with the setTime() method. The current time returned by time() is always the animation time that is shown in the interactive viewports.
  */
 class OVITO_CORE_EXPORT AnimationSettings : public RefTarget
 {
@@ -196,18 +207,18 @@ public:
 	}
 
 	/// \brief Converts a time value to its string representation.
-	/// \param time Some time value.
-	/// \return A human-readable representation of the time value.
+	/// \param time Some animation time value.
+	/// \return A human-readable representation of the time value (usually the animation frame number).
 	QString timeToString(TimePoint time);
 
-	/// \brief Converts a string to a time value.
-	/// \param stringValue The  human-readable representation of a time value.
-	/// \return The parsed time value.
+	/// \brief Converts a string entered by a user to a time value.
+	/// \param stringValue The string representation of a time value (typically the animation frame number).
+	/// \return The animation time.
 	/// \throw Exception when a parsing error occurs.
 	TimePoint stringToTime(const QString& stringValue);
 
-	/// \brief Indicates whether the animation has recently been changed, and the scene
-	///        is still being prepared for display of the new frame.
+	/// \brief Indicates that the animation time has recently been changed via setTime(), and the scene
+	///        is still being prepared for displaying the new frame.
 	bool isTimeChanging() const { return _timeIsChanging != 0; }
 
 public Q_SLOTS:
@@ -324,21 +335,33 @@ private:
 };
 
 /**
- * \brief A small helper object that suspends generation of animation keys while it
- *        exists.
+ * \brief A helper class that suspends the generation of animation keys while it exists.
  *
- * Use this to make your code exception-safe.
+ * You typically create an instance of this class on the stack to temporarily suspend the
+ * automatic generation of animation keys in an exception-safe way.
  *
- * The constructor of this class calls AnimationSettings::suspendAnim() and
- * the destructor calls AnimationSettings::resumeAnim().
+ * The AnimationSuspender() constructor calls AnimationSettings::suspendAnim() and
+ * the ~AnimationSuspender() destructor calls AnimationSettings::resumeAnim().
  */
-class AnimationSuspender {
+class AnimationSuspender
+{
 public:
-	AnimationSuspender(AnimationSettings* animSettings) : _animSettings(*animSettings) { _animSettings.suspendAnim(); }
-	AnimationSuspender(RefMaker* object) : _animSettings(*object->dataset()->animationSettings()) { _animSettings.suspendAnim(); }
-	~AnimationSuspender() { _animSettings.resumeAnim(); }
+	/// Suspends the automatic generation of animation keys by calling AnimationSettings::suspendAnim().
+	/// \param animSettings The animation settings object.
+	AnimationSuspender(AnimationSettings* animSettings) : _animSettings(animSettings) {
+		animSettings->suspendAnim();
+	}
+	/// Suspends the automatic generation of animation keys by calling AnimationSettings::suspendAnim().
+	/// \param object An arbitrary object that belongs to a \ref Ovito::ObjectSystem::DataSet "DataSet" with an AnimationSettings object.
+	AnimationSuspender(RefMaker* object) : _animSettings(object->dataset()->animationSettings()) {
+		_animSettings->suspendAnim();
+	}
+	/// Resumes the automatic generation of animation keys by calling AnimationSettings::resumeAnim().
+	~AnimationSuspender() {
+		if(_animSettings) _animSettings->resumeAnim();
+	}
 private:
-	AnimationSettings& _animSettings;
+	QPointer<AnimationSettings> _animSettings;
 };
 
 }}	// End of namespace

@@ -138,7 +138,7 @@ private:
 	public:
 
 		/// Constructor.
-		FixedCNAEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
+		FixedCNAEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell, FloatType cutoff) :
 			StructureIdentificationEngine(validityInterval, positions, simCell), _cutoff(cutoff) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
@@ -156,7 +156,7 @@ private:
 	public:
 
 		/// Constructor.
-		AdaptiveCNAEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell) :
+		AdaptiveCNAEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell) :
 			StructureIdentificationEngine(validityInterval, positions, simCell) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.

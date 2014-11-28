@@ -78,7 +78,7 @@ void PluginManager::registerPlugin(Plugin* plugin)
 	if(this->plugin(plugin->pluginId())) {
 		QString id = plugin->pluginId();
 		delete plugin;
-		throw Exception(QString("Non-unique plugin identifier detected: %1.").arg(id));
+		throw Exception(QString("Non-unique plugin identifier detected: %1").arg(id));
 	}
 
 	_plugins.push_back(plugin);

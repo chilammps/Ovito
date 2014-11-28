@@ -28,10 +28,11 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
 
-/******************************************************************************
-* Helper class that evaluates one or more math expressions for every particle.
-* This class is used by the "Compute property" and "Expression select" modifiers.
-******************************************************************************/
+/**
+ * \brief Helper class that evaluates one or more math expressions for every particle.
+ *
+ * This class is used by the ComputePropertyModifier and the SelectExpressionModifier.
+ */
 class OVITO_PARTICLES_EXPORT ParticleExpressionEvaluator
 {
 	Q_DECLARE_TR_FUNCTIONS(ParticleExpressionEvaluator);

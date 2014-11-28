@@ -60,7 +60,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> IdentifyDiamondModi
 
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	SimulationCell* simCell = expectSimulationCell();
+	SimulationCellObject* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<DiamondIdentificationEngine>(validityInterval, posProperty->storage(), simCell->data());

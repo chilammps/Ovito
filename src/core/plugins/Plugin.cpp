@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -42,9 +42,9 @@ Plugin::Plugin(const QString& manifestFile) :
 		throw Exception(tr("Failed to load plugin manifest file.\nXML File: %1\nError Message: %2\nLine %3, Column %4").arg(manifestFile, errorMsg).arg(errorLine).arg(errorColumn));
 
 	// Extract the plugin identifier from the manifest.
-	_pluginId = _manifest.documentElement().attribute("Plugin-Id");
-	_pluginVendor = _manifest.documentElement().attribute("Plugin-Vendor");
-	_pluginVersion = _manifest.documentElement().attribute("Plugin-Version");
+	_pluginId = _manifest.documentElement().attribute("id");
+	_pluginVendor = _manifest.documentElement().attribute("vendor");
+	_pluginVersion = _manifest.documentElement().attribute("version");
 }
 
 /******************************************************************************
@@ -110,10 +110,10 @@ void Plugin::parseManifest()
 	_isManifestParsed = true;		// Prevent re-entrance.
 
 	for(QDomElement rootLevelNode = _manifest.documentElement().firstChildElement(); !rootLevelNode.isNull(); rootLevelNode = rootLevelNode.nextSiblingElement()) {
-		if(rootLevelNode.localName() == "Plugin-Dependencies") {
+		if(rootLevelNode.localName() == "dependencies") {
 			parsePluginDependencies(rootLevelNode);
 		}
-		else if(rootLevelNode.localName() == "Resource-File") {
+		else if(rootLevelNode.localName() == "resource-file") {
 			parseResourceFileReference(rootLevelNode);
 		}
 		else parseToplevelManifestElement(rootLevelNode);
@@ -126,16 +126,16 @@ void Plugin::parseManifest()
 void Plugin::parsePluginDependencies(const QDomElement& parentNode)
 {
 	for(QDomElement depNode = parentNode.firstChildElement(); !depNode.isNull(); depNode = depNode.nextSiblingElement()) {
-		if(depNode.localName() == "Plugin-Dependency") {
+		if(depNode.localName() == "plugin-dependency") {
 			// Parse plugin name.
-			QString depPluginName = depNode.attribute("Plugin-Id");
+			QString depPluginName = depNode.attribute("id");
 			if(depPluginName.isEmpty())
 				throw Exception(tr("Invalid plugin dependency attribute in manifest."));
 
-			// Skip disabled elements.
-			if(depNode.attribute("Enabled").compare("false", Qt::CaseInsensitive) == 0 ||
-				depNode.attribute("Enabled").compare("off", Qt::CaseInsensitive) == 0 ||
-				depNode.attribute("Enabled").compare("no", Qt::CaseInsensitive) == 0)
+			// Skip disabled dependencies.
+			if(depNode.attribute("enabled").compare("false", Qt::CaseInsensitive) == 0 ||
+				depNode.attribute("enabled").compare("off", Qt::CaseInsensitive) == 0 ||
+				depNode.attribute("enabled").compare("no", Qt::CaseInsensitive) == 0)
 				continue;
 
 			_dependencies.push_back(depPluginName);
@@ -149,9 +149,9 @@ void Plugin::parsePluginDependencies(const QDomElement& parentNode)
 ******************************************************************************/
 void Plugin::parseResourceFileReference(const QDomElement& element)
 {
-	QString path = element.attribute("Path");
+	QString path = element.text();
 	if(path.isEmpty())
-		throw Exception(QString("Element <Resource-File> has no Path attribute in manifest file %1.").arg(manifestFile()));
+		throw Exception(QString("Element <resource-file> is empty in manifest file %1.").arg(manifestFile()));
 
 	// Resolve path.
 	QDir baseDir = QFileInfo(manifestFile()).dir();
@@ -159,7 +159,7 @@ void Plugin::parseResourceFileReference(const QDomElement& element)
 
 	// Load resource file into memory.
 	if(!QResource::registerResource(fullPath))
-		throw Exception(QString("Could not load plugin resource file %1").arg(fullPath));
+		throw Exception(QString("Could not load plugin resource file %1 for plugin %2.").arg(fullPath).arg(pluginId()));
 
 	_resourceFiles.push_back(fullPath);
 }

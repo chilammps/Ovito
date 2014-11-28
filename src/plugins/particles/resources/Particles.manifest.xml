@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
 <!-- 
-  Copyright (2013) Alexander Stukowski
+  Copyright (2014) Alexander Stukowski
 
   This file is part of OVITO (Open Visualization Tool).
 
@@ -20,21 +20,13 @@
 -->
 
 <!--
-	Plugin manifest for the particle visualization plugin.
+	Plugin manifest for the particles visualization plugin.
 -->
      
-<Plugin-Manifest xmlns="http://www.ovito.org/schema/pluginmanifest/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	Plugin-Id="Particles"
-	Plugin-Version="1.0"
-	Plugin-Vendor="Alexander Stukowski">
-	
-	<NativePlugin Library="Particles" />
-	
-	<Resource-File Path="particles.rcc" />
-	
-	<Plugin-Dependencies>
-		<Plugin-Dependency Plugin-Id="PyScript" Enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
-	</Plugin-Dependencies>
-	
-</Plugin-Manifest>
+<ovito-plugin id="Particles" vendor="Alexander Stukowski">	
+	<native-library>Particles</native-library>
+	<resource-file>particles.rcc</resource-file>
+	<dependencies>
+		<plugin-dependency id="PyScript" enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
+	</dependencies>
+</ovito-plugin>

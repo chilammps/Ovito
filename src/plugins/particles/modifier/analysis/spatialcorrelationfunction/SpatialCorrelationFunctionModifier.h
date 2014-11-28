@@ -38,9 +38,8 @@ class QCPItemStraightLine;
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-}
-/*
- * This modifier computes the Fourier transform of a (spatial) cross correlation function
+/**
+ * \brief This modifier computes the Fourier transform of a (spatial) cross correlation function
  * between two particle properties.
  */
 class OVITO_PARTICLES_EXPORT SpatialCorrelationFunctionModifier : public AsynchronousParticleModifier

@@ -28,7 +28,7 @@
 namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace Vasp {
 
 /**
- * Exporter service that writes the particles to a POSCAR file.
+ * \brief Exporter that writes the particles to a POSCAR file.
  */
 class OVITO_PARTICLES_EXPORT POSCARExporter : public ParticleExporter
 {

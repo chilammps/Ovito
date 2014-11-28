@@ -25,7 +25,7 @@
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/crystalanalysis/util/DelaunayTessellation.h>
 #include "ConstructSurfaceModifier.h"
 
@@ -101,7 +101,7 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> ConstructSurfaceMod
 	ParticlePropertyObject* selProperty = nullptr;
 	if(onlySelectedParticles())
 		selProperty = expectStandardProperty(ParticleProperty::SelectionProperty);
-	SimulationCell* simCell = expectSimulationCell();
+	SimulationCellObject* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<ConstructSurfaceEngine>(validityInterval, posProperty->storage(),

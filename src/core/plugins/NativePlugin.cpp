@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -39,10 +39,10 @@ NativePlugin::NativePlugin(const QString& manifestFile) :
 bool NativePlugin::parseToplevelManifestElement(const QDomElement& element)
 {
 	// Process the <NativePlugin> element that describes the native plugin's properties.
-	if(element.localName() == "NativePlugin") {
+	if(element.localName() == "native-library") {
 
 		// Get the name of the shared library file.
-		QString libBasename = element.attribute("Library");
+		QString libBasename = element.text();
 
 		// Resolve the filename by adding the platform specific suffix/extension
 		// and make the path absolute.
@@ -94,7 +94,7 @@ void NativePlugin::loadPluginImpl()
 			continue;
 #else
 		if(clazz->pluginId() != pluginId())
-			throw Exception(QString("Plugin ID %1 assigned to class %2 does not match plugin %3 that loaded the class.").arg(clazz->pluginId()).arg(clazz->name()).arg(pluginId()));
+			throw Exception(QString("Plugin ID %1 assigned to class %2 does not match plugin %3 that contains the class.").arg(clazz->pluginId()).arg(clazz->name()).arg(pluginId()));
 #endif
 		OVITO_ASSERT(clazz->plugin() == nullptr);
 		clazz->_plugin = this;

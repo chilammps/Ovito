@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file Box3.h 
- * \brief Contains the definition of the Ovito::Math::Box_3 class template.
+ * \file
+ * \brief Contains the definition of the Ovito::Util::Math::Box_3 class template.
  */
 
 #ifndef __OVITO_BOX3_H
@@ -35,45 +35,56 @@
 #include "AffineTransformation.h"
 
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 /**
- * \brief An axis-aligned box in 3D space.
+ * \brief An axis-aligned box in 3d space.
  *
- * This class stores an axis-aligned box in 3D space.
- * It is defined by minimum and maximum coordinates in X, Y and Z direction.
+ * The box is defined by the lower and upper X, Y and Z coordinates (#minc and #maxc fields).
  * 
- * There are two predefined instances of this template class: 
- * Box3 which is used for floating-point coordinates and Box3I which is used
- * for integer coordinates. 
+ * The template parameter \a T specifies the data type used for the box coordinates.
+ * Two standard instantiations of Box_3 for floating-point and integer coordinates are predefined:
+ *
+ * \code
+ *      typedef Box_3<FloatType>  Box3;
+ *      typedef Box_3<int>        Box3I;
+ * \endcode
+ *
+ * A box is considered empty if any of its lower coordinates is greater than the corresponding
+ * upper coordinate.
+ *
+ * \sa Box_2
+ * \sa Vector_3, Point_3
  */
 template<typename T>
 class Box_3
 {
 public:	
-	/// The coordinates of the lower corner.
+
+	/// The lower XYZ coordinates of the box.
 	Point_3<T> minc;
-	/// The coordinates of the upper corner.
+	/// The upper XYZ coordinates of the box.
 	Point_3<T> maxc;
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
-	/// \brief Creates an empty box.
-	Box_3() : minc(std::numeric_limits<T>::max()), maxc(-std::numeric_limits<T>::max()) {}
+	/// \brief Constructs an empty box.
+	Box_3() : minc(std::numeric_limits<T>::max()), maxc(std::numeric_limits<T>::lowest()) {}
 
-	/// \brief Initializes the box with the minimum and maximum coordinates.
-	/// \param minCorner A point that specifies the corner with minimum coordinates of the box.
-	/// \param maxCorner A point that specifies the corner with maximum coordinates of the box.	
-	Box_3(const Point_3<T>& minCorner, const Point_3<T>& maxCorner) : minc(minCorner), maxc(maxCorner) {
-		OVITO_ASSERT_MSG(minc.x() <= maxc.x(), "Box_3 constructor", "X component of the minimum corner point must not be larger than the maximum corner point.");
-		OVITO_ASSERT_MSG(minc.y() <= maxc.y(), "Box_3 constructor", "Y component of the minimum corner point must not be larger than the maximum corner point.");
-		OVITO_ASSERT_MSG(minc.z() <= maxc.z(), "Box_3 constructor", "Z component of the minimum corner point must not be larger than the maximum corner point.");
+	/// \brief Initializes the box with lower and upper coordinates.
+	/// \param lower The corner of the box that specifies the lower boundary coordinates.
+	/// \param upper The corner of the box that specifies the upper boundary coordinates.
+	Box_3(const Point_3<T>& lower, const Point_3<T>& upper) : minc(lower), maxc(upper) {
+		OVITO_ASSERT_MSG(minc.x() <= maxc.x(), "Box_3 constructor", "Lower X coordinate must not be larger than upper X coordinate.");
+		OVITO_ASSERT_MSG(minc.y() <= maxc.y(), "Box_3 constructor", "Lower Y coordinate must not be larger than upper Y coordinate.");
+		OVITO_ASSERT_MSG(minc.z() <= maxc.z(), "Box_3 constructor", "Lower Z coordinate must not be larger than upper Z coordinate.");
 	}
 
-	/// \brief Crates a cubic box with the given center and half edge length.
+	/// \brief Crates a cubic box.
 	/// \param center The center of the cubic box.
-	/// \param halfEdgeLength The half size of the cube.
+	/// \param halfEdgeLength One half of the edge length of the cube.
 	Box_3(const Point_3<T>& center, T halfEdgeLength) {
+		OVITO_ASSERT(halfEdgeLength >= 0);
 		minc.x() = center.x() - halfEdgeLength;
 		minc.y() = center.y() - halfEdgeLength;
 		minc.z() = center.z() - halfEdgeLength;
@@ -84,74 +95,73 @@ public:
 
 	///////////////////////////////// Attributes /////////////////////////////////
 
-	/// \brief Checks whether this is an empty box.
+	/// \brief Checks whether this is box is empty.
 	///
-	/// The box is considered empty when one of the maximum corner coordinates is less
-	/// then the minimum corner coordinate.
-	/// \return true if this box is empty; false otherwise.
+	/// The box is considered empty if one of the upper boundary coordinates is smaller than
+	/// the corresponding lower boundary coordinate.
 	Q_DECL_CONSTEXPR bool isEmpty() const {
         return (minc.x() > maxc.x()) || (minc.y() > maxc.y()) || (minc.z() > maxc.z());
 	}
 
-	/// \brief Resets the box to the empty state.
+	/// \brief Resets the box to an empty state.
 	void setEmpty() {
-		minc = Point_3<T>( std::numeric_limits<T>::max());
-		maxc = Point_3<T>(-std::numeric_limits<T>::max());
+		minc = Point_3<T>(std::numeric_limits<T>::max());
+		maxc = Point_3<T>(std::numeric_limits<T>::lowest());
 	}
 
 	/// \brief Computes the center of the box.
-	/// \return The center of the box.
 	Q_DECL_CONSTEXPR Point_3<T> center() const {
 		return Point_3<T>((minc.x() + maxc.x()) / 2, (minc.y() + maxc.y()) / 2, (minc.z() + maxc.z()) / 2);
 	}
 
 	/// \brief Computes the size of the box.
-	/// \return The difference between the maximum and minimum corner.
+	/// \return The difference between the upper and lower boundary coordinates.
 	Q_DECL_CONSTEXPR Vector_3<T> size() const {
 		return maxc - minc;
 	}
 	
 	/// \brief Returns the size of the box in the given dimension.
-	/// \param dimension The index of the dimension (0 - 2).
+	/// \param dimension The dimension (0 - 2).
+	/// \return The difference between the upper and lower boundary of the box in the given dimension.
 	Q_DECL_CONSTEXPR T size(typename Point_3<T>::size_type dimension) const {
 		return maxc[dimension] - minc[dimension]; 
 	}
 
-	/// Returns the size in X direction (Max.x() - Min.x()) of the box.
+	/// Returns the box size in X direction (maxc.x() - minc.x()) of the box.
 	Q_DECL_CONSTEXPR T sizeX() const { return maxc.x() - minc.x(); }
 
-	/// Returns the size in Y direction (Max.y() - Min.y()) of the box.
+	/// Returns the box size in Y direction (maxc.y() - minc.y()) of the box.
 	Q_DECL_CONSTEXPR T sizeY() const { return maxc.y() - minc.y(); }
 
-	/// Returns the size in Z direction (Max.z() - Min.z()) of the box.
+	/// Returns the box size in Z direction (maxc.z() - minc.z()) of the box.
 	Q_DECL_CONSTEXPR T sizeZ() const { return maxc.z() - minc.z(); }
 
-	/// \brief Returns the position of one of the eight corners of the box corner.
-	/// \param i The index of the corner (0 - 7).
-	/// \return The coordinate of the i-th corner of the box.
-	Point_3<T> operator[](int i) const {
-		OVITO_ASSERT_MSG(!isEmpty(), "Box_3::operator[]", "Cannot calculate the corner of an empty box.");
-		OVITO_ASSERT_MSG(i >= 0 && i < 8, "Box3::operator[]", "Corner index out of range.");
-		const Point_3<T>* const c[2] = { &minc, &maxc };
-		return Point_3<T>(c[i&1]->x(), c[(i>>1)&1]->y(), c[(i>>2)&1]->z());
+	/// \brief Returns the position of one of the eight corners of the box.
+	/// \param i The index of the corner in the range 0 to 7.
+	/// \return The coordinates of the i-th corner of the box.
+	Point_3<T> operator[](typename Point_3<T>::size_type i) const {
+		OVITO_ASSERT_MSG(!isEmpty(), "Box_3::operator[]", "Cannot compute the corners of an empty box.");
+		OVITO_ASSERT_MSG(i >= 0 && i < 8, "Box_3::operator[]", "Corner index out of range.");
+		const Point_3<T>* const c = &minc;
+		OVITO_ASSERT(&c[1] == &maxc);
+		return Point_3<T>(c[i&1].x(), c[(i>>1)&1].y(), c[(i>>2)&1].z());
 	}
 
 	/////////////////////////////// Classification ///////////////////////////////
     
-	/// \brief Checks whether a point is inside the box.
-	/// \param p The point to test.
-	/// \return true if the given point is inside or on the edge of the bounding box; false if it is completely outside the box.
+	/// \brief Checks whether a point is located inside the box.
+	/// \param p The input point.
+	/// \return \c true if the point \a p is inside or on the boundaries of the box; \c false if it is outside the box.
 	Q_DECL_CONSTEXPR bool contains(const Point_3<T>& p) const {
 		return p.x() >= minc.x() && p.x() <= maxc.x() &&
-				p.y() >= minc.y() && p.y() <= maxc.y() &&
-				p.z() >= minc.z() && p.z() <= maxc.z();
+			   p.y() >= minc.y() && p.y() <= maxc.y() &&
+			   p.z() >= minc.z() && p.z() <= maxc.z();
 	}
 	
-	/// \brief Classifies the given point with respect to the box.
-	///
-	/// Returns -1 if the point is outside of the box.
-	/// Returns 0 if the point is on the boundary of the box within the given tolerance.
-	/// Returns +1 if the point is inside of the box.	
+	/// \brief Classifies a point with respect to the box.
+	/// \param p The input point.
+	/// \param epsilon This threshold is used to test whether the point is on the boundary of the box.
+	/// \return -1 if \a p is outside the box; 0 if \a p is on the boundary of the box within the specified tolerance; +1 if inside the box.
 	int classifyPoint(const Point_3<T>& p, T epsilon = T(FLOATTYPE_EPSILON)) const {
 		if(p.x() > maxc.x() + epsilon || p.y() > maxc.y() + epsilon || p.z() > maxc.z() + epsilon) return -1;
 		if(p.x() < minc.x() - epsilon || p.y() < minc.y() - epsilon || p.z() < minc.z() - epsilon) return -1;
@@ -161,16 +171,19 @@ public:
 		return 0;
 	}
 
-	/// \brief Checks whether another box is contained in this box.
-	/// \return true if the given box is completely inside the bounding box.
+	/// \brief Tests if another box is contained in this box.
+	/// \param b The other box.
+	/// \return \c true if the box \a b is completely inside this box.
 	bool containsBox(const Box_3<T>& b) const {
 		return (b.minc.x() >= minc.x() && b.maxc.x() <= maxc.x()) &&
-			(b.minc.y() >= minc.y() && b.maxc.y() <= maxc.y()) &&
-			(b.minc.z() >= minc.z() && b.maxc.z() <= maxc.z());
+			   (b.minc.y() >= minc.y() && b.maxc.y() <= maxc.y()) &&
+			   (b.minc.z() >= minc.z() && b.maxc.z() <= maxc.z());
 	}
 
-	/// \brief Checks whether the intersection of two boxes is not empty.
-	/// \return true if the given box is not completely outside of this box.
+	/// \brief Tests whether the intersection of two boxes is not empty.
+	/// \param b The other box.
+	/// \return \c true if the box \a b is not completely outside of this box;
+	///         \c false if the two boxes do not overlap or are empty.
 	bool intersects(const Box_3<T>& b) const {
 		if(maxc.x() <= b.minc.x() || minc.x() >= b.maxc.x()) return false;
 		if(maxc.y() <= b.minc.y() || minc.y() >= b.maxc.y()) return false;
@@ -181,7 +194,8 @@ public:
 
     //////////////////////////////// Modification ////////////////////////////////
 
-	/// \brief Enlarges the box to include the given point.
+	/// \brief Extends this box to include the given point.
+	/// \param p The point which should be included in this box after the method returns.
 	/// \sa addPoints(), addBox()
 	inline void addPoint(const Point_3<T>& p) {
 		if(p.x() < minc.x()) minc.x() = p.x();
@@ -192,7 +206,7 @@ public:
 		if(p.z() > maxc.z()) maxc.z() = p.z();
 	}
 
-	/// \brief Enlarges the box to include the given points.
+	/// \brief Extends the box to include the given set of points.
 	/// \param points Pointer to the first element of an array of points.
 	/// \param count The number of points in the array.
 	/// \sa addPoint()
@@ -202,7 +216,8 @@ public:
 			addPoint(*points);
 	}
 
-	/// \brief Enlarges this box to include the given box.
+	/// \brief Extends this box to include the given box.
+	/// \param b The other box.
 	/// \sa addPoint()
 	void addBox(const Box_3& b) {
 		minc.x() = std::min(minc.x(), b.minc.x()); maxc.x() = std::max(maxc.x(), b.maxc.x());
@@ -210,36 +225,44 @@ public:
 		minc.z() = std::min(minc.z(), b.minc.z()); maxc.z() = std::max(maxc.z(), b.maxc.z());
 	}
 
-	/// \brief Computes the intersection of this box and a second box.
-	/// 
-	/// This box is clipped to the boundary of the given box.
+	/// \brief Clips this box to the boundaries of another box.
+	/// \param b The other box.
+	///
+	/// If the two boxes do not overlap, the resulting box will be empty.
 	void clip(const Box_3& b) {
 		minc.x() = std::max(minc.x(), b.minc.x()); maxc.x() = std::min(maxc.x(), b.maxc.x());
 		minc.y() = std::max(minc.y(), b.minc.y()); maxc.y() = std::min(maxc.y(), b.maxc.y());
 		minc.z() = std::max(minc.z(), b.minc.z()); maxc.z() = std::min(maxc.z(), b.maxc.z());
 	}
 
-	/// \brief Computes the bounding box transformed by the given matrix.
-	/// \return The axis-aligned bounding box that contains the transformed input box.
+	/// \brief Computes the bounding box after transforming the corners of this box by the given matrix.
+	/// \param tm An affine transformation matrix that will be applied to the corners of this box.
+	/// \return The axis-aligned bounding box that fully contains the transformed input box.
+	///
+	/// Transforming any empty box will result in an empty box.
 	Box_3 transformed(const AffineTransformationT<T>& tm) const {
 		if(isEmpty()) return *this;
 		Box_3 b;
-		const Point_3<T>* const c[2] = { &minc, &maxc };
-		for(unsigned int i = 0; i < 8; i++)
-			b.addPoint(tm * Point_3<T>(c[i&1]->x(), c[(i>>1)&1]->y(), c[(i>>2)&1]->z()));
+		const Point_3<T>* const c = &minc;
+		OVITO_ASSERT(&c[1] == &maxc);
+		for(size_t i = 0; i < 8; i++)
+			b.addPoint(tm * Point_3<T>(c[i&1].x(), c[(i>>1)&1].y(), c[(i>>2)&1].z()));
 		return b;
 	}
 
-	/// \brief Scales the box by the given scalar factor. 
-	/// The center of the box is taken as scaling center.
+	/// \brief Scales the box size by a scalar factor and returns the new scaled box.
+	/// The center of the box is not changed.
 	Box_3 centerScale(T factor) const {
 		if(isEmpty()) return *this;
 		Point_3<T> c = center();
 		return Box_3(c + ((minc - c) * factor), c + ((maxc - c) * factor));
 	}
 
-	/// \brief Adds the given amount of padding to each side of the box.
+	/// \brief Returns a copy of this with a padding added to each side of the box.
+	/// \param amount The amount of padding to add to each side.
 	/// \return The padded box.
+	///
+	/// \note An empty box will remain empty, and no padding is added.
 	Box_3 padBox(T amount) const {
 		if(isEmpty()) return *this;		
 		return Box_3(minc - Vector_3<T>(amount), maxc + Vector_3<T>(amount));
@@ -247,13 +270,13 @@ public:
 
     ////////////////////////////////// Utilities /////////////////////////////////
 	
-	/// Returns a string representation of this box.
+	/// Generates a string representation of the box.
 	QString toString() const {
 		return "[Min: " + minc.toString() + " Max: " + maxc.toString() + "]";
 	}
 };
 
-/// \brief Transforms a box.
+/// \brief Transforms a box. Returns the axis-aligned bounding box that contains all transformed corner points.
 /// \sa Box_3::transformed()
 /// \relates Box_3
 template<typename T>
@@ -261,14 +284,14 @@ inline Box_3<T> operator*(const AffineTransformationT<T>& tm, const Box_3<T>& bo
 	return box.transformed(tm);
 }
 
-/// \brief Prints the box to a text output stream.
+/// \brief Prints a box to a text output stream.
 /// \relates Box_3
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const Box_3<T> &b) {
 	return os << '[' << b.minc << "] - [" << b.maxc << ']';
 }
 
-/// \brief Writes the box to the Qt debug stream.
+/// \brief Prints a box to a Qt debug stream.
 /// \relates Box_3
 template<typename T>
 inline QDebug operator<<(QDebug dbg, const Box_3<T>& b) {
@@ -319,15 +342,15 @@ typedef Box_3<FloatType> Box3;
  */
 typedef Box_3<int> Box3I;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Box3);
-Q_DECLARE_METATYPE(Ovito::Math::Box3I);
-Q_DECLARE_METATYPE(Ovito::Math::Box3*);
-Q_DECLARE_METATYPE(Ovito::Math::Box3I*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Box3, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Box3I, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Box3*, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Box3I*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Box3);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Box3I);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Box3*);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Box3I*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3I, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3*, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3I*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_BOX3_H

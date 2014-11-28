@@ -353,7 +353,7 @@ void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& str
 * This function is called by the system from the main thread after the
 * asynchronous loading task has finished.
 ******************************************************************************/
-void CAImporter::CrystalAnalysisFrameLoader::handOver(FileSource* container)
+void CAImporter::CrystalAnalysisFrameLoader::handOver(CompoundObject* container)
 {
 	// Make a copy of the list of old data objects in the container so we can re-use some objects.
 	PipelineFlowState oldObjects(container->status(), container->dataObjects(), TimeInterval::infinite(), container->attributes());

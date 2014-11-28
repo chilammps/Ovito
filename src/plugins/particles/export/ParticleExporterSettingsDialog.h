@@ -30,9 +30,9 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Export {
 
-/******************************************************************************
-* This dialog box lets the user adjust the export settings.
-******************************************************************************/
+/**
+ * \brief This dialog box lets the user adjust the settings of a ParticleExporter.
+ */
 class OVITO_PARTICLES_EXPORT ParticleExporterSettingsDialog : public QDialog
 {
 	Q_OBJECT

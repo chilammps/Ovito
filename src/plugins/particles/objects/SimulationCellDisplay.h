@@ -30,12 +30,12 @@
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-#include "SimulationCell.h"
+#include "SimulationCellObject.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
 
 /**
- * \brief A display object for SimulationObject.
+ * \brief A display object for SimulationCellObject.
  */
 class OVITO_PARTICLES_EXPORT SimulationCellDisplay : public DisplayObject
 {
@@ -86,10 +86,10 @@ public:
 protected:
 
 	/// Renders the given simulation using wireframe mode.
-	void renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode);
+	void renderWireframe(SimulationCellObject* cell, SceneRenderer* renderer, ObjectNode* contextNode);
 
 	/// Renders the given simulation using solid shading mode.
-	void renderSolid(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode);
+	void renderSolid(SimulationCellObject* cell, SceneRenderer* renderer, ObjectNode* contextNode);
 
 protected:
 
@@ -111,7 +111,7 @@ protected:
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for wireframe rendering.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SimulationCell>,
+		WeakVersionedOORef<SimulationCellObject>,
 		ColorA
 		> _wireframeGeometryCacheHelper;
 
@@ -124,7 +124,7 @@ protected:
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for solid rendering mode.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SimulationCell>,			// The simulation cell + revision number
+		WeakVersionedOORef<SimulationCellObject>,			// The simulation cell + revision number
 		FloatType, Color							// Line width + color
 		> _solidGeometryCacheHelper;
 

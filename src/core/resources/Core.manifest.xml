@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
 <!-- 
-  Copyright (2013) Alexander Stukowski
+  Copyright (2014) Alexander Stukowski
 
   This file is part of OVITO (Open Visualization Tool).
 
@@ -19,9 +19,4 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
      
-<Plugin-Manifest xmlns="http://www.ovito.org/schema/pluginmanifest/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	Plugin-Id="Core"
-	Plugin-Version="2.0"
-	Plugin-Vendor="Alexander Stukowski">
-</Plugin-Manifest>
+<ovito-plugin id="Core" vendor="Alexander Stukowski" />

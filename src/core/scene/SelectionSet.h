@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -18,11 +18,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 ///////////////////////////////////////////////////////////////////////////////
-
-/**
- * \file SelectionSet.h
- * \brief Contains the definition of the Ovito::SelectionSet class.
- */
 
 #ifndef __OVITO_SELECTION_SET_H
 #define __OVITO_SELECTION_SET_H
@@ -97,7 +92,7 @@ public:
 	void clear() { _selection.clear(); }
 
 	/// \brief Computes the bounding box containing all selected nodes.
-	/// \param time The animation time at which the bounding box should be computed.
+	/// \param time The animation time at which to compute the bounding box.
 	Box3 boundingBox(TimePoint time) const;
 
 	/// \brief Returns the list of selected nodes.

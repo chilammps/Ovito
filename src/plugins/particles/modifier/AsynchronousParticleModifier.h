@@ -60,8 +60,11 @@ public:
 	/// Constructor.
 	AsynchronousParticleModifier(DataSet* dataset);
 
-	/// Cancels the current computation if there is a running computation engine.
+	/// Interrupts a running computation engine if there is one for this asynchronous modifier.
 	void stopRunningEngine();
+
+	/// Asks this object to delete itself. Calls stopRunningEngine() first.
+	virtual void deleteReferenceObject() override;
 
 private Q_SLOTS:
 

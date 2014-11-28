@@ -21,7 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "LAMMPSDumpExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
@@ -82,7 +82,7 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 		throw Exception(tr("No particle positions available. Cannot write LAMMPS file."));
 
 	// Get simulation cell info.
-	SimulationCell* simulationCell = state.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = state.findObject<SimulationCellObject>();
 	if(!simulationCell)
 		throw Exception(tr("No simulation cell available. Cannot write LAMMPS file."));
 

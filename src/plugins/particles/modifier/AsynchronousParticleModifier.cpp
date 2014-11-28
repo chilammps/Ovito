@@ -210,4 +210,16 @@ void AsynchronousParticleModifier::loadFromStream(ObjectLoadStream& stream)
 	stream.closeChunk();
 }
 
+/******************************************************************************
+* Asks this object to delete itself.
+******************************************************************************/
+void AsynchronousParticleModifier::deleteReferenceObject()
+{
+	// Interrupt running compute engine when modifier is deleted.
+	stopRunningEngine();
+
+	ParticleModifier::deleteReferenceObject();
+}
+
+
 }}}}	// End of namespace

@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "LAMMPSDataExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
@@ -54,7 +54,7 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 	ParticleTypeProperty* particleTypeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(state, ParticleProperty::ParticleTypeProperty));
 
 	// Get simulation cell info.
-	SimulationCell* simulationCell = state.findObject<SimulationCell>();
+	SimulationCellObject* simulationCell = state.findObject<SimulationCellObject>();
 	if(!simulationCell)
 		throw Exception(tr("No simulation cell available. Cannot write LAMMPS file."));
 

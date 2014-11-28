@@ -28,8 +28,8 @@
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * This modifier computes the Voronoi indices of particles.
+/**
+ * \brief This modifier computes the atomic volume and the Voronoi indices of particles.
  */
 class OVITO_PARTICLES_EXPORT VoronoiAnalysisModifier : public AsynchronousParticleModifier
 {
@@ -115,7 +115,7 @@ private:
 
 		/// Constructor.
 		VoronoiAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* selection, std::vector<FloatType>&& radii,
-							const SimulationCellData& simCell, FloatType cutoff,
+							const SimulationCell& simCell, FloatType cutoff,
 							int edgeCount, bool computeIndices, FloatType edgeThreshold, FloatType faceThreshold) :
 			ComputeEngine(validityInterval),
 			_positions(positions),
@@ -154,7 +154,7 @@ private:
 		FloatType _faceThreshold;
 		double _simulationBoxVolume;
 		double _voronoiVolumeSum;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		std::vector<FloatType> _squaredRadii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Math::QuaternionT class template.
+ * \brief Contains the definition of the Ovito::Util::Math::QuaternionT class template.
  */
 
 #ifndef __OVITO_QUATERNION_H
@@ -32,17 +32,44 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 template<typename T> class AffineTransformationT;
 template<typename T> class Matrix_3;
 
 /**
- * \brief A rotation in 3D space described by a quaternion with four components.
+ * \brief A rotation in 3D space described by a quaternion.
  *
- * Rotations can also be represented by the Rotation and the AffineTransformation
- * class. Please note that only the Rotation class is able to represent rotations with more than
- * one revolution, i.e. a rotation angle larger than 360 degrees.
+ * OVITO supports four different ways of representing rotations in 3d space:
+ *
+ * 1. quaternions (this class),
+ * 2. axis and angle (RotationT),
+ * 3. transformation matrices (AffineTransformationT and Matrix_3),
+ * 4. Euler angles (Matrix_3::toEuler() and RotationT::toEuler()).
+ *
+ * The different representations can be converted into each other.
+ *
+ * The class template parameter \a T specifies the data type used for the components of the quaternion.
+ * The template instantiation for standard floating-point values is predefined as follows:
+ *
+ * \code
+ *      typedef QuaternionT<FloatType> Quaternion;
+ * \endcode
+ *
+ * Note that the default constructor does not initialize the fields of the QuaternionT class for performance reasons.
+ * The nested type Identity can be used to construct the null rotation quaternion (0,0,0,1):
+ *
+ * \code
+ *      Quaternion q = Quaternion::Identity();
+ * \endcode
+ *
+ * QuaternionT derives from std::array<T,4>. Thus, the quaternion's components can be accessed via indices, but also via names:
+ * \code
+ *      q[3]  = 0.5f;
+ *      q.w() = 0.5f;
+ * \endcode
+ *
+ * \sa RotationT, AffineTransformationT
  */
 template<typename T>
 class QuaternionT : public std::array<T, 4>
@@ -52,6 +79,12 @@ public:
 	/// An empty type that denotes the identity quaternion (0,0,0,1).
 	struct Identity {};
 
+	using typename std::array<T, 4>::size_type;
+	using typename std::array<T, 4>::difference_type;
+	using typename std::array<T, 4>::value_type;
+	using typename std::array<T, 4>::iterator;
+	using typename std::array<T, 4>::const_iterator;
+
 	/////////////////////////////// Constructors /////////////////////////////////
 
 	/// \brief Constructs a quaternion without initializing its components.
@@ -59,15 +92,23 @@ public:
 	QuaternionT() {}
 
 	/// \brief Initializes the quaternion with the given values.
-	/// \param _x The first quaternion component.
-	/// \param _y The second quaternion component.
-	/// \param _z The third quaternion component.
-	/// \param _w The fourth quaternion component.
-	Q_DECL_CONSTEXPR QuaternionT(T x, T y, T z, T w) : std::array<T, 4>{{x,y,z,w}} {}
+	/// \param x The first quaternion component.
+	/// \param y The second quaternion component.
+	/// \param z The third quaternion component.
+	/// \param w The fourth quaternion component.
+	Q_DECL_CONSTEXPR QuaternionT(T x, T y, T z, T w)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 4>{{x,y,z,w}}
+#endif
+		{}
 
 	/// \brief Constructs an identity quaternion.
 	/// The new quaternion represents the null transformation, i.e. no rotation at all.
-	explicit Q_DECL_CONSTEXPR QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
+	explicit Q_DECL_CONSTEXPR QuaternionT(Identity)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+		: std::array<T, 4>{{ T(0), T(0), T(0), T(1) }}
+#endif
+		{}
 
 	/// \brief Initializes the quaternion from rotational part of a transformation matrix.
 	/// \param tm A rotation matrix.
@@ -224,14 +265,14 @@ public:
 	}
 };
 
-}}		// End of namespace
+}}}	// End of namespace
 
 #include "Vector3.h"
 #include "Vector4.h"
 #include "AffineTransformation.h"
 #include "Matrix3.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 // Initializes the quaternion from rotational part of a transformation matrix.
 template<typename T>
@@ -302,8 +343,7 @@ inline Vector_3<T> operator*(const QuaternionT<T>& q, const Vector_3<T>& v)
 						  T(2)*(q.x()*q.z() - q.w()*q.y()),        T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y())) * v;
 }
 
-/// \brief Constructs a quaternion from three Euler angles.
-/// \relates QuaternionT
+// Constructs a quaternion from three Euler angles.
 template<typename T>
 inline QuaternionT<T> QuaternionT<T>::fromEuler(T ai, T aj, T ak, typename Matrix_3<T>::EulerAxisSequence axisSequence)
 {
@@ -414,11 +454,11 @@ inline QDataStream& operator>>(QDataStream& stream, QuaternionT<T>& q) {
  */
 typedef QuaternionT<FloatType>		Quaternion;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Quaternion);
-Q_DECLARE_METATYPE(Ovito::Math::Quaternion*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Quaternion, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Quaternion*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Quaternion);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Quaternion*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Quaternion, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Quaternion*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_QUATERNION_H

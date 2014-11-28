@@ -44,9 +44,9 @@ namespace Ovito {
 			class TriMesh;
 			class HalfEdgeMesh;
 		}
-	}
-	namespace Math {
-		using namespace Ovito::Util::IO;
+		namespace Math {
+			using namespace Ovito::Util::IO;
+		}
 	}
 	namespace Anim {
 		class AnimationSettings;
@@ -80,6 +80,7 @@ namespace Ovito {
 		}
 		namespace Scene {
 			class SceneNode;
+			class CompoundObject;
 			class DataObject;
 			class SceneRoot;
 			class SelectionSet;
@@ -170,7 +171,7 @@ namespace Ovito {
 	using namespace Util::IO;
 	using namespace Util::Concurrency;
 	using namespace Util::Mesh;
-	using namespace Math;
+	using namespace Util::Math;
 	using namespace Rendering;
 	using namespace Anim;
 	using namespace View;

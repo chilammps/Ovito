@@ -31,8 +31,8 @@ class QCustomPlot;
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * This modifier determines the coordination number of each particle.
+/**
+ * \brief This modifier computes the coordination number of each particle (i.e. the number of neighbors within a given cutoff radius).
  */
 class OVITO_PARTICLES_EXPORT CoordinationNumberModifier : public AsynchronousParticleModifier
 {
@@ -61,7 +61,7 @@ private:
 	public:
 
 		/// Constructor.
-		CoordinationAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff, int rdfSampleCount) :
+		CoordinationAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell, FloatType cutoff, int rdfSampleCount) :
 			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_cutoff(cutoff), _rdfHistogram(rdfSampleCount, 0.0),
@@ -74,7 +74,7 @@ private:
 		ParticleProperty* positions() const { return _positions.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 		/// Returns the property storage that contains the computed coordination numbers.
 		ParticleProperty* coordinationNumbers() const { return _coordinationNumbers.data(); }
@@ -88,7 +88,7 @@ private:
 	private:
 
 		FloatType _cutoff;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;
 		QVector<double> _rdfHistogram;

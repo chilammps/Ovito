@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file Plane.h
- * \brief Contains the definition of the Ovito::Math::Plane_3 class template.
+ * \file
+ * \brief Contains the definition of the Ovito::Util::Math::Plane_3 class template.
  */
 
 #ifndef __OVITO_PLANE_H
@@ -35,52 +35,54 @@
 #include "Ray.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { namespace Math {
+namespace Ovito { namespace Util { namespace Math {
 
 /**
- * \brief An infinite plane in 3D space.
+ * \brief An infinite plane in 3d space.
  *
- * The plane is defined by a normal vector and a distance value that specifies
- * the distance of the plane from the origin in the direction of the normal vector.
+ * The plane is defined by a unit #normal vector and a value #dist, measuring
+ * the plane's signed distance from the origin.
  *
- * \note This is a template class for general data types. Usually one wants to
- *       use this template class with the floating-point data type. There is
- *       a template instance called \c Plane3 that should normally be used.
+ * The template parameter \a T specifies the data type used for spatial coordinates.
+ * The standard template instantiation for floating-point coordinates is predefined:
  *
- * \author Alexander Stukowski
+ * \code
+ *      typedef Plane_3<FloatType>  Plane3;
+ * \endcode
  */
 template<typename T>
 class Plane_3
 {
 public:
+
 	/// \brief The unit normal vector.
 	Vector_3<T> normal;
-	/// \brief The distance of the plane from the origin.
+
+	/// \brief The signed distance of the plane from the origin.
 	T dist;
 
 	/////////////////////////////// Constructors /////////////////////////////////
 
-	/// \brief This empty default constructor does not initialize the components!
-	/// \note All components of the plane are left uninitialized by this constructor and
-	///       will therefore have a random value!
+	/// Empty default constructor that does not initialize the fields of the object for performance reasons!
+	/// Both the normal vector and the distance parameter are undefined.
 	Plane_3() {}
 
-	/// \brief Initializes the plane from a normal vector and a distance.
-	/// \param n The normal vector. This must be a unit vector.
+	/// \brief Initializes the plane from a normal vector and a distance parameter.
+	/// \param n The normal vector. This should be a unit vector.
 	/// \param d The distance of the plane from the origin in the direction of the normal vector \a n.
 	Q_DECL_CONSTEXPR Plane_3(const Vector_3<T>& n, T d) : normal(n), dist(d) {}
 
-	/// \brief Initializes the plane from a point and a normal vector.
+	/// \brief Initializes the plane from a base point and a normal vector.
 	/// \param basePoint A point in the plane.
 	/// \param n The normal vector. This must be a unit vector.
 	Q_DECL_CONSTEXPR Plane_3(const Point_3<T>& basePoint, const Vector_3<T>& n) : normal(n), dist(normal.dot((basePoint - typename Point_3<T>::Origin()))) {}
 
-	/// \brief Initializes the plane from three points (without normalization).
+	/// \brief Initializes the plane from three points (without normalizing the normal vector).
 	/// \param p1 The first point in the plane.
 	/// \param p2 The second point in the plane.
 	/// \param p3 The third point in the plane.
-	/// \note The three points must linearly independent of each other.
-	/// \note The normal vector computed from the three points is normalized.
+	/// \note The three points must be linearly independent of each other.
+	/// \note The normal vector computed from the three points is NOT normalized by this constructor. It can be normalized later by calling normalizePlane().
 	Plane_3(const Point_3<T>& p1, const Point_3<T>& p2, const Point_3<T>& p3) {
 		normal = (p2-p1).cross(p3-p1);
 		T lsq = normal.squaredLength();
@@ -88,13 +90,12 @@ public:
 		else dist = 0;
 	}
 
-	/// \brief Initializes the plane from three points with optional normalization.
+	/// \brief Initializes the plane from three points with optional normalization of the normal vector.
 	/// \param p1 The first point in the plane.
 	/// \param p2 The second point in the plane.
 	/// \param p3 The third point in the plane.
-	/// \param normalize Controls the normalization of the calculated normal vector.
-	///        If \a normalize is set to \c false then the normal vector can be normalized by
-	///        a call to normalizePlane() at any later time.
+	/// \param normalize Controls the normalization of the computed normal vector.
+	///        If \c false, then the normal vector can be normalized later by calling normalizePlane().
 	/// \note The three points must linearly independent of each other.
 	Plane_3(const Point_3<T>& p1, const Point_3<T>& p2, const Point_3<T>& p3, bool normalize) {
 		if(normalize) {
@@ -109,13 +110,12 @@ public:
 		}
 	}
 
-	/// \brief Initializes the plane from one point and two in-plane vectors with optional normalization.
+	/// \brief Initializes the plane from one base point and two in-plane vectors.
 	/// \param p The base point in the plane.
 	/// \param v1 The first vector in the plane.
 	/// \param v2 The second vector in the plane.
-	/// \param normalize Controls the normalization of the calculated normal vector.
-	///        If \a normalize is set to \c false then the normal vector can be normalized by
-	///        a call to normalizePlane() at any later time.
+	/// \param normalize Controls the normalization of the computed normal vector.
+	///        If \c false, then the normal vector can be normalized later by calling normalizePlane().
 	/// \note The two vectors must be linearly independent of each other.
 	Plane_3(const Point_3<T>& p, const Vector_3<T>& v1, const Vector_3<T>& v2, bool normalize = true) {
 		if(normalize)
@@ -125,7 +125,8 @@ public:
 		dist = normal.dot(p - typename Point_3<T>::Origin());
 	}
 
-	/// \brief Scales the normal vector of the plane to unit length 1.
+	/// \brief Rescales the normal vector of the plane to make it a unit vector.
+	/// The distance parameter is rescaled accordingly.
 	void normalizePlane() {
 		T len = normal.length();
 		OVITO_ASSERT_MSG(len != T(0), "Plane_3::normalizePlane()", "The normal vector of the plane must not be the null vector.");
@@ -136,21 +137,21 @@ public:
 
     ////////////////////////////////// operators /////////////////////////////////
 
-	/// \brief Flips the plane orientation.
+	/// \brief Flips the plane's orientation.
 	/// \return A new plane with reversed orientation.
 	Q_DECL_CONSTEXPR Plane_3<T> operator-() const { return Plane_3<T>(-normal, -dist); }
 
 	/// \brief Compares two planes for equality.
-	/// \return \c true if the normal vectors and the distance value of both planes a equal; \c false otherwise.
+	/// \return \c true if the normal vectors and the distance parameter of both planes a exactly equal; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator==(const Plane_3<T>& other) const { return normal == other.normal && dist == other.dist; }
 
 	/////////////////////////////// Classification ///////////////////////////////
 
 	/// \brief Classifies a point with respect to the plane.
 	/// \param p The point to classify.
-	/// \param tolerance A non-negative threshold value that is used to test whether the point is on the plane.
+	/// \param tolerance A non-negative threshold value that is used to test whether the point is located on the plane.
 	/// \return 1 if \a p is on the POSITIVE side of the plane,
-	///         -1 if \a p is on the NEGATIVE side or 0 if \a p is ON the plane within the tolerance.
+	///         -1 if \a p is on the NEGATIVE side, or 0 if \a p is ON the plane within the given tolerance.
 	/// \sa pointDistance()
 	int classifyPoint(const Point_3<T>& p, const T tolerance = T(FLOATTYPE_EPSILON)) const {
 		OVITO_ASSERT_MSG(tolerance >= 0, "Plane_3::classifyPoint()", "Tolerance value must be non-negative.");
@@ -162,10 +163,10 @@ public:
 
 	/// \brief Computes the signed distance of a point to the plane.
 	/// \param p The input point.
-	/// \note This method requires the plane normal to be a unit vector.
-	/// \return The distance of the point to the plane. A positive value means that the point
-	/// is on the positive side of the plane. A negative value means that the points is located in the
-	/// back of the plane.
+	/// \return The distance of the point to the plane. A positive value indicates that the point
+	///         is on the positive side of the plane. A negative value means that the points is located in the
+	///         back side of the plane.
+	/// \note This method requires the plane's normal to be a unit vector.
 	/// \sa classifyPoint()
 	Q_DECL_CONSTEXPR T pointDistance(const Point_3<T>& p) const {
 		return (normal.x() * p.x() + normal.y() * p.y() + normal.z() * p.z()) - dist;
@@ -175,10 +176,10 @@ public:
 
 	/// \brief Computes the intersection point of a ray with the plane.
 	/// \param ray The input ray.
-	/// \param epsilon A threshold value that determines whether the ray is considered parallel to the plane.
+	/// \param epsilon A threshold value that is used to test if the ray is parallel to the plane.
 	/// \return The intersection point.
-	/// \throw Exception if the plane and the ray direction are parallel.
-	/// \note This method requires a unit plane normal vector.
+	/// \throw Exception if there is not intersection, because the ray is parallel to the plane.
+	/// \note This method requires the plane's normal to be a unit vector.
 	/// \sa intersectionT()
 	Point_3<T> intersection(const Ray3& ray, T epsilon = T(0)) const {
 		T t = intersectionT(ray, epsilon);
@@ -186,13 +187,12 @@ public:
 		return ray.point(t);
 	}
 
-	/// \brief Computes the t value for a ray-plane intersection.
-	///
-	/// The returned t value is chosen so that (ray.base + t*ray.dir) == point of intersection.
-	/// If there is no intersection point then the special value \c FLOATTYPE_MAX is returned.
+	/// \brief Computes the \a t value for a ray-plane intersection.
 	/// \param ray The input ray.
-	/// \param epsilon A threshold value that determines whether the ray is considered parallel to the plane.
-	/// \note This implementation requires a unit normal vector.
+	/// \param epsilon A threshold value that is used to test if the ray is parallel to the plane.
+	/// \return A value \a t such that (ray.base + t*ray.dir) == point of intersection.
+	///         If there is no intersection, then FLOATTYPE_MAX is returned.
+	/// \note This method requires the plane's normal to be a unit vector.
 	/// \sa intersection()
 	T intersectionT(const Ray3& ray, T epsilon = T(0)) const {
 		// The plane's normal vector should be normalized.
@@ -206,15 +206,14 @@ public:
 
 	/// \brief Projects a point onto the plane.
 	/// \param p The point to be projected.
-	/// \return The projected point. This is the point on the plane that is
-	///         is closest to the input point.
+	/// \return The projected point. This is the point on the plane closest to \a p.
 	Q_DECL_CONSTEXPR Point_3<T> projectPoint(const Point_3<T>& p) const {
 		return p - pointDistance(p) * normal;
 	}
 
     ////////////////////////////////// Utilities /////////////////////////////////
 
-	/// \brief Returns a string representation of this plane.
+	/// \brief Generates a string representation of the plane.
 	QString toString() const {
 		return "[Normal: " + normal.toString() + " D: " + QString::number(dist) + "]";
 	}
@@ -223,8 +222,8 @@ public:
 /// \brief Transforms a plane.
 /// \param tm The transformation matrix.
 /// \param ray The plane to be transformed.
-/// \return A new plane with transformed normal vector and origin distance.
-///         The normal vector is normalized after the transformation.
+/// \return A new plane with transformed normal vector and distance parameter.
+///         The normal vector is automatically normalized after the transformation.
 /// \relates Plane_3
 template<typename T>
 inline Plane_3<T> operator*(const AffineTransformationT<T>& tm, const Plane_3<T>& plane) {
@@ -235,7 +234,7 @@ inline Plane_3<T> operator*(const AffineTransformationT<T>& tm, const Plane_3<T>
 	return p2;
 }
 
-/// \brief Writes the plane to an output stream.
+/// \brief Writes a plane to an output stream.
 /// \param os The output stream.
 /// \param p The plane to write to the output stream \a os.
 /// \return The output stream \a os.
@@ -245,7 +244,7 @@ inline std::ostream& operator<<(std::ostream &os, const Plane_3<T>& p) {
 	return os << '[' << p.normal.x() << ' ' << p.normal.y()  << ' ' << p.normal.z() << "], " << p.dist;
 }
 
-/// \brief Writes the plane to a binary output stream.
+/// \brief Writes a plane to a binary output stream.
 /// \param stream The output stream.
 /// \param p The plane to write to the output stream \a stream.
 /// \return The output stream \a stream.
@@ -282,16 +281,16 @@ inline QDataStream& operator>>(QDataStream& stream, Plane_3<T>& p) {
 }
 
 /**
- * \brief Template class instance of the Plane_3 class used for floating-point planes.
+ * \brief Instantiation of the Plane_3 class template with the default floating-point type.
  * \relates Plane_3
  */
 typedef Plane_3<FloatType> Plane3;
 
-}};	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Math::Plane3);
-Q_DECLARE_METATYPE(Ovito::Math::Plane3*);
-Q_DECLARE_TYPEINFO(Ovito::Math::Plane3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Math::Plane3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Plane3);
+Q_DECLARE_METATYPE(Ovito::Util::Math::Plane3*);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Plane3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Util::Math::Plane3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PLANE_H

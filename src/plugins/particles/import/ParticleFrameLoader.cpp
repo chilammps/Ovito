@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/FileSource.h>
 #include <core/utilities/io/FileManager.h>
-#include <plugins/particles/objects/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/objects/SimulationCellDisplay.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
@@ -111,14 +111,14 @@ void ParticleFrameLoader::sortParticleTypesById()
 * This function is called by the system from the main thread after the
 * asynchronous loading task has finished.
 ******************************************************************************/
-void ParticleFrameLoader::handOver(FileSource* container)
+void ParticleFrameLoader::handOver(CompoundObject* container)
 {
 	QSet<DataObject*> activeObjects;
 
 	// Adopt simulation cell.
-	OORef<SimulationCell> cell = container->findDataObject<SimulationCell>();
+	OORef<SimulationCellObject> cell = container->findDataObject<SimulationCellObject>();
 	if(!cell) {
-		cell = new SimulationCell(container->dataset(), simulationCell());
+		cell = new SimulationCellObject(container->dataset(), simulationCell());
 
 		// Create a display object for the simulation cell.
 		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(container->dataset());
