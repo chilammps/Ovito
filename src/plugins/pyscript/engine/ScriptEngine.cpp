@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (2014) Alexander Stukowski
@@ -33,9 +32,6 @@ using namespace boost::python;
 /// Flag that indicates whether the global Python interpreter has been initialized.
 bool ScriptEngine::_isInterpreterInitialized = false;
 
-/// The prototype namespace that is used to initialize new script engines with.
-dict ScriptEngine::_prototypeMainNamespace;
-
 /// The script engine that is currently active (i.e. which is executing a script).
 QAtomicPointer<ScriptEngine> ScriptEngine::_activeEngine;
 
@@ -53,9 +49,11 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutpu
 
 	// Initialize state of the script engine.
 	try {
+		// Import the main module and get a reference to the main namespace.
 		// Make a local copy of the global main namespace for this engine.
 		// The original namespace dictionary is not touched.
-		_mainNamespace = _prototypeMainNamespace.copy();
+		object main_module = import("__main__");
+		_mainNamespace = extract<dict>(main_module.attr("__dict__"))().copy();
 
 		// Add a reference to the current dataset to the namespace.
 		import("ovito").attr("dataset") = ptr(dataset);
@@ -83,8 +81,13 @@ void ScriptEngine::initializeInterpreter()
 
 		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the 
 		// location of Python standard library, which gets shipped with the static build of OVITO.
+#if PY_MAJOR_VERSION >= 3
+		static std::wstring programName = QCoreApplication::applicationFilePath().toStdWString();
+		Py_SetProgramName(const_cast<wchar_t*>(programName.data()));
+#else
 		static QByteArray programName = QCoreApplication::applicationFilePath().toLocal8Bit();
 		Py_SetProgramName(programName.data());
+#endif
 
 		// Make our internal script modules available by registering their initXXX functions with the Python interpreter.
 		// This is always required for static builds where all Ovito plugins are linked into the main executable file.
@@ -97,10 +100,6 @@ void ScriptEngine::initializeInterpreter()
 		// Initialize the Python interpreter.
 		Py_Initialize();
 
-		// Import the main module and get a reference to the main namespace.
-		object main_module = import("__main__");
-		_prototypeMainNamespace = extract<dict>(main_module.attr("__dict__"));
-
 		// Install automatic QString to Python string conversion.
 		struct QString_to_python_str {
 			static PyObject* convert(const QString& s) {
@@ -111,18 +110,25 @@ void ScriptEngine::initializeInterpreter()
 
 		// Install automatic Python string to QString conversion.
 		auto convertible = [](PyObject* obj_ptr) -> void* {
+#if PY_MAJOR_VERSION >= 3
+			if(!PyUnicode_Check(obj_ptr)) return nullptr;
+#else
 			if(!PyString_Check(obj_ptr) && !PyUnicode_Check(obj_ptr)) return nullptr;
+#endif
 			return obj_ptr;
 		};
 		auto construct = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
 			void* storage = ((boost::python::converter::rvalue_from_python_storage<QString>*)data)->storage.bytes;
+#if PY_MAJOR_VERSION < 3
 			if(PyString_Check(obj_ptr)) {
 				const char* value = PyString_AsString(obj_ptr);
 				if(!value) throw_error_already_set();
 				new (storage) QString(value);
 				data->convertible = storage;
 			}
-			else if(PyUnicode_Check(obj_ptr)) {
+			else
+#endif
+				if(PyUnicode_Check(obj_ptr)) {
 				const Py_UNICODE* value = PyUnicode_AS_UNICODE(obj_ptr);
 				if(!value) throw_error_already_set();
 				if(sizeof(Py_UNICODE) == sizeof(wchar_t))
@@ -179,7 +185,6 @@ void ScriptEngine::initializeInterpreter()
 	}
 
 	_isInterpreterInitialized = true;
-	OVITO_ASSERT(!_prototypeMainNamespace.is_none());
 }
 
 /******************************************************************************
@@ -283,8 +288,10 @@ int ScriptEngine::handleSystemExit()
 	int exitcode = 0;
 
 	PyErr_Fetch(&exception, &value, &tb);
+#if PY_MAJOR_VERSION < 3
 	if(Py_FlushLine())
 		PyErr_Clear();
+#endif
 	if(value == NULL || value == Py_None)
 		goto done;
 #ifdef PyExceptionInstance_Check
@@ -302,17 +309,20 @@ int ScriptEngine::handleSystemExit()
 		}
 		// If we failed to dig out the 'code' attribute, just let the else clause below print the error.
 	}
+#if PY_MAJOR_VERSION >= 3
+	if(PyLong_Check(value))
+		exitcode = (int)PyLong_AsLong(value);
+#else
 	if(PyInt_Check(value))
 		exitcode = (int)PyInt_AsLong(value);
+#endif
 	else {
 		PyObject *s = PyObject_Str(value);
 		QString errorMsg;
-		if(s) {
-			if(const char* s2 = PyString_AsString(s))
-				errorMsg = QString::fromLocal8Bit(s2) + '\n';
-		}
+		if(s)
+			errorMsg = extract<QString>(s) + QChar('\n');
 		Py_XDECREF(s);
-		if(errorMsg.isEmpty() == false)
+		if(!errorMsg.isEmpty())
 			Q_EMIT scriptError(errorMsg);
 		exitcode = 1;
 	}

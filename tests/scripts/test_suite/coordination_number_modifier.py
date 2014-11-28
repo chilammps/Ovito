@@ -8,15 +8,15 @@ node = import_file("../../files/shear.void.120.cfg")
 modifier = CoordinationNumberModifier()
 node.modifiers.append(modifier)
 
-print "Parameter defaults:"
+print("Parameter defaults:")
 
-print "  cutoff:", modifier.cutoff
+print("  cutoff: {}".format(modifier.cutoff))
 modifier.cutoff = 3.0
 
 node.compute()
 
-print "Output:"
-print node.output.coordination
-print node.output.coordination.array
-print "RDF:"
-print modifier.rdf
+print("Output:")
+print(node.output.coordination)
+print(node.output.coordination.array)
+print("RDF:")
+print(modifier.rdf)

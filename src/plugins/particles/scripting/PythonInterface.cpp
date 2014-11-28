@@ -107,7 +107,7 @@ BOOST_PYTHON_MODULE(Particles)
 	// Implement Python to ParticlePropertyReference conversion.
 	auto convertible_ParticlePropertyReference = [](PyObject* obj_ptr) -> void* {
 		if(obj_ptr == Py_None) return obj_ptr;
-		if(PyString_Check(obj_ptr)) return obj_ptr;
+		if(extract<QString>(obj_ptr).check()) return obj_ptr;
 		if(extract<ParticleProperty::Type>(obj_ptr).check()) return obj_ptr;
 		return nullptr;
 	};

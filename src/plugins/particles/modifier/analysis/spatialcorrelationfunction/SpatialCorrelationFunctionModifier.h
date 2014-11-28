@@ -31,10 +31,11 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../AsynchronousParticleModifier.h"
-#include <qcustomplot.h>
 
-class QCustomPlot;
-class QCPItemStraightLine;
+#ifndef signals
+#define signals Q_SIGNALS
+#endif
+#include <qcustomplot.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 

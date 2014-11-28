@@ -53,7 +53,8 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 	// Install automatic Python string to QUrl conversion.
 	auto convertible_QUrl = [](PyObject* obj_ptr) -> void* {
 		// Check if Python object can be converted to target type.
-		if(!PyString_Check(obj_ptr)) return nullptr;
+		extract<QString> ex(obj_ptr);
+		if(!ex.check()) return nullptr;
 		return obj_ptr;
 	};
 	auto construct_QUrl = [](PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
