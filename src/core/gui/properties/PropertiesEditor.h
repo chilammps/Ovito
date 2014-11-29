@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file PropertiesEditor.h 
- * \brief Contains the definition of the Ovito::PropertiesEditor class.
- */
-
 #ifndef __OVITO_PROPERTIES_EDITOR_H
 #define __OVITO_PROPERTIES_EDITOR_H
 

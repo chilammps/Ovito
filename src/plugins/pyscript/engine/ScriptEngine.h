@@ -61,6 +61,9 @@ public:
 	/// \throw Exception on error.
 	int executeFile(const QString& file);
 
+	/// Provides access to the global namespace the script will be executed in by this script engine.
+	boost::python::dict& mainNamespace() { return _mainNamespace; }
+
 Q_SIGNALS:
 
 	/// This signal is emitted when the Python script writes to the sys.stdout stream.

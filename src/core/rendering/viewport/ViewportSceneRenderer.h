@@ -182,6 +182,12 @@ public:
 		_translucentPrimitives.emplace_back(worldTransform(), primitive);
 	}
 
+	/// Binds the default vertex array object again in case another VAO was bound in between.
+	/// This method should be called before calling an OpenGL rendering function.
+	void rebindVAO() {
+		if(_vertexArrayObject) _vertexArrayObject->bind();
+	}
+
 protected:
 
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.

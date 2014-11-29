@@ -53,8 +53,8 @@ struct ViewProjectionParameters
 	/// The distance of the back clipping plane in world units.
 	FloatType zfar;
 
-	/// When using an orthogonal projection this is the vertical field of view in world units.
-	/// When using a perspective projection this is the vertical field of view angle in radians.
+	/// For orthogonal projections this is the vertical field of view in world units.
+	/// For perspective projections this is the vertical field of view angle in radians.
 	FloatType fieldOfView;
 
 	/// The world to view space transformation matrix.

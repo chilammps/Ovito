@@ -20,11 +20,11 @@
    </para>
  
   <simplesect xml:id="development.requirements">
-    <title>Requirements</title>
+    <title>Build requirements</title>
     <para>
-    The required tools to build OVITO are:
+    The required tools to build OVITO from source are:
     <informaltable>
-    <tgroup cols="3"><thead><row><entry>Tool</entry><entry>Requirement</entry><entry>Notes</entry></row></thead>
+    <tgroup cols="3"><thead><row><entry>Tool/Package</entry><entry>Requirement</entry><entry>Notes</entry></row></thead>
     <tbody>
 		<row><entry>C++ compiler</entry><entry>required</entry>
 		<entry>Compiler must support the C++11 standard (e.g. GNU g++ 4.8 or newer)</entry></row>
@@ -39,9 +39,11 @@
 		<row><entry><link xlink:href="">Doxygen</link></entry><entry>optional</entry>
 		<entry>Generates the C++ API documentation from OVITO's source code</entry></row>
 		<row><entry><link xlink:href="http://python.org/">Python</link></entry><entry>optional</entry>
-		<entry>Required by OVITO's Python scripting interface (<literal>pyscript</literal> plugin). Python 2.x and 3.x are supported.</entry></row>
+		<entry>Required by OVITO's Python script engine (<literal>PyScript</literal> plugin). Python 2.x and 3.x are supported.</entry></row>
 		<row><entry><link xlink:href="http://www.numpy.org/">NumPy</link></entry><entry>optional</entry>
-		<entry>Required for the Python scripting interface</entry></row>
+		<entry>Required by OVITO's Python script engine (<literal>PyScript</literal> plugin).</entry></row>
+		<row><entry><link xlink:href="http://www.riverbankcomputing.com/software/pyqt">PyQt5</link></entry><entry>optional</entry>
+		<entry>Required by OVITO's Python script engine (<literal>PyScript</literal> plugin).</entry></row>
 		<row><entry><link xlink:href="http://sphinx-doc.org/">Sphinx</link></entry><entry>optional</entry>
 		<entry>Tool for creating the Python scripting interface documentation</entry></row>
 	</tbody></tgroup>
@@ -55,7 +57,7 @@
 		<row><entry><link xlink:href="http://www.boost.org/">Boost</link></entry><entry>required</entry>
 		<entry>OVITO uses some utility classes from this C++ library.</entry></row>
 		<row><entry><link xlink:href="http://www.boost.org/">Boost.Python</link></entry><entry>optional</entry>
-		<entry>Required by OVITO's Python scripting interface (<literal>pyscript</literal> plugin). Is part of the Boost library.</entry></row>
+		<entry>Required by OVITO's Python script engine (<literal>PyScript</literal> plugin). Is part of the Boost library.</entry></row>
 		<row><entry><link xlink:href="http://cgal.org/">CGAL</link></entry><entry>optional</entry>
 		<entry>Computational Geometry Algorithms Library, which is used by OVITO to compute Delaunay tessellations. This is required to build the <literal>CrystalAnalysis</literal> plugin with the <link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link> modifier.</entry></row>
 		<row><entry><link xlink:href="http://libav.org/">libav</link> and <link xlink:href="https://www.ffmpeg.org/libswscale.html">Libswscale</link></entry><entry>optional</entry>
@@ -74,6 +76,8 @@
 		<entry>Required to build the <literal>Tachyon</literal> renderer plugin. OVITO's source distribution contains a slightly modified copy of this library, which is automatically used.</entry></row>
 		<row><entry><link xlink:href="http://math.lbl.gov/voro++/">Voro++</link></entry><entry>included</entry>
 		<entry>Voronoi cell construction routine required by the <link linkend="particles.modifiers.voronoi_analysis">Voronoi analysis</link> modifier. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
+		<row><entry><link xlink:href="http://www.riverbankcomputing.com/software/qscintilla/">QScintilla2</link></entry><entry>optional</entry>
+		<entry>Text editing widget required by the <literal>PyScript</literal> plugin.</entry></row>
 	</tbody></tgroup>
 	</informaltable> 
     </para>

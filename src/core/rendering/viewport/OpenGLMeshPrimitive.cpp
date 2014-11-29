@@ -175,6 +175,8 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 		return;
 	}
 
+	vpRenderer->rebindVAO();
+
 	glDisable(GL_CULL_FACE);
 
 	QOpenGLShaderProgram* shader;

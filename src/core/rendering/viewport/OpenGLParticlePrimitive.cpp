@@ -386,6 +386,8 @@ void OpenGLParticlePrimitive::render(SceneRenderer* renderer)
 		return;
 	}
 
+	vpRenderer->rebindVAO();
+
 	if(_renderingTechnique == POINT_SPRITES)
 		renderPointSprites(vpRenderer);
 	else if(_renderingTechnique == IMPOSTER_QUADS)

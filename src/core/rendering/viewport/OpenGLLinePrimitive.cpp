@@ -145,6 +145,8 @@ void OpenGLLinePrimitive::render(SceneRenderer* renderer)
 	if(vertexCount() <= 0 || !vpRenderer)
 		return;
 
+	vpRenderer->rebindVAO();
+
 	if(_lineWidth == 1)
 		renderLines(vpRenderer);
 	else

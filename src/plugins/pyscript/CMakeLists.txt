@@ -20,6 +20,15 @@
 ###############################################################################
 
 FIND_PACKAGE(PythonLibs REQUIRED)
+FIND_PACKAGE(QScintilla REQUIRED)
+IF(NOT QSCINTILLA_FOUND)
+	MESSAGE(FATAL_ERROR "Could not locate QScintilla2 library, which is required by PyScript plugin.")
+ELSE()
+	# Create imported target for the QScintilla library.
+	ADD_LIBRARY(QScintilla SHARED IMPORTED GLOBAL)
+	SET_PROPERTY(TARGET QScintilla PROPERTY IMPORTED_LOCATION "${QSCINTILLA_LIBRARIES}")
+	SET_PROPERTY(TARGET QScintilla APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${QSCINTILLA_INCLUDE_DIRS}")
+ENDIF()
 
 SET(OVITO_PYSCRIPT_SOURCE_FILES
 	engine/ScriptEngine.cpp
@@ -33,12 +42,13 @@ SET(OVITO_PYSCRIPT_SOURCE_FILES
 	binding/LinearAlgebraBinding.cpp
 	binding/ContainerBinding.cpp
 	binding/AppBinding.cpp
+	extensions/PythonViewportOverlay.cpp
 )
 
 # Generate plugin module.
 OVITO_PLUGIN(PyScript
 	SOURCES ${OVITO_PYSCRIPT_SOURCE_FILES}
-	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY}
+	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} QScintilla
 )
 
 # Add Python and Boost include directories.

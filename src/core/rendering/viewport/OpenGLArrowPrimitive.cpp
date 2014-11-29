@@ -480,6 +480,8 @@ void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 	if(_elementCount <= 0 || !vpRenderer)
 		return;
 
+	vpRenderer->rebindVAO();
+
 	if(shadingMode() == NormalShading) {
 		if(renderingQuality() == HighQuality && shape() == CylinderShape)
 			renderRaytracedCylinders(vpRenderer);

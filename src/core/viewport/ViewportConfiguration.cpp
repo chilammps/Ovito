@@ -82,10 +82,6 @@ void ViewportConfiguration::propertyChanged(const PropertyFieldDescriptor& field
 ******************************************************************************/
 void ViewportConfiguration::updateViewports()
 {
-	// Ignore update request that are made during an update.
-	if(isRendering())
-		return;
-
 	// Check if viewport updates are suppressed.
 	if(_viewportSuspendCount > 0) {
 		_viewportsNeedUpdate = true;

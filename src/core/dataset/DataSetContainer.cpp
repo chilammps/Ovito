@@ -327,7 +327,14 @@ bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QS
 	if(callback())
 		return true;
 
-	if(Application::instance().guiMode()) {
+	// Suspend viewport updates while waiting.
+	ViewportSuspender viewportSuspender(currentSet());
+
+	// Check if viewports are currently being rendered.
+	// If yes, it's not a good idea to display a progress dialog.
+	bool isRendering = currentSet() ? currentSet()->viewportConfig()->isRendering() : false;
+
+	if(!isRendering && Application::instance().guiMode()) {
 
 		// Show a modal progress dialog to block user interface while waiting.
 		std::unique_ptr<QProgressDialog> localDialog;

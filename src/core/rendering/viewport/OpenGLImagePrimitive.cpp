@@ -88,6 +88,8 @@ void OpenGLImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& p
 	if(image().isNull() || !vpRenderer || renderer->isPicking())
 		return;
 
+	vpRenderer->rebindVAO();
+
 	// Prepare texture.
 	_texture.bind();
 

@@ -19,13 +19,44 @@
     It's easiest to use <link xlink:href="https://www.macports.org/">MacPorts</link> to install most of the required dependencies.
     After installing MacPorts, run 
 <screen><command>
-sudo port install netcdf python27 py27-sphinx py27-numpy zlib \
+sudo port install netcdf python27 py27-sphinx py27-numpy py-sip zlib \
                   boost +python27 +no_static cgal cmake docbook-xml \
                   docbook-xsl doxygen libxslt
 </command></screen>
   </para>
   <para>
     Download and install Qt 5.x for Mac.
+  </para>
+  <para>
+    Download and install PyQt5. Adjust the path to <command>qmake</command> below as needed:
+<screen><command>
+/opt/local/bin/python2.7 configure.py \
+	--qmake $HOME/Qt5.3.2/5.3/clang_64/bin/qmake \
+	--confirm-license \
+	--no-designer-plugin \
+	--no-qml-plugin \
+	--assume-shared \
+	--sip=/opt/local/bin/sip-2.7 \
+	--concatenate \
+	--enable QtCore \
+	--enable QtGui \
+	--enable QtWidgets \
+	--enable QtNetwork \
+	--enable QtOpenGL \
+	--enable QtSvg \
+	--enable QtMacExtras
+make -j2
+sudo make install
+</command></screen>
+  </para>
+  <para>
+    Download and install QScintilla2. Adjust the path to <command>qmake</command> below as needed:
+<screen><command>
+cd Qt4Qt5
+$HOME/Qt5.3.2/5.3/clang_64/bin/qmake qscintilla.pro
+make -j2
+install_name_tool -id $PWD/libqscintilla2.dylib libqscintilla2.dylib
+</command></screen>
   </para>
   <para>
 To download and build a statically linked version of the <emphasis>libav</emphasis> video encoding library:

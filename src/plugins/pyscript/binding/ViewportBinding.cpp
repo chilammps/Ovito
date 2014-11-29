@@ -118,6 +118,18 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 		;
 	}
 
+	class_<ViewProjectionParameters>("ViewProjectionParameters")
+		.def_readwrite("aspectRatio", &ViewProjectionParameters::aspectRatio)
+		.def_readwrite("isPerspective", &ViewProjectionParameters::isPerspective)
+		.def_readwrite("znear", &ViewProjectionParameters::znear)
+		.def_readwrite("zfar", &ViewProjectionParameters::zfar)
+		.def_readwrite("fieldOfView", &ViewProjectionParameters::fieldOfView)
+		.def_readwrite("viewMatrix", &ViewProjectionParameters::viewMatrix)
+		.def_readwrite("inverseViewMatrix", &ViewProjectionParameters::inverseViewMatrix)
+		.def_readwrite("projectionMatrix", &ViewProjectionParameters::projectionMatrix)
+		.def_readwrite("inverseProjectionMatrix", &ViewProjectionParameters::inverseProjectionMatrix)
+	;
+
 	ovito_class<ViewportConfiguration, RefTarget>(
 			"Manages the viewports in OVITO's main window."
 			"\n\n"

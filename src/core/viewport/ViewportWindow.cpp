@@ -207,8 +207,15 @@ void ViewportWindow::resizeEvent(QResizeEvent*)
 void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mouseDoubleClickEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mouseDoubleClickEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -225,8 +232,15 @@ void ViewportWindow::mousePressEvent(QMouseEvent* event)
 	}
 
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mousePressEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mousePressEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -235,8 +249,15 @@ void ViewportWindow::mousePressEvent(QMouseEvent* event)
 void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mouseReleaseEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mouseReleaseEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -245,8 +266,15 @@ void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
 void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mouseMoveEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mouseMoveEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -255,8 +283,15 @@ void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
 void ViewportWindow::wheelEvent(QWheelEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->wheelEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->wheelEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -268,6 +303,17 @@ void ViewportWindow::renderNow()
 		return;
 
 	_updateRequested = false;
+
+	// Do not re-enter rendering function of the same viewport.
+	if(_viewport->isRendering())
+		return;
+
+	// Before making our GL context current, remember the old context that
+	// is currently active so we can restore it when we are done.
+	// This is necessary, because multiple viewport repaint requests can be
+	// processed simultaneously.
+	QOpenGLContext* oldContext = QOpenGLContext::currentContext();
+	QSurface* oldSurface = oldContext ? oldContext->surface() : nullptr;
 
 	if(!_context->makeCurrent(this)) {
 		qWarning() << "Failed to make OpenGL context current.";
@@ -340,7 +386,15 @@ void ViewportWindow::renderNow()
 	_context->swapBuffers(this);
 
 	OVITO_CHECK_OPENGL();
-	_context->doneCurrent();
+
+	// Restore old GL context.
+	if(oldSurface) {
+		if(!oldContext->makeCurrent(oldSurface))
+			qWarning() << "Failed to restore old OpenGL context.";
+	}
+	else {
+		_context->doneCurrent();
+	}
 }
 
 }}}	// End of namespace

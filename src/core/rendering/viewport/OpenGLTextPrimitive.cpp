@@ -89,6 +89,8 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 	if(text().isEmpty() || !vpRenderer || renderer->isPicking())
 		return;
 
+	vpRenderer->rebindVAO();
+
 	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
 	if(vpRenderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));

@@ -475,6 +475,34 @@ BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 
 	// Install automatic Python list to C++ matrix conversion.
 	python_to_matrix_conversion<AffineTransformation>();
+
+	class_<Matrix4>("Matrix4", init<FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType>())
+		.def(init<const AffineTransformation&>())
+		.def("__init__", make_constructor((Matrix4* (*)())([]() { return new Matrix4(Matrix4::Identity()); })))
+		.add_property("determinant", &Matrix4::determinant)
+		.add_property("row_count", &Matrix4::row_count)
+		.add_property("col_count", &Matrix4::col_count)
+		.def("inverse", (Matrix4 (Matrix4::*)() const)&Matrix4::inverse)
+		.def("get", (FloatType (*)(const Matrix4&, int, int))([](const Matrix4& m, int row, int col) { return m(row,col); }))
+		.def("set", (void (*)(Matrix4&, int, int, FloatType))([](Matrix4& m, int row, int col, FloatType v) { m(row,col) = v; }))
+		.def(self * other<AffineTransformation>())
+		.def(self * other<Matrix4>())
+		.def(self * other<Point3>())
+		.def(self * other<Vector3>())
+		.def(self * other<FloatType>())
+		.def("setZero", &Matrix4::setZero, return_self<>())
+		.def("setIdentity", &Matrix4::setIdentity, return_self<>())
+		.def("translation", &Matrix4::translation)
+		.staticmethod("translation")
+		.def("perspective", &Matrix4::perspective)
+		.staticmethod("perspective")
+		.def("ortho", &Matrix4::ortho)
+		.staticmethod("ortho")
+		.add_property("__array_interface__", &Matrix__array_interface__<Matrix4>)
+	;
+
+	// Install automatic Python list to C++ matrix conversion.
+	python_to_matrix_conversion<Matrix4>();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptLinearAlgebra);

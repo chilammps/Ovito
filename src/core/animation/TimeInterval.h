@@ -57,7 +57,7 @@ constexpr FloatType TimeToSeconds(TimePoint t) {
 }
 
 /// Converts seconds to internal time ticks.
-constexpr TimePoint TimeFromSeconds(FloatType timeInSeconds) {
+inline TimePoint TimeFromSeconds(FloatType timeInSeconds) {
 	return (TimePoint)std::ceil(timeInSeconds * TICKS_PER_SECOND + FloatType(0.5));
 }
 
