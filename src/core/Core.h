@@ -70,7 +70,6 @@
 #include <QDir>
 #include <QtWidgets>
 #include <QtDebug>
-#include <QtXml>
 #include <QtGui>
 #include <QtNetwork>
 #include <qopengl.h>

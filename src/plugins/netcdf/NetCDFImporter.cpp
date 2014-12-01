@@ -60,8 +60,8 @@
 
 namespace Ovito { namespace Plugins { namespace NetCDF {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDF, NetCDFImporter, ParticleImporter);
-IMPLEMENT_OVITO_OBJECT(NetCDF, NetCDFImporterEditor, PropertiesEditor);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDFPlugin, NetCDFImporter, ParticleImporter);
+IMPLEMENT_OVITO_OBJECT(NetCDFPlugin, NetCDFImporterEditor, PropertiesEditor);
 SET_OVITO_OBJECT_EDITOR(NetCDFImporter, NetCDFImporterEditor);
 DEFINE_PROPERTY_FIELD(NetCDFImporter, _useCustomColumnMapping, "UseCustomColumnMapping");
 SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file column mapping");

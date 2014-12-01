@@ -54,6 +54,7 @@ OVITO_PLUGIN(CrystalAnalysis
 	PLUGIN_DEPENDENCIES Particles
 	LIB_DEPENDENCIES ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES} ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
+	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
 )
 
 IF(NOT CMAKE_COMPILER_IS_GNUCXX)
@@ -70,6 +71,3 @@ IF(WIN32)
 	OVITO_INSTALL_DLL("${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_thread-mt.dll")
 	OVITO_INSTALL_DLL("${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_system-mt.dll")
 ENDIF()
-
-# Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET CrystalAnalysis POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

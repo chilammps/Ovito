@@ -51,8 +51,8 @@ OVITO_PLUGIN(PyScript
 	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} QScintilla
 )
 
-# Add Python and Boost include directories.
-TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH} ${Boost_INCLUDE_DIRS})
+# Add Python include directory.
+TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH})
 
 # Install the Python source files that belong to the plugin and which provide the scripting interface.
 ADD_CUSTOM_COMMAND(TARGET PyScript POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

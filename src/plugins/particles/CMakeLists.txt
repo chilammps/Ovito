@@ -129,11 +129,6 @@ OVITO_PLUGIN(Particles
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot VoroPlusPlus ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
+	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
 )
-
-# Add Boost include directories.
-TARGET_INCLUDE_DIRECTORIES(Particles PRIVATE ${Boost_INCLUDE_DIRS})
-
-# Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
 

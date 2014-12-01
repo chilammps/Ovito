@@ -1,0 +1,5 @@
+{
+	"plugin-id" : "Core",
+	"plugin-vendor" : "Alexander Stukowski",
+	"native-library" : "Core"
+}

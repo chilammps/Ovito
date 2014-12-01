@@ -20,7 +20,6 @@
 ###############################################################################
 
 # Locate the NetCDF library and headers.
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 FIND_PACKAGE(NetCDF REQUIRED)
 
 # Locate the HDF5 library.
@@ -60,14 +59,15 @@ ENDIF()
 
 # Generate plug-in module.
 OVITO_PLUGIN(
-	NetCDFImporter
+	NetCDFPlugin
 	SOURCES ${OVITO_NETCDF_SOURCE_FILES}
 	PLUGIN_DEPENDENCIES Particles
-	LIB_DEPENDENCIES ${NETCDF_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_SZIP_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript	
+	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
+	LIB_DEPENDENCIES ${NETCDF_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_SZIP_LIBRARY}
 )
 
-TARGET_INCLUDE_DIRECTORIES(NetCDFImporter PRIVATE "${NETCDF_INCLUDE_DIRS}")
+TARGET_INCLUDE_DIRECTORIES(NetCDFPlugin PRIVATE "${NETCDF_INCLUDE_DIRS}")
 
 IF(WIN32)
 	# Install NetCDF and HDF5 dlls.
@@ -75,6 +75,3 @@ IF(WIN32)
 	OVITO_INSTALL_DLL("${HDF5_DLL_PATH}/hdf5.dll")
 	OVITO_INSTALL_DLL("${HDF5_DLL_PATH}/hdf5_hl.dll")
 ENDIF()
-
-# Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET NetCDFImporter POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

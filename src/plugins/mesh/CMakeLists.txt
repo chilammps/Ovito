@@ -34,7 +34,5 @@ ENDIF()
 OVITO_PLUGIN(Mesh
 	SOURCES ${OVITO_MESH_SOURCE_FILES}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript	
+	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
 )
-
-# Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET Mesh POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

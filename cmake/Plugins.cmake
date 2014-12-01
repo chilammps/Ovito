@@ -57,7 +57,7 @@ MACRO(LINK_WHOLE_LIBRARY _targetName _libraryTarget)
 	TARGET_LINK_LIBRARIES(${_targetName} ${_libraryTarget})
 ENDMACRO()
 
-# Create a new target for a plugin.
+# Create a OVITO plugin.
 MACRO(OVITO_PLUGIN target_name)
 
 	SET(plugin_sources)
@@ -71,6 +71,7 @@ MACRO(OVITO_PLUGIN target_name)
 			"${currentArg}" STREQUAL "LIB_DEPENDENCIES" OR 
 			"${currentArg}" STREQUAL "PLUGIN_DEPENDENCIES" OR 
 			"${currentArg}" STREQUAL "OPTIONAL_PLUGIN_DEPENDENCIES" OR
+			"${currentArg}" STREQUAL "PYTHON_WRAPPERS" OR
 			"${currentArg}" STREQUAL "RESOURCE")
 			SET(DOING_WHAT "${currentArg}")
 		ELSE()
@@ -82,6 +83,8 @@ MACRO(OVITO_PLUGIN target_name)
 				LIST(APPEND plugin_dependencies "${currentArg}")
 		    ELSEIF(${DOING_WHAT} STREQUAL "OPTIONAL_PLUGIN_DEPENDENCIES")
 				LIST(APPEND optional_plugin_dependencies "${currentArg}")
+		    ELSEIF(${DOING_WHAT} STREQUAL "PYTHON_WRAPPERS")
+				LIST(APPEND python_wrappers "${currentArg}")
 		    ELSEIF(${DOING_WHAT} STREQUAL "RESOURCE")
 				SET(resource_output "${currentArg}")
 				SET(DOING_WHAT "RESOURCE_INPUT")
@@ -134,10 +137,34 @@ MACRO(OVITO_PLUGIN target_name)
 		SET_TARGET_PROPERTIES(${target_name} PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
 	ENDIF(APPLE)
 	
-	# Copy Plugin manifest to destination directory.
-	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/resources/${target_name}.manifest.xml"
-               "${OVITO_PLUGINS_DIRECTORY}/${target_name}.manifest.xml")
-	INSTALL(FILES "${OVITO_PLUGINS_DIRECTORY}/${target_name}.manifest.xml" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
+	# Generate plugin manifest.
+	SET(PLUGIN_MANIFEST "${OVITO_PLUGINS_DIRECTORY}/${target_name}.json")
+	FILE(WRITE "${PLUGIN_MANIFEST}" "{\n  \"plugin-id\" : \"${target_name}\",\n")
+	FILE(APPEND "${PLUGIN_MANIFEST}" "  \"plugin-version\" : \"${OVITO_VERSION_STRING}\",\n")
+	FILE(APPEND "${PLUGIN_MANIFEST}" "  \"dependencies\" : [ ")
+	FOREACH(plugin_name ${plugin_dependencies})
+		FILE(APPEND "${PLUGIN_MANIFEST}" "${delimiter}\"${plugin_name}\"")
+		SET(delimiter ", ")
+	ENDFOREACH()
+	FOREACH(plugin_name ${optional_plugin_dependencies})
+		STRING(TOUPPER "${plugin_name}" uppercase_plugin_name)
+		IF(OVITO_BUILD_PLUGIN_${uppercase_plugin_name})
+			FILE(APPEND "${PLUGIN_MANIFEST}" "${delimiter}\"${plugin_name}\"")
+			SET(delimiter ", ")
+		ENDIF()
+	ENDFOREACH()
+	FILE(APPEND "${PLUGIN_MANIFEST}" " ],\n")
+	IF(resource_output)
+		FILE(APPEND "${PLUGIN_MANIFEST}" "  \"resource-files\" : [ \"${resource_output}\" ],\n")
+	ENDIF()
+	FILE(APPEND "${PLUGIN_MANIFEST}" "  \"native-library\" : \"${target_name}\"\n}\n")
+	INSTALL(FILES "${PLUGIN_MANIFEST}" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
+
+	# Install Python wrapper files.
+	IF(python_wrappers)
+		# Install the Python source files that belong to the plugin, which provide the scripting interface.
+		ADD_CUSTOM_COMMAND(TARGET ${target_name} POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${python_wrappers}" "${OVITO_PLUGINS_DIRECTORY}/python/")
+	ENDIF()
 
 	# This plugin will be part of the installation package.
 	IF(NOT OVITO_MONOLITHIC_BUILD)

@@ -91,9 +91,6 @@ private:
 	/// Searches the plugin directories for installed plugins and loads their XML manifests.
 	void registerPlugins();
 
-	/// Loads the given plugin manifest file and creates a Plugin object for it.
-	Plugin* loadPluginManifest(const QString& file);
-
 	/////////////////////////// Maintenance ////////////////////////////////
 
 	/// Private constructor.

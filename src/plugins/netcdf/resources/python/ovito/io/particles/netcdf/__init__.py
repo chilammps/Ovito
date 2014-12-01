@@ -2,7 +2,7 @@
 import ovito.io.particles
 
 # Load the native code module
-import NetCDFImporter
+import NetCDFPlugin
 
 # Inject selected classes into parent module.
-ovito.io.particles.NetCDFImporter = NetCDFImporter.NetCDFImporter
+ovito.io.particles.NetCDFImporter = NetCDFPlugin.NetCDFImporter

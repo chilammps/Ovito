@@ -31,36 +31,24 @@ namespace Ovito { namespace PluginSystem { namespace Internal {
 NativePlugin::NativePlugin(const QString& manifestFile) :
 	Plugin(manifestFile), _library(nullptr)
 {
-}
+	// Get the name of the shared library file.
+	QString libBasename = metadata().object().value(QStringLiteral("native-library")).toString();
+	if(libBasename.isEmpty())
+		throw Exception(tr("Invalid plugin manifest file %1. 'native-library' element not present.").arg(manifestFile));
 
-/******************************************************************************
-* Parses a custom top-level element from the manifest that is specific to the plugin type.
-******************************************************************************/
-bool NativePlugin::parseToplevelManifestElement(const QDomElement& element)
-{
-	// Process the <NativePlugin> element that describes the native plugin's properties.
-	if(element.localName() == "native-library") {
-
-		// Get the name of the shared library file.
-		QString libBasename = element.text();
-
-		// Resolve the filename by adding the platform specific suffix/extension
-		// and make the path absolute.
-		QDir baseDir;
-		if(isCore())	// The core library is not in the plugins directory.
-			baseDir = QCoreApplication::applicationDirPath();
-		else
-			baseDir = QFileInfo(manifestFile()).dir();
+	// Resolve the filename by adding the platform specific suffix/extension
+	// and make the path absolute.
+	QDir baseDir;
+	if(isCore())	// The core library is not in the plugins directory.
+		baseDir = QCoreApplication::applicationDirPath();
+	else
+		baseDir = QFileInfo(manifestFile).dir();
 #if defined(Q_OS_WIN)
-		QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".dll"));
+	QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".dll"));
 #else
-		QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".so"));
+	QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".so"));
 #endif
-		_libraryFilename = QDir::cleanPath(libFile.absoluteFilePath());
-
-		return true;
-	}
-	return false;
+	_libraryFilename = QDir::cleanPath(libFile.absoluteFilePath());
 }
 
 /******************************************************************************

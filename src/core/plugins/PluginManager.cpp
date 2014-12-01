@@ -78,7 +78,7 @@ void PluginManager::registerPlugin(Plugin* plugin)
 	if(this->plugin(plugin->pluginId())) {
 		QString id = plugin->pluginId();
 		delete plugin;
-		throw Exception(QString("Non-unique plugin identifier detected: %1").arg(id));
+		throw Exception(tr("Non-unique plugin identifier detected: %1").arg(id));
 	}
 
 	_plugins.push_back(plugin);
@@ -89,17 +89,13 @@ void PluginManager::registerPlugin(Plugin* plugin)
 ******************************************************************************/
 QList<QDir> PluginManager::pluginDirs()
 {
-	QList<QDir> list;
-
-	// Scan the plugins directory for installed plugins.
 	QDir prefixDir(QCoreApplication::applicationDirPath());
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
-	list.push_back(QDir(prefixDir.absolutePath() + "/plugins"));
+	return { QDir(prefixDir.absolutePath() + QStringLiteral("/plugins")) };
 #else
 	prefixDir.cdUp();
-	list.push_back(QDir(prefixDir.absolutePath() + "/lib/ovito/plugins"));
+	return { QDir(prefixDir.absolutePath() + QStringLiteral("/lib/ovito/plugins")) };
 #endif
-	return list;
 }
 
 /******************************************************************************
@@ -109,55 +105,27 @@ QList<QDir> PluginManager::pluginDirs()
 void PluginManager::registerPlugins()
 {
 	// Register the built-in classes of the core.
-	_corePlugin = loadPluginManifest(":/core/Core.manifest.xml");
+	_corePlugin = new NativePlugin(QStringLiteral(":/core/Core.json"));
+	registerPlugin(_corePlugin);
 
 	// Scan the plugin directories for installed plugins.
 	for(QDir pluginDir : pluginDirs()) {
 		if(!pluginDir.exists())
-			throw Exception(QString("Failed to scan the plugin directory. Path %1 does not exist.").arg(pluginDir.path()));
+			throw Exception(tr("Failed to scan the plugin directory. Path %1 does not exist.").arg(pluginDir.path()));
 
 		// List all manifest files.
-		pluginDir.setNameFilters(QStringList("*.manifest.xml"));
+		pluginDir.setNameFilters(QStringList("*.json"));
 		pluginDir.setFilter(QDir::Files);
-		QStringList files = pluginDir.entryList();
 
 		// Load each manifest file in the plugin directory.
-		for(const QString& file : files) {
-
-			// The Viz plugin has been renamed to Particles as of Ovito 2.1.
-			// Skip the old plugin file, which may still exist if the user has overwritten an old installation.
-			if(file == QStringLiteral("Viz.manifest.xml"))
-				continue;
-
-			// The Scripting plugin has deprecated as of Ovito 2.5.
-			if(file == QStringLiteral("Scripting.manifest.xml"))
-				continue;
-
+		for(const QString& file : pluginDir.entryList()) {
 			QString filePath = pluginDir.absoluteFilePath(file);
 			try {
-				loadPluginManifest(filePath);
+				Plugin* plugin = new NativePlugin(filePath);
+				registerPlugin(plugin);
 			}
 			catch(Exception& ex) {
 				ex.prependGeneralMessage(tr("Failed to load plugin manifest:\n\n%1").arg(filePath));
-				ex.showError();
-			}
-		}
-	}
-
-	// Parse the manifest of each plugin.
-	for(Plugin* plugin : plugins()) {
-		try {
-			plugin->parseManifest();
-		}
-		catch(Exception& ex) {
-			ex.prependGeneralMessage(tr("Failed to load plugin manifest:\n\n%1").arg(plugin->manifestFile()));
-			_plugins.remove(_plugins.indexOf(plugin));
-			if(plugin->isCore()) {
-				delete plugin;
-				throw ex;	// This is a fatal error.
-			}
-			else {
-				delete plugin;
 				ex.showError();
 			}
 		}
@@ -170,24 +138,6 @@ void PluginManager::registerPlugins()
 	for(Plugin* plugin : plugins()) {
 		plugin->loadPlugin();
 	}
-}
-
-/******************************************************************************
-* Loads the given plugin manifest file.
-******************************************************************************/
-Plugin* PluginManager::loadPluginManifest(const QString& file)
-{
-	// Check if the same manifest has already been loaded.
-	for(Plugin* p : plugins())
-		if(p->manifestFile() == file) return p;
-
-	// Create Plugin object and load XML file into DOM.
-	Plugin* plugin = new NativePlugin(file);
-
-	// Add it to the list of plugins.
-	registerPlugin(plugin);
-
-	return plugin;
 }
 
 /******************************************************************************

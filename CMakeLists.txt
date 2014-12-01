@@ -44,10 +44,10 @@ INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/CompileQtResource.cmake)
 # Define user options that control the building of OVITO's standard plugins.
 OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
-OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon renderer plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
-OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python Scripting plugin." "OFF")
-OPTION(OVITO_BUILD_PLUGIN_NETCDF "Build the NetCDF plugin." "OFF")
+OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python scripting plugin." "OFF")
+OPTION(OVITO_BUILD_PLUGIN_NETCDFPLUGIN "Build the NetCDF plugin." "OFF")
 
 # This is a global list of plugin targets that will be built.
 # It will get populated by the OVITO_PLUGIN macro.
@@ -196,7 +196,7 @@ SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
   
 # Find and set up Qt5 libraries.
-SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets Xml OpenGL Concurrent Network PrintSupport)
+SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets OpenGL Concurrent Network PrintSupport)
 FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
 	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
 ENDFOREACH()
