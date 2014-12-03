@@ -194,7 +194,7 @@ bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 		}
 
 		// Insert newly created vertices into mesh.
-		output.setVertexCount(oldVertexCount + newVertices.size());
+		output.setVertexCount(oldVertexCount + (int)newVertices.size());
 		std::copy(newVertices.cbegin(), newVertices.cend(), output.vertices().begin() + oldVertexCount);
 	}
 
@@ -274,8 +274,8 @@ bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 			}
 			FloatType t = output.vertex(vi1)[dim] / (-delta[dim]);
 			Point3 p = delta * t + output.vertex(vi1);
-			newVertexIndices[i][oi1] = oldVertexCount + newVertices.size();
-			newVertexIndices[i][oi2] = oldVertexCount + newVertices.size() + 1;
+			newVertexIndices[i][oi1] = oldVertexCount + (int)newVertices.size();
+			newVertexIndices[i][oi2] = oldVertexCount + (int)newVertices.size() + 1;
 			newVertexLookupMap.insert(std::make_pair(std::pair<int,int>(vi1, vi2), std::pair<int,int>(newVertexIndices[i][oi1], newVertexIndices[i][oi2])));
 			newVertices.push_back(p);
 			p[dim] += 1.0f;

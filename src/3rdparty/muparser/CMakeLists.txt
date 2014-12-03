@@ -35,8 +35,6 @@ ELSE()
 	SET(MUPARSER_SOURCE_FILES
 		muParser.cpp
 		muParserBytecode.cpp
-		muParserTest.cpp
-		muParserDLL.cpp
 		muParserInt.cpp
 		muParserTokenReader.cpp
 		muParserError.cpp
@@ -45,16 +43,9 @@ ELSE()
 	)
 
 	# Build library.
-	ADD_LIBRARY(muParser ${MUPARSER_SOURCE_FILES})
+	ADD_LIBRARY(muParser STATIC EXCLUDE_FROM_ALL ${MUPARSER_SOURCE_FILES})
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(muParser INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
-
-	# This library is part of the installation package.
-	IF(NOT OVITO_MONOLITHIC_BUILD)
-		INSTALL(TARGETS muParser 
-			RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
-			LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
-	ENDIF()
 
 ENDIF()

@@ -1,6 +1,6 @@
 ###############################################################################
 # 
-#  Copyright (2013) Alexander Stukowski
+#  Copyright (2014) Alexander Stukowski
 #
 #  This file is part of OVITO (Open Visualization Tool).
 #
@@ -33,6 +33,12 @@ ENDIF()
 
 IF(WIN32)
 	CMAKE_POLICY(SET CMP0020 NEW) 	# Automatically link to qtmain.lib on Windows.
+
+	IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+		IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "18")
+			MESSAGE(FATAL_ERROR "OVITO requires Visual C++ 2013 or newer.")
+		ENDIF()
+	ENDIF()
 ENDIF()
 
 GET_FILENAME_COMPONENT(OVITO_SOURCE_BASE_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
@@ -40,6 +46,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OVITO_SOURCE_BASE_DIR}/cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Version.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Plugins.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/CompileQtResource.cmake)
+INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/PrecompiledHeader.cmake)
 
 # Define user options that control the building of OVITO's standard plugins.
 OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
@@ -86,6 +93,13 @@ ENDIF()
 #	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
 #	SET(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
 #ENDIF()
+
+IF(MSVC)
+	# Suppress warning related to QVarLengthArray implementation.
+	ADD_DEFINITIONS(/wd4996)
+	# Suppress warning on conversion from size_t to int, possible loss of data.
+	ADD_DEFINITIONS(/wd4267)
+ENDIF()
 
 # Set the base directory for all header files included by the OVITO source code.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
@@ -174,19 +188,15 @@ ENDIF()
 
 # Controls compilation of the video encoding feature.
 OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	# Find FFmpeg library.
-	FIND_PACKAGE(FFmpeg REQUIRED)
-	IF(NOT FFMPEG_FOUND)
-		MESSAGE(FATAL_ERROR "FFmpeg library not found.")
-	ENDIF()
-ENDIF()
 
 # This macro installs a required third-party DLL in the OVITO directory
 # so that it can be distributed together with the program.
 MACRO(OVITO_INSTALL_DLL dll)
-	MESSAGE("Installing DLL library ${dll} in output directory.")
-	CONFIGURE_FILE("${dll}" "${OVITO_BINARY_DIRECTORY}" COPYONLY)
+	MESSAGE("Deploying DLL ${dll}.")
+	EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" "-E" "copy_if_different" "${dll}" "${OVITO_BINARY_DIRECTORY}" RESULT_VARIABLE error_var)
+	IF(error_var)
+		MESSAGE(FATAL_ERROR "Failed to copy DLL into build directory: ${dll}")
+	ENDIF()
 	INSTALL(FILES "${dll}" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 ENDMACRO()
 
@@ -212,11 +222,14 @@ FIND_PACKAGE(ZLIB REQUIRED)
 
 # Find the Boost library.
 SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
+SET(Boost_REQUIRED_COMPONENTS)
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	FIND_PACKAGE(Boost COMPONENTS python REQUIRED)
-ELSE()
-	FIND_PACKAGE(Boost REQUIRED)
+	LIST(APPEND Boost_REQUIRED_COMPONENTS python)
 ENDIF()
+IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
+	LIST(APPEND Boost_REQUIRED_COMPONENTS system)
+ENDIF()
+FIND_PACKAGE(Boost COMPONENTS ${Boost_REQUIRED_COMPONENTS} REQUIRED)
 IF(NOT Boost_FOUND)
 	MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
 ENDIF()
@@ -232,36 +245,9 @@ IF(WIN32)
 		OVITO_INSTALL_DLL("${dll}")
 		IF(${COMPONENT} MATCHES "Core")
 			GET_FILENAME_COMPONENT(QtBinaryPath ${dll} PATH)
-			IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-				OVITO_INSTALL_DLL("${QtBinaryPath}/icudt52.dll")		
-				OVITO_INSTALL_DLL("${QtBinaryPath}/icuin52.dll")		
-				OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc52.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libharfbuzz-0.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libfreetype-6.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libpcre16-0.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/zlib1.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libbz2-1.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libglib-2.0-0.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libintl-8.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libpng16-16.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libiconv-2.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libjpeg-8.dll")
-			ELSE()
-				OVITO_INSTALL_DLL("${QtBinaryPath}/icudt51.dll")		
-				OVITO_INSTALL_DLL("${QtBinaryPath}/icuin51.dll")		
-				OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc51.dll")
-			ENDIF()
-			IF(MINGW)
-				# 32-bit and 64-bit MinGW use different exception models and must link different
-				# libgcc_s variants.
-				IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-					OVITO_INSTALL_DLL("${QtBinaryPath}/libgcc_s_seh-1.dll")
-				ELSE()
-					OVITO_INSTALL_DLL("${QtBinaryPath}/libgcc_s_dw2-1.dll")
-				ENDIF()
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libstdc++-6.dll")
-				OVITO_INSTALL_DLL("${QtBinaryPath}/libwinpthread-1.dll")
-			ENDIF()
+			OVITO_INSTALL_DLL("${QtBinaryPath}/icudt52.dll")		
+			OVITO_INSTALL_DLL("${QtBinaryPath}/icuin52.dll")		
+			OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc52.dll")
 		ENDIF()
 	ENDFOREACH()
 	
@@ -285,19 +271,7 @@ IF(WIN32)
 	# Install zlib DLL.
 	LIST(GET ZLIB_LIBRARIES 0 ZLIB_FIRST_LIBRARY)
 	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH "${ZLIB_FIRST_LIBRARY}" PATH)
-	SET(ZLIB_DLL_PATH "${ZLIB_LIBRARY_PATH}/../bin" CACHE PATH "Directory where the ZLib dll is located.")
-	MARK_AS_ADVANCED(ZLIB_DLL_PATH)
-	OVITO_INSTALL_DLL("${ZLIB_DLL_PATH}/libzlib.dll")
-
-	# Install libav DLLS.
-	IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-		SET(LIBAV_DLLS avcodec-55.dll avdevice-54.dll avformat-55.dll avutil-52.dll libmp3lame-0.dll
-						libogg-0.dll librtmp.dll libvo-aacenc-0.dll libvorbis-0.dll libvorbisenc-2.dll 
-						libvorbisfile-3.dll libx264-118.dll libx264-125.dll swscale-2.dll)
-		FOREACH(dll ${LIBAV_DLLS})
-			OVITO_INSTALL_DLL("${FFMPEG_LIBRARY_DIR}/../bin/${dll}")
-		ENDFOREACH()
-	ENDIF()
+	OVITO_INSTALL_DLL("${ZLIB_LIBRARY_PATH}/../bin/zlib.dll")
 ENDIF()
 
 ################# OpenGL test program ####################

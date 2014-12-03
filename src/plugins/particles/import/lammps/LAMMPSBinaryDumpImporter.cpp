@@ -40,7 +40,12 @@ namespace Internal {
 
 struct LAMMPSBinaryDumpHeader
 {
-	LAMMPSBinaryDumpHeader() : ntimestep(-1), natoms(-1), boundary{{0,0},{0,0},{0,0}}, tiltFactors{0,0,0}, size_one(-1), nchunk(-1) {}
+	LAMMPSBinaryDumpHeader() :
+		ntimestep(-1), natoms(-1),
+		size_one(-1), nchunk(-1) {
+			memset(boundary, 0, sizeof(boundary));
+			memset(tiltFactors, 0, sizeof(tiltFactors));
+		}
 
 	int ntimestep;
 	int natoms;

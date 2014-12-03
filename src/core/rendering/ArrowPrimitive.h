@@ -104,11 +104,11 @@ private:
 
 }}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::ShadingMode);
-Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::RenderingQuality);
-Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::Shape);
-Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::Shape, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Rendering::ArrowPrimitive::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::Rendering::ArrowPrimitive::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::Rendering::ArrowPrimitive::Shape);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ArrowPrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ArrowPrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ArrowPrimitive::Shape, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ARROW_PRIMITIVE_H

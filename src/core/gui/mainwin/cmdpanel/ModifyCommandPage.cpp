@@ -389,9 +389,9 @@ void ModifyCommandPage::createAboutPanel()
 				// Generate a new unique ID.
 				id.fill('0', 16);
 				std::random_device rdev;
-				std::uniform_int_distribution<char> rdist(0, 0xFF);
+				std::uniform_int_distribution<> rdist(0, 0xFF);
 				for(auto& c : id)
-					c = rdist(rdev);
+					c = (char)rdist(rdev);
 				settings.setValue("installation/id", id);
 			}
 		}

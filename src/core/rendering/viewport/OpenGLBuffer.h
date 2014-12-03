@@ -56,7 +56,7 @@ public:
 			if(!_buffer.bind())
 				throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 			_buffer.allocate(sizeof(T) * _elementCount * _verticesPerElement);
-			OVITO_CHECK_OPENGL();
+            OVITO_REPORT_OPENGL_ERRORS();
 			_buffer.release();
 			return true;
 		}
@@ -95,7 +95,7 @@ public:
 		T* data = static_cast<T*>(_buffer.map(access));
 		if(!data)
 			throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
-		OVITO_CHECK_OPENGL();
+        OVITO_REPORT_OPENGL_ERRORS();
 		return data;
 	}
 
@@ -106,7 +106,7 @@ public:
 		if(!_buffer.unmap())
 			throw Exception(QStringLiteral("Failed to unmap OpenGL vertex buffer from memory."));
 		_buffer.release();
-		OVITO_CHECK_OPENGL();
+        OVITO_REPORT_OPENGL_ERRORS();
 	}
 
 	/// Fills the vertex buffer with the given data.
@@ -136,7 +136,7 @@ public:
 			}
 		}
 		_buffer.release();
-		OVITO_CHECK_OPENGL();
+        OVITO_REPORT_OPENGL_ERRORS();
 	}
 
 	/// Fills the buffer with a constant value.
@@ -156,7 +156,7 @@ public:
 			_buffer.unmap();
 		}
 		_buffer.release();
-		OVITO_CHECK_OPENGL();
+        OVITO_REPORT_OPENGL_ERRORS();
 	}
 
 	/// Binds this buffer to a vertex attribute of a vertex shader.

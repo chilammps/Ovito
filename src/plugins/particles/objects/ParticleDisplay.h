@@ -102,9 +102,9 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
-	Q_PROPERTY(Ovito::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
-	Q_PROPERTY(Ovito::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape);
+    Q_PROPERTY(Ovito::Rendering::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+    Q_PROPERTY(Ovito::Rendering::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+    Q_PROPERTY(Ovito::Rendering::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape);
 
 protected:
 

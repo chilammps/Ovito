@@ -79,7 +79,7 @@ void ScriptEngine::initializeInterpreter()
 		return;	// Interpreter is already initialized.
 	try {
 
-		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the 
+		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the
 		// location of Python standard library, which gets shipped with the static build of OVITO.
 #if PY_MAJOR_VERSION >= 3
 		static std::wstring programName = QCoreApplication::applicationFilePath().toStdWString();
@@ -193,10 +193,10 @@ void ScriptEngine::initializeInterpreter()
 int ScriptEngine::execute(const QString& commands)
 {
 	if(_mainNamespace.is_none())
-		throw Exception("Script engine is not initialized.");
+		throw Exception("Python script engine is not initialized.");
 
 	if(!_activeEngine.testAndSetAcquire(nullptr, this))
-		throw Exception("There is already another script engine being active.");
+		throw Exception("Cannot execute Python script. There is already another active script engine.");
 
 	try {
 		exec(commands.toLocal8Bit().constData(), _mainNamespace, _mainNamespace);
@@ -230,7 +230,7 @@ int ScriptEngine::execute(const QString& commands)
 /******************************************************************************
 * Executes a Python program.
 ******************************************************************************/
-int ScriptEngine::executeFile(const QString& file)
+int ScriptEngine::executeFile(const QString& filename)
 {
 	if(_mainNamespace.is_none())
 		throw Exception("Script engine is not initialized.");
@@ -241,13 +241,34 @@ int ScriptEngine::executeFile(const QString& file)
 	try {
 		// Pass command line parameters to the script.
 		list argList;
-		argList.append(file);
+		argList.append(filename);
 		QStringList scriptArguments = Application::instance().cmdLineParser().values("scriptarg");
 		for(const QString& a : scriptArguments)
 			argList.append(a);
 		import("sys").attr("argv") = argList;
 
-	    exec_file(QDir::toNativeSeparators(file).toLatin1().constData(), _mainNamespace, _mainNamespace);
+		// The FILE structure for different C libraries can be different and incompatible.
+		// Under Windows (at least), it is possible for dynamically linked extensions to actually
+		// use different libraries, so care should be taken that FILE* parameters are only passed
+		// to these functions if it is certain that they were created by the same library that the
+		// Python runtime is using.
+		// In case of an incompatible runtime, we need to read the entire file into memory
+		// first before passing it to Python.
+#ifndef Q_CC_MSVC
+		exec_file(str(QDir::toNativeSeparators(filename)), _mainNamespace, _mainNamespace);
+#else
+		QFile file(filename);
+		if(!file.open(QIODevice::ReadOnly))
+			throw Exception(file.errorString());
+		QByteArray fileData = file.readAll();
+		file.close();
+		PyObject* codeObj = Py_CompileString(fileData.constData(), filename.toLocal8Bit().constData(), Py_file_input);
+		if(!codeObj) throw_error_already_set();
+		PyObject* result = PyEval_EvalCode(codeObj, _mainNamespace.ptr(), _mainNamespace.ptr());
+		Py_DECREF(codeObj);
+		if(!result) throw_error_already_set();
+		Py_DECREF(result);
+#endif
 	    _activeEngine.storeRelease(nullptr);
 	    return 0;
 	}
@@ -260,9 +281,9 @@ int ScriptEngine::executeFile(const QString& file)
 		PyErr_Print();
 	    _activeEngine.storeRelease(nullptr);
 	    if(Application::instance().guiMode())
-	    	throw Exception(tr("The Python script '%1' has exited with an error. See console output for details.").arg(file));
+			throw Exception(tr("The Python script '%1' has exited with an error. See console output for details.").arg(filename));
 	    else
-	    	throw Exception(tr("The Python script '%1' has exited with an error.").arg(file));
+			throw Exception(tr("The Python script '%1' has exited with an error.").arg(filename));
 	}
 	catch(const Exception&) {
 	    _activeEngine.storeRelease(nullptr);

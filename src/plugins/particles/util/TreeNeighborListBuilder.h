@@ -22,7 +22,7 @@
 #ifndef __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 #define __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/utilities/BoundedPriorityQueue.h>
 #include <core/utilities/MemoryPool.h>
 #include <plugins/particles/data/ParticleProperty.h>

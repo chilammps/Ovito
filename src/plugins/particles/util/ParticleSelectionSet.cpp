@@ -240,7 +240,7 @@ void ParticleSelectionSet::toggleParticle(const PipelineFlowState& state, size_t
 		_selection.clear();
 		toggleParticleIdentifier(identifiers->getInt(particleIndex));
 	}
-	else if(particleIndex < _selection.size()) {
+	else if((int)particleIndex < _selection.size()) {
 		_selectedIdentifiers.clear();
 		toggleParticleIndex(particleIndex);
 	}
@@ -273,7 +273,7 @@ void ParticleSelectionSet::toggleParticleIndex(size_t particleIndex)
 	if(dataset()->undoStack().isRecording())
 		dataset()->undoStack().push(new ToggleSelectionOperation(this, -1, particleIndex));
 
-	if(particleIndex < _selection.size())
+	if((int)particleIndex < _selection.size())
 		_selection.toggleBit(particleIndex);
 	notifyDependents(ReferenceEvent::TargetChanged);
 }

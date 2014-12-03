@@ -115,7 +115,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 	mapping.validate();
 
 	// Create particle properties as defined by the mapping.
-	for(int i = 0; i < mapping.size(); i++) {
+	for(int i = 0; i < (int)mapping.size(); i++) {
 
 		ParticleProperty* property = nullptr;
 		const ParticlePropertyReference& pref = mapping[i].property;
@@ -152,7 +152,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				// Look for existing user-defined property with the same name.
                 ParticleProperty* oldProperty = nullptr;
                 int oldPropertyIndex = -1;
-				for(int j = 0; j < destination.particleProperties().size(); j++) {
+				for(int j = 0; j < (int)destination.particleProperties().size(); j++) {
 					const auto& p = destination.particleProperties()[j];
 					if(p->name() == pref.name()) {
 						if(p->dataType() == dataType && (int)p->componentCount() > vectorComponent) {
@@ -363,7 +363,6 @@ void InputColumnReader::readParticle(size_t particleIndex, const double* values,
 	auto prec = _properties.cbegin();
 	const double* token = values;
 
-	int d;
 	for(int columnIndex = 0; prec != _properties.cend(); ++columnIndex, ++token, ++prec) {
 		if(!prec->property) continue;
 

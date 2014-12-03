@@ -139,7 +139,7 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 		throw Exception(tr("No particle properties have been selected for export to the LAMMPS dump file. Cannot write dump file with zero columns."));
 
 	// Write column names.
-	for(int i = 0; i < mapping.size(); i++) {
+	for(int i = 0; i < (int)mapping.size(); i++) {
 		const ParticlePropertyReference& pref = mapping[i];
 		QString columnName;
 		switch(pref.type()) {

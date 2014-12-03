@@ -301,7 +301,7 @@ public:
 	int index() const { return _index; }
 
 	/// \brief Returns the number of operations on the stack. Compound operations are counted as one operation.
-	int count() const { return _operations.size(); }
+	int count() const { return (int)_operations.size(); }
 
 	/// \brief If the stack is in the clean state, returns true; otherwise returns false.
 	bool isClean() const { return index() == cleanIndex(); }

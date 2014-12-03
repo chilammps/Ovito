@@ -42,18 +42,10 @@ public:
 	/// \return The human-readable name of this object type that should be shown in the user interface.
 	const QString& displayName() const { return _displayName; }
 
-	/// \brief Changes the the human-readable display name of this plugin class.
-	void setDisplayName(const QString& name) { _displayName = name; }
-
 	/// Returns the name alias that has been set for this class.
 	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
 	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
 	const QString& nameAlias() const { return _nameAlias; }
-
-	/// Sets a name alias for this class.
-	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
-	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
-	void setNameAlias(const QString& alias) { _nameAlias = alias; }
 
 	/// \brief Returns the descriptor of the super class.
 	/// \return The descriptor of the base class or \c NULL if this is the descriptor of the root OvitoObject class.
@@ -149,13 +141,27 @@ public:
 protected:
 
 	/// \brief Constructor.
-	OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool serializable);
+	OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool serializable);
+
+	/// This is called after the class has been loaded to initialize its properties.
+	virtual void initializeClassDescriptor(Plugin* plugin);
 
 	/// \brief Creates an instance of the class described by this meta object.
 	/// \param dataset The dataset the newly created object will belong to.
 	/// \return The new instance of the class. The pointer can be safely cast to the corresponding C++ class type.
 	/// \throw Exception if the instance could not be created.
 	virtual OvitoObject* createInstanceImpl(DataSet* dataset) const = 0;
+
+	/// \brief Marks this class as an abstract class that cannot be instantiated.
+	void setAbstract(bool abstract) { _isAbstract = abstract; }
+
+	/// \brief Changes the the human-readable display name of this plugin class.
+	void setDisplayName(const QString& name) { _displayName = name; }
+
+	/// Sets a name alias for this class.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
+	void setNameAlias(const QString& alias) { _nameAlias = alias; }
 
 protected:
 

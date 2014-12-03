@@ -295,7 +295,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(CompressedTextR
 				// Find out if coordinates are given in reduced format and need to be rescaled to absolute format.
 				bool reducedCoordinates = false;
 				if(!fileColumnNames.empty()) {
-					for(int i = 0; i < columnMapping.size() && i < fileColumnNames.size(); i++) {
+					for(int i = 0; i < (int)columnMapping.size() && i < fileColumnNames.size(); i++) {
 						if(columnMapping[i].property.type() == ParticleProperty::PositionProperty) {
 							reducedCoordinates = (
 									fileColumnNames[i] == "xs" || fileColumnNames[i] == "xsu" ||
@@ -469,7 +469,7 @@ void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 	else {
 		mapping = _customColumnMapping;
 		mapping.resize(inspectionTask->columnMapping().size());
-		for(int i = 0; i < mapping.size(); i++)
+		for(size_t i = 0; i < mapping.size(); i++)
 			mapping[i].columnName = inspectionTask->columnMapping()[i].columnName;
 	}
 

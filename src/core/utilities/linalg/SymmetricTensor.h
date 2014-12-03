@@ -61,31 +61,32 @@ public:
 
 	/// \brief Constructor that initializes all tensor components to the same value.
 	explicit SymmetricTensor2T(T val)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 6>{{val,val,val,val,val,val}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 6>{{val,val,val,val,val,val}} {}
+#else
+		{ this->assign(val); } 
 #endif
-		{}
 
 	/// \brief Constructor that initializes the six tensor components.
 	Q_DECL_CONSTEXPR SymmetricTensor2T(T xx, T yy, T zz, T xy, T xz, T yz)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 6>{{xx,yy,zz,xy,xz,yz}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 6>{{xx,yy,zz,xy,xz,yz}} {}
+#else
+		{ this->xx() = xx; this->yy() = yy; this->zz() = zz;
+		  this->xy() = xy; this->xz() = xz; this->yz() = yz; } 
 #endif
-		{}
 
 	/// \brief Initializes the tensor to the null tensor. All components are set to zero.
-	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 6>{{T(0), T(0), T(0), T(0), T(0), T(0)}}
-#endif
-		{}
+	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero) { this->assign(T(0)); } 
 
 	/// \brief Initializes the tensor to the identity tensor.
 	Q_DECL_CONSTEXPR SymmetricTensor2T(Identity)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 6>{{T(1), T(1), T(1), T(0), T(0), T(0)}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 6>{{T(1), T(1), T(1), T(0), T(0), T(0)}} {}
+#else
+		{ this->xx() = T(1); this->yy() = T(1); this->zz() = T(1);
+		  this->xy() = T(0); this->xz() = T(0); this->yz() = T(0); } 
 #endif
-		{}
 
 	/// \brief Casts the tensor to a tensor with another data type.
 	template<typename U>

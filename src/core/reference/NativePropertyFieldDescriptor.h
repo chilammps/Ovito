@@ -103,11 +103,11 @@ public:
 		static Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
 	private:
 
-#define DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, Flags)	\
+#define DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, Flags)			\
 	Ovito::ObjectSystem::VectorReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
 		return static_cast<RefMakerClass*>(obj)->storageFieldName;													\
 	}																												\
-	Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
+	Ovito::ObjectSystem::Internal::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(			\
 		&RefMakerClass::OOType, &TargetClass::OOType, 																\
 		UniqueFieldIdentifier, Flags | PROPERTY_FIELD_VECTOR, RefMakerClass::storageFieldName##__access_reffield 	\
 	);
@@ -135,7 +135,7 @@ public:
 
 #define DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, Flags)			\
 	QVariant RefMakerClass::__read_propfield_##storageFieldName(RefMaker* obj) {							\
-		return static_cast<RefMakerClass*>(obj)->storageFieldName;											\
+		return QVariant::fromValue(static_cast<RefMakerClass*>(obj)->storageFieldName.value());				\
 	}																										\
 	void RefMakerClass::__write_propfield_##storageFieldName(RefMaker* obj, const QVariant& newValue) {		\
 		static_cast<RefMakerClass*>(obj)->storageFieldName = newValue;										\

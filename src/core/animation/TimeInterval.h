@@ -38,21 +38,21 @@ namespace Ovito { namespace Anim {
  */
 typedef int TimePoint;
 
-/// Returns the number of time ticks per second.
-constexpr int TICKS_PER_SECOND = 4800;
+/// The number of time ticks per second.
+enum { TICKS_PER_SECOND = 4800 };
 
 /// Returns the smallest possible time value.
-constexpr TimePoint TimeNegativeInfinity() {
+Q_DECL_CONSTEXPR inline TimePoint TimeNegativeInfinity() {
 	return std::numeric_limits<TimePoint>::lowest();
 }
 
 /// Returns the largest possible time value.
-constexpr TimePoint TimePositiveInfinity() {
+Q_DECL_CONSTEXPR inline TimePoint TimePositiveInfinity() {
 	return std::numeric_limits<TimePoint>::max();
 }
 
 /// Converts time tick units to seconds.
-constexpr FloatType TimeToSeconds(TimePoint t) {
+Q_DECL_CONSTEXPR inline FloatType TimeToSeconds(TimePoint t) {
 	return (FloatType)t / TICKS_PER_SECOND;
 }
 
@@ -232,7 +232,7 @@ inline QDebug operator<<(QDebug stream, const TimeInterval& iv)
 
 }}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::TimeInterval);
-Q_DECLARE_TYPEINFO(Ovito::TimeInterval, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Anim::TimeInterval);
+Q_DECLARE_TYPEINFO(Ovito::Anim::TimeInterval, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_TIME_INTERVAL_H

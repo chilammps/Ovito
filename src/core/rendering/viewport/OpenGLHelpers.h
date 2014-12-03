@@ -44,8 +44,10 @@ extern OVITO_CORE_EXPORT void checkOpenGLErrorStatus(const char* command, const 
 		cmd;														\
 		Ovito::Rendering::Internal::checkOpenGLErrorStatus(#cmd, __FILE__, __LINE__);	\
 	}
+    #define OVITO_REPORT_OPENGL_ERRORS() Ovito::Rendering::Internal::checkOpenGLErrorStatus("", __FILE__, __LINE__);
 #else
 	#define OVITO_CHECK_OPENGL(cmd)			cmd
+    #define OVITO_REPORT_OPENGL_ERRORS()
 #endif
 
 }}}	// End of namespace

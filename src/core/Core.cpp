@@ -19,25 +19,4 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_PYSCRIPT_H
-#define __OVITO_PYSCRIPT_H
-
 #include <core/Core.h>
-
-// Qt defines the 'slots' and 'signals' keyword macros. They conflict with identifiers used in the Python headers.
-#ifdef slots
-	#undef slots
-#endif
-#ifdef signals
-	#undef signals
-#endif
-
-#include <boost/python.hpp>
-
-#ifdef PyScript_EXPORTS		// This is defined by CMake when building the plugin library.
-#  define OVITO_PYSCRIPT_EXPORT Q_DECL_EXPORT
-#else
-#  define OVITO_PYSCRIPT_EXPORT Q_DECL_IMPORT
-#endif
-
-#endif

@@ -249,7 +249,7 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 	}
 	shader->release();
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 }}}	// End of namespace

@@ -84,8 +84,8 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
-	Q_PROPERTY(Ovito::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+    Q_PROPERTY(Ovito::Rendering::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+    Q_PROPERTY(Ovito::Rendering::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
 
 protected:
 

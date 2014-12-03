@@ -24,10 +24,4 @@
 
 #include <core/Core.h>
 
-#ifdef MAKING_MODULE_MESH
-#  define OVITO_MESH_EXPORT Q_DECL_EXPORT
-#else
-#  define OVITO_MESH_EXPORT Q_DECL_IMPORT
-#endif
-
 #endif

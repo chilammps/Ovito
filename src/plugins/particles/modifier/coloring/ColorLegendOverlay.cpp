@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>

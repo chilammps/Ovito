@@ -167,7 +167,7 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 			_sinTable[i] = std::sin(angle);
 		}
 	}
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 /******************************************************************************
@@ -449,7 +449,7 @@ void OpenGLArrowPrimitive::endSetElements()
 		_glGeometryBuffer.unmap();
 	_glGeometryBuffer.release();
 	_mappedBuffer = nullptr;
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 /******************************************************************************
@@ -469,7 +469,7 @@ bool OpenGLArrowPrimitive::isValid(SceneRenderer* renderer)
 ******************************************************************************/
 void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 {
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 	OVITO_ASSERT(_glGeometryBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_elementCount >= 0);
@@ -491,7 +491,7 @@ void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 	else if(shadingMode() == FlatShading) {
 		renderFlat(vpRenderer);
 	}
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 /******************************************************************************

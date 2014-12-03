@@ -38,6 +38,7 @@
 #include "OpenGLImagePrimitive.h"
 #include "OpenGLArrowPrimitive.h"
 #include "OpenGLMeshPrimitive.h"
+#include "OpenGLHelpers.h"
 
 namespace Ovito { namespace Rendering {
 
@@ -88,11 +89,18 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 		throw Exception(tr("Cannot render scene: There is no active OpenGL context"));
 
 	// Obtain surface format.
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 	_glformat = _glcontext->format();
 
+	// OpenGL in a VirtualBox machine Windows guest reports "2.1 Chromium 1.9" as version string,
+	// which is not correctly parsed by Qt. We have to workaround this.
+	if(qstrncmp((const char*)glGetString(GL_VERSION), "2.1 ", 4) == 0) {
+		_glformat.setMajorVersion(2);
+		_glformat.setMinorVersion(1);
+	}
+
 	// Obtain a functions object that allows to call basic OpenGL functions in a platform-independent way.
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 	_glFunctions = _glcontext->functions();
 
 	// Obtain a functions object that allows to call OpenGL 1.4 functions in a platform-independent way.
@@ -139,10 +147,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->bind());
 	}
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 
 	// Set viewport background color.
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 	if(isInteractive()) {
 		Color backgroundColor;
 		if(!viewport()->renderPreviewMode())
@@ -158,7 +166,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 ******************************************************************************/
 void ViewportSceneRenderer::endFrame()
 {
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 	OVITO_CHECK_OPENGL(_vertexArrayObject.reset());
 	_glcontext = nullptr;
 
@@ -173,7 +181,7 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
 	// Set up OpenGL state.
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 	OVITO_CHECK_OPENGL(glDisable(GL_STENCIL_TEST));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
 	OVITO_CHECK_OPENGL(glDepthFunc(GL_LESS));
@@ -639,7 +647,7 @@ std::tuple<FloatType, Box2I> ViewportSceneRenderer::determineGridRange(Viewport*
 
 	if(numberOfIntersections < 2) {
 		// Cannot determine visible parts of the grid.
-		return std::tuple<FloatType, Box2I>(0, Box2I());
+        return std::tuple<FloatType, Box2I>(0.0f, Box2I());
 	}
 
 	// Determine grid spacing adaptively.

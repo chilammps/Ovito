@@ -139,7 +139,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 					hasParticleIdentifiers = true;
 			}
 			else {
-				for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
+				for(int vectorComponent = 0; vectorComponent < (int)property->componentCount(); vectorComponent++) {
 					QString propertyName = property->nameWithComponent(vectorComponent);
 					ParticlePropertyReference propRef(property, vectorComponent);
 					insertPropertyItem(propRef, propertyName);
@@ -207,7 +207,7 @@ void ParticleExporterSettingsDialog::insertPropertyItem(ParticlePropertyReferenc
 	item->setData(Qt::UserRole, qVariantFromValue(propRef));
 	int sortKey = _columnMapping->size();
 
-	for(int c = 0; c < _columnMapping->size(); c++) {
+	for(int c = 0; c < (int)_columnMapping->size(); c++) {
 		if((*_columnMapping)[c] == propRef) {
 			item->setCheckState(Qt::Checked);
 			sortKey = c;
@@ -216,7 +216,7 @@ void ParticleExporterSettingsDialog::insertPropertyItem(ParticlePropertyReferenc
 	}
 
 	item->setData(Qt::InitialSortOrderRole, sortKey);
-	if(sortKey < _columnMapping->size()) {
+	if(sortKey < (int)_columnMapping->size()) {
 		int insertIndex = 0;
 		for(; insertIndex < _columnMappingWidget->count(); insertIndex++) {
 			int k = _columnMappingWidget->item(insertIndex)->data(Qt::InitialSortOrderRole).value<int>();

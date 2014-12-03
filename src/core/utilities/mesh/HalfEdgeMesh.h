@@ -99,7 +99,7 @@ public:
 		/// The previous half-edge in the linked-list of half-edges adjacent to the face.
 		Edge* _prevFaceEdge;
 
-		friend HalfEdgeMesh;
+		friend class HalfEdgeMesh;
 	};
 
 	/// A vertex of a mesh.
@@ -149,7 +149,7 @@ public:
 		/// The index of the vertex in the list of vertices of the mesh.
 		int _index;
 
-		friend HalfEdgeMesh;
+		friend class HalfEdgeMesh;
 	};
 
 	/// A polygonal face of the mesh.
@@ -202,7 +202,7 @@ public:
 		/// The bit-wise flags assigned to this face.
 		unsigned int _flags;
 
-		friend HalfEdgeMesh;
+		friend class HalfEdgeMesh;
 	};
 
 
@@ -226,20 +226,20 @@ public:
 	const std::vector<Face*>& faces() const { return _faces; }
 
 	/// Returns the number of vertices in this mesh.
-	int vertexCount() const { return _vertices.size(); }
+	int vertexCount() const { return (int)_vertices.size(); }
 
 	/// Returns the number of faces in this mesh.
-	int faceCount() const { return _faces.size(); }
+	int faceCount() const { return (int)_faces.size(); }
 
 	/// Returns a pointer to the vertex with the given index.
 	Vertex* vertex(int index) const {
-		OVITO_ASSERT(index >= 0 && index < _vertices.size());
+		OVITO_ASSERT(index >= 0 && index < vertexCount());
 		return _vertices[index];
 	}
 
 	/// Returns a pointer to the face with the given index.
 	Face* face(int index) const {
-		OVITO_ASSERT(index >= 0 && index < _faces.size());
+		OVITO_ASSERT(index >= 0 && index < faceCount());
 		return _faces[index];
 	}
 
@@ -261,7 +261,7 @@ public:
 	/// Creates a new face defined by the given range of vertices.
 	/// Half-edges connecting the vertices are created by this method too.
 	template<typename VertexPointerIterator>
-	Face* createFace(VertexPointerIterator* begin, VertexPointerIterator* end) {
+	Face* createFace(VertexPointerIterator begin, VertexPointerIterator end) {
 		OVITO_ASSERT(std::distance(begin, end) >= 2);
 		Face* face = _facePool.construct(faceCount());
 		_faces.push_back(face);

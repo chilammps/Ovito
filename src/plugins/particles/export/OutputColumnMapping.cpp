@@ -84,7 +84,7 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 	: _mapping(mapping), _source(source), _writeTypeNames(writeTypeNames)
 {
 	// Gather the source properties.
-	for(int i = 0; i < mapping.size(); i++) {
+	for(int i = 0; i < (int)mapping.size(); i++) {
 		const ParticlePropertyReference& pref = mapping[i];
 
 		ParticlePropertyObject* property = pref.findInState(source);
@@ -93,7 +93,7 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 			                   "The property '%2' does not exist.").arg(i+1).arg(pref.name()));
 		}
 		if(property) {
-			if(property->componentCount() <= std::max(0, pref.vectorComponent()))
+			if((int)property->componentCount() <= std::max(0, pref.vectorComponent()))
 				throw Exception(tr("The output vector component selected for column %1 is out of range. The particle property '%2' has only %3 component(s).").arg(i+1).arg(pref.name()).arg(property->componentCount()));
 			if(property->dataType() == QMetaType::Void)
 				throw Exception(tr("The particle property '%1' cannot be written to the output file because it is empty.").arg(pref.name()));

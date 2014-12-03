@@ -349,7 +349,7 @@ bool FileSourceEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 					}
 					else {
 						// Close sub-editor.
-						for(int i = _subEditors.size() - 1; i >= 0; i--) {
+						for(int i = (int)_subEditors.size() - 1; i >= 0; i--) {
 							if(_subEditors[i]->editObject() == dataObj)
 								_subEditors.erase(_subEditors.begin() + i);
 						}

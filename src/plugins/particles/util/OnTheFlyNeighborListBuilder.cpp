@@ -48,7 +48,7 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 
 	AffineTransformation binCell;
 	binCell.translation() = simCell.matrix().translation();
-	Vector3 planeNormals[3];
+	std::array<Vector3,3> planeNormals;
 
 	// Determine the number of bins in each spatial direction.
 	for(size_t i = 0; i < 3; i++) {

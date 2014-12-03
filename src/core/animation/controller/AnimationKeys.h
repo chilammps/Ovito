@@ -137,7 +137,7 @@ private:
 /**
  * \brief Animation key class for Vector3 controllers.
  */
-class OVITO_CORE_EXPORT Vector3AnimationKey : public TypedAnimationKey<Vector3, Vector3::Zero>
+class OVITO_CORE_EXPORT Vector3AnimationKey : public TypedAnimationKey<Ovito::Util::Math::Vector3, Ovito::Util::Math::Vector3::Zero>
 {
 public:
 
@@ -157,7 +157,7 @@ private:
 /**
  * \brief Animation key class for position controllers.
  */
-class OVITO_CORE_EXPORT PositionAnimationKey : public TypedAnimationKey<Vector3, Vector3::Zero>
+class OVITO_CORE_EXPORT PositionAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Vector3, Ovito::Util::Math::Vector3::Zero>
 {
 public:
 
@@ -177,7 +177,7 @@ private:
 /**
  * \brief Animation key class for rotation controllers.
  */
-class OVITO_CORE_EXPORT RotationAnimationKey : public TypedAnimationKey<Rotation, Rotation::Identity>
+class OVITO_CORE_EXPORT RotationAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Rotation, Ovito::Util::Math::Rotation::Identity>
 {
 public:
 
@@ -197,7 +197,7 @@ private:
 /**
  * \brief Animation key class for scaling controllers.
  */
-class OVITO_CORE_EXPORT ScalingAnimationKey : public TypedAnimationKey<Scaling, Scaling::Identity>
+class OVITO_CORE_EXPORT ScalingAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Scaling, Ovito::Util::Math::Scaling::Identity>
 {
 public:
 

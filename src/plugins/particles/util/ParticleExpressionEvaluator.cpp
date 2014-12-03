@@ -231,7 +231,7 @@ void ParticleExpressionEvaluator::evaluate(const std::function<void(size_t,size_
 	_usedVars.clear();
 
 	// Determine the number of parallel threads to use.
-	int nthreads = std::max(QThread::idealThreadCount(), 1);
+	size_t nthreads = std::max(QThread::idealThreadCount(), 1);
 	if(_particleCount == 0)
 		return;
 	else if(_particleCount < 100)
@@ -247,7 +247,7 @@ void ParticleExpressionEvaluator::evaluate(const std::function<void(size_t,size_
 			throw Exception(worker._errorMsg);
 	}
 	else if(nthreads > 1) {
-		QVector<WorkerThread> workers(nthreads);
+		std::vector<WorkerThread> workers(nthreads);
 		for(auto& worker : workers)
 			worker.initialize(_expressions, _inputVariables, _usedVars);
 
@@ -255,7 +255,7 @@ void ParticleExpressionEvaluator::evaluate(const std::function<void(size_t,size_
 		QFutureSynchronizer<void> synchronizer;
 		size_t chunkSize = _particleCount / nthreads;
 		OVITO_ASSERT(chunkSize > 0);
-		for(int i = 0; i < workers.size(); i++) {
+		for(size_t i = 0; i < workers.size(); i++) {
 			// Setup data range.
 			size_t startIndex = chunkSize * i;
 			size_t endIndex = startIndex + chunkSize;

@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Ovito { namespace View {
 
@@ -194,7 +195,7 @@ private:
 	OORef<ViewportSceneRenderer> _viewportRenderer;
 
 	/// Controls around which point the viewport camera should orbit.
-	PropertyField<OrbitCenterMode, int> _orbitCenterMode;
+    PropertyField<OrbitCenterMode> _orbitCenterMode;
 
 	/// Position of the orbiting center picked by the user.
 	PropertyField<Point3> _userOrbitCenter;
@@ -231,5 +232,8 @@ private:
 };
 
 }}	// End of namespace
+
+Q_DECLARE_METATYPE(Ovito::View::ViewportConfiguration::OrbitCenterMode);
+Q_DECLARE_TYPEINFO(Ovito::View::ViewportConfiguration::OrbitCenterMode, Q_PRIMITIVE_TYPE);
 
 #endif		// __OVITO_VIEWPORT_CONFIGURATION_H

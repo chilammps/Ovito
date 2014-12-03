@@ -34,7 +34,7 @@ using namespace Ovito;
 /**
  * Container structure for triangle mesh data imported by a parser class.
  */
-class OVITO_MESH_EXPORT TriMeshImportData : public FileSourceImporter::FrameLoader
+class TriMeshImportData : public FileSourceImporter::FrameLoader
 {
 public:
 

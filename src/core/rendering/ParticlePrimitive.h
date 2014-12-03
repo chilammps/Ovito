@@ -122,11 +122,11 @@ private:
 
 }}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ShadingMode);
-Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::RenderingQuality);
-Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ParticleShape);
-Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::ParticleShape, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Rendering::ParticlePrimitive::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::Rendering::ParticlePrimitive::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::Rendering::ParticlePrimitive::ParticleShape);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ParticlePrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ParticlePrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ParticlePrimitive::ParticleShape, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PARTICLE_PRIMITIVE_H

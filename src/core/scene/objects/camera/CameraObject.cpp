@@ -84,7 +84,7 @@ TimeInterval CameraObject::objectValidity(TimePoint time)
 void CameraObject::projectionParameters(TimePoint time, ViewProjectionParameters& params)
 {
 	// Transform scene bounding box to camera space.
-	Box3 bb = params.boundingBox.transformed(params.viewMatrix).centerScale(1.01);
+	Box3 bb = params.boundingBox.transformed(params.viewMatrix).centerScale(1.01f);
 
 	// Compute projection matrix.
 	params.isPerspective = isPerspective();

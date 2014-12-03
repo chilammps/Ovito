@@ -160,11 +160,11 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 	FloatType sqEdgeThreshold = _edgeThreshold * _edgeThreshold * 4;
 
 	// The normal vectors of the three cell planes.
-	Vector3 planeNormals[3] = {
-			_simCell.cellNormalVector(0),
-			_simCell.cellNormalVector(1),
-			_simCell.cellNormalVector(2)
-	};
+	std::array<Vector3,3> planeNormals;
+	planeNormals[0] = _simCell.cellNormalVector(0);
+	planeNormals[1] = _simCell.cellNormalVector(1);
+	planeNormals[2] = _simCell.cellNormalVector(2);
+
 	Point3 corner1 = Point3::Origin() + _simCell.matrix().column(3);
 	Point3 corner2 = corner1 + _simCell.matrix().column(0) + _simCell.matrix().column(1) + _simCell.matrix().column(2);
 
@@ -284,7 +284,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 					if((_faceThreshold == 0 || area > _faceThreshold) && faceOrder >= 3) {
 						coordNumber++;
 						faceOrder--;
-						if(_voronoiIndices && faceOrder < _voronoiIndices->componentCount())
+						if(_voronoiIndices && faceOrder < (int)_voronoiIndices->componentCount())
 							_voronoiIndices->setIntComponent(index, faceOrder, _voronoiIndices->getIntComponent(index, faceOrder) + 1);
 					}
 				}

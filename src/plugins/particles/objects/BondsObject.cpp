@@ -89,12 +89,12 @@ OORef<RefTarget> BondsObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 void BondsObject::particlesDeleted(const boost::dynamic_bitset<>& deletedParticlesMask)
 {
 	// Build map that maps old particle indices to new indices.
-	std::vector<unsigned int> indexMap(deletedParticlesMask.size());
+	std::vector<size_t> indexMap(deletedParticlesMask.size());
 	auto index = indexMap.begin();
-	unsigned int oldParticleCount = deletedParticlesMask.size();
-	unsigned int newParticleCount = 0;
-	for(boost::dynamic_bitset<>::size_type i = 0; i < deletedParticlesMask.size(); i++)
-		*index++ = deletedParticlesMask.test(i) ? std::numeric_limits<unsigned int>::max() : newParticleCount++;
+	size_t oldParticleCount = deletedParticlesMask.size();
+	size_t newParticleCount = 0;
+	for(size_t i = 0; i < deletedParticlesMask.size(); i++)
+		*index++ = deletedParticlesMask.test(i) ? std::numeric_limits<size_t>::max() : newParticleCount++;
 
 	_storage.detach();
 	auto result = _storage->bonds().begin();

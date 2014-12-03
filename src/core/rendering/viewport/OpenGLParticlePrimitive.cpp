@@ -368,7 +368,7 @@ bool OpenGLParticlePrimitive::isValid(SceneRenderer* renderer)
 ******************************************************************************/
 void OpenGLParticlePrimitive::render(SceneRenderer* renderer)
 {
-	OVITO_CHECK_OPENGL();
+    OVITO_REPORT_OPENGL_ERRORS();
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
 	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
@@ -787,25 +787,25 @@ void OpenGLParticlePrimitive::initializeBillboardTexture(ViewportSceneRenderer* 
 			size_t pixelOffset = 0;
 			for(int y = 0; y < resolution; y++) {
 				for(int x = 0; x < resolution; x++, pixelOffset++) {
-					Vector2 r((FloatType(x - resolution/2) + 0.5) / (resolution/2), (FloatType(y - resolution/2) + 0.5) / (resolution/2));
+                    Vector2 r((FloatType(x - resolution/2) + 0.5f) / (resolution/2), (FloatType(y - resolution/2) + 0.5f) / (resolution/2));
 					FloatType r2 = r.squaredLength();
 					FloatType r2_clamped = std::min(r2, FloatType(1));
-					FloatType diffuse_brightness = sqrt(1 - r2_clamped) * 0.6 + 0.4;
+                    FloatType diffuse_brightness = sqrt(1 - r2_clamped) * 0.6f + 0.4f;
 
 					textureImages[mipmapLevel][pixelOffset][0] =
-							(GLubyte)(std::min(diffuse_brightness, (FloatType)1.0) * 255.0);
+                            (GLubyte)(std::min(diffuse_brightness, (FloatType)1.0f) * 255.0f);
 
 					textureImages[mipmapLevel][pixelOffset][2] = 255;
 					textureImages[mipmapLevel][pixelOffset][3] = 255;
 
-					if(r2 < 1.0) {
+                    if(r2 < 1.0f) {
 						// Store specular brightness in alpha channel of texture.
-						Vector2 sr = r + Vector2(0.6883, 0.982);
+                        Vector2 sr = r + Vector2(0.6883f, 0.982f);
 						FloatType specular = std::max(FloatType(1) - sr.squaredLength(), FloatType(0));
 						specular *= specular;
 						specular *= specular * (1 - r2_clamped*r2_clamped);
 						textureImages[mipmapLevel][pixelOffset][1] =
-								(GLubyte)(std::min(specular, FloatType(1)) * 255.0);
+                                (GLubyte)(std::min(specular, FloatType(1)) * 255.0f);
 					}
 					else {
 						// Set transparent pixel.

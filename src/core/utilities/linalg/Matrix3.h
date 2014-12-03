@@ -94,37 +94,45 @@ public:
 	Q_DECL_CONSTEXPR Matrix_3(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_3<T>,3>{{Vector_3<T>(m11,m21,m31),
 									 Vector_3<T>(m12,m22,m32),
-									 Vector_3<T>(m13,m23,m33)}}
+									 Vector_3<T>(m13,m23,m33)}} {}
+#else
+		{ (*this)[0] = Vector_3<T>(m11,m21,m31); 
+		  (*this)[1] = Vector_3<T>(m12,m22,m32);
+		  (*this)[2] = Vector_3<T>(m13,m23,m33); }
 #endif
-		{}
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
 	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<Vector_3<T>,3>{{c1, c2, c3}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<Vector_3<T>,3>{{c1, c2, c3}} {}
+#else
+		{ (*this)[0] = c1; (*this)[1] = c2; (*this)[2] = c3; } 
 #endif
-		{}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
 	Q_DECL_CONSTEXPR Matrix_3(Zero)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<Vector_3<T>,3>{{typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero()}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<Vector_3<T>,3>{{typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero()}} {}
+#else
+		{ this->assign(typename Vector_3<T>::Zero()); }
 #endif
-		{}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one, and all off-diagonal elements are set to zero.
 	Q_DECL_CONSTEXPR Matrix_3(Identity)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_3<T>,3>{{Vector_3<T>(T(1),T(0),T(0)),
 									 Vector_3<T>(T(0),T(1),T(0)),
-									 Vector_3<T>(T(0),T(0),T(1))}}
+									 Vector_3<T>(T(0),T(0),T(1))}} {}
+#else
+		{ (*this)[0] = Vector_3<T>(T(1),T(0),T(0)); 
+		  (*this)[1] = Vector_3<T>(T(0),T(1),T(0));
+		  (*this)[2] = Vector_3<T>(T(0),T(0),T(1)); }
 #endif
-		{}
 
 	/// \brief Casts the matrix to a matrix with another data type.
 	template<typename U>
@@ -260,7 +268,7 @@ public:
 	/// \return \c false if the matrix is not invertible because it is singular; \c true if the inverse has been calculated
 	///         and was stored in \a result.
 	/// \sa determinant()
-	bool inverse(Matrix_3& result, FloatType epsilon = FLOATTYPE_EPSILON) const {
+	bool inverse(Matrix_3& result, T epsilon = T(FLOATTYPE_EPSILON)) const {
 		T det = determinant();
 		if(std::abs(det) <= epsilon) return false;
 		result = Matrix_3(((*this)[1][1]*(*this)[2][2] - (*this)[1][2]*(*this)[2][1])/det,
@@ -512,7 +520,7 @@ inline Matrix_3<T> Matrix_3<T>::rotation(T ai, T aj, T ak, EulerAxisSequence axi
 
 // Returns the Euler angles from a rotation matrix.
 template<typename T>
-inline Vector_3<T> Matrix_3<T>::toEuler(Matrix_3<T>::EulerAxisSequence axisSequence) const
+inline Vector_3<T> Matrix_3<T>::toEuler(EulerAxisSequence axisSequence) const
 {
 	OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
 	int firstaxis = 2;
@@ -567,9 +575,9 @@ inline Vector_3<T> Matrix_3<T>::toEuler(Matrix_3<T>::EulerAxisSequence axisSeque
 template<typename T>
 inline Matrix_3<T> Matrix_3<T>::scaling(const ScalingT<T>& scaling)
 {
-	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), T(0), T(0),
-			T(0), scaling.S.y(), T(0),
-			T(0), T(0), scaling.S.z());
+	Matrix_3<T> K(scaling.S.x(), T(0), T(0),
+				  T(0), scaling.S.y(), T(0),
+				  T(0), T(0), scaling.S.z());
 	if(std::abs(scaling.Q.w()) >= T(1))
 		return K;
 	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);

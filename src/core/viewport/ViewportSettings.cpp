@@ -191,7 +191,7 @@ void ViewportSettings::save(QSettings& store) const
 		}
 	}
 	OVITO_ASSERT(colorEnum.isValid());
-	for(int i = 0; i < _viewportColors.size(); i++) {
+    for(size_t i = 0; i < _viewportColors.size(); i++) {
 		store.setValue(colorEnum.key(i), QVariant::fromValue((QColor)_viewportColors[i]));
 	}
 	store.endGroup();

@@ -214,7 +214,7 @@ void VideoEncoder::closeFile()
 
 	// Free streams.
 	if(_formatContext) {
-		for(int i = 0; i < _formatContext->nb_streams; i++) {
+		for(size_t i = 0; i < _formatContext->nb_streams; i++) {
 			av_freep(&_formatContext->streams[i]->codec);
 			av_freep(&_formatContext->streams[i]);
 		}

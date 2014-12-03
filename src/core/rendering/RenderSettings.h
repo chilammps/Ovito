@@ -170,7 +170,7 @@ private:
 	PropertyField<bool> _skipExistingImages;
 
 	/// Specifies which part of the animation should be rendered.
-	PropertyField<RenderingRangeType, int> _renderingRangeType;
+    PropertyField<RenderingRangeType> _renderingRangeType;
 
 	/// The first frame to render when rendering range is set to CUSTOM_INTERVAL.
 	PropertyField<int> _customRangeStart;
@@ -206,5 +206,8 @@ private:
 };
 
 }}	// End of namespace
+
+Q_DECLARE_METATYPE(Ovito::Rendering::RenderSettings::RenderingRangeType);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::RenderSettings::RenderingRangeType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_RENDER_SETTINGS_H

@@ -80,11 +80,11 @@ void SurfaceMesh::smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, c
 
 	// Compute displacement for each vertex.
 	std::vector<Vector3> displacements(mesh.vertexCount());
-#ifndef Q_OS_WIN
+//#ifndef Q_OS_WIN
 	parallelFor(mesh.vertexCount(), [&mesh, &displacements, prefactor, cell, absoluteToReduced](int index) {
-#else
-	for(size_t index = 0; index < mesh.vertexCount(); index++) {
-#endif
+//#else
+//	for(int index = 0; index < mesh.vertexCount(); index++) {
+//#endif
 		HalfEdgeMesh::Vertex* vertex = mesh.vertex(index);
 		Vector3 d = Vector3::Zero();
 		for(HalfEdgeMesh::Edge* edge = vertex->edges(); edge != nullptr; edge = edge->nextVertexEdge()) {
@@ -93,11 +93,11 @@ void SurfaceMesh::smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, c
 		if(vertex->edges() != nullptr)
 			d *= (prefactor / vertex->numEdges());
 		displacements[index] = d;
-#ifndef Q_OS_WIN
+//#ifndef Q_OS_WIN
 	});
-#else
-	}
-#endif
+//#else
+//	}
+//#endif
 
 	// Apply computed displacements.
 	auto d = displacements.cbegin();

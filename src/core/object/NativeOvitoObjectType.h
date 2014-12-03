@@ -46,7 +46,7 @@ public:
 
 	/// \brief Returns the name of this class.
 	/// \return A pointer to the class name string (without namespace qualifier).
-	const char* className() const;
+	const char* className() const { return _pureClassName; }
 
 	/// \brief Returns the identifier of the plugin this class belongs to.
 	const char* pluginId() const { return _pluginId; }
@@ -61,6 +61,10 @@ protected:
 	/// \return The new instance of the class. The pointer can safely be cast to the corresponding C++ class type.
 	/// \throw Exception if the instance could not be created.
 	virtual OvitoObject* createInstanceImpl(DataSet* dataset) const override;
+
+	/// This is called by the NativePlugin that contains this class to initialize
+	/// the properties of this class type.
+	virtual void initializeClassDescriptor(Plugin* plugin) override;
 
 private:
 

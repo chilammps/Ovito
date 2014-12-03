@@ -81,7 +81,7 @@ const char* CompressedTextReader::readLine(int maxSize)
 		}
 	}
 	else {
-		if(maxSize > _line.size()) {
+        if(maxSize > (int)_line.size()) {
 			_line.resize(maxSize + 1);
 		}
 		readBytes = _stream->readLine(_line.data(), _line.size());

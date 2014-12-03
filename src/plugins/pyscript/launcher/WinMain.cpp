@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 	if(loadFile) newargv.push_back(loadFile);
 
 	// Initialize the application.
-	int newargc = newargv.size();
+	int newargc = (int)newargv.size();
 	if(!Ovito::Application().instance().initialize(newargc, const_cast<char**>(newargv.data())))
 		return 1;
 

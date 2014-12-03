@@ -90,11 +90,11 @@ void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 	parallelFor(positions()->size(), *this, [&neighborListBuilder, &neighLists](size_t index) {
 		TreeNeighborListBuilder::Locator<4> loc(neighborListBuilder);
 		loc.findNeighbors(neighborListBuilder.particlePos(index));
-		for(size_t i = 0; i < loc.results().size(); i++) {
+		for(int i = 0; i < loc.results().size(); i++) {
 			neighLists[index][i].vec = loc.results()[i].delta;
 			neighLists[index][i].index = loc.results()[i].index;
 		}
-		for(size_t i = loc.results().size(); i < 4; i++) {
+		for(int i = loc.results().size(); i < 4; i++) {
 			neighLists[index][i].vec.setZero();
 			neighLists[index][i].index = -1;
 		}
@@ -132,7 +132,7 @@ void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 		for(const Vector3& v : secondNeighbors)
 			sum += v.length();
 		sum /= 12;
-		constexpr FloatType factor = 1.2071068;   // = sqrt(2.0) * ((1.0 + sqrt(0.5)) / 2)
+		const FloatType factor = FloatType(1.2071068);   // = sqrt(2.0) * ((1.0 + sqrt(0.5)) / 2)
 		FloatType localCutoff = sum * factor;
 		FloatType localCutoffSquared = localCutoff * localCutoff;
 

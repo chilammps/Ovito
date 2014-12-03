@@ -87,7 +87,7 @@ public:
 
 public:	
 	
-	Q_PROPERTY(RefTarget editObject READ editObject);
+    Q_PROPERTY(Ovito::ObjectSystem::RefTarget* editObject READ editObject);
 	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
 	Q_PROPERTY(bool isDisabled READ isDisabled WRITE setDisabled);
 		

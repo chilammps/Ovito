@@ -210,7 +210,7 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 	if(vpRenderer->isCoreProfile() == false)
 		glDisable(GL_TEXTURE_2D);
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 }}}	// End of namespace

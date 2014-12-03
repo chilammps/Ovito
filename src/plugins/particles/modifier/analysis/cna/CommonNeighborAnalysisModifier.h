@@ -35,8 +35,12 @@ class OVITO_PARTICLES_EXPORT CommonNeighborAnalysisModifier : public StructureId
 {
 public:
 
-	// The maximum number of neighbor atoms taken into account for the common neighbor analysis.
+#ifndef Q_CC_MSVC
+	/// The maximum number of neighbor atoms taken into account for the common neighbor analysis.
 	static constexpr int MAX_NEIGHBORS = 16;
+#else
+	enum { MAX_NEIGHBORS = 16 };
+#endif
 
 	/// The structure types recognized by the common neighbor analysis.
 	enum StructureType {

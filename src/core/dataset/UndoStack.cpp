@@ -268,7 +268,7 @@ void UndoStack::redo()
 ******************************************************************************/
 void UndoStack::CompoundOperation::undo()
 {
-	for(int i = _subOperations.size() - 1; i >= 0; --i) {
+	for(int i = (int)_subOperations.size() - 1; i >= 0; --i) {
 		OVITO_CHECK_POINTER(_subOperations[i]);
 		_subOperations[i]->undo();
 	}
@@ -279,7 +279,7 @@ void UndoStack::CompoundOperation::undo()
 ******************************************************************************/
 void UndoStack::CompoundOperation::redo()
 {
-	for(int i = 0; i < _subOperations.size(); i++) {
+	for(size_t i = 0; i < _subOperations.size(); i++) {
 		OVITO_CHECK_POINTER(_subOperations[i]);
 		_subOperations[i]->redo();
 	}

@@ -97,11 +97,6 @@ MACRO(OVITO_PLUGIN target_name)
 	# Create the library target for the plugin.
 	ADD_LIBRARY(${target_name} ${plugin_sources})
 
-	# Define this macro so the source code knows the shared library is being compiled 
-	# and symbols need to be exported.
-	STRING(TOUPPER "${target_name}" uppercase_target_name)
-	TARGET_COMPILE_DEFINITIONS(${target_name} PRIVATE "-DMAKING_MODULE_${uppercase_target_name}")
-
 	# Link to OVITO's core library.
 	TARGET_LINK_LIBRARIES(${target_name} PUBLIC Core)
 

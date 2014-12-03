@@ -30,7 +30,7 @@
 #define BOTAN_DISTRIBUTION_INFO "unspecified"
 
 #ifndef BOTAN_DLL
-#define BOTAN_DLL Q_DECL_IMPORT
+#define BOTAN_DLL
 #endif
 
 /* Chunk sizes */

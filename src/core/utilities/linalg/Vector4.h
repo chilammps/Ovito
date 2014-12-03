@@ -82,24 +82,27 @@ public:
 
 	/// Constructs a vector with all four components initialized to the given value.
 	Q_DECL_CONSTEXPR explicit Vector_4(T val)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 4>{{val,val,val,val}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 4>{{val,val,val,val}} {}
+#else
+		{ this->assign(val); } 
 #endif
-		{}
 
 		/// Initializes the components of the vector with the given values.
 	Q_DECL_CONSTEXPR Vector_4(T x, T y, T z, T w)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 4>{{x, y, z, w}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 4>{{x, y, z, w}} {}
+#else
+		{ this->x() = x; this->y() = y; this->z() = z; this->w() = w; } 
 #endif
-		{}
 
 		/// Initializes the vector to the null vector. All components are set to zero.
 	Q_DECL_CONSTEXPR Vector_4(Zero)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 4>{{T(0), T(0), T(0), T(0)}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 4>{{T(0), T(0), T(0), T(0)}} {}
+#else
+		{ this->assign(T(0)); }
 #endif
-		{}
 
 		/// Initializes the vector from an array.
 	Q_DECL_CONSTEXPR explicit Vector_4(const std::array<T, 4>& a) : std::array<T, 4>(a) {}
@@ -108,10 +111,11 @@ public:
 	/// \param v Specifies the xyz components of the new vector.
 	/// \param w The w component of the new vector.
 	Q_DECL_CONSTEXPR explicit Vector_4(const Vector_3<T>& v, T w)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 4>{{v.x(), v.y(), v.z(), w}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 4>{{v.x(), v.y(), v.z(), w}} {}
+#else
+		{ this->x() = v.x; this->y() = v.y; this->z() = v.z; this->w() = w; } 
 #endif
-		{}
 
     /////////////////////////////// Unary operators //////////////////////////////
 
@@ -162,7 +166,7 @@ public:
 	T& z() { return (*this)[2]; }
 
 	/// Returns a reference to the W component of this vector.
-	T& w() { return (*this)[2]; }
+	T& w() { return (*this)[3]; }
 
 	////////////////////////////////// Comparison ////////////////////////////////
 

@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <plugins/pyscript/PyScript.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
@@ -68,7 +68,7 @@ BOOST_PYTHON_MODULE(ParticlesImporter)
 		new (storage) InputColumnMapping();
 		InputColumnMapping* mapping = (InputColumnMapping*)storage;
 		mapping->resize(PySequence_Size(obj_ptr));
-		for(int i = 0; i < mapping->size(); i++) {
+		for(size_t i = 0; i < mapping->size(); i++) {
 			ParticlePropertyReference pref = extract<ParticlePropertyReference>(object(handle<>(PySequence_GetItem(obj_ptr, i))));
 			if(!pref.isNull()) {
 				if(pref.type() != ParticleProperty::UserProperty)

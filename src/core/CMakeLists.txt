@@ -19,6 +19,14 @@
 #
 ###############################################################################
 
+# Find libav libraries if video support has been enabled by the user.
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	FIND_PACKAGE(Libav REQUIRED)
+	IF(NOT LIBAV_FOUND)
+		MESSAGE(FATAL_ERROR "Libav libraries not found, which are required for video output support (see OVITO_VIDEO_OUTPUT_SUPPORT option).")
+	ENDIF()
+ENDIF()
+
 SET(OVITO_CORE_SOURCE_FILES 
 	utilities/Exception.cpp
 	utilities/linalg/AffineDecomposition.cpp
@@ -189,7 +197,7 @@ ENDIF()
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
 # Build library
-ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
+ADD_LIBRARY(Core Core.cpp ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
 TARGET_LINK_LIBRARIES(Core QSsh)
 
 # Link to OpenGL library.
@@ -208,17 +216,17 @@ QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
 # Link video encoding lib.
 IF(OVITO_VIDEO_OUTPUT_SUPPORT)
 	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_LINK_LIBRARIES(Core ${FFMPEG_LIBRARIES})
-	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${FFMPEG_INCLUDE_DIR})
+	TARGET_LINK_LIBRARIES(Core ${LIBAV_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${LIBAV_INCLUDE_DIRS})
 ENDIF()
-
-# This will let the source code export symbols when building a DLL.
-TARGET_COMPILE_DEFINITIONS(Core PRIVATE OVITO_CORE_LIBRARY)
 
 IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
 	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
 ENDIF(APPLE)
+
+# Speed up compilation by using precompiled headers.
+ADD_PRECOMPILED_HEADER(Core core/Core.h)
 
 OVITO_FIXUP_BUILD_OBJECT(Core)
 
@@ -227,4 +235,19 @@ IF(NOT OVITO_MONOLITHIC_BUILD)
 	INSTALL(TARGETS Core 
 		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+ENDIF()
+
+IF(WIN32)
+	# Install DLLs of Libav video encoding library.
+	FOREACH(lib ${LIBAV_LIBRARIES})
+		GET_FILENAME_COMPONENT(base_name "${lib}" NAME_WE)
+		GET_FILENAME_COMPONENT(lib_path "${lib}" PATH)
+		FILE(GLOB lib_dll "${lib_path}/${base_name}-*.dll")
+		IF(NOT lib_dll)
+			MESSAGE(FATAL_ERROR "Could not find corresponding DLL for Libav library '${lib}' in same directory.")
+		ENDIF()
+		FOREACH(dll ${lib_dll})
+			OVITO_INSTALL_DLL("${dll}")
+		ENDFOREACH()
+	ENDFOREACH()
 ENDIF()

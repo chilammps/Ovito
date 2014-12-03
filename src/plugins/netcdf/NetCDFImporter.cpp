@@ -131,7 +131,7 @@ void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, 
 
 	QFileInfo fileInfo(stream.device().fileName());
 	QDateTime lastModified = fileInfo.lastModified();
-	for(int i = 0; i < nFrames; i++) {
+	for(int i = 0; i < (int)nFrames; i++) {
 		Frame frame;
 		frame.sourceFile = sourceUrl;
 		frame.byteOffset = 0;
@@ -482,7 +482,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 					}
 					else {
 						// Look for existing user-defined property with the same name.
-						for(int j = 0; j < particleProperties().size(); j++) {
+						for(int j = 0; j < (int)particleProperties().size(); j++) {
 							const auto& p = particleProperties()[j];
 							if(p->name() == propertyName) {
 								if(property->dataType() == dataType)
@@ -522,8 +522,8 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
                                     if (type == NC_CHAR) {
                                         // We can only read this if there is an additional dimension
                                         if (nDims == nDimsDetected+1) {
-                                            int dimids[nDims];
-                                            NCERR( nc_inq_vardimid(_ncid, varId, dimids) );
+											std::vector<int> dimids(nDims);
+											NCERR( nc_inq_vardimid(_ncid, varId, dimids.data()) );
 
                                             size_t strLen;
                                             NCERR( nc_inq_dimlen(_ncid, dimids[nDims-1], &strLen) );
@@ -537,7 +537,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 
                                             // Collect all distinct particle names
                                             QMap<QString, bool> discoveredParticleNames;
-                                            for (int i = 0; i < particleCount; i++) {
+											for (size_t i = 0; i < particleCount; i++) {
                                                 QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
                                                 name = name.trimmed();
                                                 discoveredParticleNames[name] = true;
@@ -556,7 +556,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 
                                             // Convert particle names to particle ids and set them accordingly
                                             int *particleTypes = property->dataInt();
-                                            for (int i = 0; i < particleCount; i++) {
+											for (size_t i = 0; i < particleCount; i++) {
                                                 QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
                                                 name = name.trimmed();
 
@@ -571,12 +571,12 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 
                                         // Find maximum atom type.
                                         int maxType = 0;
-                                        for (int i = 0; i < particleCount; i++)
+										for (size_t i = 0; i < particleCount; i++)
                                             maxType = std::max(property->getInt(i), maxType);
                                         
                                         // Count number of atoms for each type.
                                         QVector<int> typeCount(maxType+1, 0);
-                                        for (int i = 0; i < particleCount; i++)
+										for (size_t i = 0; i < particleCount; i++)
                                             typeCount[property->getInt(i)]++;
 								
                                         for (int i = 0; i <= maxType; i++) {
@@ -625,7 +625,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
                                         FloatType minvals[3], maxvals[3];
                                         std::copy(r, r+3, minvals);
                                         std::copy(r, r+3, maxvals);
-                                        for (int i = 0; i < particleCount; i++) {
+										for (size_t i = 0; i < particleCount; i++) {
                                             for (int k = 0; k < 3; k++) {
                                                 minvals[k] = std::min(minvals[k], r[3*i+k]);
                                                 maxvals[k] = std::max(maxvals[k], r[3*i+k]);
@@ -763,7 +763,7 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	else {
 		mapping = _customColumnMapping;
 		mapping.resize(inspectionTask->columnMapping().size());
-		for(int i = 0; i < mapping.size(); i++)
+		for(size_t i = 0; i < mapping.size(); i++)
 			mapping[i].columnName = inspectionTask->columnMapping()[i].columnName;
 	}
 

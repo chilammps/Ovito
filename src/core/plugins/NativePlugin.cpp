@@ -75,7 +75,7 @@ void NativePlugin::loadPluginImpl()
 #endif
 	NativeOvitoObjectType* linkedListAfter = NativeOvitoObjectType::_firstInfo;
 
-	// Connect all newly loaded class descriptors with this plugin.
+	// Initialize all newly loaded classes and connect them with this plugin.
 	for(NativeOvitoObjectType* clazz = linkedListAfter; clazz != linkedListBefore; clazz = clazz->_next) {
 #ifdef OVITO_MONOLITHIC_BUILD
 		if(clazz->pluginId() != pluginId())
@@ -85,7 +85,7 @@ void NativePlugin::loadPluginImpl()
 			throw Exception(QString("Plugin ID %1 assigned to class %2 does not match plugin %3 that contains the class.").arg(clazz->pluginId()).arg(clazz->name()).arg(pluginId()));
 #endif
 		OVITO_ASSERT(clazz->plugin() == nullptr);
-		clazz->_plugin = this;
+		clazz->initializeClassDescriptor(this);
 		registerClass(clazz);
 	}
 }

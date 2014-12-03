@@ -34,13 +34,13 @@
 #include "ViewportMenu.h"
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
-#define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
+#define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0f
 
 /// The default field of view angle in radians used for perspective view types when the scene is empty.
-#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(35.0*FLOATTYPE_PI/180.0)
+#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(35.0f*FLOATTYPE_PI/180.0f)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
-#define VIEWPORT_RENDER_FRAME_SIZE				0.93
+#define VIEWPORT_RENDER_FRAME_SIZE				0.93f
 
 namespace Ovito { namespace View {
 
@@ -754,7 +754,7 @@ void Viewport::renderOrientationIndicator()
 	renderer->setProjParams(projParams);
 	renderer->setWorldTransform(AffineTransformation::Identity());
 
-	static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2, 0.2, 1) };
+    static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2f, 0.2f, 1) };
 	static const QString labels[3] = { QStringLiteral("x"), QStringLiteral("y"), QStringLiteral("z") };
 
 	// Create line buffer.

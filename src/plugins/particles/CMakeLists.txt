@@ -1,6 +1,6 @@
 ###############################################################################
 # 
-#  Copyright (2013) Alexander Stukowski
+#  Copyright (2014) Alexander Stukowski
 #
 #  This file is part of OVITO (Open Visualization Tool).
 #
@@ -125,10 +125,12 @@ SET(GLUSourceFiles
 
 # Generate plugin module.
 OVITO_PLUGIN(Particles
-	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
+	SOURCES Particles.cpp ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot VoroPlusPlus ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
 	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
 )
 
+# Speed up compilation by using precompiled headers.
+ADD_PRECOMPILED_HEADER(Particles plugins/particles/Particles.h)

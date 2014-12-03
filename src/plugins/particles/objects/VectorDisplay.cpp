@@ -137,7 +137,7 @@ void VectorDisplay::render(TimePoint time, DataObject* dataObject, const Pipelin
 		vectorProperty = nullptr;
 
 	// Get number of vectors.
-	int vectorCount = (vectorProperty && positionProperty) ? vectorProperty->size() : 0;
+	int vectorCount = (vectorProperty && positionProperty) ? (int)vectorProperty->size() : 0;
 
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_buffer || !_buffer->isValid(renderer);

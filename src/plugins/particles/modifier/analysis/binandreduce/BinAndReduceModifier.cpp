@@ -107,12 +107,12 @@ void BinAndReduceModifier::initializeModifier(PipelineObject* pipeline, Modifier
 ******************************************************************************/
 PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-    size_t binDataSizeX = std::max(1, numberOfBinsX());
-    size_t binDataSizeY = std::max(1, numberOfBinsY());
+	int binDataSizeX = std::max(1, numberOfBinsX());
+	int binDataSizeY = std::max(1, numberOfBinsY());
     if (is1D()) binDataSizeY = 1;
     size_t binDataSize = binDataSizeX*binDataSizeY;
 	_binData.resize(binDataSize);
-	std::fill(_binData.begin(), _binData.end(), 0);
+	std::fill(_binData.begin(), _binData.end(), FloatType(0));
 
     // Return coordinate indices (0, 1 or 2).
     int binDirX = binDirectionX(_binDirection);
@@ -434,8 +434,8 @@ void BinAndReduceModifierEditor::plotAverages()
 	if(!modifier)
 		return;
 
-    size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
-    size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+	int binDataSizeX = std::max(1, modifier->numberOfBinsX());
+	int binDataSizeY = std::max(1, modifier->numberOfBinsY());
     if (modifier->is1D()) binDataSizeY = 1;
     size_t binDataSize = binDataSizeX*binDataSizeY;
 
@@ -582,8 +582,8 @@ void BinAndReduceModifierEditor::onSaveData()
 		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
 			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
 
-        size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
-        size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+		int binDataSizeX = std::max(1, modifier->numberOfBinsX());
+		int binDataSizeY = std::max(1, modifier->numberOfBinsY());
         if (modifier->is1D()) binDataSizeY = 1;
 		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / binDataSizeX;
 		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / binDataSizeY;
@@ -591,7 +591,7 @@ void BinAndReduceModifierEditor::onSaveData()
 		QTextStream stream(&file);
         if (binDataSizeY == 1) {
             stream << "# " << modifier->sourceProperty().name() << " bin size: " << binSizeX << endl;
-            for(int i = 0; i < modifier->binData().size(); i++) {
+			for(size_t i = 0; i < modifier->binData().size(); i++) {
                 stream << (binSizeX * (FloatType(i) + 0.5f) + modifier->xAxisRangeStart()) << " " << modifier->binData()[i] << endl;
             }
         }

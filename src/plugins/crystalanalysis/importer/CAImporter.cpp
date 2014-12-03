@@ -107,7 +107,7 @@ void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& str
 		PatternInfo pattern;
 		if(sscanf(stream.readLine(), "PATTERN ID %i", &pattern.id) != 1)
 			throw Exception(tr("Failed to parse file. Invalid pattern ID in line %1.").arg(stream.lineNumber()));
-		if(patternId2Index.size() <= pattern.id)
+		if((int)patternId2Index.size() <= pattern.id)
 			patternId2Index.resize(pattern.id+1);
 		patternId2Index[pattern.id] = index;
 		stream.readLine();

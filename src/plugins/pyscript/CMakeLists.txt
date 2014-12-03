@@ -22,12 +22,12 @@
 FIND_PACKAGE(PythonLibs REQUIRED)
 FIND_PACKAGE(QScintilla REQUIRED)
 IF(NOT QSCINTILLA_FOUND)
-	MESSAGE(FATAL_ERROR "Could not locate QScintilla2 library, which is required by PyScript plugin.")
-ELSE()
-	# Create imported target for the QScintilla library.
-	ADD_LIBRARY(QScintilla SHARED IMPORTED GLOBAL)
-	SET_PROPERTY(TARGET QScintilla PROPERTY IMPORTED_LOCATION "${QSCINTILLA_LIBRARIES}")
-	SET_PROPERTY(TARGET QScintilla APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${QSCINTILLA_INCLUDE_DIRS}")
+	MESSAGE(FATAL_ERROR "Could not locate QScintilla2 library, which is required by the PyScript plugin.")
+ENDIF()
+
+IF(MSVC)
+	# Precompiled headers need more compiler memory.
+	ADD_DEFINITIONS(-Zm150)
 ENDIF()
 
 SET(OVITO_PYSCRIPT_SOURCE_FILES
@@ -47,15 +47,21 @@ SET(OVITO_PYSCRIPT_SOURCE_FILES
 
 # Generate plugin module.
 OVITO_PLUGIN(PyScript
-	SOURCES ${OVITO_PYSCRIPT_SOURCE_FILES}
-	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} QScintilla
+	SOURCES PyScript.cpp ${OVITO_PYSCRIPT_SOURCE_FILES}
+	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${QSCINTILLA_LIBRARIES}
+	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/python/"
 )
 
 # Add Python include directory.
 TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH})
 
+# Add QScintilla include directory.
+TARGET_INCLUDE_DIRECTORIES(PyScript PRIVATE ${QSCINTILLA_INCLUDE_DIRS})
+
+# Speed up compilation by using precompiled headers.
+ADD_PRECOMPILED_HEADER(PyScript plugins/pyscript/PyScript.h)
+
 # Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET PyScript POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
 INSTALL(DIRECTORY "${OVITO_PLUGINS_DIRECTORY}/python/" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}/python/")
 
 # Install "ovitos" script launcher.
@@ -85,7 +91,7 @@ ELSEIF(WIN32)
 	# We have to build a second executable under Windows because the main ovito.exe is not a console application.
 	SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 	ADD_EXECUTABLE(ovitos launcher/WinMain.cpp)
-	TARGET_LINK_LIBRARIES(ovitos Base Core)
+	TARGET_LINK_LIBRARIES(ovitos Core)
 	QT5_USE_MODULES(ovitos ${OVITO_REQUIRED_QT_MODULES})
 	INSTALL(TARGETS ovitos DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 	GET_PROPERTY(OVITOS_EXECUTABLE TARGET ovitos PROPERTY LOCATION)
@@ -142,27 +148,37 @@ ELSEIF(WIN32)
 	# Install standard Python packages. 
 	LIST(GET PYTHON_LIBRARIES 0 PYTHON_FIRST_LIBRARY)
 	GET_FILENAME_COMPONENT(PYTHON_LIBRARY_PATH "${PYTHON_FIRST_LIBRARY}" PATH)
+	GET_FILENAME_COMPONENT(PYTHON_LIBRARY_NAME "${PYTHON_FIRST_LIBRARY}" NAME_WE)
 	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/../Lib" 
 		DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}"
 		PATTERN "*.pyc" EXCLUDE 
-		PATTERN "*.pyo" EXCLUDE 
-		PATTERN "test" EXCLUDE)
-	
-	# Install Python interpreter and Boost.Python DLL libraries, which are required by the OVITO PyScript plugin.
+		PATTERN "*.pyo" EXCLUDE
+		PATTERN "__pycache__" EXCLUDE)
+	# Also install the compiled modules that are shipped with Python.
+	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/../DLLs"
+		DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
-	# The boost_python DLL is located in the lib directory of the Boost installation.
-	IF(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-		OVITO_INSTALL_DLL("${Boost_LIBRARY_DIRS}/libboost_python-mt.dll")
+	# Install Python interpreter and Boost.Python DLL libraries, which are required by the OVITO PyScript plugin.
+	IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		# The 64-bit version of Python installs the DLL in the Windows system directory.
+		OVITO_INSTALL_DLL("C:/Windows/Sysnative/${PYTHON_LIBRARY_NAME}.dll")
 	ELSE()
-		OVITO_INSTALL_DLL("${Boost_LIBRARY_DIRS}/libboost_python-mt-d.dll")
+		# The 32-bit version of Python installs the DLL in the program directory.
+		OVITO_INSTALL_DLL("${PYTHON_LIBRARY_PATH}/../${PYTHON_LIBRARY_NAME}.dll")
 	ENDIF()
-	
-	# The 32-bit python interpreter DLL (python27.dll) is usually located in the Windows/SysWOW64 directory.
-	FIND_FILE(PYTHON_DLL NAMES python27.dll HINTS "C:/Windows/SysWOW64" ENV PATH DOC "Python interpreter DLL")
-	IF(NOT PYTHON_DLL)
-		MESSAGE(FATAL_ERROR "Please set the PYTHON_DLL variable to specify the location of the Python interpreter DLL.")
+	IF(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+		GET_FILENAME_COMPONENT(BOOST_PYTHON_BASE_NAME "${Boost_PYTHON_LIBRARY_RELEASE}" NAME_WE)
+		GET_FILENAME_COMPONENT(BOOST_PYTHON_LIB_PATH "${Boost_PYTHON_LIBRARY_RELEASE}" PATH)
+	ELSE()
+		GET_FILENAME_COMPONENT(BOOST_PYTHON_BASE_NAME "${Boost_PYTHON_LIBRARY_DEBUG}" NAME_WE)
+		GET_FILENAME_COMPONENT(BOOST_PYTHON_LIB_PATH "${Boost_PYTHON_LIBRARY_DEBUG}" PATH)
 	ENDIF()
-	OVITO_INSTALL_DLL("${PYTHON_DLL}")
+	OVITO_INSTALL_DLL("${BOOST_PYTHON_LIB_PATH}/${BOOST_PYTHON_BASE_NAME}.dll")
+
+	# Install QScintilla DLL.
+	GET_FILENAME_COMPONENT(QSCINTILLA_BASE_NAME "${QSCINTILLA_LIBRARIES}" NAME_WE)
+	GET_FILENAME_COMPONENT(QSCINTILLA_LIB_PATH "${QSCINTILLA_LIBRARIES}" PATH)
+	OVITO_INSTALL_DLL("${QSCINTILLA_LIB_PATH}/${QSCINTILLA_BASE_NAME}.dll")
 ENDIF()
 
 # Define tests for the scripting interface.

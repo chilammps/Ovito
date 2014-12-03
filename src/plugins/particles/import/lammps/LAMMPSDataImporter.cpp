@@ -346,7 +346,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
     			int atomIndex = i;
     			if(atomId != identifierProperty->getInt(i)) {
     				atomIndex = find(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size(), atomId) - identifierProperty->constDataInt();
-    				if(atomIndex >= identifierProperty->size())
+					if(atomIndex >= (int)identifierProperty->size())
     					throw Exception(tr("Nonexistent atom ID encountered in line %1 of data file.").arg(stream.lineNumber()));
     			}
 

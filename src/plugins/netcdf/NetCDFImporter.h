@@ -27,12 +27,6 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-#ifdef MAKING_MODULE_NETCDFIMPORTER
-#  define OVITO_NETCDF_EXPORT Q_DECL_EXPORT
-#else
-#  define OVITO_NETCDF_EXPORT Q_DECL_IMPORT
-#endif
-
 namespace Ovito { namespace Plugins { namespace NetCDF {
 
 using namespace Particles;
@@ -40,7 +34,7 @@ using namespace Particles;
 /*
  * File parser for text-based NetCDF dump simulation files.
  */
-class OVITO_NETCDF_EXPORT NetCDFImporter : public ParticleImporter
+class NetCDFImporter : public ParticleImporter
 {
 public:
 
@@ -92,7 +86,7 @@ public:
 private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class OVITO_NETCDF_EXPORT NetCDFImportTask : public ParticleFrameLoader
+	class NetCDFImportTask : public ParticleFrameLoader
 	{
 	public:
 
@@ -174,7 +168,7 @@ private:
 /*
  * A properties editor for the NetCDFImporter class.
  */
-class OVITO_NETCDF_EXPORT NetCDFImporterEditor : public PropertiesEditor
+class NetCDFImporterEditor : public PropertiesEditor
 {
 public:
 
@@ -200,7 +194,7 @@ private:
 
 /// Convert full tensor to Voigt tensor
 template<typename T> void fullToVoigt(size_t particleCount, T *full, T *voigt) {
-	for (int i = 0; i < particleCount; i++) {
+	for (size_t i = 0; i < particleCount; i++) {
 		voigt[6*i] = full[9*i];
 		voigt[6*i+1] = full[9*i+4];
 		voigt[6*i+2] = full[9*i+8];

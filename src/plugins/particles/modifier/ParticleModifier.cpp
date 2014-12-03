@@ -474,7 +474,7 @@ std::vector<FloatType> ParticleModifier::inputParticleRadii(TimePoint time, Time
 		}
 	}
 
-	std::fill(radii.begin(), radii.end(), 1.0);
+	std::fill(radii.begin(), radii.end(), FloatType(1));
 	return radii;
 }
 

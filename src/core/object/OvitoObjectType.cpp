@@ -36,11 +36,19 @@ namespace Ovito { namespace ObjectSystem {
 /******************************************************************************
 * Constructor of the object.
 ******************************************************************************/
-OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool isSerializable) :
-	_name(name), _displayName(name), _plugin(nullptr), _isAbstract(isAbstract), _superClass(superClass),
-	_isSerializable(isSerializable), _firstPropertyField(NULL), _editorClass(nullptr)
+OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isSerializable) :
+	_name(name), _displayName(name), _plugin(nullptr), _superClass(superClass),
+	_isSerializable(isSerializable), _firstPropertyField(NULL), _editorClass(nullptr), _isAbstract(false)
 {
-	OVITO_ASSERT(superClass != NULL || name == "OvitoObject");
+	OVITO_ASSERT(superClass != NULL || name == QStringLiteral("OvitoObject"));
+}
+
+/******************************************************************************
+* This is called after the class has been loaded to initialize its properties.
+******************************************************************************/
+void OvitoObjectType::initializeClassDescriptor(Plugin* plugin)
+{
+	_plugin = plugin;
 }
 
 /******************************************************************************

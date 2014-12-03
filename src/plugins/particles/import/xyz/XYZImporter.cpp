@@ -469,7 +469,7 @@ void XYZImporter::XYZImportTask::parseFile(CompressedTextReader& stream)
 	// Parse data columns.
 	InputColumnReader columnParser(_columnMapping, *this, numParticles);
 	try {
-		for(size_t i = 0; i < numParticles; i++) {
+		for(int i = 0; i < numParticles; i++) {
 			if(!reportProgress(i)) return;
 			stream.readLine();
 			columnParser.readParticle(i, stream.line());

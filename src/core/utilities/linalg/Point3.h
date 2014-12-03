@@ -104,24 +104,27 @@ public:
 
 	/// Constructs a point with all three components initialized to the given value.
 	Q_DECL_CONSTEXPR explicit Point_3(T val)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 3>{{val,val,val}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 3>{{val,val,val}} {}
+#else
+		{ this->assign(val); } 
 #endif
-		{}
 
 	/// Initializes the coordinates of the point with the given values.
 	Q_DECL_CONSTEXPR Point_3(T x, T y, T z)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 3>{{x, y, z}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 3>{{x, y, z}} {}
+#else
+		{ this->x() = x; this->y() = y; this->z() = z; } 
 #endif
-		{}
 
 	/// Initializes the point to the origin. All coordinates are set to zero.
 	Q_DECL_CONSTEXPR Point_3(Origin)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 3>{{T(0), T(0), T(0)}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 3>{{T(0), T(0), T(0)}} {}
+#else
+		{ this->assign(T(0)); }
 #endif
-		{}
 
 	/// Initializes the point from an array of three coordinates.
 	Q_DECL_CONSTEXPR explicit Point_3(const std::array<T, 3>& a) : std::array<T, 3>(a) {}

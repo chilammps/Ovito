@@ -82,7 +82,7 @@ QVector<FileSourceImporter::Frame> ParticleImporter::discoverFramesInFile(const 
 	try {
 		scanFileForTimesteps(futureInterface, result, sourceUrl, stream);
 	}
-	catch(const Exception& ex) {
+	catch(const Exception&) {
 		// Silently ignore parsing and I/O errors if at least two frames have been read.
 		// Keep all frames read up to where the error occurred.
 		if(result.size() <= 1)

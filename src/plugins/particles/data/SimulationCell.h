@@ -36,6 +36,13 @@ class OVITO_PARTICLES_EXPORT SimulationCell
 {
 public:
 
+	/// Default constructor.
+	SimulationCell() {
+		_simulationCell = AffineTransformation::Zero();
+		_reciprocalSimulationCell = AffineTransformation::Zero();
+		_pbcFlags.assign(true);
+	}
+
 	/// Returns the current simulation cell matrix.
 	const AffineTransformation& matrix() const { return _simulationCell; }
 
@@ -145,13 +152,13 @@ public:
 private:
 
 	/// The geometry of the cell.
-	AffineTransformation _simulationCell = AffineTransformation::Zero();
+	AffineTransformation _simulationCell;
 
 	/// The reciprocal cell matrix.
-	AffineTransformation _reciprocalSimulationCell = AffineTransformation::Zero();
+	AffineTransformation _reciprocalSimulationCell;
 
 	/// PBC flags.
-	std::array<bool,3> _pbcFlags = {{ true, true, true }};
+	std::array<bool,3> _pbcFlags;
 };
 
 }}}}	// End of namespace

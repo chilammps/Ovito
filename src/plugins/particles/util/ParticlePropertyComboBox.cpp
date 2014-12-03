@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "ParticlePropertyComboBox.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {

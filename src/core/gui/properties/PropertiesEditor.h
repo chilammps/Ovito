@@ -109,12 +109,12 @@ Q_SIGNALS:
 	/// \brief This signal is emitted by the editor when a new edit object
 	///        has been loaded into the editor via the setEditObject() method.
 	/// \sa newEditObject The new object loaded into the editor.
-	void contentsReplaced(RefTarget* newEditObject);
+    void contentsReplaced(Ovito::ObjectSystem::RefTarget* newEditObject);
 
 	/// \brief This signal is emitted by the editor when the current edit object has generated a TargetChanged
 	///        event or if a new object has been loaded into editor via the setEditObject() method.
 	/// \sa editObject The object that has changed.
-	void contentsChanged(RefTarget* editObject);
+    void contentsChanged(Ovito::ObjectSystem::RefTarget* editObject);
 
 protected:
 	

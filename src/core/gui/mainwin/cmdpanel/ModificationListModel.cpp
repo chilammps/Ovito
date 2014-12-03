@@ -189,11 +189,11 @@ void ModificationListModel::refreshList()
 
 	int selIndex = -1;
 	int selDefaultIndex = -1;
-	for(int index = 0; index < items.size(); index++) {
-		if(_nextToSelectObject && _nextToSelectObject == items[index]->object())
-			selIndex = index;
-		if(defaultObjectToSelect && defaultObjectToSelect == items[index]->object())
-			selDefaultIndex = index;
+	for(int i = 0; i < items.size(); i++) {
+		if(_nextToSelectObject && _nextToSelectObject == items[i]->object())
+			selIndex = i;
+		if(defaultObjectToSelect && defaultObjectToSelect == items[i]->object())
+			selDefaultIndex = i;
 	}
 	if(selIndex == -1)
 		selIndex = selDefaultIndex;

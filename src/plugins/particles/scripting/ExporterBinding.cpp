@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <plugins/pyscript/PyScript.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>

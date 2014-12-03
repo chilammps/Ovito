@@ -33,7 +33,7 @@ using namespace Ovito;
 /**
  * \brief File parser for VTK files containing triangle mesh data.
  */
-class OVITO_MESH_EXPORT VTKFileImporter : public FileSourceImporter
+class VTKFileImporter : public FileSourceImporter
 {
 public:
 

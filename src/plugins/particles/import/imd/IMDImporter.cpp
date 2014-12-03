@@ -151,7 +151,7 @@ void IMDImporter::IMDImportTask::parseFile(CompressedTextReader& stream)
 
 	// Parse data columns.
 	InputColumnReader columnParser(columnMapping, *this, numAtoms);
-	for(size_t i = 0; i < numAtoms; i++) {
+	for(int i = 0; i < numAtoms; i++) {
 		if(!reportProgress(i)) return;
 		try {
 			columnParser.readParticle(i, stream.readLine());

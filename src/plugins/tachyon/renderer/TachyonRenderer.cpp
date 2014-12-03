@@ -162,7 +162,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		lightTex.opacity = 1.0;
 		lightTex.diffuse = 1.0;
 		void* lightTexPtr = rt_texture(_rtscene, &lightTex);
-		Vector3 lightDir = projParams().inverseViewMatrix * Vector3(0.2,-0.2,-1);
+		Vector3 lightDir = projParams().inverseViewMatrix * Vector3(0.2f,-0.2f,-1.0f);
 		rt_directional_light(_rtscene, lightTexPtr, rt_vector(lightDir.x(), lightDir.y(), -lightDir.z()));
 	}
 

@@ -78,10 +78,14 @@ public:
 	Q_DECL_CONSTEXPR Matrix_4(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<Vector_4<T>,4>{{{m11,m21,m31,T(0)},{m12,m22,m32,T(0)},{m13,m23,m33,T(0)}, typename Vector_4<T>::Zero()}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<Vector_4<T>,4>{{{m11,m21,m31,T(0)},{m12,m22,m32,T(0)},{m13,m23,m33,T(0)}, typename Vector_4<T>::Zero()}} {}
+#else
+		{ (*this)[0] = Vector_4<T>(m11,m21,m31,T(0)); 
+		  (*this)[1] = Vector_4<T>(m12,m22,m32,T(0));
+		  (*this)[2] = Vector_4<T>(m13,m23,m33,T(0));
+		  (*this)[3] = typename Vector_4<T>::Zero(); }
 #endif
-		{}
 
 	/// \brief Constructor that initializes the 12 elements of the 3x4 submatrix to the given values.
 	///        All other elements are set to zero.
@@ -90,14 +94,18 @@ public:
 						T m11, T m12, T m13, T m14,
 					    T m21, T m22, T m23, T m24,
 					    T m31, T m32, T m33, T m34)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(m11,m21,m31,T(0)),
 			Vector_4<T>(m12,m22,m32,T(0)),
 			Vector_4<T>(m13,m23,m33,T(0)),
-			Vector_4<T>(m14,m24,m34,T(0))}}
+			Vector_4<T>(m14,m24,m34,T(0))}} {}
+#else
+		{ (*this)[0] = Vector_4<T>(m11,m21,m31,T(0)); 
+		  (*this)[1] = Vector_4<T>(m12,m22,m32,T(0));
+		  (*this)[2] = Vector_4<T>(m13,m23,m33,T(0));
+		  (*this)[3] = Vector_4<T>(m14,m24,m34,T(0)); }
 #endif
-		{}
 
 	/// \brief Constructor that initializes 16 elements of the matrix to the given values.
 	/// \note Elements need to be specified in row-major order, i.e. row by row.
@@ -106,69 +114,87 @@ public:
 						T m21, T m22, T m23, T m24,
 						T m31, T m32, T m33, T m34,
 						T m41, T m42, T m43, T m44)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(m11,m21,m31,m41),
 			Vector_4<T>(m12,m22,m32,m42),
 			Vector_4<T>(m13,m23,m33,m43),
-			Vector_4<T>(m14,m24,m34,m44)}}
+			Vector_4<T>(m14,m24,m34,m44)}} {}
+#else
+		{ (*this)[0] = Vector_4<T>(m11,m21,m31,m41); 
+		  (*this)[1] = Vector_4<T>(m12,m22,m32,m42);
+		  (*this)[2] = Vector_4<T>(m13,m23,m33,m43);
+		  (*this)[3] = Vector_4<T>(m14,m24,m34,m44); }
 #endif
-		{}
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
 	Q_DECL_CONSTEXPR Matrix_4(const Vector_4<T>& c1, const Vector_4<T>& c2, const Vector_4<T>& c3, const Vector_4<T>& c4)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<Vector_4<T>,4>{{c1, c2, c3, c4}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<Vector_4<T>,4>{{c1, c2, c3, c4}} {}
+#else
+		{ (*this)[0] = c1; (*this)[1] = c2; (*this)[2] = c3; (*this)[3] = c4; } 
 #endif
-		{}
 
 	/// \brief Initializes the 4x4 matrix from a 3x4 matrix.
 	/// The lower matrix row is initialized to (0,0,0,1).
 	explicit Q_DECL_CONSTEXPR Matrix_4(const AffineTransformationT<T>& tm)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(tm(0,0),tm(1,0),tm(2,0),T(0)),
 			Vector_4<T>(tm(0,1),tm(1,1),tm(2,1),T(0)),
 			Vector_4<T>(tm(0,2),tm(1,2),tm(2,2),T(0)),
-			Vector_4<T>(tm(0,3),tm(1,3),tm(2,3),T(1))}}
+			Vector_4<T>(tm(0,3),tm(1,3),tm(2,3),T(1))}} {}
+#else
+		{ (*this)[0] = Vector_4<T>(tm(0,0),tm(1,0),tm(2,0),T(0)); 
+		  (*this)[1] = Vector_4<T>(tm(0,1),tm(1,1),tm(2,1),T(0));
+		  (*this)[2] = Vector_4<T>(tm(0,2),tm(1,2),tm(2,2),T(0));
+		  (*this)[3] = Vector_4<T>(tm(0,3),tm(1,3),tm(2,3),T(1)); }
 #endif
-		{}
 
 	/// \brief Constructor that initializes the top 3x4 submatrix from four column 3-vectors.
 	/// The lower matrix row is initialized to (0,0,0,1).
 	Q_DECL_CONSTEXPR Matrix_4(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(c1[0],c1[1],c1[2],T(0)),
 			Vector_4<T>(c2[0],c2[1],c2[2],T(0)),
 			Vector_4<T>(c3[0],c3[1],c3[2],T(0)),
-			Vector_4<T>(c4[0],c4[1],c4[2],T(1))}}
+			Vector_4<T>(c4[0],c4[1],c4[2],T(1))}} {}
+#else
+		{ (*this)[0] = Vector_4<T>(c1[0],c1[1],c1[2],T(0)); 
+		  (*this)[1] = Vector_4<T>(c2[0],c2[1],c2[2],T(0));
+		  (*this)[2] = Vector_4<T>(c3[0],c3[1],c3[2],T(0));
+		  (*this)[3] = Vector_4<T>(c4[0],c4[1],c4[2],T(1)); }
 #endif
-		{}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
 	Q_DECL_CONSTEXPR Matrix_4(Zero)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_4<T>,4>{{
 			typename Vector_4<T>::Zero(),
 			typename Vector_4<T>::Zero(),
 			typename Vector_4<T>::Zero(),
-			typename Vector_4<T>::Zero()}}
+			typename Vector_4<T>::Zero()}} {}
+#else
+		{ this->assign(typename Vector_4<T>::Zero()); }
 #endif
-		{}
 
 		/// \brief Initializes the matrix to the identity matrix.
 		/// All diagonal elements are set to one, and all off-diagonal elements are set to zero.
 	Q_DECL_CONSTEXPR Matrix_4(Identity)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(T(1),T(0),T(0),T(0)),
 			Vector_4<T>(T(0),T(1),T(0),T(0)),
 			Vector_4<T>(T(0),T(0),T(1),T(0)),
-			Vector_4<T>(T(0),T(0),T(0),T(1))}}
+			Vector_4<T>(T(0),T(0),T(0),T(1))}} {}
+#else
+		{ (*this)[0] = Vector_4<T>(T(1),T(0),T(0),T(0)); 
+		  (*this)[1] = Vector_4<T>(T(0),T(1),T(0),T(0));
+		  (*this)[2] = Vector_4<T>(T(0),T(0),T(1),T(0));
+		  (*this)[3] = Vector_4<T>(T(0),T(0),T(0),T(1)); }
 #endif
-		{}
 
 	/// \brief Returns the number of rows of this matrix.
 	static Q_DECL_CONSTEXPR size_type row_count() { return 4; }

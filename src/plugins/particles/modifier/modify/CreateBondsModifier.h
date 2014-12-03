@@ -242,5 +242,4 @@ private:
 Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Modify::CreateBondsModifier::CutoffMode);
 Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Modify::CreateBondsModifier::CutoffMode, Q_PRIMITIVE_TYPE);
 
-
 #endif // __OVITO_CREATE_BONDS_MODIFIER_H

@@ -141,7 +141,7 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 
 			// Create bond geometry buffer.
 			_buffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, shadingMode(), renderingQuality());
-			_buffer->startSetElements(bondsObj->bonds().size());
+			_buffer->startSetElements((int)bondsObj->bonds().size());
 
 			// Obtain particle colors since they determine the bond colors.
 			std::vector<Color> particleColors(positionProperty->size());

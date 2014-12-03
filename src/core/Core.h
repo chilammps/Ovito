@@ -48,6 +48,7 @@
 #include <clocale>
 #include <atomic>
 #include <tuple>
+#include <numeric>
 
 /******************************************************************************
 * Boost Library
@@ -78,7 +79,7 @@
 #  error "OVITO requires at least Qt 5.2"
 #endif
 
-#ifdef OVITO_CORE_LIBRARY
+#ifdef Core_EXPORTS		// This is defined by CMake when building the Core library.
 #  define OVITO_CORE_EXPORT Q_DECL_EXPORT
 #else
 #  define OVITO_CORE_EXPORT Q_DECL_IMPORT

@@ -101,7 +101,7 @@ PipelineStatus StructureIdentificationModifier::applyComputationResults(TimePoin
 	std::vector<size_t> typeCounters(structureTypes().size());
 	for(ParticleType* stype : structureTypes()) {
 		OVITO_ASSERT(stype->id() >= 0);
-		if(stype->id() >= structureTypeColors.size()) {
+		if(stype->id() >= (int)structureTypeColors.size()) {
 			structureTypeColors.resize(stype->id() + 1);
 			typeCounters.resize(stype->id() + 1);
 		}

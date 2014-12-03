@@ -145,7 +145,7 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 	_propertyDataTypes.clear();
 
 	_tableWidget->setRowCount(mapping.size());
-	for(int i = 0; i < mapping.size(); i++) {
+	for(int i = 0; i < (int)mapping.size(); i++) {
 		QCheckBox* fileColumnItem = new QCheckBox();
 		if(mapping[i].columnName.isEmpty())
 			fileColumnItem->setText(tr("Column %1").arg(i+1));
@@ -229,7 +229,7 @@ InputColumnMapping InputColumnMappingDialog::mapping() const
 {
 	InputColumnMapping mapping;
 	mapping.resize(_tableWidget->rowCount());
-	for(int index = 0; index < mapping.size(); index++) {
+	for(int index = 0; index < (int)mapping.size(); index++) {
 		mapping[index].columnName = _fileColumnBoxes[index]->text();
 		if(_fileColumnBoxes[index]->isChecked()) {
 			QString propertyName = _propertyBoxes[index]->currentText().trimmed();
@@ -336,7 +336,7 @@ void InputColumnMappingDialog::onLoadPreset()
 		InputColumnMapping mapping;
 		mapping.fromByteArray(presetData[presetNames.indexOf(name)]);
 
-		for(int index = 0; index < mapping.size() && index < _tableWidget->rowCount(); index++) {
+		for(int index = 0; index < (int)mapping.size() && index < _tableWidget->rowCount(); index++) {
 			_fileColumnBoxes[index]->setChecked(mapping[index].isMapped());
 			_propertyBoxes[index]->setCurrentText(mapping[index].property.name());
 			_propertyBoxes[index]->setEnabled(mapping[index].isMapped());

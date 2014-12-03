@@ -54,6 +54,8 @@
     <tbody>
 		<row><entry><link xlink:href="http://www.qt.io/developers/">Qt5</link></entry><entry>required</entry>
 		<entry>Used for OVITO's graphical user interface (version 5.2 or higher required)</entry></row>
+		<row><entry><link xlink:href="http://www.zlib.net/">zlib</link></entry><entry>required</entry>
+		<entry>Required for reading and writing compressed files.</entry></row>
 		<row><entry><link xlink:href="http://www.boost.org/">Boost</link></entry><entry>required</entry>
 		<entry>OVITO uses some utility classes from this C++ library.</entry></row>
 		<row><entry><link xlink:href="http://www.boost.org/">Boost.Python</link></entry><entry>optional</entry>

@@ -67,7 +67,7 @@ void ParticleFrameLoader::perform()
 void ParticleFrameLoader::sortParticleTypesByName()
 {
 	// Check if type IDs form a consecutive sequence starting at 1.
-	for(int index = 0; index < _particleTypes.size(); index++) {
+	for(size_t index = 0; index < _particleTypes.size(); index++) {
 		if(_particleTypes[index].id != index + 1)
 			return;
 	}
@@ -82,7 +82,7 @@ void ParticleFrameLoader::sortParticleTypesByName()
 
 	// Build map of IDs.
 	std::vector<int> mapping(_particleTypes.size() + 1);
-	for(int index = 0; index < _particleTypes.size(); index++) {
+	for(size_t index = 0; index < _particleTypes.size(); index++) {
 		mapping[_particleTypes[index].id] = index + 1;
 		_particleTypes[index].id = index + 1;
 	}

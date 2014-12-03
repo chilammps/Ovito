@@ -46,7 +46,7 @@ ADD_LIBRARY(QSsh
 	sshsendfacility.cpp
 )
 
-# This will let the source code export symbols when building a DLL.
+# Export symbols when building a Windows DLL.
 TARGET_COMPILE_DEFINITIONS(QSsh PRIVATE QSSH_LIBRARY)
 
 # Link required Botan library.

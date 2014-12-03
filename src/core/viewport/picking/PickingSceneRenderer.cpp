@@ -95,7 +95,7 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 		glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, _image.bits());
 		_image = _image.rgbSwapped();
 	}
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 
 	// Also acquire OpenGL depth buffer data.
 	// The depth information is used to compute the XYZ coordinate of the point under the mouse cursor.

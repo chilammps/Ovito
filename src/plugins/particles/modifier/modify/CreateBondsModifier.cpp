@@ -164,9 +164,9 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CreateBondsModifier
 					ParticleType* ptype1 = typeProperty->particleType(entry.key().first);
 					ParticleType* ptype2 = typeProperty->particleType(entry.key().second);
 					if(ptype1 && ptype2 && ptype1->id() >= 0 && ptype2->id() >= 0) {
-						if(pairCutoffTable.size() <= std::max(ptype1->id(), ptype2->id())) pairCutoffTable.resize(std::max(ptype1->id(), ptype2->id()) + 1);
-						if(pairCutoffTable[ptype1->id()].size() <= ptype2->id()) pairCutoffTable[ptype1->id()].resize(ptype2->id() + 1, FloatType(0));
-						if(pairCutoffTable[ptype2->id()].size() <= ptype1->id()) pairCutoffTable[ptype2->id()].resize(ptype1->id() + 1, FloatType(0));
+						if((int)pairCutoffTable.size() <= std::max(ptype1->id(), ptype2->id())) pairCutoffTable.resize(std::max(ptype1->id(), ptype2->id()) + 1);
+						if((int)pairCutoffTable[ptype1->id()].size() <= ptype2->id()) pairCutoffTable[ptype1->id()].resize(ptype2->id() + 1, FloatType(0));
+						if((int)pairCutoffTable[ptype2->id()].size() <= ptype1->id()) pairCutoffTable[ptype2->id()].resize(ptype1->id() + 1, FloatType(0));
 						pairCutoffTable[ptype1->id()][ptype2->id()] = cutoff * cutoff;
 						pairCutoffTable[ptype2->id()][ptype1->id()] = cutoff * cutoff;
 					}
@@ -223,7 +223,7 @@ void CreateBondsModifier::BondsEngine::perform()
 			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
 				int type1 = _particleTypes->getInt(particleIndex);
 				int type2 = _particleTypes->getInt(neighborIter.current());
-				if(type1 >= 0 && type1 < _pairCutoffs.size() && type2 >= 0 && type2 < _pairCutoffs[type1].size()) {
+				if(type1 >= 0 && type1 < (int)_pairCutoffs.size() && type2 >= 0 && type2 < (int)_pairCutoffs[type1].size()) {
 					if(neighborIter.distanceSquared() <= _pairCutoffs[type1][type2])
 						_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.unwrappedPbcShift());
 				}

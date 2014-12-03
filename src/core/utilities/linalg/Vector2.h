@@ -84,24 +84,27 @@ public:
 
 	/// Constructs a vector with the two components initialized to the given value.
 	Q_DECL_CONSTEXPR explicit Vector_2(T val)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 2>{{val,val}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 2>{{val,val}} {}
+#else
+		{ this->assign(val); } 
 #endif
-		{}
 
 		/// Initializes the components of the vector with the given values.
 	Q_DECL_CONSTEXPR Vector_2(T x, T y)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 2>{{x, y}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 2>{{x, y}} {}
+#else
+		{ this->x() = x; this->y() = y; } 
 #endif
-		{}
 
 	/// Initializes the vector to the null vector. All components are set to zero.
 	Q_DECL_CONSTEXPR Vector_2(Zero)
-#ifndef DOXYGEN_SHOULD_SKIP_THIS		// Doxygen cannot parse C++11 array initializers.
-		: std::array<T, 2>{{T(0), T(0)}}
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+		: std::array<T, 2>{{T(0), T(0)}} {}
+#else
+		{ this->assign(T(0)); }
 #endif
-		{}
 
 	/// Initializes the vector from an array.
 	Q_DECL_CONSTEXPR explicit Vector_2(const std::array<T, 2>& a) : std::array<T, 2>(a) {}

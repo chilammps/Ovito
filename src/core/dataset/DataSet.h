@@ -144,22 +144,22 @@ Q_SIGNALS:
 	/// \brief This signal is emitted whenever the current viewport configuration of this dataset
 	///        has been replaced by a new one.
 	/// \note This signal is NOT emitted when parameters of the current viewport configuration change.
-	void viewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
+    void viewportConfigReplaced(Ovito::View::ViewportConfiguration* newViewportConfiguration);
 
 	/// \brief This signal is emitted whenever the current animation settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current animation settings object change.
-	void animationSettingsReplaced(AnimationSettings* newAnimationSettings);
+    void animationSettingsReplaced(Ovito::Anim::AnimationSettings* newAnimationSettings);
 
 	/// \brief This signal is emitted whenever the current render settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current render settings object change.
-	void renderSettingsReplaced(RenderSettings* newRenderSettings);
+    void renderSettingsReplaced(Ovito::Rendering::RenderSettings* newRenderSettings);
 
 	/// \brief This signal is emitted whenever the current selection set of this dataset
 	///        has been replaced by another one.
 	/// \note This signal is NOT emitted when nodes are added or removed from the current selection set.
-	void selectionSetReplaced(SelectionSet* newSelectionSet);
+    void selectionSetReplaced(Ovito::ObjectSystem::Scene::SelectionSet* newSelectionSet);
 
 protected:
 

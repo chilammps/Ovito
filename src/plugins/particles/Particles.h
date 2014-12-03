@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-#ifdef MAKING_MODULE_PARTICLES
+#ifdef Particles_EXPORTS		// This is defined by CMake when building the plugin library.
 #  define OVITO_PARTICLES_EXPORT Q_DECL_EXPORT
 #else
 #  define OVITO_PARTICLES_EXPORT Q_DECL_IMPORT
