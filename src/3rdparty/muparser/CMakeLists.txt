@@ -20,14 +20,14 @@
 ###############################################################################
 
 # Find muParser library.
-FIND_PACKAGE(MuParser)
+FIND_PACKAGE(MuParser QUIET)
 
 IF(MUPARSER_FOUND)
 
 	# Create imported target for the existing muParser library.
 	ADD_LIBRARY(muParser SHARED IMPORTED GLOBAL)
-	SET_PROPERTY(TARGET muParser PROPERTY IMPORTED_LOCATION "${MUPARSER_LIBRARIES}")
-	SET_PROPERTY(TARGET muParser APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MUPARSER_INCLUDE_DIRS}")
+	SET_PROPERTY(TARGET muParser PROPERTY IMPORTED_LOCATION "${MuParser_LIBRARIES}")
+	SET_PROPERTY(TARGET muParser APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MuParser_INCLUDE_DIRS}")
 
 ELSE()
 
@@ -47,5 +47,10 @@ ELSE()
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(muParser INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
+	IF(NOT OVITO_MONOLITHIC_BUILD)
+	    SET_PROPERTY(TARGET muParser PROPERTY POSITION_INDEPENDENT_CODE ON)        
+    ENDIF()
 
 ENDIF()

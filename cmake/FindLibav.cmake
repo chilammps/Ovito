@@ -6,9 +6,9 @@
 # Once done this will define
 #  
 #  LIBAV_FOUND			- system has Libav
-#  LIBAV_INCLUDE_DIRS	- the include directories
-#  LIBAV_LIBRARY_DIR	- the directory containing the libraries
-#  LIBAV_LIBRARIES		- link these to use Libav
+#  Libav_INCLUDE_DIRS	- the include directories
+#  Libav_LIBRARY_DIR	- the directory containing the libraries
+#  Libav_LIBRARIES		- link these to use Libav
 #
 
 # List of required headers.
@@ -21,79 +21,51 @@ IF(WIN32)
 	LIST(APPEND LIBAV_LIBRARY_NAMES avresample)
 ENDIF()
 
-IF(WIN32 OR APPLE)
+# Detect header path.
+FIND_PATH(LIBAV_INCLUDE_DIR NAMES libavcodec/avcodec.h)
+SET(Libav_INCLUDE_DIRS "${LIBAV_INCLUDE_DIR}")
 
-	# Detect header path.
-	FIND_PATH(LIBAV_INCLUDE_DIR NAMES libavcodec/avcodec.h)
-	SET(LIBAV_INCLUDE_DIRS "${LIBAV_INCLUDE_DIR}")
-	
-	# Detect library path.
-	IF(NOT LIBAV_LIBRARY_DIR)
-		FIND_LIBRARY(LIBAV_AVCODEC_LIBRARY NAMES avcodec)
-		IF(LIBAV_AVCODEC_LIBRARY)
-			GET_FILENAME_COMPONENT(LIBAV_LIBRARY_DIR "${LIBAV_AVCODEC_LIBRARY}" PATH)
-		ENDIF()
-	ENDIF()
-
-	MARK_AS_ADVANCED(LIBAV_INCLUDE_DIR LIBAV_LIBRARY_DIR)
-
-ELSE()
-	INCLUDE(FindPkgConfig)
-	IF(PKG_CONFIG_FOUND)
-		PKG_CHECK_MODULES(AVFORMAT libavformat)
-		PKG_CHECK_MODULES(AVCODEC libavcodec)
-		PKG_CHECK_MODULES(AVUTIL libavutil)
-		PKG_CHECK_MODULES(AVDEVICE libavdevice)
-		PKG_CHECK_MODULES(SWSCALE libswscale)
-	ENDIF()
-
-	SET(LIBAV_LIBRARY_DIR ${AVFORMAT_LIBRARY_DIRS}
-			     ${AVCODEC_LIBRARY_DIRS}
-			     ${AVUTIL_LIBRARY_DIRS}
-			     ${AVDEVICE_LIBRARY_DIRS}
-			     ${SWSCALE_LIBRARY_DIRS})
-	SET(LIBAV_INCLUDE_PATHS ${AVFORMAT_INCLUDE_DIRS}
-			     ${AVCODEC_INCLUDE_DIRS}
-			     ${AVUTIL_INCLUDE_DIRS}
-			     ${AVDEVICE_INCLUDE_DIRS}
-			     ${SWSCALE_INCLUDE_DIRS})
-
-	IF(NOT APPLE)
-		IF(NOT OVITO_MONOLITHIC_BUILD OR NOT UNIX)
-			SET(LIBAV_LIBRARIES avformat avcodec avutil avdevice swscale)
-		ELSE()
-			SET(LIBAV_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a libswscale.a)
-		ENDIF()
-	ELSE()
-		SET(LIBAV_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a libswscale.a bz2)
+# Detect library path.
+IF(NOT LIBAV_LIBRARY_DIR)
+	FIND_LIBRARY(LIBAV_AVCODEC_LIBRARY NAMES avcodec)
+	IF(LIBAV_AVCODEC_LIBRARY)
+		GET_FILENAME_COMPONENT(LIBAV_LIBRARY_DIR "${LIBAV_AVCODEC_LIBRARY}" PATH)
 	ENDIF()
 ENDIF()
 
 # Check if all required headers exist.
-SET(LIBAV_FOUND TRUE)
 FOREACH(header ${LIBAV_HEADER_NAMES})
 	UNSET(header_path CACHE)
-	FIND_PATH(header_path ${header} PATHS ${LIBAV_INCLUDE_DIRS} NO_DEFAULT_PATH)
+	FIND_PATH(header_path ${header} PATHS ${Libav_INCLUDE_DIRS} NO_DEFAULT_PATH)
 	IF(NOT header_path)
-		MESSAGE("Could not find Libav header file '${header}' in search path(s) '${LIBAV_INCLUDE_DIRS}'.") 
-		SET(LIBAV_FOUND FALSE)
+	    IF(NOT Libav_FIND_QUIETLY)
+		    MESSAGE("Could not find Libav header file '${header}' in search path(s) '${LIBAV_INCLUDE_DIR}'.")
+        ENDIF() 
+        UNSET(LIBAV_INCLUDE_DIR)
 	ENDIF()
 	UNSET(header_path CACHE)
 ENDFOREACH()
 
 # Find the full paths of the libraries
-UNSET(LIBAV_LIBRARIES)
+UNSET(Libav_LIBRARIES)
 FOREACH(lib ${LIBAV_LIBRARY_NAMES})
 	UNSET(lib_path CACHE)
 	FIND_LIBRARY(lib_path ${lib} PATHS "${LIBAV_LIBRARY_DIR}" NO_DEFAULT_PATH)
 	IF(lib_path)
-		LIST(APPEND LIBAV_LIBRARIES "${lib_path}")
+		LIST(APPEND Libav_LIBRARIES "${lib_path}")
 	ELSE()
-		MESSAGE("Could not find Libav library '${lib}' in search path(s) '${LIBAV_LIBRARY_DIR}'.") 
-		SET(LIBAV_FOUND FALSE)
+	    IF(NOT Libav_FIND_QUIETLY)
+		    MESSAGE("Could not find Libav library '${lib}' in search path(s) '${LIBAV_LIBRARY_DIR}'.")
+		ENDIF() 
+		UNSET(LIBAV_LIBRARY_DIR)
 	ENDIF()
 	UNSET(lib_path CACHE)
 ENDFOREACH()
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Libav DEFAULT_MSG LIBAV_LIBRARY_DIR LIBAV_INCLUDE_DIR)
+
+MARK_AS_ADVANCED(LIBAV_INCLUDE_DIR LIBAV_LIBRARY_DIR)
 
 IF(APPLE)
 	# libbz2 is an indirect dependency that needs to be linked in on MacOS.
@@ -104,7 +76,7 @@ IF(APPLE)
 	FIND_LIBRARY(COREVIDEO_LIBRARY CoreVideo)
 	FIND_LIBRARY(VIDEODECODEACCELERATION_LIBRARY VideoDecodeAcceleration)
 
-	LIST(APPEND LIBAV_LIBRARIES ${BZIP2_LIBRARIES} ${COREFOUNDATION_LIBRARY} ${COREVIDEO_LIBRARY} ${VIDEODECODEACCELERATION_LIBRARY})
-	LIST(APPEND LIBAV_INCLUDE_DIRS ${BZIP2_INCLUDE_DIR})
+	LIST(APPEND Libav_LIBRARIES ${BZIP2_LIBRARIES} ${COREFOUNDATION_LIBRARY} ${COREVIDEO_LIBRARY} ${VIDEODECODEACCELERATION_LIBRARY})
+	LIST(APPEND Libav_INCLUDE_DIRS ${BZIP2_INCLUDE_DIR})
 ENDIF()
 

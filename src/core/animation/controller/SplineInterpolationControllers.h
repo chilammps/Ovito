@@ -84,11 +84,6 @@ public:
 		INIT_PROPERTY_FIELD(FloatSplineAnimationKey::_outTangent);
 	}
 
-public:
-
-	Q_PROPERTY(FloatType inTangent READ inTangent WRITE setInTangent);
-	Q_PROPERTY(FloatType outTangent READ outTangent WRITE setOutTangent);
-
 private:
 
 	Q_OBJECT
@@ -110,11 +105,6 @@ public:
 		INIT_PROPERTY_FIELD(PositionSplineAnimationKey::_inTangent);
 		INIT_PROPERTY_FIELD(PositionSplineAnimationKey::_outTangent);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Vector3 inTangent READ inTangent WRITE setInTangent);
-	Q_PROPERTY(Ovito::Vector3 outTangent READ outTangent WRITE setOutTangent);
 
 private:
 

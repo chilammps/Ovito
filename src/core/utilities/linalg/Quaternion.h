@@ -105,9 +105,9 @@ public:
 	/// \brief Constructs an identity quaternion.
 	/// The new quaternion represents the null transformation, i.e. no rotation at all.
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-	Q_DECL_CONSTEXPR explicit Q_DECL_CONSTEXPR QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
+	Q_DECL_CONSTEXPR explicit QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
 #else
-	explicit Q_DECL_CONSTEXPR QuaternionT(Identity) { this->x() = this->y() = this->z() = T(0); this->w() = T(1); }
+	explicit QuaternionT(Identity) { this->x() = this->y() = this->z() = T(0); this->w() = T(1); }
 #endif
 
 	/// \brief Initializes the quaternion from rotational part of a transformation matrix.

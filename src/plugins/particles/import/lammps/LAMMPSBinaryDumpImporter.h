@@ -76,7 +76,7 @@ public:
 
 public:
 
-	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
+	Q_PROPERTY(Ovito::Plugins::Particles::Import::InputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
 
 private:
 

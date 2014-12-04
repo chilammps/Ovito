@@ -19,13 +19,8 @@
 #
 ###############################################################################
 
-# Find libav libraries if video support has been enabled by the user.
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	FIND_PACKAGE(Libav REQUIRED)
-	IF(NOT LIBAV_FOUND)
-		MESSAGE(FATAL_ERROR "Libav libraries not found, which are required for video output support (see OVITO_VIDEO_OUTPUT_SUPPORT option).")
-	ENDIF()
-ENDIF()
+# Find Libav libraries for video encoding support.
+FIND_PACKAGE(Libav)
 
 SET(OVITO_CORE_SOURCE_FILES 
 	utilities/Exception.cpp
@@ -189,7 +184,7 @@ SET(OVITO_CORE_SOURCE_FILES
 )
 
 # Include video encoder interface code.
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+IF(LIBAV_FOUND)
 	LIST(APPEND OVITO_CORE_SOURCE_FILES utilities/io/video/VideoEncoder.cpp)
 ENDIF()
 
@@ -211,14 +206,17 @@ TARGET_INCLUDE_DIRECTORIES(Core PRIVATE "${ZLIB_INCLUDE_DIRS}")
 TARGET_INCLUDE_DIRECTORIES(Core PUBLIC ${Boost_INCLUDE_DIRS})
 
 # Link Qt5.
-QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
+TARGET_LINK_LIBRARIES(Core Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Network)
 
 # Link video encoding lib.
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+IF(LIBAV_FOUND)
 	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_LINK_LIBRARIES(Core ${LIBAV_LIBRARIES})
-	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${LIBAV_INCLUDE_DIRS})
+	TARGET_LINK_LIBRARIES(Core ${Libav_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${Libav_INCLUDE_DIRS})
 ENDIF()
+
+# Define the OVITO_DEBUG macro in debug builds.
+TARGET_COMPILE_DEFINITIONS(Core PUBLIC "$<$<CONFIG:Debug>:OVITO_DEBUG>")
 
 IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
@@ -237,9 +235,9 @@ IF(NOT OVITO_MONOLITHIC_BUILD)
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 ENDIF()
 
-IF(WIN32)
+IF(WIN32 AND LIBAV_FOUND)
 	# Install DLLs of Libav video encoding library.
-	FOREACH(lib ${LIBAV_LIBRARIES})
+	FOREACH(lib ${Libav_LIBRARIES})
 		GET_FILENAME_COMPONENT(base_name "${lib}" NAME_WE)
 		GET_FILENAME_COMPONENT(lib_path "${lib}" PATH)
 		FILE(GLOB lib_dll "${lib_path}/${base_name}-*.dll")

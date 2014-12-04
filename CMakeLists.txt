@@ -41,8 +41,8 @@ IF(WIN32)
 	ENDIF()
 ENDIF()
 
-GET_FILENAME_COMPONENT(OVITO_SOURCE_BASE_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OVITO_SOURCE_BASE_DIR}/cmake)
+SET(OVITO_SOURCE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+LIST(APPEND CMAKE_MODULE_PATH ${OVITO_SOURCE_BASE_DIR}/cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Version.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Plugins.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/CompileQtResource.cmake)
@@ -52,9 +52,9 @@ INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/PrecompiledHeader.cmake)
 OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon renderer plugin." "ON")
-OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
-OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python scripting plugin." "OFF")
-OPTION(OVITO_BUILD_PLUGIN_NETCDFPLUGIN "Build the NetCDF plugin." "OFF")
+OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python scripting plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_NETCDFPLUGIN "Build the NetCDF plugin." "ON")
 
 # This is a global list of plugin targets that will be built.
 # It will get populated by the OVITO_PLUGIN macro.
@@ -71,19 +71,17 @@ IF(UNIX AND NOT APPLE AND CMAKE_COMPILER_IS_GNUCXX)
 	OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
 ENDIF()
 
-# Define the OVITO_DEBUG macro in debug builds.
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DOVITO_DEBUG")
-
 # Enable C++11 standard.
 IF(NOT MSVC)
 	IF(CMAKE_COMPILER_IS_GNUCXX)
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+	    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 	ELSE()
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	ENDIF()
 ENDIF()
+
 IF(APPLE)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-invalid-offsetof")
+	ADD_COMPILE_OPTIONS("-stdlib=libc++ -Wno-invalid-offsetof")
 ENDIF()
 
 # Enable additional optimizations for release builds.
@@ -96,12 +94,12 @@ ENDIF()
 
 IF(MSVC)
 	# Suppress warning related to QVarLengthArray implementation.
-	ADD_DEFINITIONS(/wd4996)
+	ADD_COMPILE_OPTIONS("/wd4996")
 	# Suppress warning on conversion from size_t to int, possible loss of data.
-	ADD_DEFINITIONS(/wd4267)
+	ADD_COMPILE_OPTIONS("/wd4267")
 ENDIF()
 
-# Set the base directory for all header files included by the OVITO source code.
+# Set the base directory for all header files included by OVITO's source code.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
 
 IF(UNIX)
@@ -185,9 +183,6 @@ IF(APPLE)
 	# with the Python interpreter, which only finds modules having a .so suffix.
 	SET(OVITO_PLUGIN_LIBRARY_SUFFIX ".so")
 ENDIF()
-
-# Controls compilation of the video encoding feature.
-OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
 
 # This macro installs a required third-party DLL in the OVITO directory
 # so that it can be distributed together with the program.

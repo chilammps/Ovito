@@ -19,14 +19,12 @@
 #
 ###############################################################################
 
+SET(Python_ADDITIONAL_VERSIONS "3.4" "3.5")
 FIND_PACKAGE(PythonLibs REQUIRED)
 FIND_PACKAGE(QScintilla REQUIRED)
-IF(NOT QSCINTILLA_FOUND)
-	MESSAGE(FATAL_ERROR "Could not locate QScintilla2 library, which is required by the PyScript plugin.")
-ENDIF()
 
 IF(MSVC)
-	# Precompiled headers need more compiler memory.
+	# Precompiled headers require more compiler memory.
 	ADD_DEFINITIONS(-Zm150)
 ENDIF()
 
@@ -48,7 +46,7 @@ SET(OVITO_PYSCRIPT_SOURCE_FILES
 # Generate plugin module.
 OVITO_PLUGIN(PyScript
 	SOURCES PyScript.cpp ${OVITO_PYSCRIPT_SOURCE_FILES}
-	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${QSCINTILLA_LIBRARIES}
+	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${QScintilla_LIBRARIES}
 	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/python/"
 )
 
@@ -56,7 +54,7 @@ OVITO_PLUGIN(PyScript
 TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH})
 
 # Add QScintilla include directory.
-TARGET_INCLUDE_DIRECTORIES(PyScript PRIVATE ${QSCINTILLA_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(PyScript PRIVATE ${QScintilla_INCLUDE_DIRS})
 
 # Speed up compilation by using precompiled headers.
 ADD_PRECOMPILED_HEADER(PyScript plugins/pyscript/PyScript.h)
@@ -117,7 +115,7 @@ ELSEIF(UNIX)
 		LIST(GET PYTHON_LIBRARIES 0 PYTHON_FIRST_LIBRARY)
 		GET_FILENAME_COMPONENT(PYTHON_LIBRARY_PATH "${PYTHON_LIBRARY}" PATH)
 		INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/python${PYTHON_MAJORMINOR_VERSION}" 
-			DESTINATION "lib/"
+			DESTINATION "/lib"
 			PATTERN "*.pyc" EXCLUDE 
 			PATTERN "*.pyo" EXCLUDE 
 			PATTERN "test" EXCLUDE

@@ -62,7 +62,7 @@
 		<entry>Required by OVITO's Python script engine (<literal>PyScript</literal> plugin). Is part of the Boost library.</entry></row>
 		<row><entry><link xlink:href="http://cgal.org/">CGAL</link></entry><entry>optional</entry>
 		<entry>Computational Geometry Algorithms Library, which is used by OVITO to compute Delaunay tessellations. This is required to build the <literal>CrystalAnalysis</literal> plugin with the <link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link> modifier.</entry></row>
-		<row><entry><link xlink:href="http://libav.org/">libav</link> and <link xlink:href="https://www.ffmpeg.org/libswscale.html">Libswscale</link></entry><entry>optional</entry>
+		<row><entry><link xlink:href="http://libav.org/">Libav</link></entry><entry>optional</entry>
 		<entry>Audio and video processing libraries used by OVITO to write movie files.</entry></row>
 		<row><entry><link xlink:href="http://www.unidata.ucar.edu/software/netcdf/">libnetcdf</link></entry><entry>optional</entry>
 		<entry>Required by the <literal>NetCDF</literal> plugin to read NetCDF files</entry></row>

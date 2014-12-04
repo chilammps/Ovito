@@ -20,7 +20,7 @@
 ###############################################################################
 
 # Locate the NetCDF library.
-FIND_PACKAGE(netcdf REQUIRED)
+FIND_PACKAGE(NetCDF REQUIRED)
 
 SET(OVITO_NETCDF_SOURCE_FILES
 	NetCDFImporter.cpp

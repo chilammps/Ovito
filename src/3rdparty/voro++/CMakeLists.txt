@@ -20,14 +20,14 @@
 ###############################################################################
 
 # Find Voro++ library.
-FIND_PACKAGE(VoroPlusPlus)
+FIND_PACKAGE(VoroPlusPlus QUIET)
 
 IF(VOROPLUSPLUS_FOUND)
 
 	# Create imported target for the existing Voro++ library.
 	ADD_LIBRARY(VoroPlusPlus SHARED IMPORTED GLOBAL)
-	SET_PROPERTY(TARGET VoroPlusPlus PROPERTY IMPORTED_LOCATION "${VOROPLUSPLUS_LIBRARIES}")
-	SET_PROPERTY(TARGET VoroPlusPlus APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${VOROPLUSPLUS_INCLUDE_DIRS}")
+	SET_PROPERTY(TARGET VoroPlusPlus PROPERTY IMPORTED_LOCATION "${VoroPlusPlus_LIBRARIES}")
+	SET_PROPERTY(TARGET VoroPlusPlus APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${VoroPlusPlus_INCLUDE_DIRS}")
 
 ELSE()
 
@@ -50,5 +50,10 @@ ELSE()
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(VoroPlusPlus INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+	
+	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
+	IF(NOT OVITO_MONOLITHIC_BUILD)
+	    SET_PROPERTY(TARGET VoroPlusPlus PROPERTY POSITION_INDEPENDENT_CODE ON)        
+    ENDIF()
 
 ENDIF()

@@ -87,7 +87,7 @@ public:
 
 public:
 
-	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
+	Q_PROPERTY(Ovito::Plugins::Particles::Import::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
 	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
 
 private:

@@ -178,12 +178,7 @@ cmake -G "NMake Makefiles" ^
    -DSPHINX_PROCESSOR_PATH=%cd:\=/%/../Python/Scripts ^
    -DLIBAV_INCLUDE_DIR=%cd:\=/%/../libav_install/include ^
    -DLIBAV_LIBRARY_DIR=%cd:\=/%/../libav_install/bin ^
-   -DOVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON ^
-   -DOVITO_BUILD_PLUGIN_NETCDFPLUGIN=ON ^
-   -DOVITO_BUILD_PLUGIN_PYSCRIPT=ON ^
-   -DOVITO_BUILD_PLUGIN_PARTICLES=ON ^
    -DOVITO_BUILD_DOCUMENTATION=ON ^
-   -DOVITO_VIDEO_OUTPUT_SUPPORT=ON ^
    ../../source
 
 nmake install

@@ -20,14 +20,14 @@
 ###############################################################################
 
 # Find system Botan library.
-FIND_PACKAGE(Botan)	
+FIND_PACKAGE(Botan QUIET)
 
 IF(BOTAN_FOUND)
 
-	# Create imported target for the Botan library.
+	# Create imported target for the existing Botan library.
 	ADD_LIBRARY(Botan SHARED IMPORTED GLOBAL)
-	SET_PROPERTY(TARGET Botan PROPERTY IMPORTED_LOCATION "${BOTAN_LIBRARIES}")
-	SET_PROPERTY(TARGET Botan APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${BOTAN_INCLUDE_DIRS}")
+	SET_PROPERTY(TARGET Botan PROPERTY IMPORTED_LOCATION "${Botan_LIBRARIES}")
+	SET_PROPERTY(TARGET Botan APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${Botan_INCLUDE_DIRS}")
 
 ELSE()
 
@@ -91,9 +91,6 @@ ELSE()
 	IF(CMAKE_COMPILER_IS_GNUCXX)
 		TARGET_COMPILE_DEFINITIONS(Botan PRIVATE BOTAN_BUILD_COMPILER_IS_GCC)
 	ENDIF()
-
-	# Link Qt5.
-	QT5_USE_MODULES(Botan ${OVITO_REQUIRED_QT_MODULES})
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(Botan INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")

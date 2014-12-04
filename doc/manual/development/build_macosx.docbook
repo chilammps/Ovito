@@ -10,7 +10,7 @@
   <title>Building OVITO on Mac OS X</title>
 
  <simplesect>
-    <title>Install dependencies</title>
+    <title>Installing dependencies</title>
     <para>
     See the <link linkend="development.requirements">list of requirements</link>
     and install the required build tools and third-party libraries.
@@ -84,7 +84,7 @@ The compiled libraries will be installed under <filename>$HOME/libavstatic/</fil
   </simplesect>
 
  <simplesect>
-    <title>Download the source code</title>
+    <title>Downloading the source code</title>
     <para>
     To download OVITO's source code into a new subdirectory named <filename>ovito</filename>, run: 
 <screen><command>git clone git://git.code.sf.net/p/ovito/git ovito</command></screen>
@@ -92,7 +92,7 @@ The compiled libraries will be installed under <filename>$HOME/libavstatic/</fil
   </simplesect>
 
   <simplesect>
-    <title>Compile OVITO</title>
+    <title>Compiling OVITO</title>
     <para>
     Create a build directory and let CMake generate the Makefile: 
 <screen>
@@ -100,10 +100,6 @@ The compiled libraries will be installed under <filename>$HOME/libavstatic/</fil
 mkdir build
 cd build
 cmake -DOVITO_BUILD_DOCUMENTATION=ON \
-      -DOVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON \
-      -DOVITO_BUILD_PLUGIN_NETCDFPLUGIN=ON \
-      -DOVITO_BUILD_PLUGIN_PYSCRIPT=ON \
-      -DOVITO_VIDEO_OUTPUT_SUPPORT=ON \
       -DCMAKE_BUILD_TYPE=Release \
       ..
 </command></screen>

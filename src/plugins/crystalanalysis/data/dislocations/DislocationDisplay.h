@@ -114,7 +114,7 @@ public:
 public:
 
 	Q_PROPERTY(FloatType lineWidth READ lineWidth WRITE setLineWidth)
-	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
+	Q_PROPERTY(Ovito::Rendering::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
 
 protected:
 

@@ -49,16 +49,16 @@ ADD_LIBRARY(QSsh
 # Export symbols when building a Windows DLL.
 TARGET_COMPILE_DEFINITIONS(QSsh PRIVATE QSSH_LIBRARY)
 
-# Link required Botan library.
+# Link to Botan library.
 TARGET_LINK_LIBRARIES(QSsh Botan)
+
+# Link to Qt5.
+TARGET_LINK_LIBRARIES(QSsh Qt5::Core Qt5::Network)
 
 # Make header files of this library available to dependent targets.
 TARGET_INCLUDE_DIRECTORIES(QSsh INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Link Qt5.
-QT5_USE_MODULES(QSsh ${OVITO_REQUIRED_QT_MODULES})
-
-# This library is part of the installation package.
+# Make this library part of the installation package.
 IF(NOT OVITO_MONOLITHIC_BUILD)
 	INSTALL(TARGETS QSsh 
 		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
