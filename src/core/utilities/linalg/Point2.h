@@ -94,30 +94,27 @@ public:
 	Point_2() {}
 
 	/// Constructs a point with \c x and \c y components initialized to the given value.
-	Q_DECL_CONSTEXPR explicit Point_2(T val)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 2>{{val,val}} {}
+	Q_DECL_CONSTEXPR explicit Point_2(T val) : std::array<T, 2>{{val,val}} {}
 #else
-		{ this->assign(val); } 
+	explicit Point_2(T val) { this->fill(val); }
 #endif
 
 	/// Initializes the coordinates of the point with the given values.
-	Q_DECL_CONSTEXPR Point_2(T x, T y)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 2>{{x, y}} {}
+	Q_DECL_CONSTEXPR Point_2(T x, T y) : std::array<T, 2>{{x, y}} {}
 #else
-		{ this->x() = x; this->y() = y; } 
+	Point_2(T x, T y) { this->x() = x; this->y() = y; }
 #endif
 
 	/// Initializes the point to the origin. All coordinates are set to zero.
-	Q_DECL_CONSTEXPR Point_2(Origin)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 2>{{T(0), T(0)}} {}
+	Q_DECL_CONSTEXPR Point_2(Origin) : std::array<T, 2>{{T(0), T(0)}} {}
 #else
-		{ this->assign(T(0)); }
+	Point_2(Origin) { this->fill(T(0)); }
 #endif
 
-		/// Initializes the point from an array coordinates.
+	/// Initializes the point from an array coordinates.
 	Q_DECL_CONSTEXPR explicit Point_2(const std::array<T, 2>& a) : std::array<T, 2>(a) {}
 
 	/// Casts the point to another coordinate type \a U.
@@ -139,7 +136,7 @@ public:
 	Point_2& operator/=(T s) { x() /= s; y() /= s; return *this; }
 
 	/// Sets all coordinates of the point to zero.
-	Point_2& operator=(Origin) { y() = x() = T(0); return *this; }
+	Point_2& operator=(Origin) { this->fill(T(0)); return *this; }
 
 	/// Converts a point to a vector.
 	Vector_2<T> operator-(Origin) const {

@@ -64,7 +64,7 @@ public:
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 6>{{val,val,val,val,val,val}} {}
 #else
-		{ this->assign(val); } 
+		{ this->fill(val); }
 #endif
 
 	/// \brief Constructor that initializes the six tensor components.
@@ -77,7 +77,12 @@ public:
 #endif
 
 	/// \brief Initializes the tensor to the null tensor. All components are set to zero.
-	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero) { this->assign(T(0)); } 
+	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero)
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+	: std::array<T, 6>{{T(0),T(0),T(0),T(0),T(0),T(0)}} {}
+#else
+		{ this->fill(T(0)); }
+#endif
 
 	/// \brief Initializes the tensor to the identity tensor.
 	Q_DECL_CONSTEXPR SymmetricTensor2T(Identity)

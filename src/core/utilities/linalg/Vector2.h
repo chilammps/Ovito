@@ -83,27 +83,24 @@ public:
 	Vector_2() {}
 
 	/// Constructs a vector with the two components initialized to the given value.
-	Q_DECL_CONSTEXPR explicit Vector_2(T val)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 2>{{val,val}} {}
+	Q_DECL_CONSTEXPR explicit Vector_2(T val) : std::array<T, 2>{{val,val}} {}
 #else
-		{ this->assign(val); } 
+	explicit Vector_2(T val) { this->fill(val); }
 #endif
 
 		/// Initializes the components of the vector with the given values.
-	Q_DECL_CONSTEXPR Vector_2(T x, T y)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 2>{{x, y}} {}
+	Q_DECL_CONSTEXPR Vector_2(T x, T y) : std::array<T, 2>{{x, y}} {}
 #else
-		{ this->x() = x; this->y() = y; } 
+	Vector_2(T x, T y) { this->x() = x; this->y() = y; }
 #endif
 
 	/// Initializes the vector to the null vector. All components are set to zero.
-	Q_DECL_CONSTEXPR Vector_2(Zero)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 2>{{T(0), T(0)}} {}
+	Q_DECL_CONSTEXPR Vector_2(Zero) : std::array<T, 2>{{T(0), T(0)}} {}
 #else
-		{ this->assign(T(0)); }
+	Vector_2(Zero) { this->fill(T(0)); }
 #endif
 
 	/// Initializes the vector from an array.
@@ -133,7 +130,10 @@ public:
 	Vector_2& operator/=(T s) { x() /= s; y() /= s; return *this; }
 
 	/// Divides each component of the vector by a scalar.
-	Vector_2& operator=(Zero) { y() = x() = T(0); return *this; }
+	Vector_2& operator=(Zero) { setZero(); return *this; }
+
+	/// Sets all components of the vector to zero.
+	void setZero() { this->fill(T(0)); }
 
 	//////////////////////////// Component access //////////////////////////
 

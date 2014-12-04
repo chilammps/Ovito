@@ -81,40 +81,36 @@ public:
 	Vector_4() {}
 
 	/// Constructs a vector with all four components initialized to the given value.
-	Q_DECL_CONSTEXPR explicit Vector_4(T val)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 4>{{val,val,val,val}} {}
+	Q_DECL_CONSTEXPR explicit Vector_4(T val) : std::array<T, 4>{{val,val,val,val}} {}
 #else
-		{ this->assign(val); } 
+	explicit Vector_4(T val) { this->fill(val); }
 #endif
 
 		/// Initializes the components of the vector with the given values.
-	Q_DECL_CONSTEXPR Vector_4(T x, T y, T z, T w)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 4>{{x, y, z, w}} {}
+	Q_DECL_CONSTEXPR Vector_4(T x, T y, T z, T w) : std::array<T, 4>{{x, y, z, w}} {}
 #else
-		{ this->x() = x; this->y() = y; this->z() = z; this->w() = w; } 
+	Vector_4(T x, T y, T z, T w) { this->x() = x; this->y() = y; this->z() = z; this->w() = w; }
 #endif
 
 		/// Initializes the vector to the null vector. All components are set to zero.
-	Q_DECL_CONSTEXPR Vector_4(Zero)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 4>{{T(0), T(0), T(0), T(0)}} {}
+	Q_DECL_CONSTEXPR Vector_4(Zero) : std::array<T, 4>{{T(0), T(0), T(0), T(0)}} {}
 #else
-		{ this->assign(T(0)); }
+	Vector_4(Zero) { this->fill(T(0)); }
 #endif
 
-		/// Initializes the vector from an array.
+	/// Initializes the vector from an array.
 	Q_DECL_CONSTEXPR explicit Vector_4(const std::array<T, 4>& a) : std::array<T, 4>(a) {}
 
 	/// Initializes the 4-vector from a 3-vector.
 	/// \param v Specifies the xyz components of the new vector.
 	/// \param w The w component of the new vector.
-	Q_DECL_CONSTEXPR explicit Vector_4(const Vector_3<T>& v, T w)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
-		: std::array<T, 4>{{v.x(), v.y(), v.z(), w}} {}
+	Q_DECL_CONSTEXPR explicit Vector_4(const Vector_3<T>& v, T w) : std::array<T, 4>{{v.x(), v.y(), v.z(), w}} {}
 #else
-		{ this->x() = v.x; this->y() = v.y; this->z() = v.z; this->w() = w; } 
+	explicit Vector_4(const Vector_3<T>& v, T w) { this->x() = v.x; this->y() = v.y; this->z() = v.z; this->w() = w; }
 #endif
 
     /////////////////////////////// Unary operators //////////////////////////////
@@ -137,10 +133,10 @@ public:
 	Vector_4& operator/=(T s) { x() /= s; y() /= s; z() /= s; w() /= s; return *this; }
 
 	/// Sets all components of the vector to zero.
-	Vector_4& operator=(Zero) { w() = z() = y() = x() = T(0); return *this; }
+	Vector_4& operator=(Zero) { setZero(); return *this; }
 
 	/// Sets all components of the vector to zero.
-	void setZero() { z() = y() = x() = w() = T(0); }
+	void setZero() { this->fill(T(0)); }
 
 	//////////////////////////// Component access //////////////////////////
 

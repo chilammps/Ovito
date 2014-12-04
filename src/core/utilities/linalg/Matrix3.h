@@ -91,44 +91,50 @@ public:
 
 	/// \brief Constructor that initializes all 9 elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
+#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_3(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<Vector_3<T>,3>{{Vector_3<T>(m11,m21,m31),
 									 Vector_3<T>(m12,m22,m32),
 									 Vector_3<T>(m13,m23,m33)}} {}
 #else
+	Matrix_3(T m11, T m12, T m13,
+		   T m21, T m22, T m23,
+		   T m31, T m32, T m33)
 		{ (*this)[0] = Vector_3<T>(m11,m21,m31); 
 		  (*this)[1] = Vector_3<T>(m12,m22,m32);
 		  (*this)[2] = Vector_3<T>(m13,m23,m33); }
 #endif
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
-	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3)
 		: std::array<Vector_3<T>,3>{{c1, c2, c3}} {}
 #else
+	Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3)
 		{ (*this)[0] = c1; (*this)[1] = c2; (*this)[2] = c3; } 
 #endif
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	Q_DECL_CONSTEXPR Matrix_3(Zero)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+	Q_DECL_CONSTEXPR Matrix_3(Zero)
 		: std::array<Vector_3<T>,3>{{typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero()}} {}
 #else
-		{ this->assign(typename Vector_3<T>::Zero()); }
+	Matrix_3(Zero)
+		{ this->fill(typename Vector_3<T>::Zero()); }
 #endif
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one, and all off-diagonal elements are set to zero.
-	Q_DECL_CONSTEXPR Matrix_3(Identity)
 #if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+	Q_DECL_CONSTEXPR Matrix_3(Identity)
 		: std::array<Vector_3<T>,3>{{Vector_3<T>(T(1),T(0),T(0)),
 									 Vector_3<T>(T(0),T(1),T(0)),
 									 Vector_3<T>(T(0),T(0),T(1))}} {}
 #else
+	Matrix_3(Identity)
 		{ (*this)[0] = Vector_3<T>(T(1),T(0),T(0)); 
 		  (*this)[1] = Vector_3<T>(T(0),T(1),T(0));
 		  (*this)[2] = Vector_3<T>(T(0),T(0),T(1)); }

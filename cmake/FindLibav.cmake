@@ -14,9 +14,14 @@
 # List of required headers.
 SET(LIBAV_HEADER_NAMES libavformat/avformat.h libavcodec/avcodec.h libavutil/avutil.h libswscale/swscale.h)
 # List of required libraries.
-SET(LIBAV_LIBRARY_NAMES avformat avcodec avutil avresample swscale)
+SET(LIBAV_LIBRARY_NAMES avformat avcodec avutil swscale)
 
+# avresample.dll is an indirect dependency that needs to be deployed on Windows.
 IF(WIN32)
+	LIST(APPEND LIBAV_LIBRARY_NAMES avresample)
+ENDIF()
+
+IF(WIN32 OR APPLE)
 
 	# Detect header path.
 	FIND_PATH(LIBAV_INCLUDE_DIR NAMES libavcodec/avcodec.h)
@@ -91,9 +96,15 @@ FOREACH(lib ${LIBAV_LIBRARY_NAMES})
 ENDFOREACH()
 
 IF(APPLE)
+	# libbz2 is an indirect dependency that needs to be linked in on MacOS.
+	FIND_PACKAGE(BZip2 REQUIRED)
+	
+	# Apple's system libraries are required too.
 	FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation)
 	FIND_LIBRARY(COREVIDEO_LIBRARY CoreVideo)
 	FIND_LIBRARY(VIDEODECODEACCELERATION_LIBRARY VideoDecodeAcceleration)
-	LIST(APPEND LIBAV_LIBRARIES ${COREFOUNDATION_LIBRARY} ${COREVIDEO_LIBRARY} ${VIDEODECODEACCELERATION_LIBRARY})
+
+	LIST(APPEND LIBAV_LIBRARIES ${BZIP2_LIBRARIES} ${COREFOUNDATION_LIBRARY} ${COREVIDEO_LIBRARY} ${VIDEODECODEACCELERATION_LIBRARY})
+	LIST(APPEND LIBAV_INCLUDE_DIRS ${BZIP2_INCLUDE_DIR})
 ENDIF()
 

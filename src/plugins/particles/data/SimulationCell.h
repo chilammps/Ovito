@@ -40,7 +40,7 @@ public:
 	SimulationCell() {
 		_simulationCell = AffineTransformation::Zero();
 		_reciprocalSimulationCell = AffineTransformation::Zero();
-		_pbcFlags.assign(true);
+		_pbcFlags.fill(true);
 	}
 
 	/// Returns the current simulation cell matrix.
