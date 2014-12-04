@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file StructureIdentificationModifier.h
- * \brief Contains the definition of the Particles::StructureIdentificationModifier class.
- */
-
 #ifndef __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H
 #define __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H
 
@@ -31,12 +26,10 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/ParticleType.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticleType.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Base class for modifiers that assign a structure type to each particle.
@@ -46,12 +39,13 @@ class OVITO_PARTICLES_EXPORT StructureIdentificationModifier : public Asynchrono
 public:
 
 	/// Computes the modifier's results.
-	class StructureIdentificationEngine : public AsynchronousParticleModifier::Engine
+	class StructureIdentificationEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		StructureIdentificationEngine(ParticleProperty* positions, const SimulationCellData& simCell) :
+		StructureIdentificationEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell) :
+			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_structures(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty, 0, false)) {}
 
@@ -62,13 +56,13 @@ public:
 		ParticleProperty* structures() const { return _structures.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 	private:
 
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _structures;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 	};
 
 public:
@@ -79,9 +73,6 @@ public:
 	/// Returns the array of structure types that are assigned to the particles by this modifier.
 	const ParticleTypeList& structureTypes() const { return _structureTypes; }
 
-	/// Returns the computed per-particle structure types.
-	const ParticleProperty& particleStructures() const { OVITO_CHECK_POINTER(_structureProperty.constData()); return *_structureProperty; }
-
 	/// Returns an array that contains the number of matching particles for each structure type.
 	const QList<int>& structureCounts() const { return _structureCounts; }
 
@@ -89,10 +80,6 @@ public:
 
 	/// Returns the default color for a structure type.
 	static Color getDefaultStructureColor(const QString& structureName);
-
-public:
-
-	Q_PROPERTY(QList<int> structureCounts READ structureCounts);
 
 protected:
 
@@ -110,16 +97,16 @@ protected:
 	/// Create an instance of the ParticleType class to represent a structure type.
 	void createStructureType(int id, const QString& name, const Color& color);
 
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
 
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 
 	/// This stores the cached results of the modifier, i.e. the structures assigned to the particles.
-	QExplicitlySharedDataPointer<ParticleProperty> _structureProperty;
+	QExplicitlySharedDataPointer<ParticleProperty> _structureData;
 
 	/// Contains the list of structure types recognized by this analysis modifier.
 	VectorReferenceField<ParticleType> _structureTypes;
@@ -138,7 +125,7 @@ private:
 /**
  * List box that displays the structure types.
  */
-class StructureListParameterUI : public RefTargetListParameterUI
+class OVITO_PARTICLES_EXPORT StructureListParameterUI : public RefTargetListParameterUI
 {
 public:
 
@@ -193,6 +180,6 @@ private:
 	Q_OBJECT
 };
 
-};	// End of namespace
+}}}}}	// End of namespace
 
 #endif // __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H

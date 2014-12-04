@@ -23,9 +23,9 @@
 #include <core/plugins/PluginManager.h>
 #include "ApplicationSettingsDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Dialogs {
 	
-IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsPage, OvitoObject);
+IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsDialogPage, OvitoObject);
 
 /******************************************************************************
 * The constructor of the settings dialog class.
@@ -40,10 +40,10 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(
 	_tabWidget = new QTabWidget(this);
 	layout1->addWidget(_tabWidget);
 
-	// Create an iterator that retrieves all ApplicationSettingsPage derived classes.
-	Q_FOREACH(OvitoObjectType* clazz, PluginManager::instance().listClasses(ApplicationSettingsPage::OOType)) {
+	// Create an iterator that retrieves all ApplicationSettingsDialogPage derived classes.
+	Q_FOREACH(OvitoObjectType* clazz, PluginManager::instance().listClasses(ApplicationSettingsDialogPage::OOType)) {
 		try {
-			OORef<ApplicationSettingsPage> page = static_object_cast<ApplicationSettingsPage>(clazz->createInstance(nullptr));
+			OORef<ApplicationSettingsDialogPage> page = static_object_cast<ApplicationSettingsDialogPage>(clazz->createInstance(nullptr));
 			_pages.push_back(page);
 			page->insertSettingsDialogPage(this, _tabWidget);
 		}
@@ -68,7 +68,7 @@ void ApplicationSettingsDialog::onOk()
 {
 	try {
 		// Let all pages save their settings.
-		for(const OORef<ApplicationSettingsPage>& page : _pages) {
+		for(const OORef<ApplicationSettingsDialogPage>& page : _pages) {
 			if(!page->saveValues(this, _tabWidget)) {
 				return;
 			}
@@ -83,4 +83,4 @@ void ApplicationSettingsDialog::onOk()
 	}
 }
 
-};
+}}}	// End of namespace

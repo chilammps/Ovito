@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportSettings.h
- * \brief Contains the definition of the Ovito::ViewportSettings class.
- */
-
 #ifndef __OVITO_GLOBAL_VIEWPORT_SETTINGS_H
 #define __OVITO_GLOBAL_VIEWPORT_SETTINGS_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace View {
 
 /**
  * \brief Stores general settings related to the viewports.
@@ -140,12 +135,11 @@ private:
 	Q_OBJECT
 };
 
-};
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::ViewportSettings::ViewportColor);
-Q_DECLARE_METATYPE(Ovito::ViewportSettings::UpDirection);
-Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::ViewportColor, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::UpDirection, Q_PRIMITIVE_TYPE);
-
+Q_DECLARE_METATYPE(Ovito::View::ViewportSettings::ViewportColor);
+Q_DECLARE_METATYPE(Ovito::View::ViewportSettings::UpDirection);
+Q_DECLARE_TYPEINFO(Ovito::View::ViewportSettings::ViewportColor, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::View::ViewportSettings::UpDirection, Q_PRIMITIVE_TYPE);
 
 #endif	// __OVITO_VIEWPORT_SETTINGS_H

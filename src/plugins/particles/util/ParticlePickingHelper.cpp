@@ -24,12 +24,12 @@
 #include <core/scene/ObjectNode.h>
 #include <core/animation/AnimationSettings.h>
 
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/ParticleDisplay.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticleDisplay.h>
 #include "ParticlePickingHelper.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /******************************************************************************
 * Finds the particle under the mouse cursor.
@@ -95,8 +95,8 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 	ParticlePropertyObject* posProperty = nullptr;
 	ParticlePropertyObject* radiusProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(SceneObject* sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+	for(DataObject* dataObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;
@@ -163,8 +163,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	ParticlePropertyObject* colorProperty = nullptr;
 	ParticlePropertyObject* selectionProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(SceneObject* sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+	for(DataObject* dataObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;
@@ -256,4 +256,4 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	glDepthFunc(oldDepthFunc);
 }
 
-};	// End of namespace
+}}}}	// End of namespace

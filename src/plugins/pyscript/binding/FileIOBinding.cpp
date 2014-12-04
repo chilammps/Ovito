@@ -20,11 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/pyscript/PyScript.h>
-#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/dataset/importexport/FileExporter.h>
-#include <core/dataset/importexport/LinkedFileImporter.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSourceImporter.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/utilities/io/FileManager.h>
 #include "PythonBinding.h"
 
@@ -46,7 +45,7 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 		.add_property("isEmpty", &QUrl::isEmpty)
 		.add_property("isLocalFile", &QUrl::isLocalFile)
 		.add_property("isValid", &QUrl::isValid)
-		.def("__str__", (QString (*)(const QUrl&))([](const QUrl& url) { return url.toString(QUrl::PreferLocalFile); }))
+        .def("__str__", static_cast<QString (*)(const QUrl&)>([](const QUrl& url) { return url.toString(QUrl::PreferLocalFile); }))
 		.def(self == other<QUrl>())
 		.def(self != other<QUrl>())
 	;
@@ -54,7 +53,8 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 	// Install automatic Python string to QUrl conversion.
 	auto convertible_QUrl = [](PyObject* obj_ptr) -> void* {
 		// Check if Python object can be converted to target type.
-		if(!PyString_Check(obj_ptr)) return nullptr;
+		extract<QString> ex(obj_ptr);
+		if(!ex.check()) return nullptr;
 		return obj_ptr;
 	};
 	auto construct_QUrl = [](PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
@@ -70,6 +70,8 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 		.add_property("fileFilterDescription", &FileImporter::fileFilterDescription)
 		.def("importFile", &FileImporter::importFile)
 		.def("checkFileFormat", &FileImporter::checkFileFormat)
+		.def("autodetectFileFormat", (OORef<FileImporter> (*)(DataSet*, const QUrl&))&FileImporter::autodetectFileFormat)
+		.staticmethod("autodetectFileFormat")
 	;
 
 	enum_<FileImporter::ImportMode>("ImportMode")
@@ -79,20 +81,15 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 		.value("ResetScene", FileImporter::ResetScene)
 	;
 
-	class_<ImportExportManager, boost::noncopyable>("ImportExportManager", no_init)
-		.add_static_property("instance", make_function(&ImportExportManager::instance, return_value_policy<reference_existing_object>()))
-		.def("autodetectFileFormat", (OORef<FileImporter> (ImportExportManager::*)(DataSet*, const QUrl&))&ImportExportManager::autodetectFileFormat)
-	;
-
 	class_<FileManager, boost::noncopyable>("FileManager", no_init)
 		.add_static_property("instance", make_function(&FileManager::instance, return_value_policy<reference_existing_object>()))
 		.def("removeFromCache", &FileManager::removeFromCache)
 		.def("urlFromUserInput", &FileManager::urlFromUserInput)
 	;
 
-	ovito_abstract_class<LinkedFileImporter, FileImporter>()
-		.def("requestReload", &LinkedFileImporter::requestReload)
-		.def("requestFramesUpdate", &LinkedFileImporter::requestFramesUpdate)
+	ovito_abstract_class<FileSourceImporter, FileImporter>()
+		.def("requestReload", &FileSourceImporter::requestReload)
+		.def("requestFramesUpdate", &FileSourceImporter::requestFramesUpdate)
 	;
 
 	ovito_abstract_class<FileExporter, RefTarget>()
@@ -101,7 +98,7 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 		.def("exportToFile", &FileExporter::exportToFile, FileExporter_exportToFile_overloads())
 	;
 
-	ovito_class<LinkedFileObject, SceneObject>(
+	ovito_class<FileSource, CompoundObject>(
 			"A data source for a modification pipeline that reads the input data from external files."
 			"\n\n"
 			"You normally do not create an instance of this class yourself. "
@@ -123,9 +120,9 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"    node.source.load(\"second_file.dump\")\n"
 			"\n"
 			"File sources are also used by certain modifiers to load a reference configuration."
-//			"Note the actual parsing of the external file is not performed by the :py:class:`!FileSourceObject` itself. For this, a dedicated "
+//			"Note the actual parsing of the external file is not performed by the :py:class:`!FileSource` itself. For this, a dedicated "
 //			"file importer object is responsible, which is accessible through the :py:attr:`.importer` attribute. When loading a new file, "
-//			"the :py:class:`!FileSourceObject`` automatically creates the right file importer depending on the file's format (which is auto-detected). "
+//			"the :py:class:`!FileSource`` automatically creates the right file importer depending on the file's format (which is auto-detected). "
 //			"Note that the importer might have additional parameter attributes, which further control the loading of specific file formats."
 			"\n\n"
 			"**Example**"
@@ -151,17 +148,14 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"            node.source.load(file)\n\n"
 			"        # Evaluate pipeline and wait until the analysis results are available.\n"
 			"        node.compute()\n"
-			"        print \"Structure %s contains %i FCC atoms.\" % (file, cna.counts[\"FCC\"])\n",
-			// The Python class name:
-			"FileSource")
-		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()))
-		.add_property("source_path", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()))
-		.add_property("status", &LinkedFileObject::status)
-		.add_property("num_frames", &LinkedFileObject::numberOfFrames,
+			"        print \"Structure %s contains %i FCC atoms.\" % (file, cna.counts[\"FCC\"])\n")
+		.add_property("importer", make_function(&FileSource::importer, return_value_policy<ovito_object_reference>()))
+		.add_property("source_path", make_function(&FileSource::sourceUrl, return_value_policy<copy_const_reference>()))
+		.add_property("num_frames", &FileSource::numberOfFrames,
 				"The number of frames the loaded file or file sequence contains (read-only).")
-		.add_property("loaded_frame", &LinkedFileObject::loadedFrame,
-				"The zero-based index of the frame that is currently loaded (read-only)	.")
-		.add_property("adjust_animation_interval", &LinkedFileObject::adjustAnimationIntervalEnabled, &LinkedFileObject::setAdjustAnimationIntervalEnabled,
+		.add_property("loaded_frame", &FileSource::loadedFrameIndex,
+				"The zero-based index of the frame from the input sequence that is currently loaded (read-only).")
+		.add_property("adjust_animation_interval", &FileSource::adjustAnimationIntervalEnabled, &FileSource::setAdjustAnimationIntervalEnabled,
 				"A flag that controls whether the animation length in OVITO is automatically adjusted to match the number of frames in the "
 				"loaded file or file sequence."
 				"\n\n"
@@ -173,15 +167,13 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 				"OVITO simultaneously, but their frame counts do not match. "
 				"\n\n"
 				":Default: ``True``\n")
-		.add_property("sceneObjects", make_function(&LinkedFileObject::sceneObjects, return_internal_reference<>()))
-		.def("refreshFromSource", &LinkedFileObject::refreshFromSource)
-		.def("updateFrames", &LinkedFileObject::updateFrames)
-		.def("animationTimeToInputFrame", &LinkedFileObject::animationTimeToInputFrame)
-		.def("inputFrameToAnimationTime", &LinkedFileObject::inputFrameToAnimationTime)
-		.def("adjustAnimationInterval", &LinkedFileObject::adjustAnimationInterval)
-		.def("addSceneObject", &LinkedFileObject::addSceneObject)
-		.def("setSource", (bool (LinkedFileObject::*)(const QUrl&, const FileImporterDescription*))&LinkedFileObject::setSource)
-		.def("setSource", (bool (LinkedFileObject::*)(QUrl, LinkedFileImporter*, bool))&LinkedFileObject::setSource)
+		.def("refreshFromSource", &FileSource::refreshFromSource)
+		.def("updateFrames", &FileSource::updateFrames)
+		.def("animationTimeToInputFrame", &FileSource::animationTimeToInputFrame)
+		.def("inputFrameToAnimationTime", &FileSource::inputFrameToAnimationTime)
+		.def("adjustAnimationInterval", &FileSource::adjustAnimationInterval)
+		.def("setSource", (bool (FileSource::*)(const QUrl&, const OvitoObjectType*))&FileSource::setSource)
+		.def("setSource", (bool (FileSource::*)(QUrl, FileSourceImporter*, bool))&FileSource::setSource)
 	;
 }
 

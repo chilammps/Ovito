@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ElidedTextLabel.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /******************************************************************************
 * Returns the rect that is available for us to draw the document
@@ -66,4 +66,4 @@ void ElidedTextLabel::paintEvent(QPaintEvent *)
     	setToolTip(text());
 }
 
-};
+}}}	// End of namespace

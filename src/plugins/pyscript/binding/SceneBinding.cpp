@@ -24,7 +24,8 @@
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/SelectionSet.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
+#include <core/scene/objects/CompoundObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/scene/pipeline/PipelineObject.h>
@@ -36,7 +37,7 @@ using namespace boost::python;
 using namespace Ovito;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ObjectNode_waitUntilReady_overloads, waitUntilReady, 2, 3);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SceneObject_waitUntilReady_overloads, waitUntilReady, 2, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(DataObject_waitUntilReady_overloads, waitUntilReady, 2, 3);
 
 BOOST_PYTHON_MODULE(PyScriptScene)
 {
@@ -85,11 +86,11 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 			"   <ParticleProperty at 0x11d01d60>\n"
 			"   \n"
 			"   >>> data.cell\n"
-			"   <SimulationCell at 0x24338a0>\n"
+			"   <SimulationCellObject at 0x24338a0>\n"
 			"\n\n"
 			, init<>())
-		.def(init<SceneObject*, TimeInterval>())
-		.def(init<const PipelineStatus&, const QVector<SceneObject*>&, const TimeInterval&>())
+		.def(init<DataObject*, TimeInterval>())
+		.def(init<const PipelineStatus&, const QVector<DataObject*>&, const TimeInterval&>())
 		.def("clear", &PipelineFlowState::clear)
 		.def("addObject", &PipelineFlowState::addObject)
 		.def("replaceObject", &PipelineFlowState::replaceObject)
@@ -99,25 +100,28 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.add_property("objects", make_function(&PipelineFlowState::objects, return_internal_reference<>()))
 	;
 
-	ovito_abstract_class<SceneObject, RefTarget>(
+	ovito_abstract_class<DataObject, RefTarget>(
 			"Abstract base class for all data objects."
 			"\n\n"
 			"Some data objects are associated with a :py:class:`~ovito.vis.Display` object, which is responsible for "
 			"displaying the data in the viewports and in rendered images. "
 			"The :py:attr:`.display` attribute provides access to the attached display object and "
-			"allows controlling the visual appearance of the data.",
-			// Python class name:
-			"DataObject")
-		.def("objectValidity", &SceneObject::objectValidity)
-		.def("evaluate", &SceneObject::evaluate)
-		.def("addDisplayObject", &SceneObject::addDisplayObject)
-		.def("setDisplayObject", &SceneObject::setDisplayObject)
-		.add_property("status", &SceneObject::status)
-		.add_property("displayObjects", make_function(&SceneObject::displayObjects, return_internal_reference<>()))
-		.add_property("saveWithScene", &SceneObject::saveWithScene, &SceneObject::setSaveWithScene)
-		.def("waitUntilReady", &SceneObject::waitUntilReady, SceneObject_waitUntilReady_overloads())
+			"allows controlling the visual appearance of the data.")
+		.def("objectValidity", &DataObject::objectValidity)
+		.def("evaluate", &DataObject::evaluate)
+		.def("addDisplayObject", &DataObject::addDisplayObject)
+		.def("setDisplayObject", &DataObject::setDisplayObject)
+		.add_property("status", &DataObject::status)
+		.add_property("displayObjects", make_function(&DataObject::displayObjects, return_internal_reference<>()))
+		.add_property("saveWithScene", &DataObject::saveWithScene, &DataObject::setSaveWithScene)
+		.def("waitUntilReady", &DataObject::waitUntilReady, DataObject_waitUntilReady_overloads())
 	;
-	register_ptr_to_python<VersionedOORef<SceneObject>>();
+	register_ptr_to_python<VersionedOORef<DataObject>>();
+
+	ovito_class<CompoundObject, DataObject>()
+		.add_property("dataObjects", make_function(&CompoundObject::dataObjects, return_internal_reference<>()))
+		.def("addDataObject", &CompoundObject::addDataObject)
+	;
 
 	ovito_abstract_class<Modifier, RefTarget>(
 			"This is the base class for all modifiers in OVITO.")
@@ -139,7 +143,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.add_property("objectNodes", &ModifierApplication::objectNodes)
 	;
 
-	ovito_class<PipelineObject, SceneObject>()
+	ovito_class<PipelineObject, DataObject>()
 		.add_property("source_object", make_function(&PipelineObject::sourceObject, return_value_policy<ovito_object_reference>()), &PipelineObject::setSourceObject)
 		.add_property("modifierApplications", make_function(&PipelineObject::modifierApplications, return_internal_reference<>()))
 		.def("insertModifier", make_function(&PipelineObject::insertModifier, return_value_policy<ovito_object_reference>()))

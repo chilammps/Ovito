@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 // The minimum OpenGL version required by Ovito:
 #define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			2
@@ -42,12 +42,14 @@ extern OVITO_CORE_EXPORT void checkOpenGLErrorStatus(const char* command, const 
 	#define OVITO_CHECK_OPENGL(cmd)									\
 	{																\
 		cmd;														\
-		Ovito::checkOpenGLErrorStatus(#cmd, __FILE__, __LINE__);	\
+		Ovito::Rendering::Internal::checkOpenGLErrorStatus(#cmd, __FILE__, __LINE__);	\
 	}
+    #define OVITO_REPORT_OPENGL_ERRORS() Ovito::Rendering::Internal::checkOpenGLErrorStatus("", __FILE__, __LINE__);
 #else
 	#define OVITO_CHECK_OPENGL(cmd)			cmd
+    #define OVITO_REPORT_OPENGL_ERRORS()
 #endif
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_HELPERS_H

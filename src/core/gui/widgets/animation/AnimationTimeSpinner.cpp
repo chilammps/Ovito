@@ -25,7 +25,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "AnimationTimeSpinner.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 using namespace std;
 
@@ -104,4 +104,4 @@ void AnimationTimeSpinner::onSpinnerValueChanged()
 		_animSettings->setTime(intValue());
 }
 
-};
+}}}	// End of namespace

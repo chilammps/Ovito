@@ -26,10 +26,54 @@
 #include <core/dataset/DataSet.h>
 #include <core/plugins/Plugin.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Internal {
 
-/// Head of linked list.
+// Head of linked list.
 NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
+
+/******************************************************************************
+* Constructs the plugin class descriptor object.
+******************************************************************************/
+NativeOvitoObjectType::NativeOvitoObjectType(const QString& name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
+	: OvitoObjectType(name, superClass, isSerializable), _pluginId(pluginId), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
+{
+	// Insert into linked list of all object types.
+	_next = _firstInfo;
+	_firstInfo = this;
+}
+
+/******************************************************************************
+* This is called by the NativePlugin that contains this class to initialize
+* the properties of this class type.
+******************************************************************************/
+void NativeOvitoObjectType::initializeClassDescriptor(Plugin* plugin)
+{
+	OvitoObjectType::initializeClassDescriptor(plugin);
+
+	// Mark classes that don't have an invokable constructor as abstract.
+	setAbstract(_qtClassInfo->constructorCount() == 0);
+
+	// Remove namespace qualifier from Qt's class name.
+	_pureClassName = _qtClassInfo->className();
+	for(const char* p = _pureClassName; *p != '\0'; p++) {
+		if(p[0] == ':' && p[1] == ':') {
+			p++;
+			_pureClassName = p+1;
+		}
+	}
+
+	// Interpret Qt class info fields.
+	for(int i = _qtClassInfo->classInfoOffset(); i < _qtClassInfo->classInfoCount(); i++) {
+		if(qstrcmp(_qtClassInfo->classInfo(i).name(), "DisplayName") == 0) {
+			// Fetch display name assigned to the Qt object class.
+			setDisplayName(QString::fromLocal8Bit(_qtClassInfo->classInfo(i).value()));
+		}
+		else if(qstrcmp(_qtClassInfo->classInfo(i).name(), "ClassNameAlias") == 0) {
+			// Load name alias assigned to the Qt object class.
+			setNameAlias(QString::fromLocal8Bit(_qtClassInfo->classInfo(i).value()));
+		}
+	}
+}
 
 /******************************************************************************
 * Creates an instance of this object class.
@@ -61,4 +105,4 @@ OvitoObject* NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
 	return obj;
 }
 
-};
+}}}	// End of namespace

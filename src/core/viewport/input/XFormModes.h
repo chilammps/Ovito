@@ -26,9 +26,7 @@
 #include <core/reference/RefTargetListener.h>
 #include "ViewportInputMode.h"
 
-namespace Ovito {
-
-class CoordinateDisplayWidget;	// defined in CoordinateDisplayWidget.h
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * The default input mode for the viewports. This mode lets the user
@@ -251,6 +249,6 @@ private:
 
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_XFORM_VIEWPORT_MODES_H

@@ -41,7 +41,9 @@ extern "C" {
 	#error "The OVITO Tachyon plugin requires version 0.99 or newer of the Tachyon library."
 #endif
 
-namespace TachyonPlugin {
+namespace Ovito { namespace Plugins { namespace Tachyon {
+
+using namespace Internal;
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
@@ -160,7 +162,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		lightTex.opacity = 1.0;
 		lightTex.diffuse = 1.0;
 		void* lightTexPtr = rt_texture(_rtscene, &lightTex);
-		Vector3 lightDir = projParams().inverseViewMatrix * Vector3(0.2,-0.2,-1);
+		Vector3 lightDir = projParams().inverseViewMatrix * Vector3(0.2f,-0.2f,-1.0f);
 		rt_directional_light(_rtscene, lightTexPtr, rt_vector(lightDir.x(), lightDir.y(), -lightDir.z()));
 	}
 
@@ -183,7 +185,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	rt_trans_mode(_rtscene, RT_TRANS_VMD);
 	rt_trans_max_surfaces(_rtscene, 4);
 
-	// Export Ovito scene objects to Tachyon scene.
+	// Export Ovito data objects to Tachyon scene.
 	renderScene();
 
 	// Render visual 3D representation of the modifiers.
@@ -559,5 +561,5 @@ void* TachyonRenderer::getTachyonTexture(FloatType r, FloatType g, FloatType b, 
 	return rt_texture(_rtscene, &tex);
 }
 
-};
+}}}	// End of namespace
 

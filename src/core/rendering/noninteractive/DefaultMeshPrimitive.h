@@ -19,19 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DefaultMeshPrimitive.h
- * \brief Contains the definition of the Ovito::DefaultMeshPrimitive class.
- */
-
 #ifndef __OVITO_DEFAULT_TRIMESH_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_TRIMESH_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
 #include <core/rendering/MeshPrimitive.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/utilities/mesh/TriMesh.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Buffer object that stores triangle mesh geometry to be rendered by a non-interactive renderer.
@@ -74,6 +69,6 @@ private:
 	ColorA _meshColor;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DEFAULT_TRIMESH_GEOMETRY_BUFFER_H

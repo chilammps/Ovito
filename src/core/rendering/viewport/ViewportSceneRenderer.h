@@ -19,16 +19,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ViewportSceneRenderer.h
- * \brief Contains the definition of the Ovito::ViewportSceneRenderer class.
- */
 #ifndef __OVITO_VIEWPORT_SCENE_RENDERER_H
 #define __OVITO_VIEWPORT_SCENE_RENDERER_H
 
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
-#include <base/utilities/Color.h>
 #include "OpenGLHelpers.h"
 
 #include <QOpenGLFunctions_1_4>
@@ -36,7 +31,7 @@
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief This is the default scene renderer used to render the contents
@@ -187,6 +182,12 @@ public:
 		_translucentPrimitives.emplace_back(worldTransform(), primitive);
 	}
 
+	/// Binds the default vertex array object again in case another VAO was bound in between.
+	/// This method should be called before calling an OpenGL rendering function.
+	void rebindVAO() {
+		if(_vertexArrayObject) _vertexArrayObject->bind();
+	}
+
 protected:
 
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
@@ -259,6 +260,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_SCENE_RENDERER_H

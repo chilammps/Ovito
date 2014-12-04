@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
@@ -35,7 +35,7 @@
 #include "ModificationListModel.h"
 #include "ModifierListBox.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the modify page.
@@ -389,9 +389,9 @@ void ModifyCommandPage::createAboutPanel()
 				// Generate a new unique ID.
 				id.fill('0', 16);
 				std::random_device rdev;
-				std::uniform_int_distribution<char> rdist(0, 0xFF);
+				std::uniform_int_distribution<> rdist(0, 0xFF);
 				for(auto& c : id)
-					c = rdist(rdev);
+					c = (char)rdist(rdev);
 				settings.setValue("installation/id", id);
 			}
 		}
@@ -454,4 +454,4 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 	reply->deleteLater();
 }
 
-};
+}}}	// End of namespace

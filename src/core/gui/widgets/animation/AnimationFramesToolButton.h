@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file AnimationFramesToolButton.h
- * \brief Contains the definition of the Ovito::AnimationFramesToolButton class.
- */
-
 #ifndef __OVITO_ANIMATION_FRAMES_TOOL_BUTTON_H
 #define __OVITO_ANIMATION_FRAMES_TOOL_BUTTON_H
 
@@ -31,10 +26,10 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief A combo-box widget that allows to select the current animation frame.
+ * A combo-box widget that allows to select the current animation frame.
  */
 class AnimationFramesToolButton : public QToolButton
 {
@@ -88,6 +83,6 @@ private:
 	DataSetContainer& _datasetContainer;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ANIMATION_FRAMES_TOOL_BUTTON_H

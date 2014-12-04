@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,23 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file CentroSymmetryModifier.h
- * \brief Contains the definition of the Particles::CentroSymmetryModifier class.
- */
-
 #ifndef __OVITO_CENTRO_SYMMETRY_MODIFIER_H
 #define __OVITO_CENTRO_SYMMETRY_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
-
-class TreeNeighborListBuilder;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Calculates the centro-symmetry parameter (CSP) for particles.
@@ -47,35 +37,46 @@ public:
 	/// Constructor.
 	Q_INVOKABLE CentroSymmetryModifier(DataSet* dataset);
 
-	/// Returns the computed per-particle CSP values.
-	const ParticleProperty& cspValues() const { OVITO_CHECK_POINTER(_cspValues.constData()); return *_cspValues; }
-
 	/// Returns the number of nearest neighbors to take into account when computing the CSP.
 	int numNeighbors() const { return _numNeighbors; }
 
 	/// Sets the number of nearest neighbors to take into account when computing the CSP.
 	void setNumNeighbors(int count) { _numNeighbors = count; }
 
-public:
+protected:
 
-	Q_PROPERTY(int numNeighbors READ numNeighbors WRITE setNumNeighbors)
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// Computes the centrosymmetry parameter of a single particle.
+	static FloatType computeCSP(TreeNeighborListBuilder& neighList, size_t particleIndex);
 
 private:
 
 	/// Computes the modifier's results.
-	class CentroSymmetryEngine : public AsynchronousParticleModifier::Engine
+	class CentroSymmetryEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		CentroSymmetryEngine(ParticleProperty* positions, const SimulationCellData& simCell, int nneighbors) :
+		CentroSymmetryEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell, int nneighbors) :
+			ComputeEngine(validityInterval),
 			_nneighbors(nneighbors),
 			_positions(positions),
 			_simCell(simCell),
 			_csp(new ParticleProperty(positions->size(), ParticleProperty::CentroSymmetryProperty, 0, false)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -84,42 +85,21 @@ private:
 		ParticleProperty* csp() const { return _csp.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 	private:
 
 		int _nneighbors;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _csp;
 	};
-
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Computes the centrosymmetry parameter of a single particle.
-	static FloatType computeCSP(TreeNeighborListBuilder& neighList, size_t particleIndex);
-
-private:
 
 	/// This stores the cached results of the modifier, i.e. the CSP values computed for the particles.
 	QExplicitlySharedDataPointer<ParticleProperty> _cspValues;
 
 	/// Specifies the number of nearest neighbors to take into account when computing the CSP.
 	PropertyField<int> _numNeighbors;
-
-private:
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -129,6 +109,8 @@ private:
 
 	DECLARE_PROPERTY_FIELD(_numNeighbors);
 };
+
+namespace Internal {
 
 /**
  * \brief A properties editor for the CentroSymmetryModifier class.
@@ -149,7 +131,8 @@ protected:
 	OVITO_OBJECT
 };
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace
 
 #endif // __OVITO_CENTRO_SYMMETRY_MODIFIER_H

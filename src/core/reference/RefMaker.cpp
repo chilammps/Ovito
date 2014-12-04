@@ -29,7 +29,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 // Gives the class run-time type information.
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefMaker, OvitoObject);
@@ -357,18 +357,18 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 					}
 				}
 				else {
+#if 0
+					qDebug() << "  Reference field" << fieldEntry.identifier << " no longer exists.";
+#endif
 					// The serialized reference field no longer exists in the current program version.
 					// Load object from stream and release it immediately.
 					if(fieldEntry.flags & PROPERTY_FIELD_VECTOR) {
 						qint32 numEntries;
 						stream >> numEntries;
-						for(qint32 i=0; i<numEntries; i++)
+						for(qint32 i = 0; i < numEntries; i++)
 							stream.loadObject<RefTarget>();
 					}
 					else {
-#if 0
-						qDebug() << "  Reference field" << fieldEntry.identifier << " no longer exists.";
-#endif
 						stream.loadObject<RefTarget>();
 					}
 				}
@@ -503,4 +503,5 @@ void RefMaker::loadUserDefaults()
 	}
 }
 
-};
+}}	// End of namespace
+

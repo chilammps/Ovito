@@ -25,11 +25,9 @@
 #include <core/Core.h>
 #include "FutureWatcher.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 template<typename R> class Future;						// Defined in Future.h
-template<typename R, typename Function> class Task;		// Defined in Task.h
-class TaskBase;											// Defined in Task.h
 
 class OVITO_CORE_EXPORT FutureInterfaceBase
 {
@@ -59,8 +57,9 @@ public:
 
 	template<typename RS>
 	bool waitForSubTask(Future<RS>& subFuture) {
-		return waitForSubTask(subFuture.interface().get());
+		return waitForSubTask(subFuture.interface());
 	}
+	bool waitForSubTask(const std::shared_ptr<FutureInterfaceBase>& subTask);
 
 	void cancel();
 
@@ -71,9 +70,11 @@ public:
     void reportException();
     void reportException(std::exception_ptr ex);
 
+    void waitForFinished();
+
 protected:
 
-	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _runnable(nullptr), _progressValue(0), _progressMaximum(0) {
+	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _progressValue(0), _progressMaximum(0) {
 		_progressTime.invalidate();
 	}
 
@@ -95,8 +96,6 @@ protected:
 
     void waitForResult();
 
-    void waitForFinished();
-
     void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type) {
     	Q_FOREACH(FutureWatcher* watcher, _watchers)
     		watcher->postCallOutEvent(type, this);
@@ -115,9 +114,7 @@ protected:
     void registerWatcher(FutureWatcher* watcher);
     void unregisterWatcher(FutureWatcher* watcher);
 
-	bool waitForSubTask(FutureInterfaceBase* subTask);
-
-	void tryToRunImmediately();
+	virtual void tryToRunImmediately() {}
 
 	FutureInterfaceBase* _subTask;
 	QList<FutureWatcher*> _watchers;
@@ -125,7 +122,6 @@ protected:
 	State _state;
 	QWaitCondition _waitCondition;
 	std::exception_ptr _exceptionStore;
-	TaskBase* _runnable;
     int _progressValue;
     int _progressMaximum;
     QString _progressText;
@@ -180,6 +176,6 @@ public:
 	template<typename R2> friend class Future;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_FUTURE_INTERFACE_H

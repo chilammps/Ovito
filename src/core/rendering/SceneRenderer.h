@@ -38,7 +38,7 @@
 #include "ArrowPrimitive.h"
 #include "MeshPrimitive.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * Abstract base class for object-specific information used in the picking system.
@@ -61,7 +61,7 @@ private:
 };
 
 /**
- * \brief This is the base class for scene renderers.
+ * Abstract base class for scene renderers, which produce a picture of the three-dimensional scene.
  */
 class OVITO_CORE_EXPORT SceneRenderer : public RefTarget
 {
@@ -218,6 +218,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_SCENE_RENDERER_H

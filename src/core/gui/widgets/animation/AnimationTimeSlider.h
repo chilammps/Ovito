@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
  * This slider component controls the current scene time.
@@ -110,6 +110,6 @@ private:
 	QMetaObject::Connection _timeChangedConnection;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ANIMATION_TIME_SLIDER_H

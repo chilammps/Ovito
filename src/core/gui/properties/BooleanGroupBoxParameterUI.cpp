@@ -25,7 +25,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, BooleanGroupBoxParameterUI, PropertyParameterUI);
@@ -169,5 +169,4 @@ void BooleanGroupBoxParameterUI::updatePropertyValue()
 	}
 }
 
-};
-
+}}}	// End of namespace

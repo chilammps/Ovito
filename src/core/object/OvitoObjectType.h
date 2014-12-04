@@ -19,23 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OvitoObjectType.h
- * \brief Contains the definition of the Ovito::OvitoObjectType class.
- */
-
 #ifndef __OVITO_OBJECT_TYPE_H
 #define __OVITO_OBJECT_TYPE_H
 
 #include <core/Core.h>
 #include "OvitoObjectReference.h"
 
-namespace Ovito {
-
-class OvitoObject;					// defined in OvitoObject.h
-class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
-class ObjectSaveStream;				// defined in ObjectSaveStream.h
-class ObjectLoadStream;				// defined in ObjectLoadStream.h
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief Stores meta-information about a class in OVITO's object system.
@@ -52,8 +42,10 @@ public:
 	/// \return The human-readable name of this object type that should be shown in the user interface.
 	const QString& displayName() const { return _displayName; }
 
-	/// \brief Changes the the human-readable display name of this plugin class.
-	void setDisplayName(const QString& name) { _displayName = name; }
+	/// Returns the name alias that has been set for this class.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
+	const QString& nameAlias() const { return _nameAlias; }
 
 	/// \brief Returns the descriptor of the super class.
 	/// \return The descriptor of the base class or \c NULL if this is the descriptor of the root OvitoObject class.
@@ -100,10 +92,8 @@ public:
 
 	/// If this is the descriptor of a RefMaker-derived class then this method will return
 	/// the reference field with the given identifier that has been defined in the RefMaker-derived
-	/// class. If no such field is defined by that class then NULL is returned.
-	/// Note that this method will NOT return reference fields that have been defined in
-	/// super-classes.
-	const PropertyFieldDescriptor* findPropertyField(const char* identifier) const;
+	/// class or one of its super classes. If no such field is defined, then NULL is returned.
+	const PropertyFieldDescriptor* findPropertyField(const char* identifier, bool searchSuperClasses = false) const;
 
 	/// If this is a RefTarget derived classes, this specifies the type of editor to use
 	/// when editing objects of this class.
@@ -151,13 +141,27 @@ public:
 protected:
 
 	/// \brief Constructor.
-	OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool serializable);
+	OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool serializable);
+
+	/// This is called after the class has been loaded to initialize its properties.
+	virtual void initializeClassDescriptor(Plugin* plugin);
 
 	/// \brief Creates an instance of the class described by this meta object.
 	/// \param dataset The dataset the newly created object will belong to.
 	/// \return The new instance of the class. The pointer can be safely cast to the corresponding C++ class type.
 	/// \throw Exception if the instance could not be created.
 	virtual OvitoObject* createInstanceImpl(DataSet* dataset) const = 0;
+
+	/// \brief Marks this class as an abstract class that cannot be instantiated.
+	void setAbstract(bool abstract) { _isAbstract = abstract; }
+
+	/// \brief Changes the the human-readable display name of this plugin class.
+	void setDisplayName(const QString& name) { _displayName = name; }
+
+	/// Sets a name alias for this class.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
+	void setNameAlias(const QString& alias) { _nameAlias = alias; }
 
 protected:
 
@@ -169,6 +173,10 @@ protected:
 
 	/// The plugin that defined the class.
 	Plugin*	_plugin;
+
+	/// An alias for the class name, which is used when looking up a class for a serialized object.
+	/// This can help to maintain backward file compatibility when renaming classes.
+	QString _nameAlias;
 
 	/// The base class descriptor (or NULL if this is the descriptor for the root OvitoObject class).
 	const OvitoObjectType* _superClass;
@@ -189,12 +197,12 @@ protected:
 
 /// This macro is used to assign a PropertiesEditor-derived class to a RefTarget-derived class.
 #define SET_OVITO_OBJECT_EDITOR(RefTargetClass, PropertiesEditorClass)								\
-	static Ovito::OvitoObjectType::EditorClassSetter __editorSetter##RefTargetClass(const_cast<Ovito::NativeOvitoObjectType&>(RefTargetClass::OOType), &PropertiesEditorClass::OOType);
+	static Ovito::ObjectSystem::OvitoObjectType::EditorClassSetter __editorSetter##RefTargetClass(const_cast<Ovito::ObjectSystem::Internal::NativeOvitoObjectType&>(RefTargetClass::OOType), &PropertiesEditorClass::OOType);
 
-};
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(const Ovito::OvitoObjectType*);
-Q_DECLARE_TYPEINFO(const Ovito::OvitoObjectType*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(const Ovito::ObjectSystem::OvitoObjectType*);
+Q_DECLARE_TYPEINFO(const Ovito::ObjectSystem::OvitoObjectType*, Q_MOVABLE_TYPE);
 
 
 #endif // __OVITO_OBJECT_TYPE_H

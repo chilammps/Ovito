@@ -19,21 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OnTheFlyNeighborList.h
- * \brief Contains the definition of the Particles::OnTheFlyNeighborList class.
- */
-
 #ifndef __OVITO_ONTHEFLY_NEIGHBOR_LIST_H
 #define __OVITO_ONTHEFLY_NEIGHBOR_LIST_H
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
  * \brief This class returns the list of neighbors within a given cutoff radius for a particle.
@@ -66,7 +59,7 @@ public:
 	/// \return \c false when the operation has been canceled by the user;
 	///         \c true on success.
 	/// \throw Exception on error.
-	bool prepare(ParticleProperty* posProperty, const SimulationCellData& cellData, bool* hasWrappedParticles = nullptr);
+	bool prepare(ParticleProperty* posProperty, const SimulationCell& cellData, bool* hasWrappedParticles = nullptr);
 
 	/// Returns the neighbor cutoff radius.
 	FloatType cutoffRadius() const { return _cutoffRadius; }
@@ -130,7 +123,7 @@ private:
 	FloatType _cutoffRadiusSquared;
 
 	// Simulation cell.
-	SimulationCellData simCell;
+	SimulationCell simCell;
 
 	/// Number of bins in each spatial direction.
 	int binDim[3];
@@ -149,6 +142,6 @@ private:
 	std::vector<Vector3I> stencil;
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_ONTHEFLY_NEIGHBOR_LIST_H

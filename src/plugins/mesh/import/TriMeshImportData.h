@@ -22,9 +22,9 @@
 #ifndef __OVITO_TRIMESH_IMPORT_DATA_H
 #define __OVITO_TRIMESH_IMPORT_DATA_H
 
-#include <core/dataset/importexport/LinkedFileImporter.h>
-#include <core/utilities/io/CompressedTextParserStream.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/dataset/importexport/FileSourceImporter.h>
+#include <core/utilities/io/CompressedTextReader.h>
+#include <core/utilities/mesh/TriMesh.h>
 #include <plugins/mesh/Mesh.h>
 
 namespace Mesh {
@@ -34,19 +34,20 @@ using namespace Ovito;
 /**
  * Container structure for triangle mesh data imported by a parser class.
  */
-class OVITO_MESH_EXPORT TriMeshImportData : public LinkedFileImporter::ImportTask
+class TriMeshImportData : public FileSourceImporter::FrameLoader
 {
 public:
 
 	/// Constructor.
-	TriMeshImportData(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame) {}
+	TriMeshImportData(DataSetContainer* container, const FileSourceImporter::Frame& frame)
+		: FileSourceImporter::FrameLoader(container, frame) {}
 
-	/// Is called in the background thread to perform the data file import.
-	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
+	/// Loads the requested frame data from the external file.
+	virtual void perform() override;
 
-	/// Lets the data container insert the data it holds into the scene by creating
-	/// appropriate scene objects.
-	virtual QSet<SceneObject*> insertIntoScene(LinkedFileObject* destination) override;
+	/// Inserts the data loaded by perform() into the provided container object. This function is
+	/// called by the system from the main thread after the asynchronous loading task has finished.
+	virtual void handOver(CompoundObject* container) override;
 
 	/// Returns the triangle mesh data structure.
 	const TriMesh& mesh() const { return _mesh; }
@@ -57,7 +58,7 @@ public:
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) = 0;
+	virtual void parseFile(CompressedTextReader& stream) = 0;
 
 private:
 

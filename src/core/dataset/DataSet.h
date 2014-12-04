@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DataSet.h
- * \brief Contains definition of the Ovito::DataSet class.
- */
-
 #ifndef __OVITO_DATASET_H
 #define __OVITO_DATASET_H
 
@@ -33,7 +28,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include "UndoStack.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief This class stores everything that belongs to a scene.
@@ -144,36 +139,27 @@ public:
 	/// Note that this method does NOT invoke setFilePath().
 	void saveToFile(const QString& filePath);
 
-public:
-
-	Q_PROPERTY(SceneRoot* sceneRoot READ sceneRoot);
-	Q_PROPERTY(RenderSettings* renderSettings READ renderSettings);
-	Q_PROPERTY(SelectionSet* selection READ selection);
-	Q_PROPERTY(ViewportConfiguration* viewportConfig READ viewportConfig);
-	Q_PROPERTY(AnimationSettings* animationSettings READ animationSettings);
-	Q_PROPERTY(QString filePath READ filePath WRITE setFilePath);
-
 Q_SIGNALS:
 
 	/// \brief This signal is emitted whenever the current viewport configuration of this dataset
 	///        has been replaced by a new one.
 	/// \note This signal is NOT emitted when parameters of the current viewport configuration change.
-	void viewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
+    void viewportConfigReplaced(Ovito::View::ViewportConfiguration* newViewportConfiguration);
 
 	/// \brief This signal is emitted whenever the current animation settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current animation settings object change.
-	void animationSettingsReplaced(AnimationSettings* newAnimationSettings);
+    void animationSettingsReplaced(Ovito::Anim::AnimationSettings* newAnimationSettings);
 
 	/// \brief This signal is emitted whenever the current render settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current render settings object change.
-	void renderSettingsReplaced(RenderSettings* newRenderSettings);
+    void renderSettingsReplaced(Ovito::Rendering::RenderSettings* newRenderSettings);
 
 	/// \brief This signal is emitted whenever the current selection set of this dataset
 	///        has been replaced by another one.
 	/// \note This signal is NOT emitted when nodes are added or removed from the current selection set.
-	void selectionSetReplaced(SelectionSet* newSelectionSet);
+    void selectionSetReplaced(Ovito::ObjectSystem::Scene::SelectionSet* newSelectionSet);
 
 protected:
 
@@ -183,9 +169,11 @@ protected:
 	/// Is called when the value of a reference field of this RefMaker changes.
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
+private:
+
 	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
 	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
-			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
+			Viewport* viewport, FrameBuffer* frameBuffer, Util::IO::Internal::VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
 
 	/// Returns a viewport configuration that is used as template for new scenes.
 	OORef<ViewportConfiguration> createDefaultViewportConfiguration();
@@ -235,6 +223,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_renderSettings);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DATASET_H

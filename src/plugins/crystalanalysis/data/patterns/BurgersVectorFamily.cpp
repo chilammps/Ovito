@@ -24,19 +24,19 @@
 #include <core/gui/properties/StringParameterUI.h>
 #include "BurgersVectorFamily.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, BurgersVectorFamily, RefTarget)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, BurgersVectorFamilyEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(BurgersVectorFamily, BurgersVectorFamilyEditor)
-DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _name, "Name")
-DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _color, "Color")
-DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _isVisible, "Visible")
-DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _burgersVector, "BurgersVector")
-SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _name, "Name")
-SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _color, "Color")
-SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _isVisible, "Visible")
-SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _burgersVector, "Burgers vector")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, BurgersVectorFamily, RefTarget);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, BurgersVectorFamilyEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(BurgersVectorFamily, BurgersVectorFamilyEditor);
+DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _name, "Name");
+DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _color, "Color");
+DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _isVisible, "Visible");
+DEFINE_PROPERTY_FIELD(BurgersVectorFamily, _burgersVector, "BurgersVector");
+SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _name, "Name");
+SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _color, "Color");
+SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _isVisible, "Visible");
+SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _burgersVector, "Burgers vector");
 
 /******************************************************************************
 * Constructs a new BurgersVectorFamily.
@@ -74,4 +74,4 @@ void BurgersVectorFamilyEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->addWidget(colorPUI->colorPicker(), 1, 1);
 }
 
-};	// End of namespace
+}}}	// End of namespace

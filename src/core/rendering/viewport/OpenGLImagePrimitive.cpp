@@ -25,7 +25,7 @@
 
 #include <QGLWidget>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -87,6 +87,8 @@ void OpenGLImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& p
 
 	if(image().isNull() || !vpRenderer || renderer->isPicking())
 		return;
+
+	vpRenderer->rebindVAO();
 
 	// Prepare texture.
 	_texture.bind();
@@ -179,4 +181,4 @@ void OpenGLImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& p
 		glDisable(GL_TEXTURE_2D);
 }
 
-};
+}}}	// End of namespace

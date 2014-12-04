@@ -26,7 +26,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/gui/mainwin/MainWindow.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace View {
 
 /******************************************************************************
 * Initializes the viewport input manager.
@@ -188,4 +188,4 @@ void ViewportInputManager::reset()
 		pushInputMode(_defaultMode);
 }
 
-};
+}}}	// End of namespace

@@ -26,8 +26,8 @@
 #include <core/rendering/noninteractive/NonInteractiveSceneRenderer.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
-#include <core/scene/display/DisplayObject.h>
-#include <core/scene/display/geometry/TriMeshDisplay.h>
+#include <core/scene/objects/DisplayObject.h>
+#include <core/scene/objects/geometry/TriMeshDisplay.h>
 #include "PythonBinding.h"
 
 namespace PyScript {

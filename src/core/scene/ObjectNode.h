@@ -19,22 +19,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ObjectNode.h
- * \brief Contains the definition of the Ovito::ObjectNode class.
- */
-
 #ifndef __OVITO_OBJECT_NODE_H
 #define __OVITO_OBJECT_NODE_H
 
 #include <core/Core.h>
 #include "SceneNode.h"
-#include "objects/SceneObject.h"
-#include "display/DisplayObject.h"
+#include "objects/DataObject.h"
+#include "objects/DisplayObject.h"
 
-namespace Ovito {
-
-class Modifier;			// defined in Modifier.h
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief A node in the scene that represents an object.
@@ -48,16 +41,16 @@ public:
 
 	/// \brief Returns this node's data provider, i.e. the object
 	///        that generates the data displayed by this scene node.
-	SceneObject* dataProvider() const { return _dataProvider; }
+	DataObject* dataProvider() const { return _dataProvider; }
 
 	/// \brief Sets the data provider object of this node.
 	/// \param pipeline An object that generates data, which will be displayed by this ObjectNode.
 	/// \undoable
-	void setDataProvider(SceneObject* dataProvider) { _dataProvider = dataProvider; }
+	void setDataProvider(DataObject* dataProvider) { _dataProvider = dataProvider; }
 
 	/// \brief Returns the data source of this node's pipeline, i.e., the object that provides the
 	///        input data that enters the pipeline.
-	SceneObject* sourceObject() const;
+	DataObject* sourceObject() const;
 
 	/// \brief Evaluates the data flow pipeline of this object node at the given animation time.
 	/// \param time The animation time at which the pipeline of the node should be evaluated.
@@ -79,7 +72,7 @@ public:
 	Q_INVOKABLE void applyModifier(Modifier* mod);
 
 	/// \brief Returns the list of display objects that are responsible for displaying
-	///        the node's scene object in the viewports.
+	///        the node's data in the viewports.
 	const QVector<DisplayObject*>& displayObjects() const { return _displayObjects; }
 
 	/// \brief Returns the bounding box of the node's object in local coordinates.
@@ -113,7 +106,7 @@ protected:
 private:
 
 	/// The object which generates the data to be displayed by this ObjectNode.
-	ReferenceField<SceneObject> _dataProvider;
+	ReferenceField<DataObject> _dataProvider;
 
 	/// The cached results from the last data pipeline evaluation.
 	PipelineFlowState _pipelineCache;
@@ -137,7 +130,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 
-
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OBJECT_NODE_H

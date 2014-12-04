@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OpenGLParticlePrimitive.h
- * \brief Contains the definition of the Ovito::OpenGLParticlePrimitive class.
- */
-
 #ifndef __OVITO_OPENGL_PARTICLE_PRIMITIVE_H
 #define __OVITO_OPENGL_PARTICLE_PRIMITIVE_H
 
@@ -32,7 +27,7 @@
 #include "OpenGLBuffer.h"
 #include "OpenGLTexture.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief This class is responsible for rendering particle primitives using OpenGL.
@@ -160,6 +155,6 @@ private:
 	std::vector<Point3> _particleCoordinates;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_PARTICLE_PRIMITIVE_H

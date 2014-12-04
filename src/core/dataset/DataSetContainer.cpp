@@ -22,7 +22,6 @@
 #include <core/Core.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileImporter.h>
-#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/dataset/UndoStack.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/SceneRoot.h>
@@ -39,7 +38,7 @@
 	#include <signal.h>
 #endif
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker);
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO);
@@ -281,7 +280,7 @@ bool DataSetContainer::fileLoad(const QString& filename)
 /******************************************************************************
 * Imports a given file into the scene.
 ******************************************************************************/
-bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription* importerType, FileImporter::ImportMode importMode)
+bool DataSetContainer::importFile(const QUrl& url, const OvitoObjectType* importerType, FileImporter::ImportMode importMode)
 {
 	if(!url.isValid())
 		throw Exception(tr("Failed to import file. URL is not valid: %1").arg(url.toString()));
@@ -295,12 +294,12 @@ bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription
 			return false;
 
 		// Detect file format.
-		importer = ImportExportManager::instance().autodetectFileFormat(currentSet(), fetchFileFuture.result(), url.path());
+		importer = FileImporter::autodetectFileFormat(currentSet(), fetchFileFuture.result(), url.path());
 		if(!importer)
 			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
 	}
 	else {
-		importer = importerType->createService(currentSet());
+		importer = static_object_cast<FileImporter>(importerType->createInstance(currentSet()));
 		if(!importer)
 			throw Exception(tr("Failed to import file. Could not initialize import service."));
 	}
@@ -328,7 +327,14 @@ bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QS
 	if(callback())
 		return true;
 
-	if(Application::instance().guiMode()) {
+	// Suspend viewport updates while waiting.
+	ViewportSuspender viewportSuspender(currentSet());
+
+	// Check if viewports are currently being rendered.
+	// If yes, it's not a good idea to display a progress dialog.
+	bool isRendering = currentSet() ? currentSet()->viewportConfig()->isRendering() : false;
+
+	if(!isRendering && Application::instance().guiMode()) {
 
 		// Show a modal progress dialog to block user interface while waiting.
 		std::unique_ptr<QProgressDialog> localDialog;
@@ -378,4 +384,4 @@ bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QS
 	return true;
 }
 
-};
+}}	// End of namespace

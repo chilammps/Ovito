@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file LoadImageFileDialog.h
- * \brief Contains the definition of the Ovito::LoadImageFileDialog class.
- */
-
 #ifndef __OVITO_LOAD_IMAGE_FILE_DIALOG_H
 #define __OVITO_LOAD_IMAGE_FILE_DIALOG_H
 
@@ -31,7 +26,7 @@
 #include <core/rendering/FrameBuffer.h>
 #include "HistoryFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Dialogs {
 
 /**
  * \brief This file chooser dialog lets the user select an image file from disk.
@@ -58,6 +53,6 @@ private:
 	ImageInfo _imageInfo;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_LOAD_IMAGE_FILE_DIALOG_H

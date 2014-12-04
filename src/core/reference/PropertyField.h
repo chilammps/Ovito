@@ -29,11 +29,11 @@
 #include <core/reference/ReferenceEvent.h>
 #include <core/plugins/Plugin.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
-/******************************************************************************
-* RefMaker derived classes use this helper class to store their properties.
-******************************************************************************/
+/**
+ * RefMaker derived classes use this implement their properties and reference fields.
+ */
 class OVITO_CORE_EXPORT PropertyFieldBase
 {
 public:
@@ -77,10 +77,9 @@ private:
 	PropertyFieldDescriptor* _descriptor;
 };
 
-/******************************************************************************
-* An instance of this helper class stores a non-animatable property value
-* with a primitive type.
-******************************************************************************/
+/**
+ * Stores a non-animatable property of a RefTarget derived class.
+ */
 template<typename property_data_type, typename qvariant_data_type = property_data_type, int additionalChangeMessage = 0>
 class PropertyField : public PropertyFieldBase
 {
@@ -145,8 +144,8 @@ private:
 			generateTargetChangedEvent((ReferenceEvent::Type)additionalChangeMessage);
 	}
 
-	/// This undo class records a change to the property value.
-	class PropertyChangeOperation : public UndoableOperation {
+	// This undo class records a change to the property value.
+	class PropertyChangeOperation : public Ovito::ObjectSystem::Undo::UndoableOperation {
 	public:
 		PropertyChangeOperation(PropertyField& field) : _field(field), _owner(field.owner() != field.owner()->dataset() ? field.owner() : nullptr) {
 			// Make a copy of the current property value.
@@ -176,9 +175,9 @@ private:
 	property_type _value;
 };
 
-/******************************************************************************
-* An instance of this helper class stores a pointer to a RefTarget derived class.
-******************************************************************************/
+/**
+ * \brief Manages a pointer to a RefTarget derived class held by a RefMaker derived class.
+ */
 class OVITO_CORE_EXPORT SingleReferenceFieldBase : public PropertyFieldBase
 {
 public:
@@ -211,7 +210,7 @@ protected:
 
 protected:
 
-	class SetReferenceOperation : public UndoableOperation
+	class SetReferenceOperation : public Ovito::ObjectSystem::Undo::UndoableOperation
 	{
 	private:
 		/// The reference target that is currently not assigned to the reference field.
@@ -228,11 +227,9 @@ protected:
 	};
 };
 
-/******************************************************************************
-* This is the templated version of the SingleReferenceFieldBase helper class.
-* It stores a pointer to a RefTarget derived class given as the template
-* parameter.
-******************************************************************************/
+/**
+ * \brief Templated version of the SingleReferenceFieldBase class.
+ */
 template<typename RefTargetType>
 class ReferenceField : public SingleReferenceFieldBase
 {
@@ -278,11 +275,9 @@ inline T* dynamic_object_cast(const ReferenceField<U>& field) {
 	return dynamic_object_cast<T,U>(field.value());
 }
 
-/******************************************************************************
-* An instance of this helper class stores a list of pointers to a RefTarget derived classes.
-* RefMaker derived classes must use this helper class to store their
-* vector reference lists.
-******************************************************************************/
+/**
+ * \brief Manages a list of references to RefTarget objects held by a RefMaker derived class.
+ */
 class OVITO_CORE_EXPORT VectorReferenceFieldBase : public PropertyFieldBase
 {
 public:
@@ -334,7 +329,7 @@ protected:
 
 protected:
 
-	class InsertReferenceOperation : public UndoableOperation
+	class InsertReferenceOperation : public Ovito::ObjectSystem::Undo::UndoableOperation
 	{
 	public:
     	InsertReferenceOperation(RefTarget* target, VectorReferenceFieldBase& reffield, int index);
@@ -362,7 +357,7 @@ protected:
 		int _index;
 	};
 
-	class RemoveReferenceOperation : public UndoableOperation
+	class RemoveReferenceOperation : public Ovito::ObjectSystem::Undo::UndoableOperation
 	{
 	public:
     	RemoveReferenceOperation(VectorReferenceFieldBase& reffield, int index);
@@ -392,11 +387,9 @@ protected:
 	friend class RefTarget;
 };
 
-/******************************************************************************
-* This is the templated version of the VectorReferenceFieldBase helper class.
-* It stores a list of pointers to a RefTarget derived objects given as the template
-* parameter.
-******************************************************************************/
+/**
+ * \brief Templated version of the VectorReferenceFieldBase class.
+ */
 template<typename RefTargetType>
 class VectorReferenceField : public VectorReferenceFieldBase
 {
@@ -478,7 +471,7 @@ public:
 	const RefTargetVector& targets() const { return reinterpret_cast<const RefTargetVector&>(pointers); }
 };
 
-};	// End of namespace
+}}	// End of namespace
 
 #include <core/dataset/DataSet.h>
 

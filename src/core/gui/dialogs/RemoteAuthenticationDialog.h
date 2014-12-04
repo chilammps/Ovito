@@ -19,21 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file RemoteAuthenticationDialog.h
- * \brief Contains the definition of the Ovito::RemoteAuthenticationDialog class.
- */
-
 #ifndef __OVITO_REMOTE_AUTHENTICATION_DIALOG_H
 #define __OVITO_REMOTE_AUTHENTICATION_DIALOG_H
 
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief This dialog asks the user for a username/password for a remote server.
+ * This dialog asks the user for a username/password for a remote server.
  */
 class OVITO_CORE_EXPORT RemoteAuthenticationDialog : public QDialog
 {
@@ -65,6 +60,6 @@ private:
 	QLineEdit* _passwordEdit;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_REMOTE_AUTHENTICATION_DIALOG_H

@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file NativeOvitoObjectType.h
- * \brief Contains the definition of the Ovito::NativeOvitoObjectType class.
- */
-
 #ifndef __OVITO_NATIVE_OVITO_OBJECT_TYPE_H
 #define __OVITO_NATIVE_OVITO_OBJECT_TYPE_H
 
 #include <core/Core.h>
 #include "OvitoObjectType.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Internal {
 
 /**
  * \brief Every C++ class derived from OvitoObject is described by an instance of this class.
@@ -47,36 +42,11 @@ public:
 
 	/// \brief Constructs the plugin class descriptor object.
 	/// \note This is an internal constructor that is not for public use.
-	NativeOvitoObjectType(const QString& name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
-		: OvitoObjectType(name, superClass, (qtClassInfo->constructorCount() == 0), isSerializable), _pluginId(pluginId), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
-	{
-		// Insert into linked list of all object types.
-		_next = _firstInfo;
-		_firstInfo = this;
-
-		// Fetch display name assigned to the Qt object class.
-		int infoIndex = qtClassInfo->indexOfClassInfo("DisplayName");
-		if(infoIndex != -1)
-			setDisplayName(QString::fromLocal8Bit(qtClassInfo->classInfo(infoIndex).value()));
-	}
+	NativeOvitoObjectType(const QString& name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable);
 
 	/// \brief Returns the name of this class.
 	/// \return A pointer to the class name string (without namespace qualifier).
-	const char* className() const {
-		if(_pureClassName) return _pureClassName;
-
-		// Remove namespace qualifier from Qt's class name.
-		NativeOvitoObjectType* this_ = const_cast<NativeOvitoObjectType*>(this);
-		this_->_pureClassName = _qtClassInfo->className();
-		for(const char* p = this_->_pureClassName; *p != '\0'; p++) {
-			if(p[0] == ':' && p[1] == ':') {
-				p++;
-				this_->_pureClassName = p+1;
-			}
-		}
-
-		return this_->_pureClassName;
-	}
+	const char* className() const { return _pureClassName; }
 
 	/// \brief Returns the identifier of the plugin this class belongs to.
 	const char* pluginId() const { return _pluginId; }
@@ -91,6 +61,10 @@ protected:
 	/// \return The new instance of the class. The pointer can safely be cast to the corresponding C++ class type.
 	/// \throw Exception if the instance could not be created.
 	virtual OvitoObject* createInstanceImpl(DataSet* dataset) const override;
+
+	/// This is called by the NativePlugin that contains this class to initialize
+	/// the properties of this class type.
+	virtual void initializeClassDescriptor(Plugin* plugin) override;
 
 private:
 
@@ -109,8 +83,8 @@ private:
 	/// The head of the linked list of all native object types.
 	static NativeOvitoObjectType* _firstInfo;
 
-	friend class NativePlugin;
-	friend class PropertyFieldDescriptor;
+	friend class Ovito::PluginSystem::Internal::NativePlugin;
+	friend class Ovito::ObjectSystem::PropertyFieldDescriptor;
 };
 
 ///////////////////////////////////// Macros //////////////////////////////////////////
@@ -118,17 +92,17 @@ private:
 /// This macro must be included in the class definition of a OvitoObject-derived class.
 #define OVITO_OBJECT													\
 	public:																\
-		static const Ovito::NativeOvitoObjectType OOType;				\
-		virtual const Ovito::OvitoObjectType& getOOType() const { return OOType; }
+		static const Ovito::ObjectSystem::Internal::NativeOvitoObjectType OOType;				\
+		virtual const Ovito::ObjectSystem::OvitoObjectType& getOOType() const { return OOType; }
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_OVITO_OBJECT(plugin, name, basename)							\
-	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
+	const Ovito::ObjectSystem::Internal::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(plugin, name, basename)				\
-	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
+	const Ovito::ObjectSystem::Internal::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_NATIVE_OVITO_OBJECT_TYPE_H

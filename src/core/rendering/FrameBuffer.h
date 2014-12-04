@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /******************************************************************************
 * Stores information about the image in a FrameBuffer.
@@ -182,6 +182,6 @@ private:
 	Q_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_FRAME_BUFFER_H

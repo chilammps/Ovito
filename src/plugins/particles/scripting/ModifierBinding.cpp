@@ -19,34 +19,34 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <plugins/pyscript/PyScript.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
 #include <plugins/particles/modifier/ParticleModifier.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 #include <plugins/particles/modifier/coloring/AssignColorModifier.h>
 #include <plugins/particles/modifier/coloring/ColorCodingModifier.h>
 #include <plugins/particles/modifier/coloring/AmbientOcclusionModifier.h>
-#include <plugins/particles/modifier/delete/DeleteParticlesModifier.h>
-#include <plugins/particles/modifier/pbc/ShowPeriodicImagesModifier.h>
-#include <plugins/particles/modifier/pbc/WrapPeriodicImagesModifier.h>
-#include <plugins/particles/modifier/properties/CreateExpressionPropertyModifier.h>
+#include <plugins/particles/modifier/modify/DeleteParticlesModifier.h>
+#include <plugins/particles/modifier/modify/ShowPeriodicImagesModifier.h>
+#include <plugins/particles/modifier/modify/WrapPeriodicImagesModifier.h>
+#include <plugins/particles/modifier/modify/SliceModifier.h>
+#include <plugins/particles/modifier/modify/AffineTransformationModifier.h>
+#include <plugins/particles/modifier/modify/CreateBondsModifier.h>
+#include <plugins/particles/modifier/properties/ComputePropertyModifier.h>
 #include <plugins/particles/modifier/properties/FreezePropertyModifier.h>
 #include <plugins/particles/modifier/selection/ClearSelectionModifier.h>
 #include <plugins/particles/modifier/selection/InvertSelectionModifier.h>
 #include <plugins/particles/modifier/selection/ManualSelectionModifier.h>
 #include <plugins/particles/modifier/selection/SelectExpressionModifier.h>
 #include <plugins/particles/modifier/selection/SelectParticleTypeModifier.h>
-#include <plugins/particles/modifier/slice/SliceModifier.h>
-#include <plugins/particles/modifier/transformation/AffineTransformationModifier.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 #include <plugins/particles/modifier/analysis/binandreduce/BinAndReduceModifier.h>
 #include <plugins/particles/modifier/analysis/bondangle/BondAngleAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/cna/CommonNeighborAnalysisModifier.h>
-#include <plugins/particles/modifier/analysis/bonds/CreateBondsModifier.h>
 #include <plugins/particles/modifier/analysis/centrosymmetry/CentroSymmetryModifier.h>
 #include <plugins/particles/modifier/analysis/cluster/ClusterAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/coordination/CoordinationNumberModifier.h>
@@ -58,11 +58,15 @@
 #include <plugins/particles/modifier/analysis/voronoi/VoronoiAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/diamond/IdentifyDiamondModifier.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
+using namespace Particles::Modifiers::Modify;
+using namespace Particles::Modifiers::Selection;
+using namespace Particles::Modifiers::Coloring;
+using namespace Particles::Modifiers::Analysis;
+using namespace Particles::Modifiers::Properties;
 
 BOOST_PYTHON_MODULE(ParticlesModify)
 {
@@ -71,8 +75,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_abstract_class<AsynchronousParticleModifier, ParticleModifier>()
-		.add_property("auto_update", &AsynchronousParticleModifier::autoUpdateEnabled, &AsynchronousParticleModifier::setAutoUpdateEnabled)
-		.add_property("store_results", &AsynchronousParticleModifier::storeResultsWithScene, &AsynchronousParticleModifier::setStoreResultsWithScene)
 	;
 
 	ovito_class<AssignColorModifier, ParticleModifier>(
@@ -122,6 +124,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					" * ``ColorCodingModifier.Hot()``\n"
 					" * ``ColorCodingModifier.Jet()``\n"
 					" * ``ColorCodingModifier.Custom(\"<image file>\")``\n"
+					"\n"
 					"The last color map constructor expects the path to an image file on disk, "
 					"which will be used to create a custom color gradient from a row of pixels in the image.")
 			.add_property("only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
@@ -220,7 +223,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"around at the periodic boundaries of the simulation cell. This modifier has no parameters.")
 	;
 
-	ovito_class<CreateExpressionPropertyModifier, ParticleModifier>(
+	ovito_class<ComputePropertyModifier, ParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"Evaluates a user-defined math expression to compute the values of a particle property."
 			"\n\n"
@@ -229,20 +232,18 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"   modifier = ComputePropertyModifier()\n"
 			"   modifier.output_property = \"Color\"\n"
 			"   modifier.expressions = [\"Position.X / CellSize.X\", \"0.0\", \"0.5\"]\n"
-			"\n",
-			// Python class name:
-			"ComputePropertyModifier")
-		.add_property("expressions", make_function(&CreateExpressionPropertyModifier::expressions, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setExpressions,
+			"\n")
+		.add_property("expressions", make_function(&ComputePropertyModifier::expressions, return_value_policy<copy_const_reference>()), &ComputePropertyModifier::setExpressions,
 				"A list of strings containing the math expressions to compute, one for each vector component of the output property. "
 				"If the output property is a scalar property, the list should comprise exactly one string. "
 				"\n\n"
 				":Default: ``[\"0\"]``\n")
-		.add_property("output_property", make_function(&CreateExpressionPropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setOutputProperty,
+		.add_property("output_property", make_function(&ComputePropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &ComputePropertyModifier::setOutputProperty,
 				"The output particle property in which the modifier should store the computed values. "
 				"\n\n"
 				":Default: ``\"Custom property\"``\n")
-		.add_property("propertyComponentCount", &CreateExpressionPropertyModifier::propertyComponentCount, &CreateExpressionPropertyModifier::setPropertyComponentCount)
-		.add_property("only_selected", &CreateExpressionPropertyModifier::onlySelectedParticles, &CreateExpressionPropertyModifier::setOnlySelectedParticles,
+		.add_property("propertyComponentCount", &ComputePropertyModifier::propertyComponentCount, &ComputePropertyModifier::setPropertyComponentCount)
+		.add_property("only_selected", &ComputePropertyModifier::onlySelectedParticles, &ComputePropertyModifier::setOnlySelectedParticles,
 				"If ``True``, the property is only computed for selected particles and existing property values "
 				"are preserved for unselected particles."
 				"\n\n"
@@ -594,7 +595,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					":Default: 3.2\n")
 			.add_property("bonds_display", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()),
 					"A :py:class:`~ovito.vis.BondsDisplay` instance controlling the visual appearance of the bonds created by this modifier.")
-			.add_property("bondsObject", make_function(&CreateBondsModifier::bondsObject, return_value_policy<ovito_object_reference>()))
 		;
 
 		enum_<CreateBondsModifier::CutoffMode>("CutoffMode")
@@ -901,4 +901,4 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesModify);
 
-};
+}}}}	// End of namespace

@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file DefaultParticlePrimitive.h
- * \brief Contains the definition of the Ovito::DefaultParticlePrimitive class.
- */
-
 #ifndef __OVITO_DEFAULT_PARTICLE_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_PARTICLE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
 #include <core/rendering/ParticlePrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Buffer object that stores a set of particles to be rendered by a non-interactive renderer.
@@ -116,6 +111,6 @@ private:
 	std::vector<ColorA> _colorsBuffer;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_DEFAULT_PARTICLE_GEOMETRY_BUFFER_H

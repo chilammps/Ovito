@@ -23,18 +23,18 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include "ClusterGraph.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ClusterGraph, SceneObject)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ClusterGraphEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(ClusterGraph, ClusterGraphEditor)
-DEFINE_VECTOR_REFERENCE_FIELD(ClusterGraph, _clusters, "Clusters", Cluster)
-SET_PROPERTY_FIELD_LABEL(ClusterGraph, _clusters, "Clusters")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ClusterGraph, DataObject);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ClusterGraphEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(ClusterGraph, ClusterGraphEditor);
+DEFINE_VECTOR_REFERENCE_FIELD(ClusterGraph, _clusters, "Clusters", Cluster);
+SET_PROPERTY_FIELD_LABEL(ClusterGraph, _clusters, "Clusters");
 
 /******************************************************************************
 * Constructs a cluster graph object.
 ******************************************************************************/
-ClusterGraph::ClusterGraph(DataSet* dataset) : SceneObject(dataset)
+ClusterGraph::ClusterGraph(DataSet* dataset) : DataObject(dataset)
 {
 	INIT_PROPERTY_FIELD(ClusterGraph::_clusters);
 }
@@ -99,4 +99,4 @@ void ClusterGraphEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	clusterListUI->tableWidget()->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
-};	// End of namespace
+}}}	// End of namespace

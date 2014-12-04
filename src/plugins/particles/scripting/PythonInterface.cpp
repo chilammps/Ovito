@@ -19,24 +19,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <plugins/pyscript/PyScript.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/ParticleDisplay.h>
-#include <plugins/particles/data/VectorDisplay.h>
-#include <plugins/particles/data/SimulationCellDisplay.h>
-#include <plugins/particles/data/SurfaceMeshDisplay.h>
-#include <plugins/particles/data/BondsObject.h>
-#include <plugins/particles/data/BondsDisplay.h>
-#include <plugins/particles/data/SimulationCell.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticleDisplay.h>
+#include <plugins/particles/objects/VectorDisplay.h>
+#include <plugins/particles/objects/SimulationCellDisplay.h>
+#include <plugins/particles/objects/SurfaceMeshDisplay.h>
+#include <plugins/particles/objects/BondsObject.h>
+#include <plugins/particles/objects/BondsDisplay.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
 
 using namespace boost::python;
-using namespace Ovito;
 using namespace PyScript;
 
 dict ParticlePropertyObject__array_interface__(const ParticlePropertyObject& p)
@@ -108,7 +107,7 @@ BOOST_PYTHON_MODULE(Particles)
 	// Implement Python to ParticlePropertyReference conversion.
 	auto convertible_ParticlePropertyReference = [](PyObject* obj_ptr) -> void* {
 		if(obj_ptr == Py_None) return obj_ptr;
-		if(PyString_Check(obj_ptr)) return obj_ptr;
+		if(extract<QString>(obj_ptr).check()) return obj_ptr;
 		if(extract<ParticleProperty::Type>(obj_ptr).check()) return obj_ptr;
 		return nullptr;
 	};
@@ -166,7 +165,7 @@ BOOST_PYTHON_MODULE(Particles)
 	converter::registry::push_back(convertible_ParticlePropertyReference, construct_ParticlePropertyReference, boost::python::type_id<ParticlePropertyReference>());
 
 	{
-		scope s = ovito_class<ParticlePropertyObject, SceneObject>(
+		scope s = ovito_class<ParticlePropertyObject, DataObject>(
 				":Base: :py:class:`ovito.data.DataObject`\n\n"
 				"A data object that stores the values of a single particle property.",
 				// Python class name:
@@ -299,26 +298,28 @@ BOOST_PYTHON_MODULE(Particles)
 		.staticmethod("getDefaultParticleColorFromName")
 	;
 
-	ovito_class<SimulationCell, SceneObject>(
+	ovito_class<SimulationCellObject, DataObject>(
 			":Base: :py:class:`ovito.data.DataObject`\n\n"
 			"Stores the geometry and the boundary conditions of the simulation cell."
 			"\n\n"
 			"Instances of this class are associated with a :py:class:`~ovito.vis.SimulationCellDisplay` "
 			"that controls the visual appearance of the simulation cell. It can be accessed through "
-			"the :py:attr:`~DataObject.display` attribute of the :py:class:`~DataObject` base class.")
-		.add_property("pbc_x", &SimulationCell::pbcX)
-		.add_property("pbc_y", &SimulationCell::pbcY)
-		.add_property("pbc_z", &SimulationCell::pbcZ)
-		.add_property("matrix", &SimulationCell::cellMatrix, &SimulationCell::setCellMatrix,
+			"the :py:attr:`~DataObject.display` attribute of the :py:class:`~DataObject` base class.",
+			// Python class name:
+			"SimulationCell")
+		.add_property("pbc_x", &SimulationCellObject::pbcX)
+		.add_property("pbc_y", &SimulationCellObject::pbcY)
+		.add_property("pbc_z", &SimulationCellObject::pbcZ)
+		.add_property("matrix", &SimulationCellObject::cellMatrix, &SimulationCellObject::setCellMatrix,
 				"A 3x4 matrix containing the three edge vectors of the cell (matrix columns 0-2) "
 				"and the cell origin (matrix column 3).")
-		.add_property("vector1", make_function(&SimulationCell::edgeVector1, return_value_policy<copy_const_reference>()))
-		.add_property("vector2", make_function(&SimulationCell::edgeVector2, return_value_policy<copy_const_reference>()))
-		.add_property("vector3", make_function(&SimulationCell::edgeVector3, return_value_policy<copy_const_reference>()))
-		.add_property("origin", make_function(&SimulationCell::origin, return_value_policy<copy_const_reference>()))
+		.add_property("vector1", make_function(&SimulationCellObject::edgeVector1, return_value_policy<copy_const_reference>()))
+		.add_property("vector2", make_function(&SimulationCellObject::edgeVector2, return_value_policy<copy_const_reference>()))
+		.add_property("vector3", make_function(&SimulationCellObject::edgeVector3, return_value_policy<copy_const_reference>()))
+		.add_property("origin", make_function(&SimulationCellObject::origin, return_value_policy<copy_const_reference>()))
 	;
 
-	ovito_class<BondsObject, SceneObject>(
+	ovito_class<BondsObject, DataObject>(
 			":Base: :py:class:`ovito.data.DataObject`\n\n"
 			"This data object stores bonds between particles. One way of creating bonds is to use the :py:class:`~.ovito.modifiers.CreateBondsModifier`.",
 			// Python class name:
@@ -405,7 +406,7 @@ BOOST_PYTHON_MODULE(Particles)
 
 	ovito_class<SimulationCellDisplay, DisplayObject>(
 			":Base: :py:class:`ovito.vis.Display`\n\n"
-			"Controls the visual appearance of :py:class:`~ovito.data.SimulationCell` data objects.")
+			"Controls the visual appearance of :py:class:`~ovito.data.SimulationCellObject` data objects.")
 		.add_property("line_width", &SimulationCellDisplay::simulationCellLineWidth, &SimulationCellDisplay::setSimulationCellLineWidth,
 				"The width of the simulation cell line (in natural length units)."
 				"\n\n"
@@ -475,7 +476,7 @@ BOOST_PYTHON_MODULE(Particles)
 				":Default: ``True``\n")
 	;
 
-	ovito_class<SurfaceMesh, SceneObject>()
+	ovito_class<SurfaceMesh, DataObject>()
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
 		.def("clearMesh", &SurfaceMesh::clearMesh)
 	;
@@ -483,4 +484,4 @@ BOOST_PYTHON_MODULE(Particles)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);
 
-};
+}}}}	// End of namespace

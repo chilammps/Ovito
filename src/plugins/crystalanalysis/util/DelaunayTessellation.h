@@ -23,7 +23,7 @@
 #define __OVITO_DELAUNAY_TESSELLATION_H
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
 #ifdef __clang__
@@ -36,10 +36,7 @@
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 #include <CGAL/Triangulation_cell_base_with_info_3.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * Generates a Delaunay tessellation of a particle system.
@@ -135,7 +132,7 @@ public:
 public:
 
 	/// Generates the Delaunay tessellation.
-	void generateTessellation(const SimulationCellData& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize);
+	void generateTessellation(const SimulationCell& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize);
 
 	/// Returns the tetrahedron cell on the opposite side of the given cell facet.
 	CellHandle mirrorCell(const CellHandle& cell, int facet) const {
@@ -189,6 +186,6 @@ private:
 	DT _dt;
 };
 
-}; // End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_DELAUNAY_TESSELLATION_H

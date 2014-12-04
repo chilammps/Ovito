@@ -30,7 +30,7 @@
 #include <core/Core.h>
 #include "OpenGLSharedResource.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief A wrapper class for OpenGL textures.
@@ -83,6 +83,6 @@ private:
 	GLuint _id;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_TEXTURE_H

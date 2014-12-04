@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -27,7 +27,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
 
 /******************************************************************************
 * Opens the stream for reading.
@@ -77,9 +77,11 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			SerializedPropertyField propFieldEntry;
 			*this >> propFieldEntry.identifier;
 			propFieldEntry.definingClass = OvitoObjectType::deserializeRTTI(*this);
-			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false)
+			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false) {
+				qDebug() << "WARNING:" << classEntry.descriptor->name() << "is not derived from" << propFieldEntry.definingClass->name();
 				throw Exception(tr("The class hierarchy stored in the file differs from the class hierarchy of the program."));
-			this->readEnum(propFieldEntry.flags);
+			}
+			*this >> propFieldEntry.flags;
 			*this >> propFieldEntry.isReferenceField;
 			if(propFieldEntry.isReferenceField)
 				propFieldEntry.targetClass = OvitoObjectType::deserializeRTTI(*this);
@@ -87,7 +89,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 				propFieldEntry.targetClass = nullptr;
 			closeChunk();
 
-			propFieldEntry.field = propFieldEntry.definingClass->findPropertyField(propFieldEntry.identifier.constData());
+			propFieldEntry.field = propFieldEntry.definingClass->findPropertyField(propFieldEntry.identifier.constData(), true);
 
 			if(propFieldEntry.field) {
 				if(propFieldEntry.field->isReferenceField() != propFieldEntry.isReferenceField ||
@@ -198,4 +200,4 @@ void ObjectLoadStream::close()
 	LoadStream::close();
 }
 
-};
+}}}	// End of namespace

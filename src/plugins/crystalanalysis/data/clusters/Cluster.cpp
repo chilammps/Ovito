@@ -22,13 +22,13 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include "Cluster.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, Cluster, RefTarget)
-DEFINE_REFERENCE_FIELD(Cluster, _pattern, "Structure", StructurePattern)
-DEFINE_PROPERTY_FIELD(Cluster, _id, "ID")
-DEFINE_PROPERTY_FIELD(Cluster, _atomCount, "AtomCount")
-DEFINE_PROPERTY_FIELD(Cluster, _orientation, "Orientation")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, Cluster, RefTarget);
+DEFINE_REFERENCE_FIELD(Cluster, _pattern, "Structure", StructurePattern);
+DEFINE_PROPERTY_FIELD(Cluster, _id, "ID");
+DEFINE_PROPERTY_FIELD(Cluster, _atomCount, "AtomCount");
+DEFINE_PROPERTY_FIELD(Cluster, _orientation, "Orientation");
 
 /******************************************************************************
 * Constructs a new Cluster.
@@ -41,5 +41,5 @@ Cluster::Cluster(DataSet* dataset) : RefTarget(dataset), _id(-1), _atomCount(0),
 	INIT_PROPERTY_FIELD(Cluster::_orientation);
 }
 
-};	// End of namespace
+}}}	// End of namespace
 

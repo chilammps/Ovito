@@ -23,7 +23,7 @@
 #include "OpenGLMeshPrimitive.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -175,6 +175,8 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 		return;
 	}
 
+	vpRenderer->rebindVAO();
+
 	glDisable(GL_CULL_FACE);
 
 	QOpenGLShaderProgram* shader;
@@ -247,7 +249,7 @@ void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 	}
 	shader->release();
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
-};
+}}}	// End of namespace

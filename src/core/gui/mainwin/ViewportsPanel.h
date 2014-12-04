@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -24,10 +24,10 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief The container for the viewports in the application's main window.
+ * The container widget for the viewports in OVITO's main window.
  */
 class ViewportsPanel : public QWidget
 {
@@ -77,7 +77,6 @@ private:
 	OORef<AnimationSettings> _animSettings;
 };
 
-
-};
+}}}	// End of namespace
 
 #endif // __OVITO_VIEWPORTS_PANEL_H

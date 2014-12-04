@@ -28,14 +28,17 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/ViewportConfiguration.h>
-#include <plugins/particles/data/ParticleSelectionSet.h>
+#include <plugins/particles/util/ParticleSelectionSet.h>
 #include "ManualSelectionModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ManualSelectionModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, ManualSelectionModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, ManualSelectionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, Internal::ManualSelectionModifierEditor);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, ManualSelectionModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * This modifies the input object.
@@ -121,6 +124,8 @@ void ManualSelectionModifier::setParticleSelection(ModifierApplication* modApp, 
 {
 	getSelectionSet(modApp, true)->setParticleSelection(state, selection, mode);
 }
+
+namespace Internal {
 
 /**
  * Viewport input mode that allows to pick individual particles and add and remove them
@@ -434,4 +439,6 @@ void ManualSelectionModifierEditor::onFence(const QVector<Point2>& fence, Viewpo
 	});
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

@@ -58,7 +58,8 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 				":py:attr:`DataSet.viewports <ovito.DataSet.viewports>` attribute.")
 			.add_property("isRendering", &Viewport::isRendering)
 			.add_property("isPerspective", &Viewport::isPerspectiveProjection)
-			.add_property("type", &Viewport::viewType, (void (*)(Viewport&,Viewport::ViewType))([](Viewport& vp, Viewport::ViewType vt) { vp.setViewType(vt); }),
+            .add_property("type", &Viewport::viewType, static_cast<void (*)(Viewport&,Viewport::ViewType)>
+                          ([](Viewport& vp, Viewport::ViewType vt) { vp.setViewType(vt); }),
 					"The type of projection:"
 					"\n\n"
 					"  * ``Viewport.Type.PERSPECTIVE``\n"
@@ -117,6 +118,18 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 			.value("SCENENODE", Viewport::VIEW_SCENENODE)
 		;
 	}
+
+	class_<ViewProjectionParameters>("ViewProjectionParameters")
+		.def_readwrite("aspectRatio", &ViewProjectionParameters::aspectRatio)
+		.def_readwrite("isPerspective", &ViewProjectionParameters::isPerspective)
+		.def_readwrite("znear", &ViewProjectionParameters::znear)
+		.def_readwrite("zfar", &ViewProjectionParameters::zfar)
+		.def_readwrite("fieldOfView", &ViewProjectionParameters::fieldOfView)
+		.def_readwrite("viewMatrix", &ViewProjectionParameters::viewMatrix)
+		.def_readwrite("inverseViewMatrix", &ViewProjectionParameters::inverseViewMatrix)
+		.def_readwrite("projectionMatrix", &ViewProjectionParameters::projectionMatrix)
+		.def_readwrite("inverseProjectionMatrix", &ViewProjectionParameters::inverseProjectionMatrix)
+	;
 
 	ovito_class<ViewportConfiguration, RefTarget>(
 			"Manages the viewports in OVITO's main window."

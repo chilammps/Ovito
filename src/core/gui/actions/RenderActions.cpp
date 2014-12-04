@@ -26,7 +26,7 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_RENDER_ACTIVE_VIEWPORT command.
@@ -54,4 +54,4 @@ void ActionManager::on_RenderActiveViewport_triggered()
 	}
 }
 
-};
+}}	// End of namespace

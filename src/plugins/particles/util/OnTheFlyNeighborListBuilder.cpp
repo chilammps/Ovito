@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "OnTheFlyNeighborListBuilder.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /******************************************************************************
 * Constructor
@@ -35,7 +35,7 @@ OnTheFlyNeighborListBuilder::OnTheFlyNeighborListBuilder(FloatType cutoffRadius)
 /******************************************************************************
 * Initialization function.
 ******************************************************************************/
-bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData, bool* hasWrappedParticles)
+bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData, bool* hasWrappedParticles)
 {
 	OVITO_CHECK_POINTER(posProperty);
 
@@ -48,7 +48,7 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 
 	AffineTransformation binCell;
 	binCell.translation() = simCell.matrix().translation();
-	Vector3 planeNormals[3];
+	std::array<Vector3,3> planeNormals;
 
 	// Determine the number of bins in each spatial direction.
 	for(size_t i = 0; i < 3; i++) {
@@ -159,7 +159,7 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 						shift = -binLocation[k]/binDim[k];
 					a.pbcShift[k] = (int8_t)shift;
 					a.pos += (FloatType)shift * simCell.matrix().column(k);
-					binLocation[k] = SimulationCellData::modulo(binLocation[k], binDim[k]);
+					binLocation[k] = SimulationCell::modulo(binLocation[k], binDim[k]);
 					if(hasWrappedParticles)
 						*hasWrappedParticles = true;
 				}
@@ -286,5 +286,4 @@ void OnTheFlyNeighborListBuilder::iterator::next()
 	}
 }
 
-};	// End of namespace
-
+}}}}	// End of namespace

@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/SceneObject.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/scene/objects/DataObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
@@ -30,12 +30,11 @@
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "CalculateDisplacementsModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CalculateDisplacementsModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, CalculateDisplacementsModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(CalculateDisplacementsModifier, CalculateDisplacementsModifierEditor);
-DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration", SceneObject, PROPERTY_FIELD_NO_SUB_ANIM);
+SET_OVITO_OBJECT_EDITOR(CalculateDisplacementsModifier, Internal::CalculateDisplacementsModifierEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration", DataObject, PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration");
 DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates");
@@ -51,6 +50,10 @@ SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _useReferenceFrameOffse
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceFrameNumber, "Reference frame number");
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceFrameOffset, "Reference frame offset");
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector display");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, CalculateDisplacementsModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -69,9 +72,9 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceFrameOffset);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay);
 
-	// Create the scene object, which will be responsible for loading
+	// Create the file source object, which will be responsible for loading
 	// and storing the reference configuration.
-	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+	OORef<FileSource> linkedFileObj(new FileSource(dataset));
 
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
@@ -97,7 +100,7 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 ******************************************************************************/
 QUrl CalculateDisplacementsModifier::referenceSource() const
 {
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration()))
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration()))
 		return linkedFileObj->sourceUrl();
 	else
 		return QUrl();
@@ -106,13 +109,13 @@ QUrl CalculateDisplacementsModifier::referenceSource() const
 /******************************************************************************
 * Sets the source URL of the reference configuration.
 ******************************************************************************/
-void CalculateDisplacementsModifier::setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType)
+void CalculateDisplacementsModifier::setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType)
 {
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration())) {
 		linkedFileObj->setSource(sourceUrl, importerType);
 	}
 	else {
-		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
+		OORef<FileSource> newObj(new FileSource(dataset()));
 		newObj->setSource(sourceUrl, importerType);
 		setReferenceConfiguration(newObj);
 	}
@@ -157,7 +160,7 @@ PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, T
 
 	// Get the reference configuration.
 	PipelineFlowState refState;
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration())) {
 		if(linkedFileObj->numberOfFrames() > 0) {
 			if(referenceFrame < 0 || referenceFrame >= linkedFileObj->numberOfFrames())
 				throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
@@ -236,8 +239,8 @@ PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, T
 	}
 
 	// Get simulation cells.
-	SimulationCell* inputCell = expectSimulationCell();
-	SimulationCell* refCell = refState.findObject<SimulationCell>();
+	SimulationCellObject* inputCell = expectSimulationCell();
+	SimulationCellObject* refCell = refState.findObject<SimulationCellObject>();
 	if(!refCell)
 		throw Exception(tr("Reference configuration does not contain simulation cell info."));
 
@@ -344,6 +347,8 @@ PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, T
 	return refState.status().type();
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -410,4 +415,6 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference")));
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

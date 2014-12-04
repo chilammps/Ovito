@@ -24,20 +24,18 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/Modifier.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/widgets/display/StatusWidget.h>
 #include <core/reference/CloneHelper.h>
 #include <core/reference/RefTargetListener.h>
 
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
-using namespace Ovito;
-
-/*
+/**
  * Abstract base class for modifiers that operate on a system of particles.
  */
 class OVITO_PARTICLES_EXPORT ParticleModifier : public Modifier
@@ -88,7 +86,7 @@ protected:
 	/// Returns the input simulation cell.
 	/// The returned object may not be modified. If the input does
 	/// not contain a simulation cell, an exception is thrown.
-	SimulationCell* expectSimulationCell() const;
+	SimulationCellObject* expectSimulationCell() const;
 
 	/// Creates a standard particle property in the modifier's output.
 	/// If the particle property already exists in the input, its contents are copied to the
@@ -107,7 +105,7 @@ protected:
 	ParticlePropertyObject* outputCustomProperty(ParticleProperty* storage);
 
 	/// Returns the modifier's output simulation cell.
-	SimulationCell* outputSimulationCell();
+	SimulationCellObject* outputSimulationCell();
 
 	/// Removes the given particle property from the modifier's output.
 	void removeOutputProperty(ParticlePropertyObject* property);
@@ -212,6 +210,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_MODIFIER_H

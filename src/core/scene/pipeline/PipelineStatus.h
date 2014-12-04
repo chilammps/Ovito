@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PipelineStatus.h
- * \brief Contains the definition of the Ovito::PipelineStatus class.
- */
-
 #ifndef __OVITO_PIPELINE_STATUS_H
 #define __OVITO_PIPELINE_STATUS_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Stores status information associated with an evaluation of the modification pipeline.
@@ -58,10 +53,12 @@ public:
 	/// Returns a text string describing the status.
 	const QString& text() const { return _text; }
 
+	/// Changes the text string describing the status.
+	void setText(const QString& text) { _text = text; }
+
 	/// Tests two status objects for equality.
 	bool operator==(const PipelineStatus& other) const {
-		return (_type == other._type) &&
-				(_text == other._text);
+		return (_type == other._type) && (_text == other._text);
 	}
 
 	/// Tests two status objects for inequality.
@@ -86,7 +83,7 @@ private:
 inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 {
 	stream.beginChunk(0x02);
-	stream.writeEnum(s._type);
+	stream << s._type;
 	stream << s._text;
 	stream.endChunk();
 	return stream;
@@ -99,7 +96,7 @@ inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 inline LoadStream& operator>>(LoadStream& stream, PipelineStatus& s)
 {
 	quint32 version = stream.expectChunkRange(0x0, 0x02);
-	stream.readEnum(s._type);
+	stream >> s._type;
 	stream >> s._text;
 	if(version <= 0x01)
 		stream >> s._text;
@@ -121,6 +118,6 @@ inline QDebug operator<<(QDebug debug, const PipelineStatus& s)
 	return debug;
 }
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_PIPELINE_STATUS_H

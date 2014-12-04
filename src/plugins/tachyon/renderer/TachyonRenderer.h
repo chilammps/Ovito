@@ -27,9 +27,7 @@
 #define TACHYON_INTERNAL 1
 #include <tachyon/tachyon.h>
 
-namespace TachyonPlugin {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Tachyon {
 
 /*
  * A scene renderer that is based on the Tachyon open source ray-tracing engine
@@ -119,17 +117,6 @@ public:
 	/// Sets the number of AO samples to compute.
 	void setAmbientOcclusionSamples(int sampleCount) { _ambientOcclusionSamples = sampleCount; }
 
-public:
-
-	Q_PROPERTY(bool antialiasingEnabled READ antialiasingEnabled WRITE setAntialiasingEnabled);
-	Q_PROPERTY(int antialiasingSamples READ antialiasingSamples WRITE setAntialiasingSamples);
-	Q_PROPERTY(bool directLightSourceEnabled READ directLightSourceEnabled WRITE setDirectLightSourceEnabled);
-	Q_PROPERTY(bool shadowsEnabled READ shadowsEnabled WRITE setShadowsEnabled);
-	Q_PROPERTY(bool ambientOcclusionEnabled READ ambientOcclusionEnabled WRITE setAmbientOcclusionEnabled);
-	Q_PROPERTY(FloatType defaultLightSourceIntensity READ defaultLightSourceIntensity WRITE setDefaultLightSourceIntensity);
-	Q_PROPERTY(FloatType ambientOcclusionBrightness READ ambientOcclusionBrightness WRITE setAmbientOcclusionBrightness);
-	Q_PROPERTY(int ambientOcclusionSamples READ ambientOcclusionSamples WRITE setAmbientOcclusionSamples);
-
 private:
 
 	/// Creates a texture with the given color.
@@ -185,6 +172,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_ambientOcclusionBrightness);
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_TACHYON_RENDERER_H

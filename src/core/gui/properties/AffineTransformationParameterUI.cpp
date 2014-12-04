@@ -22,10 +22,10 @@
 #include <core/Core.h>
 #include <core/gui/properties/AffineTransformationParameterUI.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, AffineTransformationParameterUI, FloatParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, AffineTransformationParameterUI, FloatParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
@@ -108,5 +108,5 @@ void AffineTransformationParameterUI::updateUI()
 	}
 }
 
-};
+}}}	// End of namespace
 

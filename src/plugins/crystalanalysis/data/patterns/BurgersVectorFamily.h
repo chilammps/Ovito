@@ -26,9 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * \brief Stores properties of an atom type.
@@ -127,6 +125,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_BURGERS_VECTOR_FAMILY_H

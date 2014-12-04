@@ -19,20 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file SceneNodesListModel.h
- * \brief Contains the definition of the Ovito::SceneNodesListModel class.
- */
-
 #ifndef __OVITO_SCENE_NODES_LIST_MODEL_H
 #define __OVITO_SCENE_NODES_LIST_MODEL_H
 
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito {
-
-class DataSet;		// Defined in DataSet.h
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
  * A Qt model/view system list model that contains all scene nodes in the current scene.
@@ -75,6 +68,6 @@ private:
 	RefTargetListener<SceneRoot> _rootNodeListener;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SCENE_NODES_LIST_MODEL_H

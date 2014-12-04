@@ -32,11 +32,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "BinAndReduceModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BinAndReduceModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, BinAndReduceModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, BinAndReduceModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, Internal::BinAndReduceModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _reductionOperation, "ReductionOperation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _firstDerivative, "firstDerivative", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
@@ -55,6 +54,10 @@ SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _fixPropertyAxisRange, "Fix prope
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeStart, "Property axis range start");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeEnd, "Property axis range end");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, BinAndReduceModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -87,7 +90,7 @@ void BinAndReduceModifier::initializeModifier(PipelineObject* pipeline, Modifier
 	if(sourceProperty().isNull()) {
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
-		for(SceneObject* o : input.objects()) {
+		for(DataObject* o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
@@ -104,12 +107,12 @@ void BinAndReduceModifier::initializeModifier(PipelineObject* pipeline, Modifier
 ******************************************************************************/
 PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-    size_t binDataSizeX = std::max(1, numberOfBinsX());
-    size_t binDataSizeY = std::max(1, numberOfBinsY());
+	int binDataSizeX = std::max(1, numberOfBinsX());
+	int binDataSizeY = std::max(1, numberOfBinsY());
     if (is1D()) binDataSizeY = 1;
     size_t binDataSize = binDataSizeX*binDataSizeY;
 	_binData.resize(binDataSize);
-	std::fill(_binData.begin(), _binData.end(), 0);
+	std::fill(_binData.begin(), _binData.end(), FloatType(0));
 
     // Return coordinate indices (0, 1 or 2).
     int binDirX = binDirectionX(_binDirection);
@@ -184,8 +187,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                     FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                     int binIndexX = int( fractionalPosX * binDataSizeX );
                     int binIndexY = int( fractionalPosY * binDataSizeY );
-                    if (pbc[binDirX]) binIndexX = SimulationCell::modulo(binIndexX, binDataSizeX);
-                    if (pbc[binDirY]) binIndexY = SimulationCell::modulo(binIndexY, binDataSizeY);
+                    if (pbc[binDirX]) binIndexX = SimulationCellObject::modulo(binIndexX, binDataSizeX);
+                    if (pbc[binDirY]) binIndexY = SimulationCellObject::modulo(binIndexY, binDataSizeY);
                     if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                         size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                         if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
@@ -221,8 +224,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                 FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                 int binIndexX = int( fractionalPosX * binDataSizeX );
                 int binIndexY = int( fractionalPosY * binDataSizeY );
-                if (pbc[binDirX])  binIndexX = SimulationCell::modulo(binIndexX, binDataSizeX);
-                if (pbc[binDirY])  binIndexY = SimulationCell::modulo(binIndexY, binDataSizeY);
+                if (pbc[binDirX])  binIndexX = SimulationCellObject::modulo(binIndexX, binDataSizeX);
+                if (pbc[binDirY])  binIndexY = SimulationCellObject::modulo(binIndexY, binDataSizeY);
                 if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                     size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                     if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
@@ -303,6 +306,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	return PipelineStatus(PipelineStatus::Success);
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -323,11 +328,11 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	QGridLayout* gridlayout = new QGridLayout();
 	gridlayout->addWidget(new QLabel(tr("Reduction operation:"), rollout), 0, 0);
 	VariantComboBoxParameterUI* reductionOperationPUI = new VariantComboBoxParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation));
-    reductionOperationPUI->comboBox()->addItem(tr("mean"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MEAN));
-    reductionOperationPUI->comboBox()->addItem(tr("sum"), qVariantFromValue(Particles::BinAndReduceModifier::RED_SUM));
-    reductionOperationPUI->comboBox()->addItem(tr("sum divided by bin volume"), qVariantFromValue(Particles::BinAndReduceModifier::RED_SUM_VOL));
-    reductionOperationPUI->comboBox()->addItem(tr("min"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MIN));
-    reductionOperationPUI->comboBox()->addItem(tr("max"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MAX));
+    reductionOperationPUI->comboBox()->addItem(tr("mean"), qVariantFromValue(BinAndReduceModifier::RED_MEAN));
+    reductionOperationPUI->comboBox()->addItem(tr("sum"), qVariantFromValue(BinAndReduceModifier::RED_SUM));
+    reductionOperationPUI->comboBox()->addItem(tr("sum divided by bin volume"), qVariantFromValue(BinAndReduceModifier::RED_SUM_VOL));
+    reductionOperationPUI->comboBox()->addItem(tr("min"), qVariantFromValue(BinAndReduceModifier::RED_MIN));
+    reductionOperationPUI->comboBox()->addItem(tr("max"), qVariantFromValue(BinAndReduceModifier::RED_MAX));
     gridlayout->addWidget(reductionOperationPUI->comboBox(), 0, 1);
     layout->addLayout(gridlayout);
 
@@ -429,8 +434,8 @@ void BinAndReduceModifierEditor::plotAverages()
 	if(!modifier)
 		return;
 
-    size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
-    size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+	int binDataSizeX = std::max(1, modifier->numberOfBinsX());
+	int binDataSizeY = std::max(1, modifier->numberOfBinsY());
     if (modifier->is1D()) binDataSizeY = 1;
     size_t binDataSize = binDataSizeX*binDataSizeY;
 
@@ -577,8 +582,8 @@ void BinAndReduceModifierEditor::onSaveData()
 		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
 			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
 
-        size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
-        size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+		int binDataSizeX = std::max(1, modifier->numberOfBinsX());
+		int binDataSizeY = std::max(1, modifier->numberOfBinsY());
         if (modifier->is1D()) binDataSizeY = 1;
 		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / binDataSizeX;
 		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / binDataSizeY;
@@ -586,7 +591,7 @@ void BinAndReduceModifierEditor::onSaveData()
 		QTextStream stream(&file);
         if (binDataSizeY == 1) {
             stream << "# " << modifier->sourceProperty().name() << " bin size: " << binSizeX << endl;
-            for(int i = 0; i < modifier->binData().size(); i++) {
+			for(size_t i = 0; i < modifier->binData().size(); i++) {
                 stream << (binSizeX * (FloatType(i) + 0.5f) + modifier->xAxisRangeStart()) << " " << modifier->binData()[i] << endl;
             }
         }
@@ -605,5 +610,6 @@ void BinAndReduceModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

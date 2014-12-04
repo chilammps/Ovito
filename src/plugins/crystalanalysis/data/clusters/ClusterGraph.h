@@ -23,17 +23,15 @@
 #define __OVITO_CA_CLUSTER_GRAPH_H
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include "Cluster.h"
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /**
  * \brief Wraps the ClusterGraph class of the CALib.
  */
-class OVITO_CRYSTALANALYSIS_EXPORT ClusterGraph : public SceneObject
+class OVITO_CRYSTALANALYSIS_EXPORT ClusterGraph : public DataObject
 {
 public:
 
@@ -86,6 +84,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_CLUSTER_GRAPH_H

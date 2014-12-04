@@ -21,14 +21,15 @@
 
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/gui/dialogs/RemoteAuthenticationDialog.h>
 #include <core/dataset/DataSetContainer.h>
 
 #include "FileManager.h"
 #include "SftpJob.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
+
+using namespace Internal;
 
 /// The singleton instance of the class.
 FileManager* FileManager::_instance = nullptr;
@@ -78,7 +79,7 @@ Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& u
 		Future<QString> future(futureInterface);
 		_pendingFiles.insert(normalizedUrl, future);
 		new SftpDownloadJob(url, futureInterface);
-		container.taskManager().addTask(future);
+		container.taskManager().registerTask(futureInterface);
 		return future;
 	}
 	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and local file paths."));
@@ -171,5 +172,4 @@ QUrl FileManager::urlFromUserInput(const QString& path)
 		return QUrl::fromLocalFile(path);
 }
 
-
-};
+}}}	// End of namespace

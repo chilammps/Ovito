@@ -28,7 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /// The singleton instance of the manager class.
 ControllerManager* ControllerManager::_instance = nullptr;
@@ -151,4 +151,4 @@ OORef<Controller> ControllerManager::createTransformationController(DataSet* dat
 	return new PRSTransformationController(dataset);
 }
 
-};
+}}	// End of namespace

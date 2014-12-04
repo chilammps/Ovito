@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -27,12 +27,11 @@
 #include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/******************************************************************************
-* Calculates the per-particle displacement vectors by comparing the current
-* positions to a reference configuration.
-******************************************************************************/
+/**
+ * \brief Calculates the per-particle strain tensors based on a reference configuration.
+ */
 class OVITO_PARTICLES_EXPORT AtomicStrainModifier : public AsynchronousParticleModifier
 {
 public:
@@ -42,17 +41,17 @@ public:
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	SceneObject* referenceConfiguration() const { return _referenceObject; }
+	DataObject* referenceConfiguration() const { return _referenceObject; }
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(DataObject* refConf) { _referenceObject = refConf; }
 
 	/// Returns the source URL of the reference configuration.
 	QUrl referenceSource() const;
 
 	/// Sets the source URL of the reference configuration.
-	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
+	void setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType = nullptr);
 
 	/// Returns whether the reference configuration is shown instead of the current configuration.
 	bool referenceShown() const { return _referenceShown; }
@@ -105,21 +104,6 @@ public:
 	/// Returns the computed von Mises shear strain values.
 	const ParticleProperty& shearStrainValues() const { OVITO_CHECK_POINTER(_shearStrainValues.constData()); return *_shearStrainValues; }
 
-	/// Returns the computed volumetric strain values.
-	const ParticleProperty& volumetricStrainValues() const { OVITO_CHECK_POINTER(_volumetricStrainValues.constData()); return *_volumetricStrainValues; }
-
-	/// Returns the computed strain tensors.
-	const ParticleProperty& strainTensors() const { OVITO_CHECK_POINTER(_strainTensors.constData()); return *_strainTensors; }
-
-	/// Returns the computed deformation gradient tensors.
-	const ParticleProperty& deformationGradients() const { OVITO_CHECK_POINTER(_deformationGradients.constData()); return *_deformationGradients; }
-
-	/// Returns the computed deformation gradient tensors.
-	const ParticleProperty& nonaffineSquaredDisplacements() const { OVITO_CHECK_POINTER(_nonaffineSquaredDisplacements.constData()); return *_nonaffineSquaredDisplacements; }
-
-	/// Returns the selection of invalid particles.
-	const ParticleProperty& invalidParticles() const { OVITO_CHECK_POINTER(_invalidParticles.constData()); return *_invalidParticles; }
-
 	/// After a successful evaluation of the modifier, this returns the number of invalid particles for which
 	/// the strain tensor could not be computed.
 	size_t invalidParticleCount() const { return _numInvalidParticles; }
@@ -142,40 +126,35 @@ public:
 	/// Sets the relative frame offset to use.
 	void setReferenceFrameOffset(int frameOffset) { _referenceFrameOffset = frameOffset; }
 
-public:
+protected:
 
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
-	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
-	Q_PROPERTY(bool calculateDeformationGradients READ calculateDeformationGradients WRITE setCalculateDeformationGradients)
-	Q_PROPERTY(bool calculateStrainTensors READ calculateStrainTensors WRITE setCalculateStrainTensors)
-	Q_PROPERTY(bool calculateNonaffineSquaredDisplacements READ calculateNonaffineSquaredDisplacements WRITE setCalculateNonaffineSquaredDisplacements)
-	Q_PROPERTY(bool selectInvalidParticles READ selectInvalidParticles WRITE setSelectInvalidParticles)
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
-	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
-	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
-	Q_PROPERTY(int invalidParticleCount READ invalidParticleCount);
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 
 	/// Computes the modifier's results.
-	class AtomicStrainEngine : public AsynchronousParticleModifier::Engine
+	class AtomicStrainEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		AtomicStrainEngine(ParticleProperty* positions, const SimulationCellData& simCell,
-				ParticleProperty* refPositions, const SimulationCellData& simCellRef,
+		AtomicStrainEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell,
+				ParticleProperty* refPositions, const SimulationCell& simCellRef,
 				ParticleProperty* identifiers, ParticleProperty* refIdentifiers,
 				FloatType cutoff, bool eliminateCellDeformation, bool assumeUnwrappedCoordinates,
-                bool calculateDeformationGradients, bool calculateStrainTensors,
-                bool calculateNonaffineSquaredDisplacements) :
+				bool calculateDeformationGradients, bool calculateStrainTensors,
+				bool calculateNonaffineSquaredDisplacements) :
+			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
 			_identifiers(identifiers), _refIdentifiers(refIdentifiers),
@@ -192,7 +171,7 @@ private:
 			_reducedToAbsolute(eliminateCellDeformation ? simCellRef.matrix() : simCell.matrix()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -201,10 +180,10 @@ private:
 		ParticleProperty* refPositions() const { return _refPositions.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 		/// Returns the reference simulation cell data.
-		const SimulationCellData& refCell() const { return _simCellRef; }
+		const SimulationCell& refCell() const { return _simCellRef; }
 
 		/// Returns the property storage that contains the computed per-particle shear strain values.
 		ParticleProperty* shearStrains() const { return _shearStrains.data(); }
@@ -233,8 +212,8 @@ private:
 		bool computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
 
 		FloatType _cutoff;
-		SimulationCellData _simCell;
-		SimulationCellData _simCellRef;
+		SimulationCell _simCell;
+		SimulationCell _simCellRef;
 		AffineTransformation _currentSimCellInv;
 		AffineTransformation _reducedToAbsolute;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
@@ -255,20 +234,6 @@ private:
 		QAtomicInt _numInvalidParticles;
 	};
 
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
-
 	/// This stores the cached results of the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _shearStrainValues;
 
@@ -288,7 +253,7 @@ protected:
 	QExplicitlySharedDataPointer<ParticleProperty> _invalidParticles;
 
 	/// The reference configuration.
-	ReferenceField<SceneObject> _referenceObject;
+	ReferenceField<DataObject> _referenceObject;
 
 	/// Controls the whether the reference configuration is shown instead of the current configuration.
 	PropertyField<bool> _referenceShown;
@@ -348,9 +313,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
-/******************************************************************************
-* A properties editor for the AtomicStrainModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the AtomicStrainModifier class.
+ */
 class AtomicStrainModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -369,6 +336,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_ATOMIC_STRAIN_MODIFIER_H

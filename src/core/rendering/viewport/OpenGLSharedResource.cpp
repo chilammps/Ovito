@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "OpenGLSharedResource.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 class OpenGLContextInfo
 {
@@ -91,7 +91,9 @@ private:
     QList<OpenGLContextInfo *> _contexts;
 };
 
-#include "OpenGLSharedResource.moc"
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+	#include "OpenGLSharedResource.moc"
+#endif
 
 static QThreadStorage<OpenGLContextManager*> glContextManagerStorage;
 
@@ -189,4 +191,4 @@ void OpenGLSharedResource::destroyOpenGLResources()
 	}
 }
 
-};
+}}}	// End of namespace

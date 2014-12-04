@@ -23,7 +23,7 @@
 #include "OpenGLLinePrimitive.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -145,6 +145,8 @@ void OpenGLLinePrimitive::render(SceneRenderer* renderer)
 	if(vertexCount() <= 0 || !vpRenderer)
 		return;
 
+	vpRenderer->rebindVAO();
+
 	if(_lineWidth == 1)
 		renderLines(vpRenderer);
 	else
@@ -188,7 +190,7 @@ void OpenGLLinePrimitive::renderLines(ViewportSceneRenderer* renderer)
 	}
 	shader->release();
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 /******************************************************************************
@@ -243,8 +245,7 @@ void OpenGLLinePrimitive::renderThickLines(ViewportSceneRenderer* renderer)
 	_vectorsBuffer.detach(renderer, shader, "vector");
 	shader->release();
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
-
-};
+}}}	// End of namespace

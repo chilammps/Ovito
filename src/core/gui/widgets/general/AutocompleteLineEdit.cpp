@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "AutocompleteLineEdit.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /******************************************************************************
 * Returns the rect that is available for us to draw the document
@@ -105,4 +105,4 @@ void AutocompleteLineEdit::keyPressEvent(QKeyEvent* event)
 		_completer->popup()->hide();
 }
 
-};
+}}}	// End of namespace

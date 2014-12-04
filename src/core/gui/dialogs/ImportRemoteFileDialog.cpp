@@ -20,16 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/utilities/io/FileManager.h>
 #include "ImportRemoteFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructs the dialog window.
 ******************************************************************************/
-ImportRemoteFileDialog::ImportRemoteFileDialog(const QVector<FileImporterDescription*>& importerTypes, QWidget* parent, const QString& caption) : QDialog(parent),
+ImportRemoteFileDialog::ImportRemoteFileDialog(const QVector<OvitoObjectType*>& importerTypes, DataSet* dataset, QWidget* parent, const QString& caption) : QDialog(parent),
 		_importerTypes(importerTypes)
 {
 	setWindowTitle(caption);
@@ -75,8 +74,10 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(const QVector<FileImporterDescrip
 	_formatSelector = new QComboBox(this);
 
 	_formatSelector->addItem(tr("<Auto-detect format>"));
-	for(FileImporterDescription* descriptor : importerTypes)
-		_formatSelector->addItem(descriptor->fileFilterDescription());
+	for(OvitoObjectType* importerType : importerTypes) {
+		OORef<FileImporter> imp = static_object_cast<FileImporter>(importerType->createInstance(dataset));
+		_formatSelector->addItem(imp->fileFilterDescription());
+	}
 
 	layout1->addWidget(_formatSelector);
 	layout1->addSpacing(10);
@@ -140,7 +141,7 @@ QUrl ImportRemoteFileDialog::fileToImport() const
 /******************************************************************************
 * Returns the selected importer type or NULL if auto-detection is requested.
 ******************************************************************************/
-const FileImporterDescription* ImportRemoteFileDialog::selectedFileImporterType() const
+const OvitoObjectType* ImportRemoteFileDialog::selectedFileImporterType() const
 {
 	int importFilterIndex = _formatSelector->currentIndex() - 1;
 	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _importerTypes.size());
@@ -151,4 +152,4 @@ const FileImporterDescription* ImportRemoteFileDialog::selectedFileImporterType(
 		return nullptr;
 }
 
-};
+}}}	// End of namespace

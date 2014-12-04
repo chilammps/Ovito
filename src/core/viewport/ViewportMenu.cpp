@@ -30,7 +30,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "ViewportMenu.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the menu.
@@ -235,4 +235,4 @@ void ViewportMenu::onCreateCamera()
 	});
 }
 
-};
+}}}	// End of namespace

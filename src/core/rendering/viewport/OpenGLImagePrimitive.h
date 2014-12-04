@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OpenGLImagePrimitive.h
- * \brief Contains the definition of the Ovito::OpenGLImagePrimitive class.
- */
-
 #ifndef __OVITO_OPENGL_IMAGE_PRIMITIVE_H
 #define __OVITO_OPENGL_IMAGE_PRIMITIVE_H
 
@@ -31,7 +26,7 @@
 #include <core/rendering/ImagePrimitive.h>
 #include "OpenGLTexture.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief Buffer object that stores an image to be rendered in the viewports.
@@ -76,6 +71,6 @@ private:
 	bool _needTextureUpdate;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_IMAGE_PRIMITIVE_H

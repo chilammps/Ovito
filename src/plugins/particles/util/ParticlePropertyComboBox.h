@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ParticlePropertyComboBox.h
- * \brief Contains the definition of the Particles::ParticlePropertyComboBox class.
- */
-
 #ifndef __OVITO_PARTICLE_PROPERTY_COMBO_BOX_H
 #define __OVITO_PARTICLE_PROPERTY_COMBO_BOX_H
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
  * \brief Widget that allows the user to select a particle property from a list.
@@ -101,6 +96,6 @@ public:
 	}
 };
 
-};	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_PROPERTY_COMBO_BOX_H

@@ -21,18 +21,18 @@
 
 #include <core/Core.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /******************************************************************************
-* Tries to convert one of the to scene objects stored in this flow state to
+* Tries to convert one of the to data objects stored in this flow state to
 * the given object type.
 ******************************************************************************/
-OORef<SceneObject> PipelineFlowState::convertObject(const OvitoObjectType& objectClass, TimePoint time) const
+OORef<DataObject> PipelineFlowState::convertObject(const OvitoObjectType& objectClass, TimePoint time) const
 {
 	for(const auto& o : _objects) {
-		if(OORef<SceneObject> obj = o->convertTo(objectClass, time))
+		if(OORef<DataObject> obj = o->convertTo(objectClass, time))
 			return obj;
 	}
 	return {};
@@ -42,27 +42,27 @@ OORef<SceneObject> PipelineFlowState::convertObject(const OvitoObjectType& objec
 * Returns true if the given object is part of this pipeline flow state.
 * The method ignores the revision number of the object.
 ******************************************************************************/
-bool PipelineFlowState::contains(SceneObject* obj) const
+bool PipelineFlowState::contains(DataObject* obj) const
 {
-	for(SceneObject* o : _objects)
+	for(DataObject* o : _objects)
 		if(o == obj) return true;
 	return false;
 }
 
 /******************************************************************************
-* Adds an additional scene object to this state.
+* Adds an additional data object to this state.
 ******************************************************************************/
-void PipelineFlowState::addObject(SceneObject* obj)
+void PipelineFlowState::addObject(DataObject* obj)
 {
 	OVITO_CHECK_OBJECT_POINTER(obj);
-	OVITO_ASSERT_MSG(!contains(obj), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
+	OVITO_ASSERT_MSG(!contains(obj), "PipelineFlowState::addObject", "Cannot add the same data object more than once.");
 	_objects.push_back(obj);
 }
 
 /******************************************************************************
-* Replaces a scene object with a new one.
+* Replaces a data object with a new one.
 ******************************************************************************/
-void PipelineFlowState::replaceObject(SceneObject* oldObj, SceneObject* newObj)
+void PipelineFlowState::replaceObject(DataObject* oldObj, DataObject* newObj)
 {
 	OVITO_CHECK_OBJECT_POINTER(oldObj);
 	for(int index = 0; index < _objects.size(); index++) {
@@ -78,7 +78,7 @@ void PipelineFlowState::replaceObject(SceneObject* oldObj, SceneObject* newObj)
 }
 
 /******************************************************************************
-* Updates the stored revision numbers for all scene objects.
+* Updates the stored revision numbers for all data objects.
 ******************************************************************************/
 void PipelineFlowState::updateRevisionNumbers()
 {
@@ -86,4 +86,4 @@ void PipelineFlowState::updateRevisionNumbers()
 		o.updateRevisionNumber();
 }
 
-};
+}}}	// End of namespace

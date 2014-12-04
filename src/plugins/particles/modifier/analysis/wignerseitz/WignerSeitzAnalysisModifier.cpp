@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
@@ -29,12 +29,11 @@
 #include <plugins/particles/util/TreeNeighborListBuilder.h>
 #include "WignerSeitzAnalysisModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, WignerSeitzAnalysisModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, WignerSeitzAnalysisModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(WignerSeitzAnalysisModifier, WignerSeitzAnalysisModifierEditor);
-DEFINE_REFERENCE_FIELD(WignerSeitzAnalysisModifier, _referenceObject, "Reference Configuration", SceneObject);
+SET_OVITO_OBJECT_EDITOR(WignerSeitzAnalysisModifier, Internal::WignerSeitzAnalysisModifierEditor);
+DEFINE_REFERENCE_FIELD(WignerSeitzAnalysisModifier, _referenceObject, "Reference Configuration", DataObject);
 DEFINE_FLAGS_PROPERTY_FIELD(WignerSeitzAnalysisModifier, _eliminateCellDeformation, "EliminateCellDeformation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(WignerSeitzAnalysisModifier, _useReferenceFrameOffset, "UseReferenceFrameOffet");
 DEFINE_PROPERTY_FIELD(WignerSeitzAnalysisModifier, _referenceFrameNumber, "ReferenceFrameNumber");
@@ -45,11 +44,14 @@ SET_PROPERTY_FIELD_LABEL(WignerSeitzAnalysisModifier, _useReferenceFrameOffset, 
 SET_PROPERTY_FIELD_LABEL(WignerSeitzAnalysisModifier, _referenceFrameNumber, "Reference frame number");
 SET_PROPERTY_FIELD_LABEL(WignerSeitzAnalysisModifier, _referenceFrameOffset, "Reference frame offset");
 
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, WignerSeitzAnalysisModifierEditor, ParticleModifierEditor);
+}
+
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 WignerSeitzAnalysisModifier::WignerSeitzAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_occupancyNumbers(new ParticleProperty(0, qMetaTypeId<int>(), sizeof(int), 1, sizeof(int), tr("Occupancy"), false)),
 	_eliminateCellDeformation(false),
 	_useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1),
 	_vacancyCount(0), _interstitialCount(0)
@@ -60,9 +62,9 @@ WignerSeitzAnalysisModifier::WignerSeitzAnalysisModifier(DataSet* dataset) : Asy
 	INIT_PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameNumber);
 	INIT_PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameOffset);
 
-	// Create the scene object that will be responsible for loading
+	// Create the file source object that will be responsible for loading
 	// and storing the reference configuration.
-	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+	OORef<FileSource> linkedFileObj(new FileSource(dataset));
 
 	// Disable the automatic adjustment of the animation length.
 	// We don't want the scene's animation interval to be affected by an animation
@@ -76,7 +78,7 @@ WignerSeitzAnalysisModifier::WignerSeitzAnalysisModifier(DataSet* dataset) : Asy
 ******************************************************************************/
 QUrl WignerSeitzAnalysisModifier::referenceSource() const
 {
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration()))
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration()))
 		return linkedFileObj->sourceUrl();
 	else
 		return QUrl();
@@ -85,13 +87,13 @@ QUrl WignerSeitzAnalysisModifier::referenceSource() const
 /******************************************************************************
 * Sets the source URL of the reference configuration.
 ******************************************************************************/
-void WignerSeitzAnalysisModifier::setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType)
+void WignerSeitzAnalysisModifier::setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType)
 {
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration())) {
 		linkedFileObj->setSource(sourceUrl, importerType);
 	}
 	else {
-		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
+		OORef<FileSource> newObj(new FileSource(dataset()));
 		newObj->setSource(sourceUrl, importerType);
 		setReferenceConfiguration(newObj);
 	}
@@ -100,7 +102,7 @@ void WignerSeitzAnalysisModifier::setReferenceSource(const QUrl& sourceUrl, cons
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> WignerSeitzAnalysisModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -116,8 +118,8 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifie
 		throw Exception(tr("The reference configuration does not contain particle positions."));
 
 	// Get simulation cells.
-	SimulationCell* inputCell = expectSimulationCell();
-	SimulationCell* refCell = refState.findObject<SimulationCell>();
+	SimulationCellObject* inputCell = expectSimulationCell();
+	SimulationCellObject* refCell = refState.findObject<SimulationCellObject>();
 	if(!refCell)
 		throw Exception(tr("Reference configuration does not contain simulation cell info."));
 
@@ -128,7 +130,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifie
 		throw Exception(tr("Simulation cell is degenerate in the reference configuration."));
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<WignerSeitzAnalysisEngine>(posProperty->storage(), inputCell->data(),
+	return std::make_shared<WignerSeitzAnalysisEngine>(validityInterval, posProperty->storage(), inputCell->data(),
 			refPosProperty->storage(), refCell->data(), eliminateCellDeformation());
 }
 
@@ -159,7 +161,7 @@ PipelineFlowState WignerSeitzAnalysisModifier::getReferenceState(TimePoint time)
 
 	// Get the reference configuration.
 	PipelineFlowState refState;
-	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+	if(FileSource* linkedFileObj = dynamic_object_cast<FileSource>(referenceConfiguration())) {
 		if(linkedFileObj->numberOfFrames() > 0) {
 			if(referenceFrame < 0 || referenceFrame >= linkedFileObj->numberOfFrames())
 				throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
@@ -183,22 +185,22 @@ PipelineFlowState WignerSeitzAnalysisModifier::getReferenceState(TimePoint time)
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::perform()
 {
-	size_t particleCount = positions()->size();
-	futureInterface.setProgressText(tr("Performing Wigner-Seitz cell analysis"));
+	setProgressText(tr("Performing Wigner-Seitz cell analysis"));
 
+	size_t particleCount = positions()->size();
 	if(refPositions()->size() == 0)
 		return;
 
 	// Prepare the closest-point query structure.
 	TreeNeighborListBuilder neighborTree(0);
-	if(!neighborTree.prepare(refPositions(), refCell()) || futureInterface.isCanceled())
+	if(!neighborTree.prepare(refPositions(), refCell()) || isCanceled())
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = occupancyNumbers();
-	futureInterface.setProgressRange(particleCount);
+	setProgressRange(particleCount);
 
 	AffineTransformation tm;
 	if(_eliminateCellDeformation)
@@ -215,9 +217,9 @@ void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::compute(FutureInter
 
 		particleIndex++;
 		if((particleIndex % 1024) == 0) {
-			if(futureInterface.isCanceled())
+			if(isCanceled())
 				return;
-			futureInterface.setProgressValue(particleIndex);
+			setProgressValue(particleIndex);
 		}
 	}
 
@@ -231,9 +233,9 @@ void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::compute(FutureInter
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void WignerSeitzAnalysisModifier::retrieveModifierResults(Engine* engine)
+void WignerSeitzAnalysisModifier::transferComputationResults(ComputeEngine* engine)
 {
 	WignerSeitzAnalysisEngine* eng = static_cast<WignerSeitzAnalysisEngine*>(engine);
 	_occupancyNumbers = eng->occupancyNumbers();
@@ -242,10 +244,14 @@ void WignerSeitzAnalysisModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus WignerSeitzAnalysisModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
+	if(!_occupancyNumbers)
+		throw Exception(tr("No computation results available."));
+
 	PipelineFlowState refState = getReferenceState(time);
 
 	QVariantMap oldAttributes = output().attributes();
@@ -261,7 +267,7 @@ PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time,
 		throw Exception(tr("This modifier cannot be evaluated, because the reference configuration does not contain any particles."));
 	_outputParticleCount = posProperty->size();
 
-	if(posProperty->size() != occupancyNumbers().size())
+	if(posProperty->size() != _occupancyNumbers->size())
 		throw Exception(tr("The number of particles in the reference configuration has changed. The stored results have become invalid."));
 
 	outputCustomProperty(_occupancyNumbers.data());
@@ -274,17 +280,17 @@ PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time,
 ******************************************************************************/
 void WignerSeitzAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute modifier results when the parameters have changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_eliminateCellDeformation)
-				|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_useReferenceFrameOffset)
-				|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameNumber)
-				|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameOffset))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute modifier results when the parameters have changed.
+	if(field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_eliminateCellDeformation)
+			|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_useReferenceFrameOffset)
+			|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameNumber)
+			|| field == PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceFrameOffset))
+		invalidateCachedResults();
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -339,7 +345,8 @@ void WignerSeitzAnalysisModifierEditor::createUI(const RolloutInsertionParameter
 
 	// Open a sub-editor for the reference object.
 	new SubObjectParameterUI(this, PROPERTY_FIELD(WignerSeitzAnalysisModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference")));
-
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

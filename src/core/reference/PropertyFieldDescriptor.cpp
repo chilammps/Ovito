@@ -24,7 +24,7 @@
 #include <core/reference/RefMaker.h>
 #include "PropertyFieldDescriptor.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /******************************************************************************
 * Return the human readable and localized name of the parameter field.
@@ -67,4 +67,4 @@ bool PropertyFieldDescriptor::loadDefaultValue(RefMaker* object) const
 	return false;
 }
 
-};
+}}	// End of namespace

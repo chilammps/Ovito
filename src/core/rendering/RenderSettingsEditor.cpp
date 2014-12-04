@@ -34,7 +34,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor);
 
@@ -135,6 +135,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		sizePresetsBox = new QComboBox(groupBox);
 		sizePresetsBox->addItem(tr("Presets..."));
+		sizePresetsBox->insertSeparator(1);
 		for(int i = 0; i < sizeof(imageSizePresets)/sizeof(imageSizePresets[0]); i++)
 			sizePresetsBox->addItem(tr("%1 x %2").arg(imageSizePresets[i][0]).arg(imageSizePresets[i][1]));
 		connect(sizePresetsBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &RenderSettingsEditor::onSizePresetActivated);
@@ -158,7 +159,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2->addWidget(chooseFilenameBtn, 0, 1);
 
 		// Output filename parameter.
-		StringParameterUI* imageFilenameUI = new StringParameterUI(this, "filename");
+		StringParameterUI* imageFilenameUI = new StringParameterUI(this, "imageFilename");
 		imageFilenameUI->setEnabled(false);
 		layout2->addWidget(imageFilenameUI->textBox(), 1, 0, 1, 2);
 
@@ -222,10 +223,10 @@ void RenderSettingsEditor::onChooseImageFilename()
 void RenderSettingsEditor::onSizePresetActivated(int index)
 {
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
-	if(settings && index >= 1 && index <= sizeof(imageSizePresets)/sizeof(imageSizePresets[0])) {
+	if(settings && index >= 2 && index < 2+sizeof(imageSizePresets)/sizeof(imageSizePresets[0])) {
 		undoableTransaction(tr("Change output dimensions"), [settings, index]() {
-			settings->setOutputImageWidth(imageSizePresets[index-1][0]);
-			settings->setOutputImageHeight(imageSizePresets[index-1][1]);
+			settings->setOutputImageWidth(imageSizePresets[index-2][0]);
+			settings->setOutputImageHeight(imageSizePresets[index-2][1]);
 		});
 	}
 	sizePresetsBox->setCurrentIndex(0);
@@ -262,5 +263,4 @@ void RenderSettingsEditor::onChangeRenderer()
 	}
 }
 
-
-};
+}}}	// End of namespace

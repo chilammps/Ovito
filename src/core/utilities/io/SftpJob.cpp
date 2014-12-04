@@ -27,7 +27,7 @@
 
 #include "SftpJob.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO { namespace Internal {
 
 /// List SFTP jobs that are waiting to be executed.
 QQueue<SftpJob*> SftpJob::_queuedJobs;
@@ -182,7 +182,7 @@ void SftpJob::onSshConnectionError(QSsh::SshError error)
 			throw Exception(tr("Cannot access URL\n\n%1\n\nSSH connection error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).
 				arg(_connection->errorString()));
 		}
-		catch(Exception& ex) {
+        catch(Exception&) {
 			_futureInterface->reportException();
 		}
 	}
@@ -219,7 +219,7 @@ void SftpJob::onSftpChannelInitializationFailed(const QString& reason)
 	try {
 		throw Exception(tr("Cannot access URL\n\n%1\n\nSFTP error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).arg(reason));
 	}
-	catch(Exception& ex) {
+    catch(Exception&) {
 		_futureInterface->reportException();
 	}
 	shutdown(false);
@@ -277,7 +277,7 @@ void SftpDownloadJob::onSftpChannelInitialized()
 		// Start timer to monitor download progress.
 		_timerId = startTimer(500);
 	}
-	catch(Exception& ex) {
+    catch(Exception&) {
 		_futureInterface->reportException();
 		shutdown(false);
 	}
@@ -300,7 +300,7 @@ void SftpDownloadJob::onSftpJobFinished(QSsh::SftpJobId jobId, const QString& er
 					.arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded))
 					.arg(errorMessage));
     	}
-		catch(Exception& ex) {
+        catch(Exception&) {
 			_futureInterface->reportException();
 		}
 		shutdown(false);
@@ -359,7 +359,7 @@ void SftpListDirectoryJob::onSftpChannelInitialized()
 		if(_listingJob == QSsh::SftpInvalidJob)
 			throw Exception(tr("Failed to list contents of remote directory %1.").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 	}
-	catch(Exception& ex) {
+    catch(Exception&) {
 		_futureInterface->reportException();
 		shutdown(false);
 	}
@@ -382,7 +382,7 @@ void SftpListDirectoryJob::onSftpJobFinished(QSsh::SftpJobId jobId, const QStrin
 					.arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded))
 					.arg(errorMessage));
     	}
-		catch(Exception& ex) {
+        catch(Exception&) {
 			_futureInterface->reportException();
 		}
 		shutdown(false);
@@ -404,4 +404,4 @@ void SftpListDirectoryJob::onFileInfoAvailable(QSsh::SftpJobId job, const QList<
 	}
 }
 
-};
+}}}}

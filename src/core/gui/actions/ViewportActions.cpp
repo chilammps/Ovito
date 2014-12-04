@@ -23,7 +23,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportConfiguration.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_VIEWPORT_MAXIMIZE command.
@@ -73,4 +73,4 @@ void ActionManager::on_ViewportZoomSelectionExtentsAll_triggered()
 	_dataset->viewportConfig()->zoomToSelectionExtents();
 }
 
-};
+}}	// End of namespace

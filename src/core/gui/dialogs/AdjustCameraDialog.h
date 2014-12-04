@@ -25,9 +25,7 @@
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito {
-
-class SpinnerWidget;		// Defined in SpinnerWidget.h
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
  * This dialog box lets the user adjust the camera settings of the
@@ -74,6 +72,6 @@ private:
 	FloatType _oldFOV;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ADJUST_CAMERA_DIALOG_H

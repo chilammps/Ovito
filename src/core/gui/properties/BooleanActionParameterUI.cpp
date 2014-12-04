@@ -23,7 +23,7 @@
 #include <core/gui/properties/BooleanActionParameterUI.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, BooleanActionParameterUI, PropertyParameterUI);
@@ -119,5 +119,4 @@ void BooleanActionParameterUI::updatePropertyValue()
 	}
 }
 
-};
-
+}}}	// End of namespace

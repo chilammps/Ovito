@@ -23,10 +23,9 @@
 #include <core/plugins/PluginManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/DataSetContainer.h>
-#include "UtilityApplet.h"
 #include "UtilityCommandPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the utility panel.
@@ -128,4 +127,4 @@ void UtilityCommandPage::closeUtility()
 	currentUtility = nullptr;
 }
 
-};
+}}}	// End of namespace

@@ -28,13 +28,16 @@
 #include <core/gui/properties/StringParameterUI.h>
 #include "SelectExpressionModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectExpressionModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, SelectExpressionModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, SelectExpressionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, Internal::SelectExpressionModifierEditor);
 DEFINE_PROPERTY_FIELD(SelectExpressionModifier, _expression, "Expression");
 SET_PROPERTY_FIELD_LABEL(SelectExpressionModifier, _expression, "Boolean expression");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, SelectExpressionModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * This modifies the input object.
@@ -45,7 +48,7 @@ PipelineStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInt
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
 
 	// Initialize the evaluator class.
-	ParticleExpressionEvaluator evaluator;
+	Util::Internal::ParticleExpressionEvaluator evaluator;
 	evaluator.initialize(QStringList(expression()), input(), currentFrame);
 
 	// Save list of available input variables, which will be displayed in the modifier's UI.
@@ -105,11 +108,13 @@ void SelectExpressionModifier::initializeModifier(PipelineObject* pipeline, Modi
 
 	// Build list of available input variables.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-	ParticleExpressionEvaluator evaluator;
+	Util::Internal::ParticleExpressionEvaluator evaluator;
 	evaluator.createInputVariables(input);
 	_variableNames = evaluator.inputVariableNames();
 	_variableTable = evaluator.inputVariableTable();
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -138,7 +143,7 @@ void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& 
     variablesLayout->setContentsMargins(4,4,4,4);
 	variableNamesList = new QLabel();
 	variableNamesList->setWordWrap(true);
-	variableNamesList->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+	variableNamesList->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
 	variablesLayout->addWidget(variableNamesList);
 
 	// Update input variables list if another modifier has been loaded into the editor.
@@ -168,5 +173,6 @@ void SelectExpressionModifierEditor::updateEditorFields()
 	expressionLineEdit->setWordList(mod->inputVariableNames());
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

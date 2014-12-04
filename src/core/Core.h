@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,71 +19,149 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \file
+ * \brief This file includes STL and third-party library headers required by OVITO. It is included by all .cpp files belonging to OVITO's codebase.
+ */
+
 #ifndef __OVITO_CORE_H
 #define __OVITO_CORE_H
 
 /******************************************************************************
-* The Base module is required by the Core module.
+* Standard Template Library (STL)
 ******************************************************************************/
-#include <base/Base.h>
-#include <base/linalg/LinAlg.h>
-#include <base/utilities/Color.h>
+#include <iostream>
+#include <cmath>
+#include <cstdint>
+#include <cstddef>
+#include <type_traits>
+#include <stack>
+#include <array>
+#include <vector>
+#include <map>
+#include <set>
+#include <utility>
+#include <random>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <clocale>
+#include <atomic>
+#include <tuple>
+#include <numeric>
 
-#ifdef OVITO_CORE_LIBRARY
+/******************************************************************************
+* Boost Library
+******************************************************************************/
+#include <boost/dynamic_bitset.hpp>
+
+/******************************************************************************
+* QT Library
+******************************************************************************/
+#include <QApplication>
+#include <QException>
+#include <QStringList>
+#include <QSettings>
+#include <QMenuBar>
+#include <QMenu>
+#include <QUrl>
+#include <QPointer>
+#include <QFileInfo>
+#include <QResource>
+#include <QDir>
+#include <QtWidgets>
+#include <QtDebug>
+#include <QtGui>
+#include <QtNetwork>
+#include <qopengl.h>
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 2, 0)
+#  error "OVITO requires at least Qt 5.2"
+#endif
+
+#ifdef Core_EXPORTS		// This is defined by CMake when building the Core library.
 #  define OVITO_CORE_EXPORT Q_DECL_EXPORT
 #else
 #  define OVITO_CORE_EXPORT Q_DECL_IMPORT
 #endif
 
+/*! \namespace Ovito
+    \brief The root namespace of OVITO.
+*/
+/*! \namespace Ovito::Util
+    \brief This namespace contains general utility classes and typedefs used throughout OVITO's codebase.
+*/
+/*! \namespace Ovito::Util::IO
+    \brief This namespace contains I/O-related utility classes.
+*/
+/*! \namespace Ovito::Util::Concurrency
+    \brief This namespace contains class related to multi-threading, parallelism, and asynchronous tasks.
+*/
+/*! \namespace Ovito::Util::Mesh
+    \brief This namespace contains classes for working with triangular and polyhedral meshes.
+*/
+/*! \namespace Ovito::Util::Math
+    \brief This namespace contains classes related to linear algebra and geometry (vectors, transformation matrices, etc).
+*/
+/*! \namespace Ovito::Rendering
+    \brief This namespace contains classes related to scene rendering.
+*/
+/*! \namespace Ovito::View
+    \brief This namespace contains classes related to 3d viewports.
+*/
+/*! \namespace Ovito::DataIO
+    \brief This namespace contains the framework for data import and export.
+*/
+/*! \namespace Ovito::Anim
+    \brief This namespace contains classes related to object and parameter animation.
+*/
+/*! \namespace Ovito::PluginSystem
+    \brief This namespace contains classes related to OVITO's plugin-based extension system.
+*/
+/*! \namespace Ovito::ObjectSystem
+    \brief This namespace contains basic classes of OVITO's object system.
+*/
+/*! \namespace Ovito::ObjectSystem::Units
+    \brief This namespace contains classes related to parameter units.
+*/
+/*! \namespace Ovito::ObjectSystem::Undo
+    \brief This namespace contains the implementation of OVITO's undo framework.
+*/
+/*! \namespace Ovito::ObjectSystem::Scene
+    \brief This namespace contains the scene graph and modification pipeline framework.
+*/
+/*! \namespace Ovito::Gui
+    \brief This namespace contains the graphical user interface classes.
+*/
+/*! \namespace Ovito::Gui::Widgets
+    \brief This namespace contains the widget classes that can be used in the graphical user interface.
+*/
+/*! \namespace Ovito::Gui::Params
+    \brief This namespace contains GUI classes for parameter editing.
+*/
+/*! \namespace Ovito::Gui::View
+    \brief This namespace contains classes for interaction with the viewports.
+*/
+/*! \namespace Ovito::Gui::Dialogs
+    \brief This namespace contains common dialog box classes.
+*/
+/*! \namespace Ovito::Plugins
+    \brief This namespace contains the plugins of OVITO.
+*/
+
 /******************************************************************************
-* Forward declarations of often-used classes.
+* Forward declaration of classes.
 ******************************************************************************/
-namespace Ovito {
-
-class AnimationSettings;		// defined in AnimationSettings.h
-class CloneHelper;				// defined in CloneHelper.h
-class DataSet;					// defined in DataSet.h
-class DataSetContainer;			// defined in DataSetContainer.h
-class DisplayObject;			// defined in DisplayObject.h
-class FrameBuffer;				// defined in FrameBuffer.h
-class FrameBufferWindow;		// defined in FrameBufferWindow.h
-class GroupNode;				// defined in GroupNode.h
-class LinkedFileObject;			// defined in LinkedFileObject.h
-class LinkedFileImporter;		// defined in LinkedFileImporter.h
-class LookAtController;			// defined in LookAtController.h
-class MainWindow;				// defined in MainWindow.h
-class Modifier;					// defined in Modifier.h
-class ModifierApplication;		// defined in ModifierApplication.h
-class ObjectNode;				// defined in ObjectNode.h
-class ParameterUnit;			// defined in ParameterUnit.h
-class PipelineFlowState;		// defined in PipelineFlowState.h
-class PipelineObject;			// defined in PipelineObject.h
-class Plugin;					// defined in Plugin.h
-class PropertiesEditor;			// defined in PropertiesEditor.h
-class PropertiesPanel;			// defined in PropertiesPanel.h
-class RefMaker;					// defined in RefMaker.h
-class RefTarget;				// defined in RefTarget.h
-class RenderSettings;			// defined in RenderSettings.h
-class SceneNode;				// defined in SceneNode.h
-class SceneObject;				// defined in SceneObject.h
-class SceneRenderer;			// defined in SceneRenderer.h
-class SceneRoot;				// defined in SceneRoot.h
-class SelectionSet;				// defined in SelectionSet.h
-class TriMesh;					// defined in TriMesh.h
-class Viewport;					// defined in Viewport.h
-class ViewportConfiguration;	// defined in ViewportConfiguration.h
-class ViewportInputManager;		// defined in ViewportInputManager.h
-class ViewportInputMode;		// defined in ViewportInputMode.h
-class ViewportModeAction;		// defined in ViewportModeAction.h
-class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
-class ViewportSettings;			// defined in ViewportSettings.h
-class VideoEncoder;				// defined in VideoEncoder.h
-
-};
+#include "ForwardDecl.h"
 
 /******************************************************************************
-* Include some basic headers.
+* Our own basic headers
 ******************************************************************************/
+#include <core/utilities/Debugging.h>
+#include <core/utilities/FloatType.h>
+#include <core/utilities/Exception.h>
+#include <core/utilities/linalg/LinAlg.h>
+#include <core/utilities/Color.h>
 #include <core/object/OvitoObject.h>
 
 #endif // __OVITO_CORE_H

@@ -23,7 +23,7 @@
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI);
@@ -79,8 +79,10 @@ void VariantComboBoxParameterUI::updateUI()
 		QVariant val;
         if(isQtPropertyUI()) {
             val = editObject()->property(propertyName());
-            if(!val.isValid())
-                throw Exception(tr("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())));
+            if(!val.isValid()) {
+                qWarning() << "The object class" << editObject()->metaObject()->className() << "does not define a property with the name" << propertyName();
+                return;
+            }
         }
         else if(isPropertyFieldUI()) {
             val = editObject()->getPropertyFieldValue(*propertyField());
@@ -131,5 +133,5 @@ void VariantComboBoxParameterUI::updatePropertyValue()
 	}
 }
 
-};
+}}}	// End of namespace
 

@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file SftpJob.h
- * \brief Contains the definition of the Ovito::SftpJob class.
- */
-
 #ifndef __OVITO_SFTP_JOB_H
 #define __OVITO_SFTP_JOB_H
 
@@ -35,7 +30,7 @@
 #include <sshconnectionmanager.h>
 #include <sftpchannel.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO { namespace Internal {
 
 /**
  * \brief Base class for background jobs that access remote files and directories via SFTP.
@@ -180,6 +175,6 @@ private:
     QSsh::SftpJobId _listingJob;
 };
 
-}; 	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_SFTP_JOB_H

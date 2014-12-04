@@ -43,7 +43,7 @@ IF(OVITO_BUILD_DOCUMENTATION)
 	FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html")
 	
 	# XSL transform documentation files.
-	ADD_CUSTOM_TARGET(documentation 
+	ADD_CUSTOM_TARGET(documentation
 					COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/images/"
 					COMMAND ${CMAKE_COMMAND} "-E" copy "manual.css" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/"
 					COMMAND ${XSLT_PROCESSOR} "${XSLT_PROCESSOR_OPTIONS}" --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
@@ -57,7 +57,7 @@ IF(OVITO_BUILD_DOCUMENTATION)
 	IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
 	
 		# Find Sphinx program.
-		FIND_PROGRAM(SPINX_PROCESSOR "sphinx-build" DOC "Path to the Sphinx build program used to generate the Python interface documentation.")
+		FIND_PROGRAM(SPINX_PROCESSOR NAMES "sphinx-build-script.py" "sphinx-build" HINTS "${SPHINX_PROCESSOR_PATH}" DOC "Path to the Sphinx build program used to generate the Python interface documentation.")
 		IF(NOT SPINX_PROCESSOR)
 			MESSAGE(FATAL_ERROR "The Sphinx program (sphinx-build) was not found. Please install it and/or specify its location manually.")
 		ENDIF()
@@ -93,7 +93,7 @@ IF(OVITO_BUILD_DOCUMENTATION)
 ENDIF(OVITO_BUILD_DOCUMENTATION)
 
 # Controls the generation of the API docs.
-OPTION(OVITO_BUILD_API_DOCS "Generate developer documentation from C++ source code comments (requires Doxygen)" "OFF")
+OPTION(OVITO_BUILD_API_DOCS "Creates the 'apidocs' make target, which generates developer documentation from C++ source code comments (requires Doxygen)" "OFF")
 
 IF(OVITO_BUILD_API_DOCS)
 
@@ -101,8 +101,9 @@ IF(OVITO_BUILD_API_DOCS)
 	FIND_PACKAGE(Doxygen REQUIRED)
 	
 	# Generate API documentation files.
-	ADD_CUSTOM_TARGET(apidocs ALL
-					COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+	ADD_CUSTOM_TARGET(apidocs
+					COMMAND "env" "OVITO_VERSION_STRING=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}.${OVITO_VERSION_REVISION}" 
+					"OVITO_INCLUDE_PATH=${CMAKE_SOURCE_DIR}/src/" ${DOXYGEN_EXECUTABLE} Doxyfile
 					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/develop/"
 					COMMENT "Generating C++ API documentation")
 	

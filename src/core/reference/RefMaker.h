@@ -19,20 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file RefMaker.h
- * \brief Contains the definition of the Ovito::RefMaker class.
- */
-
 #ifndef __OVITO_REFMAKER_H
 #define __OVITO_REFMAKER_H
 
 #include <core/Core.h>
 #include "ReferenceEvent.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
-class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class SingleReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 class VectorReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 
@@ -305,10 +299,6 @@ public:
 	/// \brief Changes the dataset this object belongs to.
 	void setDataset(DataSet* dataset) { _dataset = dataset; }
 
-public:
-
-	Q_PROPERTY(DataSet* dataset READ dataset);
-
 protected:
 
 	/// \brief This method is called after the reference counter of this object has reached zero
@@ -332,7 +322,7 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #include "NativePropertyFieldDescriptor.h"
 

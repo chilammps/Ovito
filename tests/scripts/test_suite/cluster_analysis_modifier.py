@@ -20,16 +20,16 @@ node.modifiers.append(SliceModifier(
 modifier = ClusterAnalysisModifier()
 node.modifiers.append(modifier)
 
-print "Parameter defaults:"
+print("Parameter defaults:")
 
-print "  cutoff:", modifier.cutoff
+print("  cutoff: {}".format(modifier.cutoff))
 modifier.cutoff = 2.8
 
 node.compute()
 
-print "Output:"
-print "Number of clusters:", modifier.count
-print node.output.cluster
-print node.output.cluster.array
+print("Output:")
+print("Number of clusters: {}".format(modifier.count))
+print(node.output.cluster)
+print(node.output.cluster.array)
 
 assert(modifier.count == 2)

@@ -23,10 +23,10 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, SceneObject);
-DEFINE_REFERENCE_FIELD(PipelineObject, _sourceObject, "InputObject", SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, DataObject);
+DEFINE_REFERENCE_FIELD(PipelineObject, _sourceObject, "InputObject", DataObject);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(PipelineObject, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_ALWAYS_CLONE);
 SET_PROPERTY_FIELD_LABEL(PipelineObject, _sourceObject, "Input");
 SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications");
@@ -34,7 +34,7 @@ SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications");
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-PipelineObject::PipelineObject(DataSet* dataset) : SceneObject(dataset), _cachedIndex(-1)
+PipelineObject::PipelineObject(DataSet* dataset) : DataObject(dataset), _cachedIndex(-1)
 {
 	INIT_PROPERTY_FIELD(PipelineObject::_sourceObject);
 	INIT_PROPERTY_FIELD(PipelineObject::_modApps);
@@ -237,7 +237,7 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			}
 		}
 	}
-	return SceneObject::referenceEvent(source, event);
+	return DataObject::referenceEvent(source, event);
 }
 
 /******************************************************************************
@@ -254,12 +254,12 @@ void PipelineObject::referenceInserted(const PropertyFieldDescriptor& field, Ref
 		// because it is being inserted into a pipeline.
 		ModifierApplication* app = static_object_cast<ModifierApplication>(newTarget);
 		if(app && app->modifier())
-			app->modifier()->inputDataChanged(app);
+			app->modifier()->upstreamPipelineChanged(app);
 
 		// Inform all subsequent modifiers that their input has changed.
 		modifierChanged(listIndex);
 	}
-	SceneObject::referenceInserted(field, newTarget, listIndex);
+	DataObject::referenceInserted(field, newTarget, listIndex);
 }
 
 /******************************************************************************
@@ -273,7 +273,7 @@ void PipelineObject::referenceRemoved(const PropertyFieldDescriptor& field, RefT
 		// modifiers following it need to be informed.
 		modifierChanged(listIndex - 1);
 	}
-	SceneObject::referenceRemoved(field, oldTarget, listIndex);
+	DataObject::referenceRemoved(field, oldTarget, listIndex);
 }
 
 /******************************************************************************
@@ -285,7 +285,7 @@ void PipelineObject::referenceReplaced(const PropertyFieldDescriptor& field, Ref
 		// Invalidate cache if input object has been replaced.
 		modifierChanged(-1);
 	}
-	SceneObject::referenceReplaced(field, oldTarget, newTarget);
+	DataObject::referenceReplaced(field, oldTarget, newTarget);
 }
 
 /******************************************************************************
@@ -313,8 +313,8 @@ void PipelineObject::modifierChanged(int changedIndex)
 	while(++changedIndex < modifierApplications().size()) {
 		ModifierApplication* app = modifierApplications()[changedIndex];
 		if(app && app->modifier())
-			app->modifier()->inputDataChanged(app);
+			app->modifier()->upstreamPipelineChanged(app);
 	}
 }
 
-};
+}}}	// End of namespace

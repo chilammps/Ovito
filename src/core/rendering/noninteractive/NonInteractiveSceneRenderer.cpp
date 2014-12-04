@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, NonInteractiveSceneRenderer, SceneRenderer);
 
@@ -35,4 +35,4 @@ void NonInteractiveSceneRenderer::beginFrame(TimePoint time, const ViewProjectio
 	_modelTM.setIdentity();
 }
 
-};
+}}	// End of namespace

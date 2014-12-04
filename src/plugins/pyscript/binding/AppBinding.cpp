@@ -25,10 +25,10 @@
 #include <core/dataset/DataSetContainer.h>
 #include <core/scene/SceneNode.h>
 #include <core/scene/ObjectNode.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/pipeline/ModifierApplication.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/SelectionSet.h>
 #include <core/animation/AnimationSettings.h>

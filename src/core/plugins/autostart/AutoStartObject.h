@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file AutoStartObject.h
- * \brief Contains the definition of the Ovito::AutoStartObject class.
- */
-
 #ifndef __OVITO_AUTO_START_OBJECT_H
 #define __OVITO_AUTO_START_OBJECT_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /**
  * \brief Base class that allows plugins to execute code on application startup.
@@ -57,6 +52,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_AUTO_START_OBJECT_H

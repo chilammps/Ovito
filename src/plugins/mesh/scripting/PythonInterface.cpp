@@ -33,7 +33,7 @@ BOOST_PYTHON_MODULE(Mesh)
 {
 	docstring_options docoptions(true, false);
 
-	ovito_class<VTKFileImporter, LinkedFileImporter>()
+	ovito_class<VTKFileImporter, FileSourceImporter>()
 	;
 }
 

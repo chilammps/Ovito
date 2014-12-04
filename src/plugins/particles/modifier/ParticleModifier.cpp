@@ -21,14 +21,14 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/ModifierApplication.h>
-#include <plugins/particles/data/ParticleDisplay.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
-#include <plugins/particles/data/BondsObject.h>
+#include <plugins/particles/objects/ParticleDisplay.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
+#include <plugins/particles/objects/BondsObject.h>
 #include "ParticleModifier.h"
 
 #include <QtConcurrent>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor);
@@ -117,7 +117,7 @@ ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty
 ******************************************************************************/
 ParticlePropertyObject* ParticleModifier::expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount) const
 {
-	for(SceneObject* o : _input.objects()) {
+	for(DataObject* o : _input.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->name() == propertyName) {
 			if(property->dataType() != dataType)
@@ -148,9 +148,9 @@ ParticlePropertyObject* ParticleModifier::expectStandardProperty(ParticlePropert
 /******************************************************************************
 * Returns the input simulation cell.
 ******************************************************************************/
-SimulationCell* ParticleModifier::expectSimulationCell() const
+SimulationCellObject* ParticleModifier::expectSimulationCell() const
 {
-	SimulationCell* cell = _input.findObject<SimulationCell>();
+	SimulationCellObject* cell = _input.findObject<SimulationCellObject>();
 	if(!cell)
 		throw Exception(tr("The modifier cannot be evaluated because the input does not contain a simulation cell."));
 	return cell;
@@ -234,7 +234,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
-	for(SceneObject* o : input().objects()) {
+	for(DataObject* o : input().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			inputProperty = property;
@@ -250,7 +250,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 
 	// Check if property already exists in the output.
 	OORef<ParticlePropertyObject> outputProperty;
-	for(SceneObject* o : output().objects()) {
+	for(DataObject* o : output().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			outputProperty = property;
@@ -288,7 +288,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(ParticleProperty*
 
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
-	for(SceneObject* o : input().objects()) {
+	for(DataObject* o : input().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == storage->name()) {
 			inputProperty = property;
@@ -302,7 +302,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(ParticleProperty*
 
 	// Check if property already exists in the output.
 	OORef<ParticlePropertyObject> outputProperty;
-	for(SceneObject* o : output().objects()) {
+	for(DataObject* o : output().objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == storage->name()) {
 			outputProperty = property;
@@ -342,12 +342,12 @@ void ParticleModifier::removeOutputProperty(ParticlePropertyObject* property)
 /******************************************************************************
 * Returns the modifier's output simulation cell.
 ******************************************************************************/
-SimulationCell* ParticleModifier::outputSimulationCell()
+SimulationCellObject* ParticleModifier::outputSimulationCell()
 {
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// Check if cell already exists in the output.
-	OORef<SimulationCell> outputCell = output().findObject<SimulationCell>();
+	OORef<SimulationCellObject> outputCell = output().findObject<SimulationCellObject>();
 	if(outputCell) {
 		// Is the existing output property still a shallow copy of the input?
 		if(outputCell == inputCell) {
@@ -358,7 +358,7 @@ SimulationCell* ParticleModifier::outputSimulationCell()
 	}
 	else {
 		// Create a new particle property in the output.
-		outputCell = new SimulationCell(dataset());
+		outputCell = new SimulationCellObject(dataset());
 		_output.addObject(outputCell);
 	}
 
@@ -385,7 +385,7 @@ size_t ParticleModifier::deleteParticles(const boost::dynamic_bitset<>& mask, si
 	QVector<QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>> oldToNewMap;
 
 	// Create output particle properties.
-	for(SceneObject* outobj : _output.objects()) {
+	for(DataObject* outobj : _output.objects()) {
 		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;
@@ -474,7 +474,7 @@ std::vector<FloatType> ParticleModifier::inputParticleRadii(TimePoint time, Time
 		}
 	}
 
-	std::fill(radii.begin(), radii.end(), 1.0);
+	std::fill(radii.begin(), radii.end(), FloatType(1));
 	return radii;
 }
 
@@ -537,5 +537,5 @@ StatusWidget* ParticleModifierEditor::statusLabel()
 	return _statusLabel;
 }
 
-};	// End of namespace
+}}}}	// End of namespace
 

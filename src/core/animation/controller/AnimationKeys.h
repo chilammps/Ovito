@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "Controller.h"
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 /**
  * \brief Base class for animation keys.
@@ -42,10 +42,6 @@ public:
 
 	/// Returns the animation time at which the key is set.
 	TimePoint time() const { return _time; }
-
-public:
-
-	Q_PROPERTY(int time READ time);
 
 private:
 
@@ -110,10 +106,6 @@ public:
 		INIT_PROPERTY_FIELD(FloatAnimationKey::_value);
 	}
 
-public:
-
-	Q_PROPERTY(FloatType value READ value);
-
 private:
 
 	Q_OBJECT
@@ -134,10 +126,6 @@ public:
 		INIT_PROPERTY_FIELD(IntegerAnimationKey::_value);
 	}
 
-public:
-
-	Q_PROPERTY(int value READ value);
-
 private:
 
 	Q_OBJECT
@@ -149,7 +137,7 @@ private:
 /**
  * \brief Animation key class for Vector3 controllers.
  */
-class OVITO_CORE_EXPORT Vector3AnimationKey : public TypedAnimationKey<Vector3, Vector3::Zero>
+class OVITO_CORE_EXPORT Vector3AnimationKey : public TypedAnimationKey<Ovito::Util::Math::Vector3, Ovito::Util::Math::Vector3::Zero>
 {
 public:
 
@@ -157,10 +145,6 @@ public:
 	Q_INVOKABLE Vector3AnimationKey(DataSet* dataset, TimePoint time = 0, const Vector3& value = Vector3::Zero()) : TypedAnimationKey<Vector3, Vector3::Zero>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(Vector3AnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Vector3 value READ value);
 
 private:
 
@@ -173,7 +157,7 @@ private:
 /**
  * \brief Animation key class for position controllers.
  */
-class OVITO_CORE_EXPORT PositionAnimationKey : public TypedAnimationKey<Vector3, Vector3::Zero>
+class OVITO_CORE_EXPORT PositionAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Vector3, Ovito::Util::Math::Vector3::Zero>
 {
 public:
 
@@ -181,10 +165,6 @@ public:
 	Q_INVOKABLE PositionAnimationKey(DataSet* dataset, TimePoint time = 0, const Vector3& value = Vector3::Zero()) : TypedAnimationKey<Vector3, Vector3::Zero>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(PositionAnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Vector3 value READ value);
 
 private:
 
@@ -197,7 +177,7 @@ private:
 /**
  * \brief Animation key class for rotation controllers.
  */
-class OVITO_CORE_EXPORT RotationAnimationKey : public TypedAnimationKey<Rotation, Rotation::Identity>
+class OVITO_CORE_EXPORT RotationAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Rotation, Ovito::Util::Math::Rotation::Identity>
 {
 public:
 
@@ -205,10 +185,6 @@ public:
 	Q_INVOKABLE RotationAnimationKey(DataSet* dataset, TimePoint time = 0, const Rotation& value = Rotation::Identity()) : TypedAnimationKey<Rotation, Rotation::Identity>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(RotationAnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Rotation value READ value);
 
 private:
 
@@ -221,7 +197,7 @@ private:
 /**
  * \brief Animation key class for scaling controllers.
  */
-class OVITO_CORE_EXPORT ScalingAnimationKey : public TypedAnimationKey<Scaling, Scaling::Identity>
+class OVITO_CORE_EXPORT ScalingAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Scaling, Ovito::Util::Math::Scaling::Identity>
 {
 public:
 
@@ -229,10 +205,6 @@ public:
 	Q_INVOKABLE ScalingAnimationKey(DataSet* dataset, TimePoint time = 0, const Scaling& value = Scaling::Identity()) : TypedAnimationKey<Scaling, Scaling::Identity>(dataset, time, value) {
 		INIT_PROPERTY_FIELD(ScalingAnimationKey::_value);
 	}
-
-public:
-
-	Q_PROPERTY(Ovito::Scaling value READ value);
 
 private:
 
@@ -421,6 +393,6 @@ struct SplineValueInterpolator<Scaling> {
 	}
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_KEYED_CONTROLLERS_H

@@ -25,7 +25,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Modifier, RefTarget);
 DEFINE_PROPERTY_FIELD(Modifier, _isEnabled, "IsEnabled");
@@ -107,4 +107,4 @@ TimeInterval Modifier::modifierValidity(TimePoint time)
 	return TimeInterval::infinite();
 }
 
-};
+}}}	// End of namespace

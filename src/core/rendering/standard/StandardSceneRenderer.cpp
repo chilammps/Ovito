@@ -29,7 +29,7 @@
 #include "StandardSceneRenderer.h"
 #include "StandardSceneRendererEditor.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, StandardSceneRenderer, ViewportSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(StandardSceneRenderer, StandardSceneRendererEditor);
@@ -76,7 +76,7 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	// Make the context current.
 	if(!glcontext->makeCurrent(_offscreenSurface.data()))
 		throw Exception(tr("Failed to make OpenGL context current."));
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 
 	// Create OpenGL framebuffer.
 	_framebufferSize = QSize(settings->outputImageWidth() * sampling, settings->outputImageHeight() * sampling);
@@ -85,12 +85,12 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	_framebufferObject.reset(new QOpenGLFramebufferObject(_framebufferSize.width(), _framebufferSize.height(), framebufferFormat));
 	if(!_framebufferObject->isValid())
 		throw Exception(tr("Failed to create OpenGL framebuffer object for offscreen rendering."));
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 
 	// Bind OpenGL buffer.
 	if(!_framebufferObject->bind())
 		throw Exception(tr("Failed to bind OpenGL framebuffer object for offscreen rendering."));
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 
 	return true;
 }
@@ -108,7 +108,7 @@ void StandardSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 		glcontext = _offscreenContext.data();
 	if(!glcontext->makeCurrent(_offscreenSurface.data()))
 		throw Exception(tr("Failed to make OpenGL context current."));
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 
 	ViewportSceneRenderer::beginFrame(time, params, vp);
 
@@ -160,4 +160,4 @@ void StandardSceneRenderer::endRender()
 	ViewportSceneRenderer::endRender();
 }
 
-};
+}}	// End of namespace

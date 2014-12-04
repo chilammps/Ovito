@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PluginManager.h
- * \brief Contains the definition of the Ovito::PluginManager class.
- */
-
 #ifndef __OVITO_PLUGIN_MANAGER_H
 #define __OVITO_PLUGIN_MANAGER_H
 
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem {
 
 /**
  * \brief Loads and manages the installed plugins.
@@ -96,9 +91,6 @@ private:
 	/// Searches the plugin directories for installed plugins and loads their XML manifests.
 	void registerPlugins();
 
-	/// Loads the given plugin manifest file and creates a Plugin object for it.
-	Plugin* loadPluginManifest(const QString& file);
-
 	/////////////////////////// Maintenance ////////////////////////////////
 
 	/// Private constructor.
@@ -117,10 +109,10 @@ private:
 	/// The singleton instance of this class.
 	static PluginManager* _instance;
 
-	friend class Application;
-	friend class Plugin;
+	friend class Ovito::Gui::Application;
+	friend class Ovito::PluginSystem::Plugin;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_PLUGIN_MANAGER_H

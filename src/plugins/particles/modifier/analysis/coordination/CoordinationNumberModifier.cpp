@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,27 +20,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/SceneObject.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/scene/objects/DataObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CoordinationNumberModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, Internal::CoordinationNumberModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(CoordinationNumberModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 CoordinationNumberModifier::CoordinationNumberModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_cutoff(3.2),
-	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty, 0, true))
+	_cutoff(3.2)
 {
 	INIT_PROPERTY_FIELD(CoordinationNumberModifier::_cutoff);
 }
@@ -48,36 +50,36 @@ CoordinationNumberModifier::CoordinationNumberModifier(DataSet* dataset) : Async
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> CoordinationNumberModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CoordinationNumberModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 	// Get simulation cell.
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// The number of sampling intervals for the radial distribution function.
 	int rdfSampleCount = 500;
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<CoordinationAnalysisEngine>(posProperty->storage(), inputCell->data(), cutoff(), rdfSampleCount);
+	return std::make_shared<CoordinationAnalysisEngine>(validityInterval, posProperty->storage(), inputCell->data(), cutoff(), rdfSampleCount);
 }
 
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void CoordinationNumberModifier::CoordinationAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 {
-	size_t particleCount = positions()->size();
-	futureInterface.setProgressText(tr("Computing coordination numbers"));
+	setProgressText(tr("Computing coordination numbers"));
 
 	// Prepare the neighbor list.
 	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
-	futureInterface.setProgressRange(particleCount / 1000);
-	futureInterface.setProgressValue(0);
+	size_t particleCount = positions()->size();
+	setProgressValue(0);
+	setProgressRange(particleCount / 1000);
 
 	// Perform analysis on each particle in parallel.
 	std::vector<std::thread> workers;
@@ -89,7 +91,7 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::compute(FutureInter
 	for(int t = 0; t < num_threads; t++) {
 		if(t == num_threads - 1)
 			endIndex += particleCount % num_threads;
-		workers.push_back(std::thread([&futureInterface, &neighborListBuilder, startIndex, endIndex, &mutex, this]() {
+		workers.push_back(std::thread([&neighborListBuilder, startIndex, endIndex, &mutex, this]() {
 			int* coordOutput = _coordinationNumbers->dataInt();
 			FloatType rdfBinSize = (_cutoff + FLOATTYPE_EPSILON) / _rdfHistogram.size();
 			std::vector<size_t> threadLocalRDF(_rdfHistogram.size(), 0);
@@ -108,8 +110,8 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::compute(FutureInter
 				// Update progress indicator.
 				if((i % 1000) == 0) {
 					if(i != 0)
-						futureInterface.incrementProgressValue();
-					if(futureInterface.isCanceled())
+						incrementProgressValue();
+					if(isCanceled())
 						return;
 				}
 			}
@@ -127,9 +129,9 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::compute(FutureInter
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void CoordinationNumberModifier::retrieveModifierResults(Engine* engine)
+void CoordinationNumberModifier::transferComputationResults(ComputeEngine* engine)
 {
 	CoordinationAnalysisEngine* eng = static_cast<CoordinationAnalysisEngine*>(engine);
 	_coordinationNumbers = eng->coordinationNumbers();
@@ -147,11 +149,15 @@ void CoordinationNumberModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CoordinationNumberModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() != coordinationNumbers().size())
+	if(!_coordinationNumbers)
+		throw Exception(tr("No computation results available."));
+
+	if(inputParticleCount() != _coordinationNumbers->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(_coordinationNumbers.data());
@@ -163,14 +169,14 @@ PipelineStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, 
 ******************************************************************************/
 void CoordinationNumberModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute modifier results when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(CoordinationNumberModifier::_cutoff))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute modifier results when the parameters have been changed.
+	if(field == PROPERTY_FIELD(CoordinationNumberModifier::_cutoff))
+		invalidateCachedResults();
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -292,6 +298,6 @@ void CoordinationNumberModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-
-};	// End of namespace
+}}}}}	// End of namespace

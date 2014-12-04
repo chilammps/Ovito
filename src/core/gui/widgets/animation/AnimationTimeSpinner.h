@@ -19,21 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file AnimationTimeSpinner.h 
- * \brief Contains the definition of the Ovito::AnimationTimeSpinner class.
- */
-
 #ifndef __OVITO_ANIMATION_TIME_SPINNER_H
 #define __OVITO_ANIMATION_TIME_SPINNER_H
 
 #include <core/Core.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief A spinner control for the current animation time.
+ * A spinner control for the current animation time.
  */
 class OVITO_CORE_EXPORT AnimationTimeSpinner : public SpinnerWidget
 {
@@ -70,6 +65,6 @@ private:
 	QMetaObject::Connection _timeChangedConnection;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ANIMATION_TIME_SPINNER_H

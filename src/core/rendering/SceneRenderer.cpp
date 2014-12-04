@@ -28,7 +28,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRenderer, RefTarget);
 IMPLEMENT_OVITO_OBJECT(Core, ObjectPickInfo, OvitoObject);
@@ -163,5 +163,4 @@ void SceneRenderer::boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode
 		boundingBoxModifiers(input, objNode, boundingBox);
 }
 
-
-};
+}} 	// End of namespace

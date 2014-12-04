@@ -22,12 +22,12 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include "DelaunayTessellation.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /******************************************************************************
 * Generates the tessellation.
 ******************************************************************************/
-void DelaunayTessellation::generateTessellation(const SimulationCellData& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize)
+void DelaunayTessellation::generateTessellation(const SimulationCell& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize)
 {
 	std::vector<Point3WithIndex> cgalPoints;
 
@@ -135,5 +135,4 @@ bool DelaunayTessellation::isGhostCell(CellHandle cell) const
 	return isGhost;
 }
 
-
-}; // End of namespace
+}}}	// End of namespace

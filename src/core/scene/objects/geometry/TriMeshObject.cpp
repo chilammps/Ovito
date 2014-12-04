@@ -20,16 +20,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/geometry/TriMeshObject.h>
+#include "TriMeshObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, DataObject);
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-TriMeshObject::TriMeshObject(DataSet* dataset) : SceneObject(dataset)
+TriMeshObject::TriMeshObject(DataSet* dataset) : DataObject(dataset)
 {
 }
 
@@ -38,7 +38,7 @@ TriMeshObject::TriMeshObject(DataSet* dataset) : SceneObject(dataset)
 ******************************************************************************/
 void TriMeshObject::saveToStream(ObjectSaveStream& stream)
 {
-	SceneObject::saveToStream(stream);
+	DataObject::saveToStream(stream);
 	stream.beginChunk(0x01);
 	_mesh.saveToStream(stream);
 	stream.endChunk();
@@ -49,7 +49,7 @@ void TriMeshObject::saveToStream(ObjectSaveStream& stream)
 ******************************************************************************/
 void TriMeshObject::loadFromStream(ObjectLoadStream& stream)
 {
-	SceneObject::loadFromStream(stream);
+	DataObject::loadFromStream(stream);
 	stream.expectChunk(0x01);
 	_mesh.loadFromStream(stream);
 	stream.closeChunk();
@@ -61,7 +61,7 @@ void TriMeshObject::loadFromStream(ObjectLoadStream& stream)
 OORef<RefTarget> TriMeshObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Let the base class create an instance of this class.
-	OORef<TriMeshObject> clone = static_object_cast<TriMeshObject>(SceneObject::clone(deepCopy, cloneHelper));
+	OORef<TriMeshObject> clone = static_object_cast<TriMeshObject>(DataObject::clone(deepCopy, cloneHelper));
 
 	// Shallow copy the internal mesh.
 	clone->_mesh = this->_mesh;
@@ -69,4 +69,4 @@ OORef<RefTarget> TriMeshObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-};
+}}}}	// End of namespace

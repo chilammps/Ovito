@@ -24,7 +24,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/viewport/input/ViewportInputManager.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace View {
 
 /******************************************************************************
 * Initializes the action object.
@@ -80,4 +80,4 @@ QPushButton* ViewportModeAction::createPushButton(QWidget* parent)
 	return button;
 }
 
-};
+}}}	// End of namespace

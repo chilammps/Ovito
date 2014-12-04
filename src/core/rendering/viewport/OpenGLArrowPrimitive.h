@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OpenGLArrowPrimitive.h
- * \brief Contains the definition of the Ovito::OpenGLArrowPrimitive class.
- */
-
 #ifndef __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H
 #define __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H
 
@@ -31,7 +26,7 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include "OpenGLBuffer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief Buffer object that stores a set of arrows to be rendered in the viewports.
@@ -155,6 +150,6 @@ private:
 	std::vector<GLsizei> _fanPrimitiveVertexCounts;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H

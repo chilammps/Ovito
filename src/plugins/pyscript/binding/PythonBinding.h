@@ -37,14 +37,20 @@ using namespace Ovito;
 /// Use the OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE macro to create an instance of this structure on application startup.
 struct OVITO_PYSCRIPT_EXPORT PythonPluginRegistration
 {
+#if PY_MAJOR_VERSION >= 3
+	typedef PyObject* (*InitFuncPointer)();
+#else
+	typedef void (*InitFuncPointer)();
+#endif
+
 	/// The identifier of the plugin to register.
 	const char* _moduleName;
 	/// The initXXX() function to be registered with the Python interpreter.
-	void (*_initFunc)();
+	InitFuncPointer _initFunc;
 	/// Next structure in linked list.
 	PythonPluginRegistration* _next;
 
-	PythonPluginRegistration(const char* moduleName, void (*initFunc)()) : _moduleName(moduleName), _initFunc(initFunc) {
+	PythonPluginRegistration(const char* moduleName, InitFuncPointer initFunc) : _moduleName(moduleName), _initFunc(initFunc) {
 		_next = linkedlist;
 		linkedlist = this;
 	}
@@ -54,8 +60,13 @@ struct OVITO_PYSCRIPT_EXPORT PythonPluginRegistration
 };
 
 /// This macro must be used exactly once by every plugin that contains a Python scripting interface.
-#define OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(pluginName) \
-	static PyScript::PythonPluginRegistration __pyscript_unused_variable##pluginName(#pluginName, init##pluginName);
+#if PY_MAJOR_VERSION >= 3
+	#define OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(pluginName) \
+		static PyScript::PythonPluginRegistration __pyscript_unused_variable##pluginName(#pluginName, PyInit_##pluginName);
+#else
+	#define OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(pluginName) \
+		static PyScript::PythonPluginRegistration __pyscript_unused_variable##pluginName(#pluginName, init##pluginName);
+#endif
 
 // A model of the Boost.Python ResultConverterGenerator concept which wraps
 // a raw pointer to an OvitoObject derived class in a OORef<> smart pointer.
@@ -202,8 +213,8 @@ public:
 		if(i.check()) {
 			long index = i();
 			if(index < 0)
-				index += container.size();
-			if(index >= container.size() || index < 0) {
+				index += (long)container.size();
+            if(index >= (long)container.size() || index < 0) {
 				PyErr_SetString(PyExc_IndexError, "Index out of range");
 				throw_error_already_set();
 			}

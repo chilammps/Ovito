@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Viewport.h
- * \brief Contains the definition of the Ovito::Viewport class.
- */
-
 #ifndef __OVITO_VIEWPORT_H
 #define __OVITO_VIEWPORT_H
 
@@ -38,10 +33,7 @@
 #include "ViewportSettings.h"
 #include "ViewportWindow.h"
 
-namespace Ovito {
-
-class PickingSceneRenderer;		// defined in PickingSceneRenderer.h
-class ObjectPickInfo;			// defined in SceneRenderer.h
+namespace Ovito { namespace View {
 
 /******************************************************************************
 * This data structure describes a projection parameters used to render
@@ -61,8 +53,8 @@ struct ViewProjectionParameters
 	/// The distance of the back clipping plane in world units.
 	FloatType zfar;
 
-	/// When using an orthogonal projection this is the vertical field of view in world units.
-	/// When using a perspective projection this is the vertical field of view angle in radians.
+	/// For orthogonal projections this is the vertical field of view in world units.
+	/// For perspective projections this is the vertical field of view angle in radians.
 	FloatType fieldOfView;
 
 	/// The world to view space transformation matrix.
@@ -377,18 +369,6 @@ public:
 		_overlays.remove(index);
 	}
 
-public:
-
-	Q_PROPERTY(QString title READ viewportTitle);
-	Q_PROPERTY(ObjectNode* viewNode READ viewNode WRITE setViewNode);
-	Q_PROPERTY(Point3 cameraPosition READ cameraPosition WRITE setCameraPosition);
-	Q_PROPERTY(Vector3 cameraDirection READ cameraDirection WRITE setCameraDirection);
-	Q_PROPERTY(AffineTransformation cameraTransformation READ cameraTransformation WRITE setCameraTransformation);
-	Q_PROPERTY(FloatType fov READ fieldOfView WRITE setFieldOfView);
-	Q_PROPERTY(ViewType type READ viewType WRITE setViewType);
-	Q_PROPERTY(bool renderPreviewMode READ renderPreviewMode WRITE setRenderPreviewMode);
-	Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible);
-
 protected:
 
 	/// Is called when the value of a property field of this object has changed.
@@ -525,14 +505,14 @@ private:
 	DECLARE_PROPERTY_FIELD(_showGrid);
 	DECLARE_VECTOR_REFERENCE_FIELD(_overlays);
 
-	friend class ViewportWindow;
-	friend class ViewportMenu;
+	friend class Ovito::Gui::Internal::ViewportWindow;
+	friend class Ovito::Gui::Internal::ViewportMenu;
 };
 
-};
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Viewport::ViewType);
-Q_DECLARE_TYPEINFO(Ovito::Viewport::ViewType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::View::Viewport::ViewType);
+Q_DECLARE_TYPEINFO(Ovito::View::Viewport::ViewType, Q_PRIMITIVE_TYPE);
 
 #include <core/rendering/SceneRenderer.h>
 

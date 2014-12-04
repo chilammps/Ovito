@@ -19,23 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file SceneNodeSelectionBox.h
- * \brief Contains the definition of the Ovito::SceneNodeSelectionBox class.
- */
-
 #ifndef __OVITO_SCENE_NODE_SELECTION_BOX_H
 #define __OVITO_SCENE_NODE_SELECTION_BOX_H
 
 #include <core/Core.h>
 
-namespace Ovito {
-
-class SelectionSet;		// defined in SelectionSet.h
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief A combo-box widget that displays the current scene node selection
- *        and allows to select scene nodes.
+ * A combo-box widget that displays the current scene node selection
+ * and allows to select scene nodes.
  */
 class SceneNodeSelectionBox : public QComboBox
 {
@@ -63,6 +56,6 @@ private:
 	DataSetContainer& _datasetContainer;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ANIMATION_FRAMES_TOOL_BUTTON_H

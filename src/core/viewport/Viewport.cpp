@@ -34,15 +34,15 @@
 #include "ViewportMenu.h"
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
-#define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
+#define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0f
 
 /// The default field of view angle in radians used for perspective view types when the scene is empty.
-#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(35.0*FLOATTYPE_PI/180.0)
+#define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(35.0f*FLOATTYPE_PI/180.0f)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
-#define VIEWPORT_RENDER_FRAME_SIZE				0.93
+#define VIEWPORT_RENDER_FRAME_SIZE				0.93f
 
-namespace Ovito {
+namespace Ovito { namespace View {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM);
@@ -342,8 +342,8 @@ void Viewport::zoomToBox(const Box3& box)
 		}
 		ViewProjectionParameters projParams = projectionParameters(dataset()->animationSettings()->time(), aspectRatio, box);
 
-		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
-		FloatType maxX = -FLOATTYPE_MAX, maxY = -FLOATTYPE_MAX;
+		FloatType minX = FLOATTYPE_MAX, minY = FLOATTYPE_MAX;
+		FloatType maxX = FLOATTYPE_MIN, maxY = FLOATTYPE_MIN;
 		for(int i = 0; i < 8; i++) {
 			Point3 trans = projParams.viewMatrix * box[i];
 			if(trans.x() < minX) minX = trans.x();
@@ -754,7 +754,7 @@ void Viewport::renderOrientationIndicator()
 	renderer->setProjParams(projParams);
 	renderer->setWorldTransform(AffineTransformation::Identity());
 
-	static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2, 0.2, 1) };
+    static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2f, 0.2f, 1) };
 	static const QString labels[3] = { QStringLiteral("x"), QStringLiteral("y"), QStringLiteral("z") };
 
 	// Create line buffer.
@@ -918,10 +918,8 @@ FloatType Viewport::nonScalingSize(const Point3& worldPosition)
 ******************************************************************************/
 ViewportPickResult Viewport::pick(const QPointF& pos)
 {
-	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
-	
-	// Cannot perform picking while viewport is not visible.
-	if(!viewportWindow() || !viewportWindow()->isExposed()) {
+	// Cannot perform picking while viewport is not visible or currently rendering.
+	if(!viewportWindow() || !viewportWindow()->isExposed() || isRendering()) {
 		ViewportPickResult result;
 		result.valid = false;
 		return result;
@@ -1075,4 +1073,4 @@ bool Viewport::computeConstructionPlaneIntersection(const Point2& viewportPositi
 	return true;
 }
 
-};
+}}	// End of namespace

@@ -20,16 +20,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include "ModificationListItem.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(ModificationListItem, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModificationListItem, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF)
+IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefMaker);
+DEFINE_FLAGS_REFERENCE_FIELD(ModificationListItem, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModificationListItem, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF);
 
 /******************************************************************************
 * Constructor.
@@ -83,9 +83,8 @@ ModificationListItem::Status ModificationListItem::status() const
 	if(modifier)
 		status = modifier->status();
 	else {
-		SceneObject* sceneObject = dynamic_object_cast<SceneObject>(object());
-		if(sceneObject)
-			status = sceneObject->status();
+		if(DataObject* dataObj = dynamic_object_cast<DataObject>(object()))
+			status = dataObj->status();
 	}
 	if(status.type() == PipelineStatus::Warning)
 		return Warning;
@@ -97,4 +96,4 @@ ModificationListItem::Status ModificationListItem::status() const
 	return None;
 }
 
-};
+}}}	// End of namespace

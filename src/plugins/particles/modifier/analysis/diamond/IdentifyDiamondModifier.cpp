@@ -26,11 +26,14 @@
 #include "IdentifyDiamondModifier.h"
 #include <plugins/particles/modifier/analysis/cna/CommonNeighborAnalysisModifier.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IdentifyDiamondModifier, StructureIdentificationModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, IdentifyDiamondModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(IdentifyDiamondModifier, IdentifyDiamondModifierEditor);
+SET_OVITO_OBJECT_EDITOR(IdentifyDiamondModifier, Internal::IdentifyDiamondModifierEditor);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, IdentifyDiamondModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -50,47 +53,48 @@ IdentifyDiamondModifier::IdentifyDiamondModifier(DataSet* dataset) : StructureId
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> IdentifyDiamondModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> IdentifyDiamondModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
 		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
 
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	SimulationCell* simCell = expectSimulationCell();
+	SimulationCellObject* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<Engine>(posProperty->storage(), simCell->data());
+	return std::make_shared<DiamondIdentificationEngine>(validityInterval, posProperty->storage(), simCell->data());
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterface)
+void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 {
-	futureInterface.setProgressText(tr("Finding nearest neighbors"));
+	setProgressText(tr("Finding nearest neighbors"));
 
 	// Prepare the neighbor list builder.
 	TreeNeighborListBuilder neighborListBuilder(4);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
-	// List of four neighbors for each atom.
+	// This data structure stores information about a single neighbor.
 	struct NeighborInfo {
 		Vector3 vec;
 		int index;
 	};
+	// This array will be filled with the four nearest neighbors of each atom.
 	std::vector<std::array<NeighborInfo,4>> neighLists(positions()->size());
 
 	// Determine four nearest neighbors of each atom and store vectors in the working array.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, &neighLists](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, &neighLists](size_t index) {
 		TreeNeighborListBuilder::Locator<4> loc(neighborListBuilder);
 		loc.findNeighbors(neighborListBuilder.particlePos(index));
-		for(size_t i = 0; i < loc.results().size(); i++) {
+		for(int i = 0; i < loc.results().size(); i++) {
 			neighLists[index][i].vec = loc.results()[i].delta;
 			neighLists[index][i].index = loc.results()[i].index;
 		}
-		for(size_t i = loc.results().size(); i < 4; i++) {
+		for(int i = loc.results().size(); i < 4; i++) {
 			neighLists[index][i].vec.setZero();
 			neighLists[index][i].index = -1;
 		}
@@ -100,8 +104,8 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	ParticleProperty* output = structures();
 
 	// Perform structure identification.
-	futureInterface.setProgressText(tr("Identifying diamond structures"));
-	parallelFor(positions()->size(), futureInterface, [&neighLists, output, this](size_t index) {
+	setProgressText(tr("Identifying diamond structures"));
+	parallelFor(positions()->size(), *this, [&neighLists, output, this](size_t index) {
 		// Mark atom as 'other' by default.
 		output->setInt(index, OTHER);
 
@@ -128,7 +132,7 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 		for(const Vector3& v : secondNeighbors)
 			sum += v.length();
 		sum /= 12;
-		constexpr FloatType factor = 1.2071068;   // = sqrt(2.0) * ((1.0 + sqrt(0.5)) / 2)
+		const FloatType factor = FloatType(1.2071068);   // = sqrt(2.0) * ((1.0 + sqrt(0.5)) / 2)
 		FloatType localCutoff = sum * factor;
 		FloatType localCutoffSquared = localCutoff * localCutoff;
 
@@ -201,6 +205,8 @@ void IdentifyDiamondModifier::Engine::compute(FutureInterfaceBase& futureInterfa
 	}
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -224,4 +230,6 @@ void IdentifyDiamondModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

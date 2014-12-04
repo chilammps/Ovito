@@ -19,26 +19,24 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_MODIFY_COMMAND_PAGE_H
+#define __OVITO_MODIFY_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 class ModificationListModel;	// defined in ModificationListModel.h
 class ModificationListItem;		// defined in ModificationListModel.h
 class ModifierListBox;			// defined in ModifierListBox.h
-class SceneObject;				// defined in SceneObject.h
-class Modifier;					// defined in Modifier.h
-class DataSetContainer;			// defined in DataSetContainer.h
-class MainWindow;				// defined in MainWindow.h
-class ActionManager;			// defined in ActionManager.h
 
-/******************************************************************************
-* The command panel tab lets the user modify the selected object.
-******************************************************************************/
+/**
+ * The command panel tab lets the user modify the selected object.
+ */
 class OVITO_CORE_EXPORT ModifyCommandPage : public QWidget
 {
 	Q_OBJECT
@@ -116,4 +114,6 @@ private:
 	Rollout* _aboutRollout;
 };
 
-};
+}}}	// End of namespace
+
+#endif	// __OVITO_MODIFY_COMMAND_PAGE_H

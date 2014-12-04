@@ -26,10 +26,10 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * This modifier computes the Voronoi indices of particles.
+/**
+ * \brief This modifier computes the atomic volume and the Voronoi indices of particles.
  */
 class OVITO_PARTICLES_EXPORT VoronoiAnalysisModifier : public AsynchronousParticleModifier
 {
@@ -86,32 +86,38 @@ public:
 	/// Sets the minimum area for a face to be counted.
 	void setFaceThreshold(FloatType threshold) { _faceThreshold = threshold; }
 
-	/// Returns the computed coordination numbers.
-	ParticleProperty* coordinationNumbers() const { return _coordinationNumbers.data(); }
-
-	/// Returns the computed atomic volumes.
-	ParticleProperty* atomicVolumes() const { return _atomicVolumes.data(); }
-
-	/// Returns the computed Voronoi indices.
-	ParticleProperty* voronoiIndices() const { return _voronoiIndices.data(); }
-
 	/// Returns the total volume of the simulation cell computed by the modifier.
 	double simulationBoxVolume() const { return _simulationBoxVolume; }
 
 	/// Returns the volume sum of all Voronoi cells computed by the modifier.
 	double voronoiVolumeSum() const { return _voronoiVolumeSum; }
 
+protected:
+
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
 private:
 
 	/// Computes the modifier's results.
-	class VoronoiAnalysisEngine : public AsynchronousParticleModifier::Engine
+	class VoronoiAnalysisEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		VoronoiAnalysisEngine(ParticleProperty* positions, ParticleProperty* selection, std::vector<FloatType>&& radii,
-				const SimulationCellData& simCell, FloatType cutoff,
-				int edgeCount, bool computeIndices, FloatType edgeThreshold, FloatType faceThreshold) :
+		VoronoiAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* selection, std::vector<FloatType>&& radii,
+							const SimulationCell& simCell, FloatType cutoff,
+							int edgeCount, bool computeIndices, FloatType edgeThreshold, FloatType faceThreshold) :
+			ComputeEngine(validityInterval),
 			_positions(positions),
 			_selection(selection),
 			_squaredRadii(radii),
@@ -124,7 +130,7 @@ private:
 			_voronoiIndices(computeIndices ? new ParticleProperty(positions->size(), qMetaTypeId<int>(), sizeof(int), edgeCount, sizeof(int) * edgeCount, QStringLiteral("Voronoi Index"), true) : nullptr) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the computed coordination numbers.
 		ParticleProperty* coordinationNumbers() const { return _coordinationNumbers.data(); }
@@ -148,7 +154,7 @@ private:
 		FloatType _faceThreshold;
 		double _simulationBoxVolume;
 		double _voronoiVolumeSum;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		std::vector<FloatType> _squaredRadii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;
@@ -156,20 +162,6 @@ private:
 		QExplicitlySharedDataPointer<ParticleProperty> _atomicVolumes;
 		QExplicitlySharedDataPointer<ParticleProperty> _voronoiIndices;
 	};
-
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This stores the cached coordination numbers computed by the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;
@@ -228,9 +220,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_faceThreshold);
 };
 
-/******************************************************************************
-* A properties editor for the VoronoiAnalysisModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the VoronoiAnalysisModifier class.
+ */
 class VoronoiAnalysisModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -249,6 +243,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_VORONOI_ANALYSIS_MODIFIER_H

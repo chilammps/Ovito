@@ -23,19 +23,16 @@
 #define __OVITO_CA_DISLOCATION_DISPLAY_H
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 class DislocationDisplay;	// defined below
 
@@ -90,11 +87,11 @@ public:
 	/// \brief Constructor.
 	Q_INVOKABLE DislocationDisplay(DataSet* dataset);
 
-	/// \brief Lets the display object render a scene object.
-	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+	/// \brief Lets the display object render a data object.
+	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
 	/// \brief Computes the bounding box of the object.
-	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Dislocations"); }
@@ -112,7 +109,7 @@ public:
 	void setShadingMode(ArrowPrimitive::ShadingMode mode) { _shadingMode = mode; }
 
 	/// \brief Renders an overlay marker for a single dislocation segment.
-	void renderOverlayMarker(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode);
+	void renderOverlayMarker(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode);
 
 public:
 
@@ -122,7 +119,7 @@ public:
 protected:
 
 	/// Clips a dislocation line at the periodic box boundaries.
-	void clipDislocationLine(const QVector<Point3>& line, const SimulationCellData& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback);
+	void clipDislocationLine(const QVector<Point3>& line, const SimulationCell& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback);
 
 protected:
 
@@ -135,8 +132,8 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffers.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>,		// Source object + revision number
-		SimulationCellData,						// Simulation cell geometry
+		WeakVersionedOORef<DataObject>,		// Source object + revision number
+		SimulationCell,						// Simulation cell geometry
 		FloatType								// Line width
 		> _geometryCacheHelper;
 
@@ -146,8 +143,8 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>,		// Source object + revision number
-		SimulationCellData,						// Simulation cell geometry
+		WeakVersionedOORef<DataObject>,		// Source object + revision number
+		SimulationCell,						// Simulation cell geometry
 		FloatType								// Line width
 		> _boundingBoxCacheHelper;
 
@@ -189,6 +186,6 @@ protected:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_DISLOCATION_DISPLAY_H

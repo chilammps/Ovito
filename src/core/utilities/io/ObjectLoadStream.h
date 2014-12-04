@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,23 +19,22 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file ObjectLoadStream.h 
- * \brief Contains definition of the Ovito::ObjectLoadStream class.
- */
-
 #ifndef __OVITO_OBJECT_LOADSTREAM_H
 #define __OVITO_OBJECT_LOADSTREAM_H
 
 #include <core/Core.h>
-#include <base/io/LoadStream.h>
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
+#include "LoadStream.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
 
 /**
- * \brief An input stream that is loads OVITO objects from a file that has been create by an ObjectSaveStream.
+ * \brief An input stream that can deserialize an OvitoObject graph stored in a file.
+ *
+ * This class restores an object graph previously saved with the ObjectSaveStream class.
+ *
+ * \sa ObjectSaveStream
  */
 class OVITO_CORE_EXPORT ObjectLoadStream : public LoadStream
 {
@@ -43,8 +42,8 @@ class OVITO_CORE_EXPORT ObjectLoadStream : public LoadStream
 
 public:
 
-	/// Data structure describing a property or reference field of a RefMaker-derived
-	/// class, which has been stored in the file.
+	/// Data structure loaded from the file, which describes a serialized property
+	/// or reference field of a RefMaker derived class.
 	struct SerializedPropertyField {
 
 		/// The identifier of the property field.
@@ -67,27 +66,26 @@ public:
 		const PropertyFieldDescriptor* field;
 	};
 
-	/// \brief Opens a stream for reading.
-	/// \param source The data stream from which the data is read. This must be a supporting random access.
-	/// \throw Exception when the source stream does not support random access.
+	/// \brief Initializes the ObjectLoadStream.
+	/// \param source The Qt data stream from which the data is read. This stream must support random access.
+	/// \throw Exception if the source stream does not support random access, or if an I/O error occurs.
 	ObjectLoadStream(QDataStream& source);
 
-	/// \brief The destructor calls close().
+	// Calls close() to close the ObjectLoadStream.
 	virtual ~ObjectLoadStream() { close(); }
 
-	/// \brief Closes the stream.
-	/// \note The underlying input stream is not closed by this method.
+	/// \brief Closes the ObjectLoadStream, but not the underlying QDataStream passed to the constructor.
 	virtual void close();
 
-	/// Loads an object from the stream.
-	/// Note that the returned object is still uninitialized when the function returns.
-	/// The actual object data is loaded on a call to close().
+	/// \brief Loads an object from the stream.
+	/// \note The returned object is not initialized yet when the function returns, and should not be accessed.
+	///       The object's contents are loaded when close() is called.
 	template<class T>
 	OORef<T> loadObject() {
 		OORef<OvitoObject> ptr = loadObjectInternal();
 		OVITO_ASSERT(!ptr || ptr->getOOType().isDerivedFrom(T::OOType));
 		if(ptr && !ptr->getOOType().isDerivedFrom(T::OOType))
-			throw Exception(tr("Class hierarchy mismatch in file. The object class '%1' is not derived from class '%2' as expected.").arg(ptr->getOOType().name()).arg(T::OOType.name()));
+			throw Exception(tr("Class hierarchy mismatch in file. The object class '%1' is not derived from '%2'.").arg(ptr->getOOType().name()).arg(T::OOType.name()));
 		return static_object_cast<T>(ptr);
 	}
 
@@ -132,9 +130,9 @@ private:
 	/// The current dataset being loaded.
 	DataSet* _dataset;
 
-	friend class RefMaker;
+	friend class Ovito::RefMaker;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OBJECT_LOADSTREAM_H

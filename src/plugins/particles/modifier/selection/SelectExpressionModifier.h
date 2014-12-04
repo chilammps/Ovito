@@ -26,13 +26,11 @@
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
-using namespace Ovito;
-
-/******************************************************************************
-* Selects particles based on a user-defined Boolean expression.
-******************************************************************************/
+/**
+ * \brief Selects particles based on a user-defined Boolean expression.
+ */
 class OVITO_PARTICLES_EXPORT SelectExpressionModifier : public ParticleModifier
 {
 public:
@@ -41,11 +39,6 @@ public:
 	Q_INVOKABLE SelectExpressionModifier(DataSet* dataset) : ParticleModifier(dataset) {
 		INIT_PROPERTY_FIELD(SelectExpressionModifier::_expression);
 	}
-
-	//////////////////////////// from base classes ////////////////////////////
-
-	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	/////////////////////////// specific methods ///////////////////////////////
 
@@ -61,11 +54,10 @@ public:
 	/// \brief Returns a human-readable text listing the input variables.
 	const QString& inputVariableTable() const { return _variableTable; }
 
-public:
-
-	Q_PROPERTY(QString expression READ expression WRITE setExpression);
-
 protected:
+
+	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
@@ -90,9 +82,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_expression);
 };
 
-/******************************************************************************
-* A properties editor for the SelectExpressionModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the SelectExpressionModifier class.
+ */
 class SelectExpressionModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -122,6 +116,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_SELECT_EXPRESSION_MODIFIER_H

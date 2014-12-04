@@ -22,7 +22,7 @@
 #ifndef __OVITO_VTK_FILE_IMPORTER_H
 #define __OVITO_VTK_FILE_IMPORTER_H
 
-#include <core/dataset/importexport/LinkedFileImporter.h>
+#include <core/dataset/importexport/FileSourceImporter.h>
 #include <plugins/mesh/Mesh.h>
 #include "TriMeshImportData.h"
 
@@ -33,12 +33,12 @@ using namespace Ovito;
 /**
  * \brief File parser for VTK files containing triangle mesh data.
  */
-class OVITO_MESH_EXPORT VTKFileImporter : public LinkedFileImporter
+class VTKFileImporter : public FileSourceImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE VTKFileImporter(DataSet* dataset) : LinkedFileImporter(dataset) {}
+	Q_INVOKABLE VTKFileImporter(DataSet* dataset) : FileSourceImporter(dataset) {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -54,6 +54,11 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("VTK"); }
 
+	/// Creates an asynchronous loader object that loads the data for the given frame from the external file.
+	virtual std::shared_ptr<FrameLoader> createFrameLoader(const Frame& frame) override {
+		return std::make_shared<VTKFileImportTask>(dataset()->container(), frame);
+	}
+
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
@@ -62,20 +67,16 @@ protected:
 	public:
 
 		/// Constructor.
-		VTKFileImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : TriMeshImportData(frame) {}
+		VTKFileImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame) : TriMeshImportData(container, frame) {}
 
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
+		virtual void parseFile(CompressedTextReader& stream) override;
 	};
 
 protected:
 
-	/// \brief Creates an import task object to read the given frame.
-	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<VTKFileImportTask>(frame);
-	}
 
 	Q_OBJECT
 	OVITO_OBJECT

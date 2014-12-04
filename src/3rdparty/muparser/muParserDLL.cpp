@@ -123,7 +123,9 @@ ParserTag* AsParserTag(muParserHandle_t a_hParser)
 
 //---------------------------------------------------------------------------
 #if defined(_WIN32)
+  #ifndef _CRT_SECURE_NO_DEPRECATE
   #define _CRT_SECURE_NO_DEPRECATE
+  #endif
 
   BOOL APIENTRY DllMain( HANDLE /*hModule*/, 
                          DWORD ul_reason_for_call, 

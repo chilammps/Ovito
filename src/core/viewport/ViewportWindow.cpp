@@ -27,7 +27,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/gui/mainwin/MainWindow.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /// The vendor of the OpenGL implementation in use.
 QByteArray ViewportWindow::_openGLVendor;
@@ -207,8 +207,15 @@ void ViewportWindow::resizeEvent(QResizeEvent*)
 void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mouseDoubleClickEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mouseDoubleClickEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -225,8 +232,15 @@ void ViewportWindow::mousePressEvent(QMouseEvent* event)
 	}
 
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mousePressEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mousePressEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -235,8 +249,15 @@ void ViewportWindow::mousePressEvent(QMouseEvent* event)
 void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mouseReleaseEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mouseReleaseEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -245,8 +266,15 @@ void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
 void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->mouseMoveEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->mouseMoveEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -255,8 +283,15 @@ void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
 void ViewportWindow::wheelEvent(QWheelEvent* event)
 {
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
-	if(mode)
-		mode->wheelEvent(_viewport, event);
+	if(mode) {
+		try {
+			mode->wheelEvent(_viewport, event);
+		}
+		catch(const Exception& ex) {
+			qWarning() << "Uncaught exception in mouse event handler:";
+			ex.logError();
+		}
+	}
 }
 
 /******************************************************************************
@@ -269,17 +304,35 @@ void ViewportWindow::renderNow()
 
 	_updateRequested = false;
 
+	// Do not re-enter rendering function of the same viewport.
+	if(_viewport->isRendering())
+		return;
+
+	// Before making our GL context current, remember the old context that
+	// is currently active so we can restore it when we are done.
+	// This is necessary, because multiple viewport repaint requests can be
+	// processed simultaneously.
+	QOpenGLContext* oldContext = QOpenGLContext::currentContext();
+	QSurface* oldSurface = oldContext ? oldContext->surface() : nullptr;
+
 	if(!_context->makeCurrent(this)) {
 		qWarning() << "Failed to make OpenGL context current.";
 		return;
 	}
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
+
+	QSurfaceFormat format = _context->format();
+	// OpenGL in a VirtualBox machine Windows guest reports "2.1 Chromium 1.9" as version string, which is
+	// not correctly parsed by Qt. We have to workaround this.
+	if(qstrncmp((const char*)glGetString(GL_VERSION), "2.1 ", 4) == 0) {
+		format.setMajorVersion(2);
+		format.setMinorVersion(1);
+	}
 
 #ifdef OVITO_DEBUG
 	static bool firstTime = true;
 	if(firstTime) {
 		firstTime = false;
-		QSurfaceFormat format = _context->format();
 		qDebug() << "OpenGL depth buffer size:   " << format.depthBufferSize();
 		(qDebug() << "OpenGL version:             ").nospace() << format.majorVersion() << "." << format.minorVersion();
 		qDebug() << "OpenGL profile:             " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
@@ -299,7 +352,7 @@ void ViewportWindow::renderNow()
 	}
 #endif
 
-	if(_context->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || (_context->format().majorVersion() == OVITO_OPENGL_MINIMUM_VERSION_MAJOR && _context->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR)) {
+	if(format.majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || (format.majorVersion() == OVITO_OPENGL_MINIMUM_VERSION_MAJOR && format.minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR)) {
 		// Avoid infinite recursion.
 		static bool errorMessageShown = false;
 		if(!errorMessageShown) {
@@ -312,10 +365,12 @@ void ViewportWindow::renderNow()
 					"The installed OpenGL graphics driver reports the following information:\n\n"
 					"OpenGL vendor: %1\n"
 					"OpenGL renderer: %2\n"
-					"OpenGL version: %3\n\n"
-					"Ovito requires at least OpenGL version %4.%5.")
+					"OpenGL version: %3.%4 (%5)\n\n"
+					"Ovito requires at least OpenGL version %6.%7.")
 					.arg(QString((const char*)glGetString(GL_VENDOR)))
 					.arg(QString((const char*)glGetString(GL_RENDERER)))
+					.arg(_context->format().majorVersion())
+					.arg(_context->format().minorVersion())
 					.arg(QString((const char*)glGetString(GL_VERSION)))
 					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
 					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
@@ -327,7 +382,7 @@ void ViewportWindow::renderNow()
 		return;
 	}
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 	if(!_viewport->dataset()->viewportConfig()->isSuspended()) {
 		_viewport->render(_context);
 	}
@@ -339,8 +394,16 @@ void ViewportWindow::renderNow()
 	}
 	_context->swapBuffers(this);
 
-	OVITO_CHECK_OPENGL();
-	_context->doneCurrent();
+	OVITO_REPORT_OPENGL_ERRORS();
+
+	// Restore old GL context.
+	if(oldSurface) {
+		if(!oldContext->makeCurrent(oldSurface))
+			qWarning() << "Failed to restore old OpenGL context.";
+	}
+	else {
+		_context->doneCurrent();
+	}
 }
 
-};
+}}}	// End of namespace

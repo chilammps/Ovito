@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Modifier.h
- * \brief Contains the definition of the Ovito::Modifier class.
- */
-
 #ifndef __OVITO_MODIFIER_H
 #define __OVITO_MODIFIER_H
 
@@ -32,7 +27,7 @@
 #include "PipelineFlowState.h"
 #include "PipelineStatus.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Base class for algorithms that modify an object or data in some way.
@@ -67,15 +62,6 @@ public:
 	///         modifier's input object.
 	virtual TimeInterval modifierValidity(TimePoint time);
 
-	/// \brief Informs the modifier that its input has changed.
-	/// \param modApp The application of this modifier in a geometry pipeline.
-	////
-	/// This method is called by the system when an item in the modification pipeline located before this
-	/// modifier has changed. This allows the modifier to clear its internal caches.
-	///
-	/// The default implementation does nothing.
-	virtual void inputDataChanged(ModifierApplication* modApp) {}
-
 	/// \brief Returns a structure that describes the current status of the modifier.
 	///
 	/// The default implementation of this method returns PipelineStatus::StatusType::Success.
@@ -108,7 +94,7 @@ public:
 	/// \brief Returns the list of applications of this modifier in pipelines.
 	/// \return The list of ModifierApplication objects that describe the particular applications of this Modifier.
 	///
-	/// One and the same modifier instance can be applied multiple times in different geometry pipelines of several scene objects.
+	/// One and the same modifier instance can be applied in several geometry pipelines.
 	/// Each application of the modifier instance is associated with a instance of the ModifierApplication class.
 	/// This method can be used to determine all applications of this Modifier instance.
 	QVector<ModifierApplication*> modifierApplications() const;
@@ -135,11 +121,6 @@ public:
 	/// This method can be used to work with the input object outside of a normal call to modifyObject().
 	PipelineFlowState getModifierInput() const;
 
-	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	/// \param pipeline The PipelineObject into which the modifier has been inserted.
-	/// \param modApp The ModifierApplication object that has been created for this modifier.
-	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
-
 	/// \brief Returns whether this modifier is currently enabled.
 	/// \return \c true if it is currently enabled, i.e. applied.
 	///         \c false if it is disabled and skipped in the geometry pipeline.
@@ -161,9 +142,22 @@ public:
 	/// This method is used to filter the list of available modifiers. The default implementation returns false.
 	virtual bool isApplicableTo(const PipelineFlowState& input) { return false; }
 
-public:
+protected:
 
-	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
+	/// \brief This method is called by the system when the modifier has been inserted into a PipelineObject.
+	/// \param pipeline The PipelineObject into which the modifier has been inserted.
+	/// \param modApp The ModifierApplication object that has been created for this modifier.
+	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
+
+	/// \brief Informs the modifier that its input has changed.
+	/// \param modApp The application of this modifier in the modification pipeline.
+	////
+	/// This method is called by the system when the upstream modification pipeline has changed.
+	/// This allows the modifier to throw away any cached results so that a re-computation is triggered the
+	/// next time the modification pipeline is evaluated.
+	///
+	/// The default implementation does nothing.
+	virtual void upstreamPipelineChanged(ModifierApplication* modApp) {}
 
 private:
 
@@ -174,11 +168,13 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_isEnabled);
+
+	friend class PipelineObject;
 };
 
-};
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Modifier*);
-Q_DECLARE_TYPEINFO(Ovito::Modifier*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ObjectSystem::Scene::Modifier*);
+Q_DECLARE_TYPEINFO(Ovito::ObjectSystem::Scene::Modifier*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_MODIFIER_H

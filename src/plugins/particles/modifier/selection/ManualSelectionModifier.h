@@ -25,12 +25,10 @@
 #include <plugins/particles/Particles.h>
 #include <core/viewport/input/ViewportInputMode.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
-#include <plugins/particles/data/ParticleSelectionSet.h>
+#include <plugins/particles/util/ParticleSelectionSet.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
 /**
  * Modifiers that allows the user to select individual particles by hand.
@@ -41,9 +39,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE ManualSelectionModifier(DataSet* dataset) : ParticleModifier(dataset) {}
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
@@ -65,6 +60,9 @@ public:
 
 protected:
 
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
+
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
@@ -79,6 +77,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Manual selection");
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
+
+namespace Internal {
 
 /**
  * A properties editor for the ManualSelectionModifier class.
@@ -121,6 +121,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_MANUAL_SELECTION_MODIFIER_H

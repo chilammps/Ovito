@@ -24,15 +24,15 @@
 #include <core/rendering/SceneRenderer.h>
 #include "TargetObject.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TargetObject, SceneObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TargetObject, DataObject);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TargetDisplayObject, DisplayObject);
 
 /******************************************************************************
 * Constructs a target object.
 ******************************************************************************/
-TargetObject::TargetObject(DataSet* dataset) : SceneObject(dataset)
+TargetObject::TargetObject(DataSet* dataset) : DataObject(dataset)
 {
 	addDisplayObject(new TargetDisplayObject(dataset));
 }
@@ -40,7 +40,7 @@ TargetObject::TargetObject(DataSet* dataset) : SceneObject(dataset)
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 TargetDisplayObject::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 TargetDisplayObject::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	// This is not a physical object. It doesn't have a size.
 	return Box3(Point3::Origin(), Point3::Origin());
@@ -49,7 +49,7 @@ Box3 TargetDisplayObject::boundingBox(TimePoint time, SceneObject* sceneObject, 
 /******************************************************************************
 * Computes the view-dependent bounding box of the object.
 ******************************************************************************/
-Box3 TargetDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 TargetDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* viewport, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	TimeInterval iv;
 	Point3 objectPos = Point3::Origin() + contextNode->getWorldTransform(time, iv).translation();
@@ -58,9 +58,9 @@ Box3 TargetDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* vie
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render a data object.
 ******************************************************************************/
-void TargetDisplayObject::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void TargetDisplayObject::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Target objects are only visible in the viewports.
 	if(renderer->isInteractive() == false || renderer->viewport() == nullptr)
@@ -74,7 +74,7 @@ void TargetDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	Color color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_CAMERAS);
 
 	// Do we have to update contents of the geometry buffers?
-	bool updateContents = _geometryCacheHelper.updateState(sceneObject, color) || recreateBuffer;
+	bool updateContents = _geometryCacheHelper.updateState(dataObject, color) || recreateBuffer;
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateBuffer) {
@@ -123,4 +123,4 @@ void TargetDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	renderer->endPickObject();
 }
 
-};
+}}}}	// End of namespace

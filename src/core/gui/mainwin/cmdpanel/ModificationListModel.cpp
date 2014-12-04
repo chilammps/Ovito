@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
@@ -30,7 +30,7 @@
 #include "ModificationListModel.h"
 #include "ModifyCommandPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -105,9 +105,9 @@ void ModificationListModel::refreshList()
 	RefTarget* defaultObjectToSelect = nullptr;
 
 	// Collect all selected ObjectNodes.
-	// Also check if all selected object nodes reference the same scene object.
+	// Also check if all selected object nodes reference the same data object.
 	_selectedNodes.clear();
-    SceneObject* cmnObject = nullptr;
+    DataObject* cmnObject = nullptr;
 
     if(_datasetContainer.currentSet()) {
 		for(SceneNode* node : _datasetContainer.currentSet()->selection()->nodes()) {
@@ -168,7 +168,7 @@ void ModificationListModel::refreshList()
 			else {
 				items.push_back(new ModificationListItem(nullptr, false, tr("Input")));
 
-				// Create an entry for the scene object.
+				// Create an entry for the data object.
 				items.push_back(new ModificationListItem(cmnObject));
 				if(defaultObjectToSelect == nullptr)
 					defaultObjectToSelect = cmnObject;
@@ -189,11 +189,11 @@ void ModificationListModel::refreshList()
 
 	int selIndex = -1;
 	int selDefaultIndex = -1;
-	for(int index = 0; index < items.size(); index++) {
-		if(_nextToSelectObject && _nextToSelectObject == items[index]->object())
-			selIndex = index;
-		if(defaultObjectToSelect && defaultObjectToSelect == items[index]->object())
-			selDefaultIndex = index;
+	for(int i = 0; i < items.size(); i++) {
+		if(_nextToSelectObject && _nextToSelectObject == items[i]->object())
+			selIndex = i;
+		if(defaultObjectToSelect && defaultObjectToSelect == items[i]->object())
+			selDefaultIndex = i;
 	}
 	if(selIndex == -1)
 		selIndex = selDefaultIndex;
@@ -224,7 +224,7 @@ void ModificationListModel::refreshList()
 void ModificationListModel::onNodeEvent(RefTarget* source, ReferenceEvent* event)
 {
 	// Update the entire modification list if the ObjectNode has been assigned a new
-	// scene object, or if the list of display objects has changed.
+	// data object, or if the list of display objects has changed.
 	if(event->type() == ReferenceEvent::ReferenceChanged || event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved) {
 		requestUpdate();
 	}
@@ -289,7 +289,7 @@ void ModificationListModel::applyModifier(Modifier* modifier)
 			pipelineObj->insertModifier(modifier, 0);
 			return;
 		}
-		else if(dynamic_object_cast<SceneObject>(currentItem->object())) {
+		else if(dynamic_object_cast<DataObject>(currentItem->object())) {
 			if(PipelineObject* pipelineObj = hiddenPipelineObject()) {
 				pipelineObj->insertModifier(modifier, 0);
 				return;
@@ -432,4 +432,4 @@ Qt::ItemFlags ModificationListModel::flags(const QModelIndex& index) const
 	return QAbstractListModel::flags(index);
 }
 
-};
+}}}	// End of namespace

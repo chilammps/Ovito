@@ -24,7 +24,7 @@
 #include <core/animation/controller/LookAtController.h>
 #include <core/scene/SceneNode.h>
 
-namespace Ovito {
+namespace Ovito { namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, Controller);
 DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", Controller);
@@ -117,4 +117,4 @@ TimeInterval LookAtController::validityInterval(TimePoint time)
 	return iv;
 }
 
-};
+}}	// End of namespace

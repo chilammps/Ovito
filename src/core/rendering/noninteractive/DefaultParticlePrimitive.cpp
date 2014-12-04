@@ -23,7 +23,7 @@
 #include "DefaultParticlePrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
@@ -46,4 +46,4 @@ void DefaultParticlePrimitive::render(SceneRenderer* renderer)
 	niRenderer->renderParticles(*this);
 }
 
-};
+}}	// End of namespace

@@ -35,7 +35,7 @@
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * The constructor of the main window class.
@@ -406,4 +406,4 @@ QOpenGLContext* MainWindow::getOpenGLContext()
 	return _glcontext;
 }
 
-};
+}}	// End of namespace

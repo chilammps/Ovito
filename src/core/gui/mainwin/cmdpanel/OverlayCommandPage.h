@@ -19,17 +19,20 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_OVERLAY_COMMAND_PAGE_H
+#define __OVITO_OVERLAY_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/reference/RefTargetListener.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/overlay/ViewportOverlay.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-/******************************************************************************
-* The command panel tab lets the user edit the viewport overlays.
-******************************************************************************/
+/**
+ * The command panel tab lets the user edit the viewport overlays.
+ */
 class OVITO_CORE_EXPORT OverlayCommandPage : public QWidget
 {
 	Q_OBJECT
@@ -96,4 +99,6 @@ private:
 	};
 };
 
-};
+}}}	// End of namespace
+
+#endif // __OVITO_OVERLAY_COMMAND_PAGE_H

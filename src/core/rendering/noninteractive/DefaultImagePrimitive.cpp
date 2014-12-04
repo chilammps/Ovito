@@ -23,7 +23,7 @@
 #include "DefaultImagePrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /******************************************************************************
 * Returns true if the buffer is filled and can be rendered with the given renderer.
@@ -57,4 +57,4 @@ void DefaultImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& 
 	niRenderer->renderImage(*this, pos, size);
 }
 
-};
+}}	// End of namespace

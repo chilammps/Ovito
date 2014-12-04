@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -24,13 +24,10 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
-#include <plugins/particles/data/SurfaceMesh.h>
-#include <plugins/particles/data/SurfaceMeshDisplay.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
+#include <plugins/particles/objects/SurfaceMeshDisplay.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /*
  * Constructs a surface mesh from a particle system.
@@ -42,7 +39,7 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ConstructSurfaceModifier(DataSet* dataset);
 
-	/// \brief Returns the scene object that stores the generated surface mesh.
+	/// \brief Returns the data object that stores the generated surface mesh.
 	SurfaceMesh* surfaceMesh() const { return _surfaceMeshObj; }
 
 	/// \brief Returns the display object that is responsible for rendering the surface mesh.
@@ -75,28 +72,36 @@ public:
 	/// Returns the surface area computed during the last evaluation of the modifier.
 	FloatType surfaceArea() const { return _surfaceArea; }
 
-public:
+protected:
 
-	Q_PROPERTY(FloatType radius READ radius WRITE setRadius);
-	Q_PROPERTY(int smoothingLevel READ smoothingLevel WRITE setSmoothingLevel);
-	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles);
-	Q_PROPERTY(FloatType solidVolume READ solidVolume);
-	Q_PROPERTY(FloatType totalVolume READ totalVolume);
-	Q_PROPERTY(FloatType surfaceArea READ surfaceArea);
+	/// Handles reference events sent by reference targets of this object.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
-public:
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
+
+private:
 
 	/// Computation engine that builds the surface mesh.
-	class ConstructSurfaceEngine : public AsynchronousParticleModifier::Engine
+	class ConstructSurfaceEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		ConstructSurfaceEngine(ParticleProperty* positions, ParticleProperty* selection, const SimulationCellData& simCell, FloatType radius, int smoothingLevel) :
-			_positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false) {}
+		ConstructSurfaceEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* selection, const SimulationCell& simCell, FloatType radius, int smoothingLevel) :
+			ComputeEngine(validityInterval), _positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the generated mesh.
 		HalfEdgeMesh& mesh() { return _mesh; }
@@ -126,30 +131,11 @@ public:
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;
 		HalfEdgeMesh _mesh;
-		SimulationCellData _simCell;
+		SimulationCell _simCell;
 		double _solidVolume;
 		double _surfaceArea;
 		bool _isCompletelySolid;
 	};
-
-protected:
-
-	/// Handles reference events sent by reference targets of this object.
-	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
-
-private:
 
 	/// Controls the radius of the probe sphere.
 	PropertyField<FloatType> _radius;
@@ -209,6 +195,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CONSTRUCT_SURFACE_MODIFIER_H

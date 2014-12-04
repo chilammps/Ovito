@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file RefTargetListener.h
- * \brief Contains the definition of the Ovito::RefTargetListener class.
- */
-
 #ifndef __OVITO_REFTARGET_LISTENER_H
 #define __OVITO_REFTARGET_LISTENER_H
 
 #include <core/Core.h>
 #include "RefTarget.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem {
 
 /**
  * \brief A helper class that can be used to monitor notification events
@@ -220,7 +215,7 @@ public:
 
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_REFTARGET_LISTENER_H
 

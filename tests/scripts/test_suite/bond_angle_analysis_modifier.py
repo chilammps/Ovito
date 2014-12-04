@@ -11,8 +11,8 @@ node.modifiers.append(modifier)
 modifier.structures[BondAngleAnalysisModifier.Type.FCC].color = (1,0,0)
 
 node.compute()
-print "Computed structure types:"
-print node.output.structure_type.array
+print("Computed structure types:")
+print(node.output.structure_type.array)
 
 assert(modifier.counts[BondAngleAnalysisModifier.Type.FCC] == 128)
 assert(node.output.structure_type.array[0] == 1)

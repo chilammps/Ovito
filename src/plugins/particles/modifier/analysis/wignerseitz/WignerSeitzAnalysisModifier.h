@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -27,10 +27,10 @@
 #include <plugins/particles/util/TreeNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/*
- * Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
+/**
+ * \brief Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
  */
 class OVITO_PARTICLES_EXPORT WignerSeitzAnalysisModifier : public AsynchronousParticleModifier
 {
@@ -39,22 +39,19 @@ public:
 	/// Constructor.
 	Q_INVOKABLE WignerSeitzAnalysisModifier(DataSet* dataset);
 
-	/// Returns the computed occupancy numbers.
-	const ParticleProperty& occupancyNumbers() const { OVITO_CHECK_POINTER(_occupancyNumbers.constData()); return *_occupancyNumbers; }
-
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for the Wigner-Seitz analysis.
-	SceneObject* referenceConfiguration() const { return _referenceObject; }
+	DataObject* referenceConfiguration() const { return _referenceObject; }
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for the Wigner-Seitz analysis.
-	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(DataObject* refConf) { _referenceObject = refConf; }
 
 	/// Returns the source URL of the reference configuration.
 	QUrl referenceSource() const;
 
 	/// Sets the source URL of the reference configuration.
-	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
+	void setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType = nullptr);
 
 	/// Returns true if the homogeneous deformation of the simulation cell is eliminated before performing the analysis.
 	bool eliminateCellDeformation() const { return _eliminateCellDeformation; }
@@ -86,34 +83,38 @@ public:
 	/// Returns the number of interstitial atoms found during the last analysis run.
 	int interstitialCount() const { return _interstitialCount; }
 
-public:
+protected:
 
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation);
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
-	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
-	Q_PROPERTY(int vacancyCount READ vacancyCount);
-	Q_PROPERTY(int interstitialCount READ interstitialCount);
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
+
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 
 	/// Computes the modifier's results.
-	class WignerSeitzAnalysisEngine : public AsynchronousParticleModifier::Engine
+	class WignerSeitzAnalysisEngine : public ComputeEngine
 	{
 	public:
 
 		/// Constructor.
-		WignerSeitzAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell,
-				ParticleProperty* refPositions, const SimulationCellData& simCellRef, bool eliminateCellDeformation) :
+		WignerSeitzAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell,
+				ParticleProperty* refPositions, const SimulationCell& simCellRef, bool eliminateCellDeformation) :
+			ComputeEngine(validityInterval),
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
 			_eliminateCellDeformation(eliminateCellDeformation),
 			_occupancyNumbers(new ParticleProperty(refPositions->size(), qMetaTypeId<int>(), sizeof(int), 1, sizeof(int), tr("Occupancy"), true)) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -122,10 +123,10 @@ private:
 		ParticleProperty* refPositions() const { return _refPositions.data(); }
 
 		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
+		const SimulationCell& cell() const { return _simCell; }
 
 		/// Returns the reference simulation cell data.
-		const SimulationCellData& refCell() const { return _simCellRef; }
+		const SimulationCell& refCell() const { return _simCellRef; }
 
 		/// Returns the property storage that contains the computed occupancies.
 		ParticleProperty* occupancyNumbers() const { return _occupancyNumbers.data(); }
@@ -138,8 +139,8 @@ private:
 
 	private:
 
-		SimulationCellData _simCell;
-		SimulationCellData _simCellRef;
+		SimulationCell _simCell;
+		SimulationCell _simCellRef;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _refPositions;
 		QExplicitlySharedDataPointer<ParticleProperty> _occupancyNumbers;
@@ -148,20 +149,6 @@ private:
 		int _interstitialCount;
 	};
 
-protected:
-
-	/// Is called when the value of a property of this object has changed.
-	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
-
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
-
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
-
 	/// Returns the reference state to be used to perform the analysis at the given time.
 	PipelineFlowState getReferenceState(TimePoint time);
 
@@ -169,7 +156,7 @@ protected:
 	QExplicitlySharedDataPointer<ParticleProperty> _occupancyNumbers;
 
 	/// The reference configuration.
-	ReferenceField<SceneObject> _referenceObject;
+	ReferenceField<DataObject> _referenceObject;
 
 	/// Controls the whether the homogeneous deformation of the simulation cell is eliminated from the calculated displacement vectors.
 	PropertyField<bool> _eliminateCellDeformation;
@@ -204,9 +191,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
-/******************************************************************************
-* A properties editor for the WignerSeitzAnalysisModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the WignerSeitzAnalysisModifier class.
+ */
 class WignerSeitzAnalysisModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -225,6 +214,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_WIGNER_SEITZ_ANALYSIS_MODIFIER_H

@@ -19,30 +19,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file AbstractCameraObject.h 
- * \brief Contains the definition of the Ovito::AbstractCameraObject class.
- */
-
 #ifndef __OVITO_ABSTRACT_CAMERA_OBJECT_H
 #define __OVITO_ABSTRACT_CAMERA_OBJECT_H
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 
-namespace Ovito {
-	
-struct ViewProjectionParameters;	// defined in Viewport.h
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
- * \brief Abstract base class for camera scene objects.
+ * \brief Abstract base class for camera objects.
  */
-class OVITO_CORE_EXPORT AbstractCameraObject : public SceneObject
+class OVITO_CORE_EXPORT AbstractCameraObject : public DataObject
 {
 public:
 	
 	/// \brief Constructor.
-	AbstractCameraObject(DataSet* dataset) : SceneObject(dataset) {}
+	AbstractCameraObject(DataSet* dataset) : DataObject(dataset) {}
 
 	/// \brief Returns a structure describing the camera's projection.
 	/// \param[in] time The animation time for which the camera's projection parameters should be determined.
@@ -65,7 +58,6 @@ private:
 	OVITO_OBJECT
 };
 
-
-};
+}}}}	// End of namespace
 
 #endif // __OVITO_ABSTRACT_CAMERA_OBJECT_H

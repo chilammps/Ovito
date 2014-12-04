@@ -24,13 +24,11 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/scene/pipeline/Modifier.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /*
  * Displaces the dislocations and defect surface by a translation vector.
@@ -86,6 +84,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_SHIFT_MODIFIER_H

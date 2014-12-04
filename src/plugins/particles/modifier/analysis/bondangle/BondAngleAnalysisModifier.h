@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,23 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file BondAngleAnalysisModifier.h
- * \brief Contains the definition of the Particles::BondAngleAnalysisModifier class.
- */
-
 #ifndef __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
 #define __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
-
-class TreeNeighborListBuilder;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief A modifier that performs the structure analysis developed by Ackland and Jones.
@@ -58,19 +48,6 @@ public:
 	};
 	Q_ENUMS(StructureType);
 
-	/// Computes the modifier's results.
-	class BondAngleAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine
-	{
-	public:
-
-		/// Constructor.
-		BondAngleAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell) :
-			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
-
-		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
-	};
-
 public:
 
 	/// Constructor.
@@ -79,12 +56,25 @@ public:
 protected:
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
+
+private:
+
+	/// Computes the modifier's results.
+	class BondAngleAnalysisEngine : public StructureIdentificationEngine
+	{
+	public:
+
+		/// Constructor.
+		BondAngleAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell) :
+			StructureIdentificationEngine(validityInterval, positions, simCell) {}
+
+		/// Computes the modifier's results and stores them in this object for later retrieval.
+		virtual void perform() override;
+	};
 
 	/// Determines the coordination structure of a single particle using the bond-angle analysis method.
 	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);
-
-private:
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -92,6 +82,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Bond-angle analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 };
+
+namespace Internal {
 
 /**
  * \brief A properties editor for the BondAngleAnalysisModifier class.
@@ -112,6 +104,8 @@ protected:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H

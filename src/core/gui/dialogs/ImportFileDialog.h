@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file ImportFileDialog.h
- * \brief Contains the definition of the Ovito::ImportFileDialog class.
- */
-
 #ifndef __OVITO_IMPORT_FILE_DIALOG_H
 #define __OVITO_IMPORT_FILE_DIALOG_H
 
@@ -31,10 +26,10 @@
 #include <core/dataset/importexport/FileImporter.h>
 #include "HistoryFileDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /**
- * \brief This file chooser dialog lets the user select a file to be imported.
+ * This file chooser dialog lets the user select a file to be imported.
  */
 class OVITO_CORE_EXPORT ImportFileDialog : public HistoryFileDialog
 {
@@ -43,13 +38,13 @@ class OVITO_CORE_EXPORT ImportFileDialog : public HistoryFileDialog
 public:
 
 	/// \brief Constructs the dialog window.
-	ImportFileDialog(const QVector<FileImporterDescription*>& importerTypes, QWidget* parent, const QString& caption, const QString& directory = QString());
+	ImportFileDialog(const QVector<OvitoObjectType*>& importerTypes, DataSet* dataset, QWidget* parent, const QString& caption, const QString& directory = QString());
 
 	/// \brief Returns the file to import after the dialog has been closed with "OK".
 	QString fileToImport() const;
 
 	/// \brief Returns the selected importer type or NULL if auto-detection is requested.
-	const FileImporterDescription* selectedFileImporterType() const;
+	const OvitoObjectType* selectedFileImporterType() const;
 
 private Q_SLOTS:
 
@@ -58,12 +53,12 @@ private Q_SLOTS:
 
 private:
 
-	QVector<FileImporterDescription*> _importerTypes;
+	QVector<OvitoObjectType*> _importerTypes;
 	QStringList _filterStrings;
 	QString _selectedFile;
 	QString _selectedFilter;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_IMPORT_FILE_DIALOG_H

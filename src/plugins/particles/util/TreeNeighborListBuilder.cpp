@@ -19,17 +19,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "TreeNeighborListBuilder.h"
 
-#define TREE_DEPTH_LIMIT 		17
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
-namespace Particles {
+#define TREE_DEPTH_LIMIT 		17
 
 /******************************************************************************
 * Prepares the neighbor list builder.
 ******************************************************************************/
-bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData)
+bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData)
 {
 	OVITO_CHECK_POINTER(posProperty);
 
@@ -199,4 +199,4 @@ void TreeNeighborListBuilder::splitLeafNode(TreeNode* node, int splitDim)
 	numLeafNodes++;
 }
 
-}; // End of namespace
+}}}} // End of namespace

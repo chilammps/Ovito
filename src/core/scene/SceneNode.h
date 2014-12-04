@@ -19,22 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file SceneNode.h
- * \brief Contains the definition of the Ovito::SceneNode class.
- */
-
 #ifndef __OVITO_SCENE_NODE_H
 #define __OVITO_SCENE_NODE_H
 
 #include <core/Core.h>
-#include <base/utilities/Color.h>
+#include <core/utilities/Color.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>
 
-namespace Ovito {
-
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief Tree node in the scene hierarchy.
@@ -237,14 +231,6 @@ public:
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return _nodeName; }
 
-public:
-
-	Q_PROPERTY(bool isSelected READ isSelected);
-	Q_PROPERTY(SceneNode* lookatTargetNode READ lookatTargetNode WRITE setLookatTargetNode);
-	Q_PROPERTY(QString name READ name WRITE setName);
-	Q_PROPERTY(Color displayColor READ displayColor WRITE setDisplayColor);
-	Q_PROPERTY(Controller* transformationController READ transformationController WRITE setTransformationController);
-
 protected:
 
 	/// From RefMaker.
@@ -325,6 +311,6 @@ private:
 	friend class SceneRoot;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_SCENE_NODE_H

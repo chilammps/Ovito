@@ -19,25 +19,20 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PipelineObject.h
- * \brief Contains the definition of the Ovito::PipelineObject class.
- */
-
 #ifndef __OVITO_PIPELINE_OBJECT_H
 #define __OVITO_PIPELINE_OBJECT_H
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
+#include <core/scene/objects/DataObject.h>
 #include "ModifierApplication.h"
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 /**
  * \brief This is a data flow pipeline. It has a source object, which provides the input data,
  *        and a list of modifiers that act on the data.
  */
-class OVITO_CORE_EXPORT PipelineObject : public SceneObject
+class OVITO_CORE_EXPORT PipelineObject : public DataObject
 {
 public:
 
@@ -55,12 +50,12 @@ public:
 	PipelineFlowState evaluatePipeline(TimePoint time, ModifierApplication* upToHere, bool including);
 
 	/// \brief Returns the object that provides the input data for this pipeline.
-	SceneObject* sourceObject() const { return _sourceObject; }
+	DataObject* sourceObject() const { return _sourceObject; }
 
 	/// \brief Replaces the object that provides the input data for this pipeline.
 	/// \param sourceObject The new source object.
 	/// \undoable
-	void setSourceObject(SceneObject* sourceObject) { _sourceObject = sourceObject; }
+	void setSourceObject(DataObject* sourceObject) { _sourceObject = sourceObject; }
 
 	/// \brief Returns the list of modifier applications.
 	/// \return The list of applications of modifiers that make up the data flow pipeline.
@@ -92,7 +87,7 @@ public:
 	/// \undoable
 	void removeModifier(ModifierApplication* app);
 
-	/////////////////////////////////////// from SceneObject /////////////////////////////////////////
+	/////////////////////////////////////// from DataObject /////////////////////////////////////////
 
 	/// Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override {
@@ -122,7 +117,7 @@ private:
 private:
 
 	/// The object providing the input data that is processed by the modifiers.
-	ReferenceField<SceneObject> _sourceObject;
+	ReferenceField<DataObject> _sourceObject;
 
 	/// The ordered list of modifiers that are applied to the input object.
 	/// The modifiers are applied to the input object in the reverse order of this list.
@@ -145,6 +140,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_modApps);
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_PIPELINE_OBJECT_H

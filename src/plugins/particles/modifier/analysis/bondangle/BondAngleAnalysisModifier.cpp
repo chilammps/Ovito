@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -28,11 +28,14 @@
 
 #include "BondAngleAnalysisModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, Internal::BondAngleAnalysisModifierEditor);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -50,36 +53,36 @@ BondAngleAnalysisModifier::BondAngleAnalysisModifier(DataSet* dataset) : Structu
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> BondAngleAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> BondAngleAnalysisModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
 		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
 
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	SimulationCell* simCell = expectSimulationCell();
+	SimulationCellObject* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<BondAngleAnalysisEngine>(posProperty->storage(), simCell->data());
+	return std::make_shared<BondAngleAnalysisEngine>(validityInterval, posProperty->storage(), simCell->data());
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void BondAngleAnalysisModifier::BondAngleAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void BondAngleAnalysisModifier::BondAngleAnalysisEngine::perform()
 {
-	futureInterface.setProgressText(tr("Performing bond-angle analysis"));
+	setProgressText(tr("Performing bond-angle analysis"));
 
 	// Prepare the neighbor list.
 	TreeNeighborListBuilder neighborListBuilder(14);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructure(neighborListBuilder, index));
 	});
 }
@@ -164,6 +167,8 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 	else return HCP;
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -188,5 +193,6 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

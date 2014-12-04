@@ -19,17 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file StandardSceneRenderer.h
- * \brief Contains the definition of the Ovito::StandardSceneRenderer class.
- */
 #ifndef __OVITO_STANDARD_SCENE_RENDERER_H
 #define __OVITO_STANDARD_SCENE_RENDERER_H
 
 #include <core/Core.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief This is the default scene renderer used for high-quality image output.
@@ -97,6 +93,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_antialiasingLevel);
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_STANDARD_SCENE_RENDERER_H

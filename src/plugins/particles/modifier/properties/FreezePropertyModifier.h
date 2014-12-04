@@ -25,22 +25,17 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
 
-using namespace Ovito;
-
-/******************************************************************************
-* Saves the current state of a particle property and preserves it over time.
-******************************************************************************/
+/**
+ * \brief Saves the current state of a particle property and preserves it over time.
+ */
 class OVITO_PARTICLES_EXPORT FreezePropertyModifier : public ParticleModifier
 {
 public:
 
 	/// Constructor.
 	Q_INVOKABLE FreezePropertyModifier(DataSet* dataset);
-
-	/// This virtual method is called by the modification system when the modifier is being inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
@@ -60,12 +55,10 @@ public:
 	/// Takes a snapshot of the source property.
 	void takePropertySnapshot(ModifierApplication* modApp, const PipelineFlowState& state);
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::ParticlePropertyReference destinationProperty READ destinationProperty WRITE setSourceProperty);
-
 protected:
+
+	/// This virtual method is called by the modification system when the modifier is being inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
@@ -88,9 +81,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_destinationProperty);
 };
 
-/******************************************************************************
-* A properties editor for the FreezePropertyModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the FreezePropertyModifier class.
+ */
 class FreezePropertyModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -157,6 +152,8 @@ private:
 	DECLARE_REFERENCE_FIELD(_identifiers);
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_FREEZE_PROPERTY_MODIFIER_H

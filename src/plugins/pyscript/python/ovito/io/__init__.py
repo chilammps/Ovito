@@ -56,7 +56,7 @@ def import_file(location, **params):
     """
     
     # Determine the file's format.
-    importer = ImportExportManager.instance.autodetectFileFormat(ovito.dataset, location)
+    importer = FileImporter.autodetectFileFormat(ovito.dataset, location)
     if not importer:
         raise RuntimeError("Could not detect the file format. The format might not be supported.")
     
@@ -99,7 +99,7 @@ def _FileSource_load(self, location, **params):
     """
 
     # Determine the file's format.
-    importer = ImportExportManager.instance.autodetectFileFormat(self.dataset, location)
+    importer = FileImporter.autodetectFileFormat(self.dataset, location)
     if not importer:
         raise RuntimeError("Could not detect the file format. The format might not be supported.")
     

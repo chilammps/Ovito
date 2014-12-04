@@ -24,13 +24,10 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/scene/pipeline/Modifier.h>
-#include <core/scene/objects/geometry/HalfEdgeMesh.h>
+#include <core/utilities/mesh/HalfEdgeMesh.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace CrystalAnalysis {
-
-using namespace Ovito;
-using namespace Particles;
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 /*
  * Smoothes and fairs the defect surface mesh..
@@ -89,6 +86,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CA_SMOOTH_SURFACE_MODIFIER_H

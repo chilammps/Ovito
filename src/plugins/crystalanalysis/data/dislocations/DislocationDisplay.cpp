@@ -23,11 +23,11 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "DislocationDisplay.h"
 #include "DislocationNetwork.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationDisplay, DisplayObject);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationDisplayEditor, PropertiesEditor);
@@ -52,14 +52,14 @@ DislocationDisplay::DislocationDisplay(DataSet* dataset) : DisplayObject(dataset
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 DislocationDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 DislocationDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return Box3();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(sceneObject, cellObject->data(), lineWidth()) || _cachedBoundingBox.isEmpty()) {
+	if(_boundingBoxCacheHelper.updateState(dataObject, cellObject->data(), lineWidth()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox = Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
 	}
@@ -67,12 +67,12 @@ Box3 DislocationDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, O
 }
 
 /******************************************************************************
-* Lets the display object render a scene object.
+* Lets the display object render a data object.
 ******************************************************************************/
-void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void DislocationDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get the simulation cell.
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return;
 
@@ -90,7 +90,7 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Do we have to update contents of the geometry buffers?
 	bool updateContents = _geometryCacheHelper.updateState(
-			sceneObject,
+			dataObject,
 			cellObject->data(), lineWidth()) || recreateBuffers;
 
 	// Re-create the geometry buffers if necessary.
@@ -101,8 +101,8 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Update buffer contents.
 	if(updateContents) {
-		SimulationCellData cellData = cellObject->data();
-		if(OORef<DislocationNetwork> dislocationObj = sceneObject->convertTo<DislocationNetwork>(time)) {
+		SimulationCell cellData = cellObject->data();
+		if(OORef<DislocationNetwork> dislocationObj = dataObject->convertTo<DislocationNetwork>(time)) {
 			int lineSegmentCount = 0, cornerCount = 0;
 			for(DislocationSegment* segment : dislocationObj->segments()) {
 				if(segment->isVisible() && segment->burgersVectorFamily()->isVisible()) {
@@ -162,19 +162,19 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 /******************************************************************************
 * Renders an overlay marker for a single dislocation segment.
 ******************************************************************************/
-void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode)
+void DislocationDisplay::renderOverlayMarker(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	if(renderer->isPicking())
 		return;
 
 	// Get the simulation cell.
-	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
 	if(!cellObject)
 		return;
-	SimulationCellData cellData = cellObject->data();
+	SimulationCell cellData = cellObject->data();
 
 	// Get the dislocations.
-	OORef<DislocationNetwork> dislocationObj = sceneObject->convertTo<DislocationNetwork>(time);
+	OORef<DislocationNetwork> dislocationObj = dataObject->convertTo<DislocationNetwork>(time);
 	if(!dislocationObj)
 		return;
 
@@ -231,7 +231,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 /******************************************************************************
 * Clips a dislocation line at the periodic box boundaries.
 ******************************************************************************/
-void DislocationDisplay::clipDislocationLine(const QVector<Point3>& line, const SimulationCellData& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback)
+void DislocationDisplay::clipDislocationLine(const QVector<Point3>& line, const SimulationCell& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback)
 {
 	auto v1 = line.cbegin();
 	Point3 rp1 = simulationCell.absoluteToReduced(*v1);
@@ -313,4 +313,4 @@ void DislocationDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 	lineWidthUI->setMinValue(0);
 }
 
-};
+}}}	// End of namespace

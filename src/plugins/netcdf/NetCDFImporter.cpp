@@ -41,13 +41,12 @@
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/dataset/importexport/FileSource.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
-#include <plugins/particles/importer/InputColumnMappingDialog.h>
+#include <plugins/particles/import/InputColumnMappingDialog.h>
 
 #include "NetCDFImporter.h"
 
@@ -59,10 +58,10 @@
 #define NCERR(x)  _ncerr(x, __FILE__, __LINE__)
 #define NCERRI(x, info)  _ncerr_with_info(x, __FILE__, __LINE__, info)
 
-namespace NetCDF {
+namespace Ovito { namespace Plugins { namespace NetCDF {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDF, NetCDFImporter, ParticleImporter);
-IMPLEMENT_OVITO_OBJECT(NetCDF, NetCDFImporterEditor, PropertiesEditor);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDFPlugin, NetCDFImporter, ParticleImporter);
+IMPLEMENT_OVITO_OBJECT(NetCDFPlugin, NetCDFImporterEditor, PropertiesEditor);
 SET_OVITO_OBJECT_EDITOR(NetCDFImporter, NetCDFImporterEditor);
 DEFINE_PROPERTY_FIELD(NetCDFImporter, _useCustomColumnMapping, "UseCustomColumnMapping");
 SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file column mapping");
@@ -117,7 +116,7 @@ bool NetCDFImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocat
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
+void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<FileSourceImporter::Frame>& frames, const QUrl& sourceUrl, CompressedTextReader& stream)
 {
 	QString filename = QDir::toNativeSeparators(stream.device().fileName());
 
@@ -132,8 +131,8 @@ void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, 
 
 	QFileInfo fileInfo(stream.device().fileName());
 	QDateTime lastModified = fileInfo.lastModified();
-	for(int i = 0; i < nFrames; i++) {
-		FrameSourceInformation frame;
+	for(int i = 0; i < (int)nFrames; i++) {
+		Frame frame;
 		frame.sourceFile = sourceUrl;
 		frame.byteOffset = 0;
 		frame.lineNumber = i;
@@ -290,9 +289,9 @@ void NetCDFImporter::NetCDFImportTask::detectDims(int movieFrame, int particleCo
 /******************************************************************************
 * Parses the given input file and stores the data in this container object.
 ******************************************************************************/
-void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
+void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 {
-	futureInterface.setProgressText(tr("Reading NetCDF file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	setProgressText(tr("Reading NetCDF file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// First close text stream so we can re-open it in binary mode.
 	QFileDevice& file = stream.device();
@@ -387,7 +386,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
 
 	// Report to user.
-	futureInterface.setProgressRange(columnMapping.size());
+	setProgressRange(columnMapping.size());
 
     // Now iterate over all variables and see if we have to reduce particleCount
     // We use the only float properties for this because at least one must be present (coordinates)
@@ -426,11 +425,11 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 	// Now iterate over all variables and load the appropriate frame
 	for (const InputColumnInfo& column : columnMapping) {
-		if(futureInterface.isCanceled()) {
+		if(isCanceled()) {
 			closeNetCDF();
 			return;
 		}
-		futureInterface.incrementProgressValue();
+		incrementProgressValue();
 		
 		ParticleProperty* property = nullptr;
 
@@ -483,7 +482,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 					}
 					else {
 						// Look for existing user-defined property with the same name.
-						for(int j = 0; j < particleProperties().size(); j++) {
+						for(int j = 0; j < (int)particleProperties().size(); j++) {
 							const auto& p = particleProperties()[j];
 							if(p->name() == propertyName) {
 								if(property->dataType() == dataType)
@@ -523,8 +522,8 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
                                     if (type == NC_CHAR) {
                                         // We can only read this if there is an additional dimension
                                         if (nDims == nDimsDetected+1) {
-                                            int dimids[nDims];
-                                            NCERR( nc_inq_vardimid(_ncid, varId, dimids) );
+											std::vector<int> dimids(nDims);
+											NCERR( nc_inq_vardimid(_ncid, varId, dimids.data()) );
 
                                             size_t strLen;
                                             NCERR( nc_inq_dimlen(_ncid, dimids[nDims-1], &strLen) );
@@ -538,7 +537,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
                                             // Collect all distinct particle names
                                             QMap<QString, bool> discoveredParticleNames;
-                                            for (int i = 0; i < particleCount; i++) {
+											for (size_t i = 0; i < particleCount; i++) {
                                                 QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
                                                 name = name.trimmed();
                                                 discoveredParticleNames[name] = true;
@@ -557,7 +556,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
                                             // Convert particle names to particle ids and set them accordingly
                                             int *particleTypes = property->dataInt();
-                                            for (int i = 0; i < particleCount; i++) {
+											for (size_t i = 0; i < particleCount; i++) {
                                                 QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
                                                 name = name.trimmed();
 
@@ -572,12 +571,12 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
                                         // Find maximum atom type.
                                         int maxType = 0;
-                                        for (int i = 0; i < particleCount; i++)
+										for (size_t i = 0; i < particleCount; i++)
                                             maxType = std::max(property->getInt(i), maxType);
                                         
                                         // Count number of atoms for each type.
                                         QVector<int> typeCount(maxType+1, 0);
-                                        for (int i = 0; i < particleCount; i++)
+										for (size_t i = 0; i < particleCount; i++)
                                             typeCount[property->getInt(i)]++;
 								
                                         for (int i = 0; i <= maxType; i++) {
@@ -626,7 +625,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
                                         FloatType minvals[3], maxvals[3];
                                         std::copy(r, r+3, minvals);
                                         std::copy(r, r+3, maxvals);
-                                        for (int i = 0; i < particleCount; i++) {
+										for (size_t i = 0; i < particleCount; i++) {
                                             for (int k = 0; k < 3; k++) {
                                                 minvals[k] = std::min(minvals[k], r[3*i+k]);
                                                 maxvals[k] = std::max(maxvals[k], r[3*i+k]);
@@ -663,7 +662,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 		}
 	}
 
-	setInfoText(tr("%1 particles").arg(particleCount));
+	setStatus(tr("%1 particles").arg(particleCount));
 }
 
 /******************************************************************************
@@ -740,24 +739,18 @@ OORef<RefTarget> NetCDFImporter::clone(bool deepCopy, CloneHelper& cloneHelper)
 void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 {
 	// Retrieve column names from current input file.
-	LinkedFileObject* obj = nullptr;
+	FileSource* obj = nullptr;
 	for(RefMaker* refmaker : dependents()) {
-		obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		obj = dynamic_object_cast<FileSource>(refmaker);
 		if(obj) break;
 	}
 	if(!obj) return;
 
 	// Start task that inspects the file header to determine the number of data columns.
-	std::unique_ptr<NetCDFImportTask> inspectionTask(new NetCDFImportTask(obj->frames().front()));
-	DataSetContainer& datasetContainer = *dataset()->container();	
-	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&NetCDFImportTask::load,
-			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
-	if(!datasetContainer.taskManager().waitForTask(future))
-		return;
-
+	std::shared_ptr<NetCDFImportTask> inspectionTask = std::make_shared<NetCDFImportTask>(dataset()->container(), obj->frames().front());
 	try {
-		// This is to detect if an error has occurred.
-		future.result();
+		if(!dataset()->container()->taskManager().runTask(inspectionTask))
+			return;
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -770,7 +763,7 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	else {
 		mapping = _customColumnMapping;
 		mapping.resize(inspectionTask->columnMapping().size());
-		for(int i = 0; i < mapping.size(); i++)
+		for(size_t i = 0; i < mapping.size(); i++)
 			mapping[i].columnName = inspectionTask->columnMapping()[i].columnName;
 	}
 
@@ -820,4 +813,4 @@ void NetCDFImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
-};
+}}}	// End of namespace

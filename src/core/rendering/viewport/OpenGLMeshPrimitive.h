@@ -19,20 +19,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file OpenGLMeshPrimitive.h
- * \brief Contains the definition of the Ovito::OpenGLMeshPrimitive class.
- */
-
 #ifndef __OVITO_OPENGL_MESH_PRIMITIVE_H
 #define __OVITO_OPENGL_MESH_PRIMITIVE_H
 
 #include <core/Core.h>
 #include <core/rendering/MeshPrimitive.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/utilities/mesh/TriMesh.h>
 #include "OpenGLBuffer.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /**
  * \brief Buffer object that stores a triangle mesh to be rendered in the viewports.
@@ -84,6 +79,6 @@ private:
 	std::vector<Point3> _triangleCoordinates;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_OPENGL_MESH_PRIMITIVE_H

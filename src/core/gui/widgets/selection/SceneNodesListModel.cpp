@@ -26,7 +26,7 @@
 #include <core/dataset/DataSet.h>
 #include "SceneNodesListModel.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructs the model.
@@ -132,5 +132,4 @@ void SceneNodesListModel::onNodeNotificationEvent(RefTarget* source, ReferenceEv
 	}
 }
 
-
-};
+}}}	// End of namespace

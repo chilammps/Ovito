@@ -26,14 +26,15 @@
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/ImportExportManager.h>
+#include <core/dataset/importexport/FileImporter.h>
+#include <core/dataset/importexport/FileExporter.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/SelectionSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_QUIT command.
@@ -269,7 +270,7 @@ void ActionManager::on_Settings_triggered()
 void ActionManager::on_FileImport_triggered()
 {
 	// Let the user select a file.
-	ImportFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset), mainWindow(), tr("Import Data"));
+	ImportFileDialog dialog(FileImporter::availableImporters(), _dataset, mainWindow(), tr("Import Data"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -288,7 +289,7 @@ void ActionManager::on_FileImport_triggered()
 void ActionManager::on_FileRemoteImport_triggered()
 {
 	// Let the user enter the URL of the remote file.
-	ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset), mainWindow(), tr("Import Remote File"));
+	ImportRemoteFileDialog dialog(FileImporter::availableImporters(), _dataset, mainWindow(), tr("Import Remote File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -315,9 +316,13 @@ void ActionManager::on_FileExport_triggered()
 
 	// Build filter string.
 	QStringList filterStrings;
-	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset);
-	for(FileExporterDescription* descriptor : exporterTypes) {
-		filterStrings << QString("%1 (%2)").arg(descriptor->fileFilterDescription(), descriptor->fileFilter());
+	const auto& exporterTypes = FileExporter::availableExporters();
+	for(const OvitoObjectType* type : exporterTypes) {
+		try {
+			OORef<FileExporter> exporter = static_object_cast<FileExporter>(type->createInstance(_dataset));
+			filterStrings << QString("%1 (%2)").arg(exporter->fileFilterDescription(), exporter->fileFilter());
+		}
+		catch(...) { filterStrings << QString(); }
 	}
 	if(filterStrings.isEmpty()) {
 		Exception(tr("This function is disabled, because there are no export services available.")).showError();
@@ -362,7 +367,7 @@ void ActionManager::on_FileExport_triggered()
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
 		// Create exporter.
-		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset);
+		OORef<FileExporter> exporter = static_object_cast<FileExporter>(exporterTypes[exportFilterIndex]->createInstance(_dataset));
 
 		// Load user-defined default settings.
 		exporter->loadUserDefaults();
@@ -374,4 +379,4 @@ void ActionManager::on_FileExport_triggered()
 	}
 }
 
-};
+}}	// End of namespace

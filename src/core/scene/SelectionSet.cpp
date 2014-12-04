@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/scene/SelectionSet.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SelectionSet, RefTarget);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SelectionSet, _selection, "SelectedNodes", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET);
@@ -97,15 +97,6 @@ void SelectionSet::remove(SceneNode* node)
 ******************************************************************************/
 bool SelectionSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(event->type() == ReferenceEvent::TargetChanged) {
-        // Convert changes messages from scene nodes.
-        SceneNode* sourceNode = dynamic_object_cast<SceneNode>(source);
-        OVITO_CHECK_OBJECT_POINTER(sourceNode);
-        if(sourceNode) {
-        	NodeInSelectionSetChangedEvent e(this, sourceNode, event);
-        	notifyDependents(e);
-        }
-	}
 	// Do not propagate events from selected nodes.
 	return false;
 }
@@ -165,4 +156,4 @@ Box3 SelectionSet::boundingBox(TimePoint time) const
 	return bb;
 }
 
-};
+}}}	// End of namespace

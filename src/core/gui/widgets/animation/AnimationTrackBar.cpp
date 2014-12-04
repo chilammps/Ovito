@@ -27,7 +27,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "AnimationTrackBar.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 using namespace std;
 
@@ -36,18 +36,17 @@ using namespace std;
 ******************************************************************************/
 AnimationTrackBar::AnimationTrackBar(MainWindow* mainWindow, AnimationTimeSlider* timeSlider, QWidget* parent) :
 	QFrame(parent), _timeSlider(timeSlider), _animSettings(nullptr),
-	_keyBrushes{{
-		QColor(150,150,200),	// Color for float controller keys
-		QColor(150,150,200),	// Color for integer controller keys
-		QColor(150,200,150),	// Color for vector controller keys
-		QColor(200,150,150),	// Color for position controller keys
-		QColor(200,200,150),	// Color for rotation controller keys
-		QColor(150,200,200),	// Color for scaling controller keys
-		QColor(150,150,150),	// Color for transformation controller keys
-	}},
 	_keyPen(Qt::black), _selectedKeyPen(QColor(255,255,255)), _selectionCursor(Qt::CrossCursor),
 	_isDragging(false), _dragStartPos(-1)
 {
+	_keyBrushes[0] = QBrush(QColor(150,150,200));	// Color for float controller keys
+	_keyBrushes[1] = QBrush(QColor(150,150,200));	// Color for integer controller keys
+	_keyBrushes[2] = QBrush(QColor(150,200,150));	// Color for vector controller keys
+	_keyBrushes[3] = QBrush(QColor(200,150,150));	// Color for position controller keys
+	_keyBrushes[4] = QBrush(QColor(200,200,150));	// Color for rotation controller keys
+	_keyBrushes[5] = QBrush(QColor(150,200,200));	// Color for scaling controller keys
+	_keyBrushes[6] = QBrush(QColor(150,150,150));	// Color for transformation controller keys
+
 	setFrameShape(QFrame::NoFrame);
 	setAutoFillBackground(true);
 	setMouseTracking(true);
@@ -506,5 +505,4 @@ void AnimationTrackBar::onDeleteSelectedKeys()
 	});
 }
 
-
-};
+}}}	// End of namespace

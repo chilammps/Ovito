@@ -25,7 +25,7 @@
 
 #include <QGLWidget>
 
-namespace Ovito {
+namespace Ovito { namespace Rendering { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -88,6 +88,8 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 
 	if(text().isEmpty() || !vpRenderer || renderer->isPicking())
 		return;
+
+	vpRenderer->rebindVAO();
 
 	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
 	if(vpRenderer->isCoreProfile() == false)
@@ -208,7 +210,7 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 	if(vpRenderer->isCoreProfile() == false)
 		glDisable(GL_TEXTURE_2D);
 
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 }
 
-};
+}}}	// End of namespace

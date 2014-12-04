@@ -23,7 +23,7 @@
 #define __OVITO_COLOR_CODING_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/rendering/ImagePrimitive.h>
@@ -31,13 +31,12 @@
 #include <core/viewport/Viewport.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
 
-using namespace Ovito;
-
-/*
- * Abstract base class for color gradients that can be used with the ColorCodingModifier.
- * It converts a scalar value in the range [0,1] to a color value.
+/**
+ * \brief Abstract base class for color gradients that can be used with a ColorCodingModifier.
+ *
+ * Implementations of this class convert a scalar value in the range [0,1] to a color value.
  */
 class OVITO_PARTICLES_EXPORT ColorCodingGradient : public RefTarget
 {
@@ -59,8 +58,8 @@ private:
 	OVITO_OBJECT
 };
 
-/*
- * Converts a scalar value to a color using the HSV color system.
+/**
+ * \brief Converts a scalar value to a color using the HSV color system.
  */
 class ColorCodingHSVGradient : public ColorCodingGradient
 {
@@ -81,8 +80,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Rainbow");
 };
 
-/*
- * Converts a scalar value to a color using a gray-scale ramp.
+/**
+ * \brief Converts a scalar value to a color using a gray-scale ramp.
  */
 class ColorCodingGrayscaleGradient : public ColorCodingGradient
 {
@@ -103,8 +102,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Grayscale");
 };
 
-/*
- * Converts a scalar value to a color.
+/**
+ * \brief Converts a scalar value to a color.
  */
 class ColorCodingHotGradient : public ColorCodingGradient
 {
@@ -129,8 +128,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Hot");
 };
 
-/*
- * Converts a scalar value to a color.
+/**
+ * \brief Converts a scalar value to a color.
  */
 class ColorCodingJetGradient : public ColorCodingGradient
 {
@@ -157,8 +156,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Jet");
 };
 
-/*
- * Converts a scalar value to a color based on a user-defined image.
+/**
+ * \brief Converts a scalar value to a color based on a user-defined image.
  */
 class ColorCodingImageGradient : public ColorCodingGradient
 {
@@ -196,9 +195,8 @@ private:
 };
 
 
-/*
- * This modifier assigns a colors to the particles based on the value of a
- * selected particle property.
+/**
+ * \brief This modifier assigns a colors to the particles based on the value of a particle property.
  */
 class ColorCodingModifier : public ParticleModifier
 {
@@ -213,9 +211,6 @@ public:
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Sets the source particle property that is used for coloring of particles.
 	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
@@ -270,15 +265,6 @@ public Q_SLOTS:
 	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
 	bool adjustRange();
 
-public:
-
-	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue);
-	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue);
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient);
-	Q_PROPERTY(bool colorOnlySelected READ colorOnlySelected WRITE setColorOnlySelected);
-	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection);
-
 protected:
 
 	/// Saves the class' contents to the given stream.
@@ -286,6 +272,9 @@ protected:
 
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
@@ -325,7 +314,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
-/*
+namespace Internal {
+
+/**
  * A properties editor for the ColorCodingModifier class.
  */
 class ColorCodingModifierEditor : public ParticleModifierEditor
@@ -385,6 +376,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_COLOR_CODING_MODIFIER_H

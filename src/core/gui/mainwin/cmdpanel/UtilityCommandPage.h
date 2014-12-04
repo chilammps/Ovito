@@ -19,15 +19,18 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_UTILITY_COMMAND_PAGE_H
+#define __OVITO_UTILITY_COMMAND_PAGE_H
+
 #include <core/Core.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
-#include "UtilityApplet.h"
+#include <core/plugins/utility/UtilityApplet.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
-/******************************************************************************
-* The utility page lets the user invoke utility plugins.
-******************************************************************************/
+/**
+ * The utility page lets the user invoke utility plugins.
+ */
 class OVITO_CORE_EXPORT UtilityCommandPage : public QWidget
 {
 	Q_OBJECT
@@ -71,5 +74,6 @@ private:
 	QButtonGroup* utilitiesButtonGroup;
 };
 
+}}}	// End of namespace
 
-};
+#endif // __OVITO_UTILITY_COMMAND_PAGE_H

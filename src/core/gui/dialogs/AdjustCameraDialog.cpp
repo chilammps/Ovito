@@ -25,7 +25,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include "AdjustCameraDialog.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * The constructor of the viewport settings dialog.
@@ -220,4 +220,4 @@ void AdjustCameraDialog::onCancel()
 	reject();
 }
 
-};
+}}}	// End of namespace

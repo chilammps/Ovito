@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,18 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file NativePlugin.h
- * \brief Contains the definition of the Ovito::NativePlugin class.
- */
-
 #ifndef __OVITO_NATIVE_PLUGIN_H
 #define __OVITO_NATIVE_PLUGIN_H
 
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem { namespace Internal {
 
 /**
  * \brief A plugin that is implemented as a native shared library.
@@ -52,15 +47,7 @@ public:
 protected:
 
 	/// \brief Constructor that loads the given manifest file.
-	/// \param manifestFile Full path to the plugin's manifest file.
-	/// \throw Exception on parsing error.
 	NativePlugin(const QString& manifestFile);
-
-	/// \brief Parses a custom top-level element from the manifest that is specific to the plugin type.
-	/// \return \c true if the element was processed by the method; \c false if the element was not known
-	///         to the implementation of the method.
-	/// \throw Exception on error.
-	virtual bool parseToplevelManifestElement(const QDomElement& element) override;
 
 	/// \brief Loads the plugin's dynamic link library.
 	/// \throw Exception on error.
@@ -74,9 +61,9 @@ private:
 	/// The plugin library after it has been loaded.
 	QLibrary* _library;
 
-	friend class PluginManager;
+	friend class Ovito::PluginSystem::PluginManager;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_NATIVE_PLUGIN_H

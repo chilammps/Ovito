@@ -1,6 +1,6 @@
 ###############################################################################
 # 
-#  Copyright (2013) Alexander Stukowski
+#  Copyright (2014) Alexander Stukowski
 #
 #  This file is part of OVITO (Open Visualization Tool).
 #
@@ -20,28 +20,32 @@
 ###############################################################################
 
 SET(OVITO_PARTICLES_SOURCE_FILES 
-	data/SimulationCell.cpp
-	data/SimulationCellDisplay.cpp
-	data/ParticlePropertyObject.cpp
+	objects/SimulationCellObject.cpp
+	objects/SimulationCellDisplay.cpp
+	objects/ParticlePropertyObject.cpp
+	objects/ParticleDisplay.cpp
+	objects/ParticleType.cpp
+	objects/ParticleTypeProperty.cpp
+	objects/VectorDisplay.cpp
+	objects/BondsObject.cpp
+	objects/BondsDisplay.cpp
+	objects/SurfaceMesh.cpp
+	objects/SurfaceMeshDisplay.cpp
 	data/ParticleProperty.cpp
-	data/ParticleDisplay.cpp
-	data/ParticleType.cpp
-	data/ParticleTypeProperty.cpp
-	data/VectorDisplay.cpp
-	data/BondsObject.cpp
 	data/BondsStorage.cpp
-	data/BondsDisplay.cpp
-	data/ParticleSelectionSet.cpp
-	data/SurfaceMesh.cpp
-	data/SurfaceMeshDisplay.cpp
 	modifier/ParticleModifier.cpp
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
 	modifier/coloring/ColorCodingModifier.cpp
+	modifier/coloring/ColorLegendOverlay.cpp
 	modifier/coloring/AmbientOcclusionModifier.cpp
 	modifier/coloring/AmbientOcclusionRenderer.cpp
-	modifier/slice/SliceModifier.cpp
-	modifier/delete/DeleteParticlesModifier.cpp
+	modifier/modify/SliceModifier.cpp
+	modifier/modify/DeleteParticlesModifier.cpp
+	modifier/modify/AffineTransformationModifier.cpp
+	modifier/modify/ShowPeriodicImagesModifier.cpp
+	modifier/modify/WrapPeriodicImagesModifier.cpp
+	modifier/modify/CreateBondsModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
 	modifier/analysis/binandreduce/BinAndReduceModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
@@ -52,43 +56,39 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/diamond/IdentifyDiamondModifier.cpp	
-	modifier/analysis/bonds/CreateBondsModifier.cpp
 	modifier/analysis/voronoi/VoronoiAnalysisModifier.cpp
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
 	modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.cpp
-	modifier/transformation/AffineTransformationModifier.cpp
-	modifier/pbc/ShowPeriodicImagesModifier.cpp
-	modifier/pbc/WrapPeriodicImagesModifier.cpp
 	modifier/selection/InvertSelectionModifier.cpp
 	modifier/selection/SelectParticleTypeModifier.cpp
 	modifier/selection/SelectExpressionModifier.cpp
 	modifier/selection/ManualSelectionModifier.cpp
 	modifier/selection/ClearSelectionModifier.cpp
-	modifier/properties/CreateExpressionPropertyModifier.cpp
+	modifier/properties/ComputePropertyModifier.cpp
 	modifier/properties/FreezePropertyModifier.cpp
-	importer/ParticleImporter.cpp
-	importer/ParticleImportTask.cpp
-	importer/InputColumnMapping.cpp
-	importer/InputColumnMappingDialog.cpp
-	importer/lammps/LAMMPSTextDumpImporter.cpp
-	importer/lammps/LAMMPSBinaryDumpImporter.cpp
-	importer/lammps/LAMMPSDataImporter.cpp
-	importer/vasp/POSCARImporter.cpp
-	importer/xyz/XYZImporter.cpp
-	importer/imd/IMDImporter.cpp
-	importer/parcas/ParcasFileImporter.cpp
-	importer/cfg/CFGImporter.cpp
-	importer/pdb/PDBImporter.cpp
-	exporter/ParticleExporter.cpp
-	exporter/ParticleExporterSettingsDialog.cpp
-	exporter/OutputColumnMapping.cpp
-	exporter/vasp/POSCARExporter.cpp
-	exporter/lammps/LAMMPSDataExporter.cpp
-	exporter/lammps/LAMMPSDumpExporter.cpp
-	exporter/xyz/XYZExporter.cpp
-	exporter/imd/IMDExporter.cpp
+	import/ParticleImporter.cpp
+	import/ParticleFrameLoader.cpp
+	import/InputColumnMapping.cpp
+	import/InputColumnMappingDialog.cpp
+	import/lammps/LAMMPSTextDumpImporter.cpp
+	import/lammps/LAMMPSBinaryDumpImporter.cpp
+	import/lammps/LAMMPSDataImporter.cpp
+	import/vasp/POSCARImporter.cpp
+	import/xyz/XYZImporter.cpp
+	import/imd/IMDImporter.cpp
+	import/parcas/ParcasFileImporter.cpp
+	import/cfg/CFGImporter.cpp
+	import/pdb/PDBImporter.cpp
+	export/ParticleExporter.cpp
+	export/ParticleExporterSettingsDialog.cpp
+	export/OutputColumnMapping.cpp
+	export/vasp/POSCARExporter.cpp
+	export/lammps/LAMMPSDataExporter.cpp
+	export/lammps/LAMMPSDumpExporter.cpp
+	export/xyz/XYZExporter.cpp
+	export/imd/IMDExporter.cpp
 	util/TreeNeighborListBuilder.cpp
 	util/OnTheFlyNeighborListBuilder.cpp
 	util/ParticlePropertyComboBox.cpp
@@ -97,14 +97,8 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ParticlePickingHelper.cpp
 	util/ParticlePropertyParameterUI.cpp
 	util/ParticleExpressionEvaluator.cpp
-	util/ColorLegendOverlay.cpp
+	util/ParticleSelectionSet.cpp
 )
-
-IF(OVITO_BUILD_PLUGIN_SCRIPTING)
-	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES
-		scripting/ParticlesBinding.cpp
-	)
-ENDIF()
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
 	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES 
@@ -131,15 +125,12 @@ SET(GLUSourceFiles
 
 # Generate plugin module.
 OVITO_PLUGIN(Particles
-	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
+	SOURCES Particles.cpp ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot VoroPlusPlus ${OPENGL_gl_LIBRARY}
-	OPTIONAL_PLUGIN_DEPENDENCIES Scripting PyScript
+	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
+	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
 )
 
-# Add Boost include directories.
-TARGET_INCLUDE_DIRECTORIES(Particles PRIVATE ${Boost_INCLUDE_DIRS})
-
-# Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
-
+# Speed up compilation by using precompiled headers.
+ADD_PRECOMPILED_HEADER(Particles plugins/particles/Particles.h)

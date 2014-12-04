@@ -23,7 +23,7 @@
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include "FrameBufferWindow.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Constructor.
@@ -176,4 +176,4 @@ void FrameBufferWindow::autoCrop()
 	}
 }
 
-};
+}}}	// End of namespace

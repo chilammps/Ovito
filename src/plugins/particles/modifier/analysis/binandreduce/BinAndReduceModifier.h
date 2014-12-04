@@ -23,22 +23,22 @@
 #ifndef __OVITO_BIN_AND_REDUCE_MODIFIER_H
 #define __OVITO_BIN_AND_REDUCE_MODIFIER_H
 
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../ParticleModifier.h"
+
+#ifndef signals
+#define signals Q_SIGNALS
+#endif
 #include <qcustomplot.h>
 
-class QCustomPlot;
-class QCPItemStraightLine;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-namespace Particles {
-
-/*
- * This modifier computes a spatial average (over splices) for a particle
- * property.
+/**
+ * \brief This modifier computes a spatial average (over splices) for a particle property.
  */
 class OVITO_PARTICLES_EXPORT BinAndReduceModifier : public ParticleModifier
 {
@@ -52,9 +52,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE BinAndReduceModifier(DataSet* dataset);
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Sets the source particle property for which the average should be computed.
 	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
@@ -142,19 +139,13 @@ public:
         return (d >> 2) & 3;
     }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
-    Q_PROPERTY(bool firstDerivative READ firstDerivative WRITE setFirstDerivative);
-	Q_PROPERTY(Particles::BinAndReduceModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
-	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
-	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
-
 protected:
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 private:
 
@@ -217,9 +208,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
-/******************************************************************************
-* A properties editor for the BinAndReduceModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the BinAndReduceModifier class.
+ */
 class BinAndReduceModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -273,11 +266,13 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::ReductionOperationType);
-Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+}}}}}	// End of namespace
+
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType);
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_BIN_AND_REDUCE_MODIFIER_H

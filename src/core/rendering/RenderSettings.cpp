@@ -20,18 +20,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/rendering/RenderSettings.h>
-#include <core/rendering/RenderSettingsEditor.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/rendering/standard/StandardSceneRenderer.h>
 #include <core/viewport/Viewport.h>
 #include <core/gui/app/Application.h>
 #include <core/plugins/PluginManager.h>
+#include "RenderSettings.h"
+#include "RenderSettingsEditor.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
-SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor);
+SET_OVITO_OBJECT_EDITOR(RenderSettings, Internal::RenderSettingsEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer, PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", Controller, PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageWidth, "OutputImageWidth");
@@ -134,7 +134,7 @@ void RenderSettings::loadFromStream(ObjectLoadStream& stream)
 	if(fileVersion == 0) {
 		bool generateAlphaChannel;
 		RenderingRangeType renderingRange;
-		stream.readEnum(renderingRange);
+		stream >> renderingRange;
 		stream >> _imageInfo;
 		stream >> generateAlphaChannel;
 		_generateAlphaChannel = generateAlphaChannel;
@@ -162,4 +162,4 @@ OORef<RefTarget> RenderSettings::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-};
+}}	// End of namespace

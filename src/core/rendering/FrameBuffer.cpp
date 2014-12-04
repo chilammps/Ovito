@@ -22,10 +22,10 @@
 #include <core/Core.h>
 #include <core/rendering/FrameBuffer.h>
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <3rdparty/video/VideoEncoder.h>
+	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 #define IMAGE_FORMAT_FILE_FORMAT_VERSION		1
 
@@ -43,7 +43,7 @@ bool ImageInfo::guessFormatFromFilename()
 		return true;
 	}
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
+	for(const auto& videoFormat : Ovito::Util::IO::Internal::VideoEncoder::supportedFormats()) {
 		for(const QString& extension : videoFormat.extensions) {
 			if(filename().endsWith(QStringLiteral(".") + extension, Qt::CaseInsensitive)) {
 				setFormat(videoFormat.name);
@@ -62,7 +62,7 @@ bool ImageInfo::guessFormatFromFilename()
 bool ImageInfo::isMovie() const
 {
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
+	for(const auto& videoFormat : Ovito::Util::IO::Internal::VideoEncoder::supportedFormats()) {
 		if(format() == videoFormat.name)
 			return true;
 	}
@@ -99,4 +99,4 @@ LoadStream& operator>>(LoadStream& stream, ImageInfo& i)
 	return stream;
 }
 
-};
+}}	// End of namespace

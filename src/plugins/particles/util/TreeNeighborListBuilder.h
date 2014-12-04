@@ -19,23 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file TreeNeighborListBuilder.h
- * \brief Contains the definition of the Particles::TreeNeighborListBuilder class.
- */
-
 #ifndef __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 #define __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
 
-#include <core/Core.h>
-#include <base/utilities/BoundedPriorityQueue.h>
-#include <base/utilities/MemoryPool.h>
+#include <plugins/particles/Particles.h>
+#include <core/utilities/BoundedPriorityQueue.h>
+#include <core/utilities/MemoryPool.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
  * \brief Finds the N nearest neighbors of particles.
@@ -60,7 +53,7 @@ private:
 		bool isLeaf() const { return splitDim == -1; }
 
 		/// Converts the bounds of this node and all children to absolute coordinates.
-		void convertToAbsoluteCoordinates(const SimulationCellData& cell) {
+		void convertToAbsoluteCoordinates(const SimulationCell& cell) {
 			bounds.minc = cell.reducedToAbsolute(bounds.minc);
 			bounds.maxc = cell.reducedToAbsolute(bounds.maxc);
 			if(!isLeaf()) {
@@ -102,7 +95,7 @@ public:
 	/// \return \c false when the operation has been canceled by the user;
 	///         \c true on success.
 	/// \throw Exception on error.
-	bool prepare(ParticleProperty* posProperty, const SimulationCellData& cellData);
+	bool prepare(ParticleProperty* posProperty, const SimulationCell& cellData);
 
 	/// Returns the position of the i-th particle.
 	const Point3& particlePos(size_t index) const {
@@ -124,6 +117,7 @@ public:
 		return closestIndex;
 	}
 
+	/// Contains information about a single neighbor of the central particle.
 	struct Neighbor
 	{
 		Vector3 delta;
@@ -135,6 +129,7 @@ public:
 		bool operator<(const Neighbor& other) const { return distanceSq < other.distanceSq; }
 	};
 
+	/// Iterator over the nearest neighbors of a central particle.
 	template<int MAX_NEIGHBORS_LIMIT>
 	class Locator
 	{
@@ -271,7 +266,7 @@ private:
 	std::vector<NeighborListAtom> atoms;
 
 	// Simulation cell.
-	SimulationCellData simCell;
+	SimulationCell simCell;
 
 	/// The normal vectors of the three cell planes.
 	Vector3 planeNormals[3];
@@ -300,6 +295,6 @@ public:
 	int maxTreeDepth;
 };
 
-}; // End of namespace
+}}}} // End of namespace
 
 #endif // __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H

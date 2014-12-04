@@ -38,11 +38,14 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ColorCodingModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
+}
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, Internal::ColorCodingModifierEditor);
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", Controller);
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", Controller);
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient);
@@ -129,7 +132,7 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 		// Select the first available particle property from the input.
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
-		for(SceneObject* o : input.objects()) {
+		for(DataObject* o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
@@ -272,8 +275,8 @@ bool ColorCodingModifier::adjustRange()
 	int stride = property->stride() / property->dataTypeSize();
 
 	// Iterate over all atoms.
-	FloatType maxValue = -FLOATTYPE_MAX;
-	FloatType minValue = +FLOATTYPE_MAX;
+	FloatType maxValue = FLOATTYPE_MIN;
+	FloatType minValue = FLOATTYPE_MAX;
 	if(property->dataType() == qMetaTypeId<FloatType>()) {
 		const FloatType* v = property->constDataFloat() + vecComponent;
 		const FloatType* vend = v + (property->size() * stride);
@@ -353,6 +356,8 @@ Color ColorCodingImageGradient::valueToColor(FloatType t)
 	return Color(image().pixel(p));
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -416,7 +421,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	exportBtn->setAutoRaise(true);
 	exportBtn->setIconSize(QSize(42,22));
 	connect(exportBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onExportColorScale);
-	layout2->addWidget(exportBtn, 1, 0, Qt::AlignHCenter | Qt::AlignVCenter);
+	layout2->addWidget(exportBtn, 1, 0, Qt::AlignCenter);
 
 	layout1->addSpacing(8);
 	QPushButton* adjustBtn = new QPushButton(tr("Adjust range"), rollout);
@@ -641,5 +646,6 @@ QIcon ColorCodingModifierEditor::iconFromColorMap(ColorCodingGradient* map)
 	return QIcon(QPixmap::fromImage(image));
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

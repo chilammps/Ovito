@@ -27,7 +27,7 @@
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "SmoothDislocationsModifier.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifierEditor, PropertiesEditor);
@@ -162,9 +162,9 @@ void SmoothDislocationsModifier::smoothDislocationLine(int smoothingLevel, QVect
 	// A Signal Processing Approach To Fair Surface Design
 	// In SIGGRAPH 95 Conference Proceedings, pages 351-358 (1995)
 
-	FloatType k_PB = 0.1;
-	FloatType lambda = 0.5;
-	FloatType mu = 1.0 / (k_PB - FloatType(1)/lambda);
+	FloatType k_PB = 0.1f;
+	FloatType lambda = 0.5f;
+	FloatType mu = 1.0f / (k_PB - 1.0f/lambda);
 	const FloatType prefactors[2] = { lambda, mu };
 
 	std::vector<Vector3> laplacians(line.size());
@@ -236,6 +236,4 @@ void SmoothDislocationsModifierEditor::createUI(const RolloutInsertionParameters
 	linePointIntervalUI->setMinValue(0);
 }
 
-
-};	// End of namespace
-
+}}}	// End of namespace

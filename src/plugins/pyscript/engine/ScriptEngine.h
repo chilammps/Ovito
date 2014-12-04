@@ -61,6 +61,9 @@ public:
 	/// \throw Exception on error.
 	int executeFile(const QString& file);
 
+	/// Provides access to the global namespace the script will be executed in by this script engine.
+	boost::python::dict& mainNamespace() { return _mainNamespace; }
+
 Q_SIGNALS:
 
 	/// This signal is emitted when the Python script writes to the sys.stdout stream.
@@ -101,9 +104,6 @@ private:
 
 	/// Flag that indicates whether the global Python interpreter has been initialized.
 	static bool _isInterpreterInitialized;
-
-	/// The prototype namespace that is used to initialize new script engines with.
-	static boost::python::dict _prototypeMainNamespace;
 
 	/// The script engine that is currently active (i.e. which is executing a script).
 	static QAtomicPointer<ScriptEngine> _activeEngine;

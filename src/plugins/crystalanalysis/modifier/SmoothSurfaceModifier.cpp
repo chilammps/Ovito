@@ -20,12 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/particles/data/SurfaceMesh.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "SmoothSurfaceModifier.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifierEditor, PropertiesEditor);
@@ -58,8 +58,8 @@ PipelineStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierAppli
 		return PipelineStatus::Success;
 
 	// Get simulation cell geometry and periodic boundary flags.
-	SimulationCellData cell;
-	if(SimulationCell* simulationCellObj = state.findObject<SimulationCell>())
+	SimulationCell cell;
+	if(SimulationCellObject* simulationCellObj = state.findObject<SimulationCellObject>())
 		cell = simulationCellObj->data();
 	else
 		cell.setPbcFlags(false, false, false);
@@ -94,6 +94,4 @@ void SmoothSurfaceModifierEditor::createUI(const RolloutInsertionParameters& rol
 	smoothingLevelUI->setMinValue(0);
 }
 
-
-};	// End of namespace
-
+}}}	// End of namespace

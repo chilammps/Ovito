@@ -23,16 +23,15 @@
 #define __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/VectorDisplay.h>
+#include <plugins/particles/objects/VectorDisplay.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include "../../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-/******************************************************************************
-* Calculates the per-particle displacement vectors by comparing the current
-* positions to a reference configuration.
-******************************************************************************/
+/**
+ * \brief Calculates the per-particle displacement vectors based on a reference configuration.
+ */
 class OVITO_PARTICLES_EXPORT CalculateDisplacementsModifier : public ParticleModifier
 {
 public:
@@ -42,17 +41,17 @@ public:
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	SceneObject* referenceConfiguration() const { return _referenceObject; }
+	DataObject* referenceConfiguration() const { return _referenceObject; }
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(DataObject* refConf) { _referenceObject = refConf; }
 
 	/// Returns the source URL of the reference configuration.
 	QUrl referenceSource() const;
 
 	/// Sets the source URL of the reference configuration.
-	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
+	void setReferenceSource(const QUrl& sourceUrl, const OvitoObjectType* importerType = nullptr);
 
 	/// Returns true if the homogeneous deformation of the simulation cell is eliminated from the calculated displacement vectors.
 	bool eliminateCellDeformation() const { return _eliminateCellDeformation; }
@@ -87,17 +86,6 @@ public:
 	/// Returns the vector display object, which is responsible for rendering the computed displacement vectors.
 	VectorDisplay* vectorDisplay() const { return _vectorDisplay; }
 
-public:
-
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation);
-	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates);
-	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
-	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
-	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
-	Q_PROPERTY(VectorDisplay* vectorDisplay READ vectorDisplay);
-	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
-	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
-
 protected:
 
 	/// Handles reference events sent by reference targets of this object.
@@ -107,7 +95,7 @@ protected:
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The reference configuration.
-	ReferenceField<SceneObject> _referenceObject;
+	ReferenceField<DataObject> _referenceObject;
 
 	/// Controls the whether the reference configuration is shown instead of the current configuration.
 	PropertyField<bool> _referenceShown;
@@ -148,9 +136,11 @@ private:
 	DECLARE_REFERENCE_FIELD(_vectorDisplay);
 };
 
-/******************************************************************************
-* A properties editor for the CalculateDisplacementsModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the CalculateDisplacementsModifier class.
+ */
 class CalculateDisplacementsModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -167,6 +157,8 @@ protected:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H

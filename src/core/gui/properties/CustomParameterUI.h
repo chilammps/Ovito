@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "ParameterUI.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 /******************************************************************************
 * Utility class for creating UIs for custom parameter types.
@@ -101,6 +101,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_VARIANT_COMBO_BOX_PARAMETER_UI_H

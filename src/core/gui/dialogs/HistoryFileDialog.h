@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file HistoryFileDialog.h
- * \brief Contains the definition of the Ovito::HistoryFileDialog class.
- */
-
 #ifndef __OVITO_HISTORY_FILE_DIALOG_H
 #define __OVITO_HISTORY_FILE_DIALOG_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Dialogs {
 
 /**
  * \brief The file chooser dialog that saves a history of recently visited directories.
@@ -62,6 +57,6 @@ private:
 	QString _dialogClass;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_HISTORY_FILE_DIALOG_H

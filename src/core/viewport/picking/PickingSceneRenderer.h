@@ -19,17 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file PickingSceneRenderer.h
- * \brief Contains the definition of the Ovito::PickingSceneRenderer class.
- */
 #ifndef __OVITO_PICKING_SCENE_RENDERER_H
 #define __OVITO_PICKING_SCENE_RENDERER_H
 
 #include <core/Core.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito {
+namespace Ovito { namespace View { namespace Internal {
 
 /**
  * \brief A viewport renderer used for object picking.
@@ -111,6 +107,6 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_PICKING_SCENE_RENDERER_H

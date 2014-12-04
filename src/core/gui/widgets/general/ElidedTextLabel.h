@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Widgets {
 
 /**
  * \brief A QLabel-like widget that display a line of text, which is shortened if necessary to fit the available space.
@@ -60,6 +60,6 @@ protected:
 	void paintEvent(QPaintEvent *) override;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_ELIDED_TEXT_LABEL_H

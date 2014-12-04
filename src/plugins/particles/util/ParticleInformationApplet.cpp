@@ -26,11 +26,11 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/ParticleTypeProperty.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "ParticleInformationApplet.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleInformationApplet, UtilityApplet);
 
@@ -106,8 +106,8 @@ void ParticleInformationApplet::updateInformationDisplay()
 
 		// If selection is based on particle ID, update the stored particle index in case order has changed.
 		if(pickedParticle.particleId >= 0) {
-			for(SceneObject* sceneObj : flowState.objects()) {
-				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+			for(DataObject* dataObj : flowState.objects()) {
+				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 				if(property && property->type() == ParticleProperty::IdentifierProperty) {
 					const int* begin = property->constDataInt();
 					const int* end = begin + property->size();
@@ -121,8 +121,8 @@ void ParticleInformationApplet::updateInformationDisplay()
 		stream << QStringLiteral("<b>") << tr("Particle index") << QStringLiteral(" ") << (pickedParticle.particleIndex + 1) << QStringLiteral(":</b>");
 		stream << QStringLiteral("<table border=\"0\">");
 
-		for(SceneObject* sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+		for(DataObject* dataObj : flowState.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
 			if(!property || property->size() <= pickedParticle.particleIndex) continue;
 
 			// Update saved particle position in case it has changed.
@@ -160,9 +160,9 @@ void ParticleInformationApplet::updateInformationDisplay()
 	else if(_inputMode->_pickedParticles.size() >= 2) {
 		stream << QStringLiteral("<b>") << tr("Distances:") << QStringLiteral("</b>");
 		stream << QStringLiteral("<table border=\"0\">");
-		for(int i = 0; i < _inputMode->_pickedParticles.size(); i++) {
+		for(size_t i = 0; i < _inputMode->_pickedParticles.size(); i++) {
 			const auto& p1 = _inputMode->_pickedParticles[i];
-			for(int j = i + 1; j < _inputMode->_pickedParticles.size(); j++) {
+			for(size_t j = i + 1; j < _inputMode->_pickedParticles.size(); j++) {
 				const auto& p2 = _inputMode->_pickedParticles[j];
 				stream << QStringLiteral("<tr><td>(") <<
 						(p1.particleIndex+1) << QStringLiteral(",") << (p2.particleIndex+1) <<
@@ -174,12 +174,12 @@ void ParticleInformationApplet::updateInformationDisplay()
 	if(_inputMode->_pickedParticles.size() >= 3) {
 		stream << QStringLiteral("<b>") << tr("Angles:") << QStringLiteral("</b>");
 		stream << QStringLiteral("<table border=\"0\">");
-		for(int i = 0; i < _inputMode->_pickedParticles.size(); i++) {
+		for(size_t i = 0; i < _inputMode->_pickedParticles.size(); i++) {
 			const auto& p1 = _inputMode->_pickedParticles[i];
-			for(int j = 0; j < _inputMode->_pickedParticles.size(); j++) {
+			for(size_t j = 0; j < _inputMode->_pickedParticles.size(); j++) {
 				if(j == i) continue;
 				const auto& p2 = _inputMode->_pickedParticles[j];
-				for(int k = j + 1; k < _inputMode->_pickedParticles.size(); k++) {
+				for(size_t k = j + 1; k < _inputMode->_pickedParticles.size(); k++) {
 					if(k == i) continue;
 					const auto& p3 = _inputMode->_pickedParticles[k];
 					Vector3 v1 = p2.localPos - p1.localPos;
@@ -248,4 +248,4 @@ Box3 ParticleInformationInputMode::overlayBoundingBox(Viewport* vp, ViewportScen
 	return bbox;
 }
 
-};
+}}}}}	// End of namespace

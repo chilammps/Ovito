@@ -24,7 +24,6 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
-#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/animation/controller/Controller.h>
 #include <core/plugins/PluginManager.h>
 #include <core/plugins/autostart/AutoStartObject.h>
@@ -173,7 +172,6 @@ bool Application::initialize(int& argc, char** argv)
 		PluginManager::initialize();
 		ControllerManager::initialize();
 		FileManager::initialize();
-		ImportExportManager::initialize();
 
 		// Load auto-start objects and let them register their custom command line options.
 		for(const OvitoObjectType* clazz : PluginManager::instance().listClasses(AutoStartObject::OOType)) {
@@ -300,7 +298,6 @@ void Application::shutdown()
 	_autostartObjects.clear();
 
 	// Shutdown global objects in reverse order they were initialized.
-	ImportExportManager::shutdown();
 	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();

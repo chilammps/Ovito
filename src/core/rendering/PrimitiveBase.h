@@ -24,9 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
-
-class SceneRenderer;
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Abstract base class for drawing primitives.
@@ -45,6 +43,6 @@ public:
 	virtual void render(SceneRenderer* renderer) = 0;
 };
 
-};
+}}	// End of namespace
 
 #endif // __OVITO_PRIMITIVE_BASE_H

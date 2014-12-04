@@ -27,15 +27,16 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include "../../ParticleModifier.h"
+
+#ifndef signals
+#define signals Q_SIGNALS
+#endif
 #include <qcustomplot.h>
 
-class QCustomPlot;
-class QCPItemStraightLine;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-namespace Particles {
-
-/*
- * This modifier computes a scatter plot for two particle properties.
+/**
+ * \brief This modifier computes a scatter plot for two particle properties.
  */
 class OVITO_PARTICLES_EXPORT ScatterPlotModifier : public ParticleModifier
 {
@@ -43,9 +44,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE ScatterPlotModifier(DataSet* dataset);
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Sets the source particle property for which the scatter plot should be computed.
 	void setXAxisProperty(const ParticlePropertyReference& prop) { _xAxisProperty = prop; }
@@ -119,21 +117,13 @@ public:
 	/// Returns the end value of the y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference xAxisProperty READ xAxisProperty WRITE setXAxisProperty);
-	Q_PROPERTY(Particles::ParticlePropertyReference yAxisProperty READ yAxisProperty WRITE setYAxisProperty);
-	Q_PROPERTY(bool selectXAxisInRange READ selectXAxisInRange WRITE setSelectXAxisInRange);
-	Q_PROPERTY(FloatType selectionXAxisRangeStart READ selectionXAxisRangeStart);
-	Q_PROPERTY(FloatType selectionXAxisRangeEnd READ selectionXAxisRangeEnd);
-	Q_PROPERTY(bool selectYAxisInRange READ selectYAxisInRange WRITE setSelectYAxisInRange);
-	Q_PROPERTY(FloatType selectionYAxisRangeStart READ selectionYAxisRangeStart);
-	Q_PROPERTY(FloatType selectionYAxisRangeEnd READ selectionYAxisRangeEnd);
-
 protected:
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 private:
 
@@ -204,9 +194,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_yAxisProperty);
 };
 
-/******************************************************************************
-* A properties editor for the ScatterPlotModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the ScatterPlotModifier class.
+ */
 class ScatterPlotModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -260,6 +252,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_SCATTER_PLOT_MODIFIER_H

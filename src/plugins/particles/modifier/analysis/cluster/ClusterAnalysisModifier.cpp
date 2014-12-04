@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -22,21 +22,23 @@
 #include <plugins/particles/Particles.h>
 #include "ClusterAnalysisModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClusterAnalysisModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, ClusterAnalysisModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, ClusterAnalysisModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, Internal::ClusterAnalysisModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(ClusterAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(ClusterAnalysisModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_UNITS(ClusterAnalysisModifier, _cutoff, WorldParameterUnit);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, ClusterAnalysisModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 ClusterAnalysisModifier::ClusterAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_cutoff(3.2), _numClusters(0),
-	_particleClusters(new ParticleProperty(0, ParticleProperty::ClusterProperty, 0, false))
+	_cutoff(3.2), _numClusters(0)
 {
 	INIT_PROPERTY_FIELD(ClusterAnalysisModifier::_cutoff);
 }
@@ -44,32 +46,32 @@ ClusterAnalysisModifier::ClusterAnalysisModifier(DataSet* dataset) : Asynchronou
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> ClusterAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> ClusterAnalysisModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 	// Get simulation cell.
-	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCellObject* inputCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<ClusterAnalysisEngine>(posProperty->storage(), inputCell->data(), cutoff());
+	return std::make_shared<ClusterAnalysisEngine>(validityInterval, posProperty->storage(), inputCell->data(), cutoff());
 }
 
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void ClusterAnalysisModifier::ClusterAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 {
-	futureInterface.setProgressText(tr("Performing cluster analysis"));
+	setProgressText(tr("Performing cluster analysis"));
 
 	// Prepare the neighbor list.
 	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
 		return;
 
 	size_t particleCount = positions()->size();
-	futureInterface.setProgressRange(particleCount);
+	setProgressRange(particleCount);
 
 	// Initialize.
 	std::fill(_particleClusters->dataInt(), _particleClusters->dataInt() + _particleClusters->size(), -1);
@@ -90,8 +92,8 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::compute(FutureInterfaceBase
 		toProcess.push_back(seedParticleIndex);
 
 		do {
-			futureInterface.incrementProgressValue();
-			if(futureInterface.isCanceled())
+			incrementProgressValue();
+			if(isCanceled())
 				return;
 
 			int currentParticle = toProcess.front();
@@ -109,9 +111,9 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::compute(FutureInterfaceBase
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void ClusterAnalysisModifier::retrieveModifierResults(Engine* engine)
+void ClusterAnalysisModifier::transferComputationResults(ComputeEngine* engine)
 {
 	ClusterAnalysisEngine* eng = static_cast<ClusterAnalysisEngine*>(engine);
 	_particleClusters = eng->particleClusters();
@@ -119,11 +121,15 @@ void ClusterAnalysisModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* Inserts the computed and cached modifier results into the modification pipeline.
+* Lets the modifier insert the cached computation results into the
+* modification pipeline.
 ******************************************************************************/
-PipelineStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ClusterAnalysisModifier::applyComputationResults(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() != particleClusters().size())
+	if(!_particleClusters)
+		throw Exception(tr("No computation results available."));
+
+	if(inputParticleCount() != _particleClusters->size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(_particleClusters.data());
@@ -135,14 +141,14 @@ PipelineStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, Tim
 ******************************************************************************/
 void ClusterAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute modifier results when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(ClusterAnalysisModifier::_cutoff))
-			invalidateCachedResults();
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute modifier results when the parameters have been changed.
+	if(field == PROPERTY_FIELD(ClusterAnalysisModifier::_cutoff))
+		invalidateCachedResults();
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -174,4 +180,6 @@ void ClusterAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->addWidget(statusLabel());
 }
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace

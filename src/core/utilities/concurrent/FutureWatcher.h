@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 class FutureBase;
 class FutureInterfaceBase;
@@ -123,6 +123,6 @@ private:
 	Q_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_FUTURE_WATCHER_H

@@ -19,20 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file IdentifyDiamondModifier.h
- * \brief Contains the definition of the Particles::IdentifyDiamondModifier class.
- */
-
 #ifndef __OVITO_IDENTIFY_DIAMOND_MODIFIER_H
 #define __OVITO_IDENTIFY_DIAMOND_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Particles {
-
-using namespace Ovito;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief A modifier that identifies local diamond structures.
@@ -55,19 +48,6 @@ public:
 	};
 	Q_ENUMS(StructureType);
 
-	/// Analysis engine that performs the structure identification
-	class Engine : public StructureIdentificationModifier::StructureIdentificationEngine
-	{
-	public:
-
-		/// Constructor.
-		Engine(ParticleProperty* positions, const SimulationCellData& simCell) :
-			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
-
-		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
-	};
-
 public:
 
 	/// Constructor.
@@ -76,9 +56,22 @@ public:
 protected:
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<AsynchronousParticleModifier::Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
 
 private:
+
+	/// Analysis engine that performs the structure identification
+	class DiamondIdentificationEngine : public StructureIdentificationEngine
+	{
+	public:
+
+		/// Constructor.
+		DiamondIdentificationEngine(const TimeInterval& validityInterval, ParticleProperty* positions, const SimulationCell& simCell) :
+			StructureIdentificationEngine(validityInterval, positions, simCell) {}
+
+		/// Computes the modifier's results and stores them in this object for later retrieval.
+		virtual void perform() override;
+	};
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -86,6 +79,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Identify diamond structure");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 };
+
+namespace Internal {
 
 /**
  * \brief A properties editor for the IdentifyDiamondModifier class.
@@ -108,6 +103,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_IDENTIFY_DIAMOND_MODIFIER_H

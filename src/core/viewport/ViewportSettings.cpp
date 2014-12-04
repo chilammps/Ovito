@@ -23,7 +23,7 @@
 #include <core/viewport/ViewportSettings.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito {
+namespace Ovito { namespace View {
 
 /// The current settings record.
 Q_GLOBAL_STATIC(ViewportSettings, _currentViewportSettings);
@@ -191,10 +191,10 @@ void ViewportSettings::save(QSettings& store) const
 		}
 	}
 	OVITO_ASSERT(colorEnum.isValid());
-	for(int i = 0; i < _viewportColors.size(); i++) {
+    for(size_t i = 0; i < _viewportColors.size(); i++) {
 		store.setValue(colorEnum.key(i), QVariant::fromValue((QColor)_viewportColors[i]));
 	}
 	store.endGroup();
 }
 
-};
+}}	// End of namespace

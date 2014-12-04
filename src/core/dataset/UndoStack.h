@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file UndoStack.h
- * \brief Contains the definition of the Ovito::UndoStack class.
- */
-
 #ifndef __OVITO_UNDO_STACK_H
 #define __OVITO_UNDO_STACK_H
 
 #include <core/Core.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Undo {
 
 /**
  * \brief Abstract base class for records of undoable operations.
@@ -306,7 +301,7 @@ public:
 	int index() const { return _index; }
 
 	/// \brief Returns the number of operations on the stack. Compound operations are counted as one operation.
-	int count() const { return _operations.size(); }
+	int count() const { return (int)_operations.size(); }
 
 	/// \brief If the stack is in the clean state, returns true; otherwise returns false.
 	bool isClean() const { return index() == cleanIndex(); }
@@ -549,6 +544,6 @@ private:
 	bool _committed;
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_UNDO_STACK_H

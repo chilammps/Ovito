@@ -27,13 +27,13 @@
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/animation/controller/Controller.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/DisplayObject.h>
 #include <core/rendering/LinePrimitive.h>
 
-namespace Ovito {
+namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
 
 /**
- * The default camera scene object.
+ * The default camera object.
  */
 class OVITO_CORE_EXPORT CameraObject : public AbstractCameraObject
 {
@@ -108,6 +108,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_zoom);
 };
 
+namespace Internal {
 
 /**
  * A properties editor for the CameraObject class.
@@ -131,7 +132,7 @@ private:
 };
 
 /**
- * \brief A scene display object for camera scene objects.
+ * \brief A scene display object for camera objects.
  */
 class OVITO_CORE_EXPORT CameraDisplayObject : public DisplayObject
 {
@@ -140,14 +141,14 @@ public:
 	/// \brief Constructor.
 	Q_INVOKABLE CameraDisplayObject(DataSet* dataset) : DisplayObject(dataset) {}
 
-	/// \brief Lets the display object render a scene object.
-	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+	/// \brief Lets the display object render a camera object.
+	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
 	/// \brief Computes the bounding box of the object.
-	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
-	/// \brief Computes the view-dependent bounding box of the scene object for interactive rendering in the viewports.
-	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+	/// \brief Computes the view-dependent bounding box of the data object for interactive rendering in the viewports.
+	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Camera icon"); }
@@ -166,7 +167,7 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<SceneObject>,		// Camera object + revision number
+		WeakVersionedOORef<DataObject>,		// Camera object + revision number
 		Color									// Display color
 		> _geometryCacheHelper;
 
@@ -186,6 +187,8 @@ private:
 	OVITO_OBJECT
 };
 
-};
+}	// End of namespace
+
+}}}}	// End of namespace
 
 #endif // __OVITO_CAMERA_OBJECT_H

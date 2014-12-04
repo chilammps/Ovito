@@ -19,7 +19,20 @@
 #
 ###############################################################################
 
+# Find libav libraries if video support has been enabled by the user.
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	FIND_PACKAGE(Libav REQUIRED)
+	IF(NOT LIBAV_FOUND)
+		MESSAGE(FATAL_ERROR "Libav libraries not found, which are required for video output support (see OVITO_VIDEO_OUTPUT_SUPPORT option).")
+	ENDIF()
+ENDIF()
+
 SET(OVITO_CORE_SOURCE_FILES 
+	utilities/Exception.cpp
+	utilities/linalg/AffineDecomposition.cpp
+	utilities/io/SaveStream.cpp
+	utilities/io/LoadStream.cpp
+	utilities/io/gzdevice/qtiocompressor.cpp
 	object/OvitoObject.cpp
 	object/OvitoObjectType.cpp
 	object/NativeOvitoObjectType.cpp
@@ -27,6 +40,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	plugins/NativePlugin.cpp
 	plugins/PluginManager.cpp
 	plugins/autostart/AutoStartObject.cpp
+	plugins/utility/UtilityApplet.cpp
 	reference/CloneHelper.cpp
 	reference/PropertyFieldDescriptor.cpp
 	reference/PropertyField.cpp
@@ -45,26 +59,25 @@ SET(OVITO_CORE_SOURCE_FILES
 	dataset/DataSet.cpp
 	dataset/DataSetContainer.cpp
 	dataset/UndoStack.cpp
-	dataset/importexport/ImportExportManager.cpp
-	dataset/importexport/LinkedFileImporter.cpp
-	dataset/importexport/LinkedFileObject.cpp
-	dataset/importexport/LinkedFileObjectEditor.cpp
+	dataset/importexport/FileImporter.cpp
+	dataset/importexport/FileSourceImporter.cpp
+	dataset/importexport/FileSource.cpp
+	dataset/importexport/FileSourceEditor.cpp
 	scene/SceneNode.cpp
 	scene/ObjectNode.cpp
 	scene/SceneRoot.cpp
 	scene/SelectionSet.cpp
-	scene/objects/SceneObject.cpp
-	scene/objects/geometry/TriMesh.cpp
+	scene/objects/DisplayObject.cpp
+	scene/objects/DataObject.cpp
+	scene/objects/CompoundObject.cpp
 	scene/objects/geometry/TriMeshObject.cpp
-	scene/objects/geometry/HalfEdgeMesh.cpp
+	scene/objects/geometry/TriMeshDisplay.cpp
 	scene/objects/camera/CameraObject.cpp
 	scene/objects/helpers/TargetObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp
 	scene/pipeline/Modifier.cpp
 	scene/pipeline/ModifierApplication.cpp
-	scene/display/DisplayObject.cpp
-	scene/display/geometry/TriMeshDisplay.cpp
 	gui/app/Application.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/ViewportsPanel.cpp
@@ -75,7 +88,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/ModificationListItem.cpp
 	gui/mainwin/cmdpanel/ModifierListBox.cpp
 	gui/mainwin/cmdpanel/UtilityCommandPage.cpp
-	gui/mainwin/cmdpanel/UtilityApplet.cpp
 	gui/mainwin/cmdpanel/OverlayCommandPage.cpp
 	gui/dialogs/AdjustCameraDialog.cpp
 	gui/dialogs/AnimationSettingsDialog.cpp
@@ -135,10 +147,12 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/ObjectLoadStream.cpp
 	utilities/io/FileManager.cpp
 	utilities/io/SftpJob.cpp
-	utilities/io/CompressedTextParserStream.cpp
-	utilities/io/CompressedTextWriterStream.cpp
+	utilities/io/CompressedTextReader.cpp
+	utilities/io/CompressedTextWriter.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/TaskManager.cpp
+	utilities/mesh/TriMesh.cpp
+	utilities/mesh/HalfEdgeMesh.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/OpenGLLinePrimitive.cpp
@@ -174,31 +188,45 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/overlay/CoordinateTripodOverlay.cpp
 )
 
+# Include video encoder interface code.
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	LIST(APPEND OVITO_CORE_SOURCE_FILES utilities/io/video/VideoEncoder.cpp)
+ENDIF()
+
 # Compile resources.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
 # Build library
-ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
-TARGET_LINK_LIBRARIES(Core Base QSsh)
+ADD_LIBRARY(Core Core.cpp ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
+TARGET_LINK_LIBRARIES(Core QSsh)
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
 
+# Link to ZLib library.
+TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
+TARGET_INCLUDE_DIRECTORIES(Core PRIVATE "${ZLIB_INCLUDE_DIRS}")
+
+# Add Boost include directories.
+TARGET_INCLUDE_DIRECTORIES(Core PUBLIC ${Boost_INCLUDE_DIRS})
+
 # Link Qt5.
 QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
 
-# This will let the source code export symbols when building a DLL.
-TARGET_COMPILE_DEFINITIONS(Core PRIVATE OVITO_CORE_LIBRARY)
+# Link video encoding lib.
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
+	TARGET_LINK_LIBRARIES(Core ${LIBAV_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${LIBAV_INCLUDE_DIRS})
+ENDIF()
 
 IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
 	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
 ENDIF(APPLE)
 
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_LINK_LIBRARIES(Core Video)
-ENDIF()
+# Speed up compilation by using precompiled headers.
+ADD_PRECOMPILED_HEADER(Core core/Core.h)
 
 OVITO_FIXUP_BUILD_OBJECT(Core)
 
@@ -207,4 +235,19 @@ IF(NOT OVITO_MONOLITHIC_BUILD)
 	INSTALL(TARGETS Core 
 		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+ENDIF()
+
+IF(WIN32)
+	# Install DLLs of Libav video encoding library.
+	FOREACH(lib ${LIBAV_LIBRARIES})
+		GET_FILENAME_COMPONENT(base_name "${lib}" NAME_WE)
+		GET_FILENAME_COMPONENT(lib_path "${lib}" PATH)
+		FILE(GLOB lib_dll "${lib_path}/${base_name}-*.dll")
+		IF(NOT lib_dll)
+			MESSAGE(FATAL_ERROR "Could not find corresponding DLL for Libav library '${lib}' in same directory.")
+		ENDIF()
+		FOREACH(dll ${lib_dll})
+			OVITO_INSTALL_DLL("${dll}")
+		ENDFOREACH()
+	ENDFOREACH()
 ENDIF()

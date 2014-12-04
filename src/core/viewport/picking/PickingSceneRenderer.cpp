@@ -25,7 +25,7 @@
 #include <core/rendering/RenderSettings.h>
 #include "PickingSceneRenderer.h"
 
-namespace Ovito {
+namespace Ovito { namespace View { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, PickingSceneRenderer, ViewportSceneRenderer);
 
@@ -95,7 +95,7 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 		glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, _image.bits());
 		_image = _image.rgbSwapped();
 	}
-	OVITO_CHECK_OPENGL();
+	OVITO_REPORT_OPENGL_ERRORS();
 
 	// Also acquire OpenGL depth buffer data.
 	// The depth information is used to compute the XYZ coordinate of the point under the mouse cursor.
@@ -278,4 +278,4 @@ Point3 PickingSceneRenderer::worldPositionFromLocation(const QPoint& pos) const
 	return Point3::Origin();
 }
 
-};
+}}}	// End of namespace

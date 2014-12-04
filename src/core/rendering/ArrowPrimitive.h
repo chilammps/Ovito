@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file ArrowPrimitive.h
- * \brief Contains the definition of the Ovito::ArrowPrimitive class.
- */
-
 #ifndef __OVITO_ARROW_PRIMITIVE_H
 #define __OVITO_ARROW_PRIMITIVE_H
 
@@ -31,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito {
+namespace Ovito { namespace Rendering {
 
 /**
  * \brief Abstract base class for rendering arrow glyphs and cylinders.
@@ -107,13 +102,13 @@ private:
 
 };
 
-};
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::ShadingMode);
-Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::RenderingQuality);
-Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::Shape);
-Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::Shape, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Rendering::ArrowPrimitive::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::Rendering::ArrowPrimitive::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::Rendering::ArrowPrimitive::Shape);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ArrowPrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ArrowPrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rendering::ArrowPrimitive::Shape, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ARROW_PRIMITIVE_H

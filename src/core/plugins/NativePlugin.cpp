@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -23,7 +23,7 @@
 #include <core/plugins/NativePlugin.h>
 #include <core/object/NativeOvitoObjectType.h>
 
-namespace Ovito {
+namespace Ovito { namespace PluginSystem { namespace Internal {
 
 /******************************************************************************
 * Constructor for the NativePlugin class.
@@ -31,36 +31,24 @@ namespace Ovito {
 NativePlugin::NativePlugin(const QString& manifestFile) :
 	Plugin(manifestFile), _library(nullptr)
 {
-}
+	// Get the name of the shared library file.
+	QString libBasename = metadata().object().value(QStringLiteral("native-library")).toString();
+	if(libBasename.isEmpty())
+		throw Exception(tr("Invalid plugin manifest file %1. 'native-library' element not present.").arg(manifestFile));
 
-/******************************************************************************
-* Parses a custom top-level element from the manifest that is specific to the plugin type.
-******************************************************************************/
-bool NativePlugin::parseToplevelManifestElement(const QDomElement& element)
-{
-	// Process the <NativePlugin> element that describes the native plugin's properties.
-	if(element.localName() == "NativePlugin") {
-
-		// Get the name of the shared library file.
-		QString libBasename = element.attribute("Library");
-
-		// Resolve the filename by adding the platform specific suffix/extension
-		// and make the path absolute.
-		QDir baseDir;
-		if(isCore())	// The core library is not in the plugins directory.
-			baseDir = QCoreApplication::applicationDirPath();
-		else
-			baseDir = QFileInfo(manifestFile()).dir();
+	// Resolve the filename by adding the platform specific suffix/extension
+	// and make the path absolute.
+	QDir baseDir;
+	if(isCore())	// The core library is not in the plugins directory.
+		baseDir = QCoreApplication::applicationDirPath();
+	else
+		baseDir = QFileInfo(manifestFile).dir();
 #if defined(Q_OS_WIN)
-		QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".dll"));
+	QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".dll"));
 #else
-		QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".so"));
+	QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".so"));
 #endif
-		_libraryFilename = QDir::cleanPath(libFile.absoluteFilePath());
-
-		return true;
-	}
-	return false;
+	_libraryFilename = QDir::cleanPath(libFile.absoluteFilePath());
 }
 
 /******************************************************************************
@@ -87,19 +75,19 @@ void NativePlugin::loadPluginImpl()
 #endif
 	NativeOvitoObjectType* linkedListAfter = NativeOvitoObjectType::_firstInfo;
 
-	// Connect all newly loaded class descriptors with this plugin.
+	// Initialize all newly loaded classes and connect them with this plugin.
 	for(NativeOvitoObjectType* clazz = linkedListAfter; clazz != linkedListBefore; clazz = clazz->_next) {
 #ifdef OVITO_MONOLITHIC_BUILD
 		if(clazz->pluginId() != pluginId())
 			continue;
 #else
 		if(clazz->pluginId() != pluginId())
-			throw Exception(QString("Plugin ID %1 assigned to class %2 does not match plugin %3 that loaded the class.").arg(clazz->pluginId()).arg(clazz->name()).arg(pluginId()));
+			throw Exception(QString("Plugin ID %1 assigned to class %2 does not match plugin %3 that contains the class.").arg(clazz->pluginId()).arg(clazz->name()).arg(pluginId()));
 #endif
 		OVITO_ASSERT(clazz->plugin() == nullptr);
-		clazz->_plugin = this;
+		clazz->initializeClassDescriptor(this);
 		registerClass(clazz);
 	}
 }
 
-};
+}}}	// End of namespace

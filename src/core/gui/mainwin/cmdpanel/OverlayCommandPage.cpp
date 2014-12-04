@@ -27,7 +27,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "OverlayCommandPage.h"
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 /******************************************************************************
 * Initializes the command panel page.
@@ -47,8 +47,9 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
     connect(_newOverlayBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &OverlayCommandPage::onNewOverlay);
 
     _newOverlayBox->addItem(tr("Add overlay..."));
+    _newOverlayBox->insertSeparator(1);
 	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(ViewportOverlay::OOType)) {
-		_newOverlayBox->addItem(clazz->displayName(), qVariantFromValue(clazz));
+		_newOverlayBox->addItem(clazz->displayName(), QVariant::fromValue(clazz));
 	}
 
 	QSplitter* splitter = new QSplitter(Qt::Vertical);
@@ -233,4 +234,4 @@ void OverlayCommandPage::onDeleteOverlay()
 	});
 }
 
-};
+}}}	// End of namespace

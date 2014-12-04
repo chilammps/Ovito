@@ -47,6 +47,12 @@ ELSE()
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(qcustomplot INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
+	# Export symbols when building a Windows DLL.
+	IF(WIN32)
+		TARGET_COMPILE_DEFINITIONS(qcustomplot PRIVATE QCUSTOMPLOT_COMPILE_LIBRARY)
+		TARGET_COMPILE_DEFINITIONS(qcustomplot INTERFACE QCUSTOMPLOT_USE_LIBRARY)
+	ENDIF()
+
 	# This library is part of the installation package.
 	IF(NOT OVITO_MONOLITHIC_BUILD)
 		INSTALL(TARGETS qcustomplot 

@@ -19,21 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/** 
- * \file FileManager.h
- * \brief Contains the definition of the Ovito::FileManager class.
- */
-
 #ifndef __OVITO_FILE_MANAGER_H
 #define __OVITO_FILE_MANAGER_H
 
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace IO {
 
 /**
- * \brief The file manager provides transparent access to remote file.
+ * \brief The file manager provides transparent access to remote files.
  */
 class OVITO_CORE_EXPORT FileManager : public QObject
 {
@@ -110,11 +105,10 @@ private:
 	/// The singleton instance of this class.
 	static FileManager* _instance;
 
-	friend class Application;
-	friend class SftpDownloadJob;
+	friend class Ovito::Gui::Application;
+	friend class Ovito::Util::IO::Internal::SftpDownloadJob;
 };
 
-
-};
+}}}	// End of namespace
 
 #endif // __OVITO_FILE_MANAGER_H

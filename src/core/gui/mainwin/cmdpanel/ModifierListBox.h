@@ -25,12 +25,12 @@
 #include <core/Core.h>
 #include <core/object/OvitoObjectType.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Internal {
 
 class ModificationListModel;
 class ModificationListItem;
 
-/*
+/**
  * A combo-box widget that lets the user insert new modifiers into the modification pipeline.
  */
 class ModifierListBox : public QComboBox
@@ -78,6 +78,6 @@ private:
 	Q_OBJECT
 };
 
-};
+}}}	// End of namespace
 
 #endif // __OVITO_MODIFIER_LIST_BOX_H

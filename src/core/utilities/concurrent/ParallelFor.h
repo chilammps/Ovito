@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "FutureInterface.h"
 
-namespace Ovito {
+namespace Ovito { namespace Util { namespace Concurrency {
 
 template<class Function, typename T>
 bool parallelFor(
@@ -114,7 +114,7 @@ template<class Function>
 void parallelForChunks(size_t loopCount, Function kernel)
 {
 	std::vector<std::thread> workers;
-	int num_threads = QThread::idealThreadCount();
+	size_t num_threads = QThread::idealThreadCount();
 	if(num_threads < 1) num_threads = 1;
 	else if(num_threads > loopCount) {
 		if(loopCount <= 0) return;
@@ -122,7 +122,7 @@ void parallelForChunks(size_t loopCount, Function kernel)
 	}
 	size_t chunkSize = loopCount / num_threads;
 	size_t startIndex = 0;
-	for(int t = 0; t < num_threads; t++) {
+	for(size_t t = 0; t < num_threads; t++) {
 		if(t == num_threads - 1) {
 			chunkSize += loopCount % num_threads;
 			OVITO_ASSERT(startIndex + chunkSize == loopCount);
@@ -138,6 +138,7 @@ void parallelForChunks(size_t loopCount, Function kernel)
 	for(auto& t : workers)
 		t.join();
 }
-};
+
+}}}	// End of namespace
 
 #endif // __OVITO_PARALLEL_FOR_H

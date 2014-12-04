@@ -29,17 +29,18 @@
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../AsynchronousParticleModifier.h"
+
+#ifndef signals
+#define signals Q_SIGNALS
+#endif
 #include <qcustomplot.h>
 
-class QCustomPlot;
-class QCPItemStraightLine;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-namespace Particles {
-
-/*
- * This modifier computes the Fourier transform of a (spatial) cross correlation function
+/**
+ * \brief This modifier computes the Fourier transform of a (spatial) cross correlation function
  * between two particle properties.
  */
 class OVITO_PARTICLES_EXPORT SpatialCorrelationFunctionModifier : public AsynchronousParticleModifier
@@ -51,9 +52,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE SpatialCorrelationFunctionModifier(DataSet* dataset);
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Sets the first source particle property for which the correlation function is computed.
 	void setSourceProperty1(const ParticlePropertyReference& prop) { _sourceProperty1 = prop; }
@@ -145,38 +143,28 @@ public:
 	/// Returns the end value of the plotting y-axis.
 	FloatType propertyAxisRangeEnd() const { return _propertyAxisRangeEnd; }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty1 READ sourceProperty1 WRITE setSourceProperty1);
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty2 READ sourceProperty2 WRITE setSourceProperty2);
-	Q_PROPERTY(Particles::SpatialCorrelationFunctionModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
-	Q_PROPERTY(FloatType maxWaveVector READ maxWaveVector WRITE setMaxWaveVector);
-	Q_PROPERTY(bool radialAverage READ radialAverage);
-    Q_PROPERTY(int numberOfRadialBins READ numberOfRadialBins WRITE setNumberOfRadialBins);
-    Q_PROPERTY(bool fixPropertyAxisRange READ fixPropertyAxisRange WRITE setFixPropertyAxisRange);
-    Q_PROPERTY(FloatType propertyAxisRangeStart READ propertyAxisRangeStart);
-    Q_PROPERTY(FloatType propertyAxisRangeEnd READ propertyAxisRangeEnd);
-
 private:
 
     /// Computes the modifier's results.
-    class SpatialCorrelationAnalysisEngine : public AsynchronousParticleModifier::Engine
+    class SpatialCorrelationAnalysisEngine : public ComputeEngine
     {
     public:
        
         /// Constructor.
-        SpatialCorrelationAnalysisEngine(ParticleProperty *posProperty,
+        SpatialCorrelationAnalysisEngine(const TimeInterval& validityInterval,
+        								 ParticleProperty *posProperty,
                                          ParticleProperty *property1, int vecComponent1, int vecComponentCount1,
                                          ParticleProperty *property2, int vecComponent2, int vecComponentCount2,
                                          int numberOfBinsX, int numberOfBinsY,
                                          Vector3 recX, Vector3 recY) :
+            ComputeEngine(validityInterval),
             _posProperty(posProperty),
             _property1(property1), _vecComponent1(vecComponent1), _vecComponentCount1(vecComponentCount1),
             _property2(property2), _vecComponent2(vecComponent2), _vecComponentCount2(vecComponentCount2),
             _numberOfBinsX(numberOfBinsX), _numberOfBinsY(numberOfBinsY), _recX(recX), _recY(recY) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
-		virtual void compute(FutureInterfaceBase& futureInterface) override;
+		virtual void perform() override;
 
 		/// Returns the property storage that contains the input particle positions.
 		ParticleProperty* posProperty() const { return _posProperty.data(); }
@@ -237,17 +225,20 @@ private:
 
 protected:
 
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
+
 	/// Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
-	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+	/// Creates a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) override;
 
-	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveModifierResults(Engine* engine) override;
+	/// Unpacks the results of the computation engine and stores them in the modifier.
+	virtual void transferComputationResults(ComputeEngine* engine) override;
 
-	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override {
+	/// Lets the modifier insert the cached computation results into the modification pipeline.
+	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override {
         return PipelineStatus::Success;
     };
 
@@ -339,9 +330,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty2);
 };
 
-/******************************************************************************
-* A properties editor for the SpatialCorrelationFunctionModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the SpatialCorrelationFunctionModifier class.
+ */
 class SpatialCorrelationFunctionModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -380,9 +373,11 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Particles::SpatialCorrelationFunctionModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Particles::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+}}}}}	// End of namespace
+
+Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SPATIAL_CORRELATION_FUNCTION_MODIFIER_H

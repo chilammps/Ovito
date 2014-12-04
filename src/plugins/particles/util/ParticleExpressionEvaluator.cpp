@@ -20,13 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
-#include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "ParticleExpressionEvaluator.h"
 
 #include <QtConcurrent>
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
 
 /// List of characters allowed in variable names.
 QByteArray ParticleExpressionEvaluator::_validVariableNameChars("0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.");
@@ -40,7 +40,7 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 
 	int propertyIndex = 1;
 	size_t particleCount = 0;
-	for(SceneObject* o : inputState.objects()) {
+	for(DataObject* o : inputState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(!property) continue;
 
@@ -92,12 +92,12 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 		propertyIndex++;
 	}
 
-	SimulationCell* simCell = inputState.findObject<SimulationCell>();
+	SimulationCellObject* simCell = inputState.findObject<SimulationCellObject>();
 
 	// Create variable for reduced particle coordinates.
 	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(inputState, ParticleProperty::PositionProperty);
 	if(posProperty && simCell) {
-		SimulationCellData cellData = simCell->data();
+		SimulationCell cellData = simCell->data();
 		ExpressionVariable v;
 		v.type = DERIVED_PARTICLE_PROPERTY;
 		v.name = "ReducedPosition.X";
@@ -231,7 +231,7 @@ void ParticleExpressionEvaluator::evaluate(const std::function<void(size_t,size_
 	_usedVars.clear();
 
 	// Determine the number of parallel threads to use.
-	int nthreads = std::max(QThread::idealThreadCount(), 1);
+	size_t nthreads = std::max(QThread::idealThreadCount(), 1);
 	if(_particleCount == 0)
 		return;
 	else if(_particleCount < 100)
@@ -247,7 +247,7 @@ void ParticleExpressionEvaluator::evaluate(const std::function<void(size_t,size_
 			throw Exception(worker._errorMsg);
 	}
 	else if(nthreads > 1) {
-		QVector<WorkerThread> workers(nthreads);
+		std::vector<WorkerThread> workers(nthreads);
 		for(auto& worker : workers)
 			worker.initialize(_expressions, _inputVariables, _usedVars);
 
@@ -255,7 +255,7 @@ void ParticleExpressionEvaluator::evaluate(const std::function<void(size_t,size_
 		QFutureSynchronizer<void> synchronizer;
 		size_t chunkSize = _particleCount / nthreads;
 		OVITO_ASSERT(chunkSize > 0);
-		for(int i = 0; i < workers.size(); i++) {
+		for(size_t i = 0; i < workers.size(); i++) {
 			// Setup data range.
 			size_t startIndex = chunkSize * i;
 			size_t endIndex = startIndex + chunkSize;
@@ -396,4 +396,4 @@ QString ParticleExpressionEvaluator::inputVariableTable() const
 	return str;
 }
 
-};	// End of namespace
+}}}}}	// End of namespace

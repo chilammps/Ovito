@@ -24,17 +24,17 @@
 #include <core/gui/properties/StringParameterUI.h>
 #include "StructurePattern.h"
 
-namespace CrystalAnalysis {
+namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, StructurePattern, ParticleType)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, StructurePatternEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(StructurePattern, StructurePatternEditor)
-DEFINE_PROPERTY_FIELD(StructurePattern, _shortName, "ShortName")
-DEFINE_PROPERTY_FIELD(StructurePattern, _structureType, "StructureType")
-DEFINE_VECTOR_REFERENCE_FIELD(StructurePattern, _burgersVectorFamilies, "BurgersVectorFamilies", BurgersVectorFamily)
-SET_PROPERTY_FIELD_LABEL(StructurePattern, _shortName, "Short name")
-SET_PROPERTY_FIELD_LABEL(StructurePattern, _structureType, "Structure type")
-SET_PROPERTY_FIELD_LABEL(StructurePattern, _burgersVectorFamilies, "Burgers vector families")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, StructurePattern, ParticleType);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, StructurePatternEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(StructurePattern, StructurePatternEditor);
+DEFINE_PROPERTY_FIELD(StructurePattern, _shortName, "ShortName");
+DEFINE_PROPERTY_FIELD(StructurePattern, _structureType, "StructureType");
+DEFINE_VECTOR_REFERENCE_FIELD(StructurePattern, _burgersVectorFamilies, "BurgersVectorFamilies", BurgersVectorFamily);
+SET_PROPERTY_FIELD_LABEL(StructurePattern, _shortName, "Short name");
+SET_PROPERTY_FIELD_LABEL(StructurePattern, _structureType, "Structure type");
+SET_PROPERTY_FIELD_LABEL(StructurePattern, _burgersVectorFamilies, "Burgers vector families");
 
 /******************************************************************************
 * Constructs the StructurePattern object.
@@ -157,4 +157,4 @@ void StructurePatternEditor::onDoubleClickBurgersFamily(const QModelIndex& index
 	});
 }
 
-};	// End of namespace
+}}}	// End of namespace

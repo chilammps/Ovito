@@ -25,15 +25,11 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
 
-using namespace Ovito;
-
-class ParticlePropertyComboBox;
-
-/******************************************************************************
-* Selects particles of of one or more types.
-******************************************************************************/
+/**
+ * \brief Selects particles of one or more types.
+ */
 class OVITO_PARTICLES_EXPORT SelectParticleTypeModifier : public ParticleModifier
 {
 public:
@@ -44,9 +40,6 @@ public:
 		INIT_PROPERTY_FIELD(SelectParticleTypeModifier::_sourceProperty);
 		INIT_PROPERTY_FIELD(SelectParticleTypeModifier::_selectedParticleTypes);
 	}
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Returns the particle type property that is used as source for the selection.
 	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
@@ -63,14 +56,13 @@ public:
 	/// Sets a single particle type identifier to be selected.
 	void setSelectedParticleType(int type) { setSelectedParticleTypes(QSet<int>{type}); }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-
 protected:
 
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
@@ -93,9 +85,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_selectedParticleTypes);
 };
 
-/******************************************************************************
-* A properties editor for the SelectParticleTypeModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the SelectParticleTypeModifier class.
+ */
 class SelectParticleTypeModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -139,6 +133,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_SELECT_PARTICLE_TYPE_MODIFIER_H

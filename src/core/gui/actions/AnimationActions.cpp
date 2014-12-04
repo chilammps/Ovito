@@ -25,7 +25,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_GOTO_START_OF_ANIMATION command.
@@ -85,4 +85,4 @@ void ActionManager::on_AnimationSettings_triggered()
 	AnimationSettingsDialog(_dataset->animationSettings(), mainWindow()).exec();
 }
 
-};
+}}	// End of namespace

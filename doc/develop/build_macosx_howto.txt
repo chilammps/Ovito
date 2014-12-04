@@ -3,14 +3,38 @@ Install third-party libraries
 **************************************************************************
 export MACOSX_DEPLOYMENT_TARGET=10.7
 sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
-sudo port -s install netcdf python27 py27-sphinx py27-numpy zlib boost +python27 +no_static cgal 
+sudo port -s install netcdf python27 py27-sphinx py27-numpy zlib boost +python27 +no_static cgal py-sip
 sudo port install cmake docbook-xml docbook-xsl doxygen libxslt
 
 **************************************************************************
 Install Qt libraries, version 5.3.1
 **************************************************************************
 
+**************************************************************************
+Build PyQt5
+**************************************************************************
+
+/opt/local/bin/python2.7 configure.py \
+	--confirm-license \
+	--no-designer-plugin \
+	--no-qml-plugin \
+	--assume-shared \
+	--qmake $HOME/Qt5.3.2/5.3/clang_64/bin/qmake \
+	--sip=/opt/local/bin/sip-2.7 \
+	--concatenate \
+	--enable QtCore \
+	--enable QtGui \
+	--enable QtWidgets \
+	--enable QtNetwork \
+	--enable QtOpenGL \
+	--enable QtSvg \
+	--enable QtMacExtras
+make -j2
+make install
+
+**************************************************************************
 Build static libav library (release 0.8.8):
+**************************************************************************
 
 wget http://libav.org/releases/libav-0.8.8.tar.gz
 tar xzfv libav-0.8.8.tar.gz
@@ -29,7 +53,5 @@ cd libav-0.8.8
 	--disable-decoders \
 	--prefix=$HOME/Documents/progs/libavstatic
 
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/Documents/progs/libavstatic/lib/pkgconfig
 export MACOSX_DEPLOYMENT_TARGET=10.7
-
 make -j3 install

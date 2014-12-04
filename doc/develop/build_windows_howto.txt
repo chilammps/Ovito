@@ -1,58 +1,194 @@
 **************************************************************************
-Build MPFR library (using MSYS enviroment):
-**************************************************************************
-./configure --prefix=/c/Users/stuko/ovito/mpfr64_install --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --with-gmp=/c/Users/stuko/ovito/Qt5.2.1-x86_64
-
-**************************************************************************
-Build Boost libraries (release 1.55):
+Compiler: Microsoft Visual C++ 2013
 **************************************************************************
 
-Run:
+**************************************************************************
+zlib (http://www.zlib.net/)
+**************************************************************************
+mkdir zlib
+cd zlib
+cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=../zlib_install -DCMAKE_BUILD_TYPE=Release ..\..\zlib-1.2.8
+nmake install
 
-bootstrap.bat gcc
+**************************************************************************
+Python 3.x
+**************************************************************************
+Select installation component "pip", deselect all other components.
+cd Scripts
+easy_install sphinx
 
----- 32 bit ---
+----- Install NumPy from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy ---
 
-Install official Python for x86 in c:\users\stuko\ovito\python32\
+----- Install SIP ----
+..\XXbit\Python\python.exe configure.py
+nmake
+nmake install
 
-Create file user-config.jam in HOME directory:
+----- Install PyQt5 ----
+..\XXbit\Python\python.exe configure.py ^
+   --concatenate ^
+   --concatenate-split 10 ^
+   --confirm-license ^
+   --no-designer-plugin ^
+   --no-qml-plugin ^
+   --sip=..\XXbit\Python\sip.exe ^
+   --enable QtCore ^
+   --enable QtGui ^
+   --enable QtWidgets ^
+   --enable QtNetwork ^
+   --enable QtOpenGL ^
+   --enable QtSvg
+nmake
+nmake install
 
+**************************************************************************
+Boost libraries (release 1.57):
+**************************************************************************
+
+--- Create file user-config.jam:
 using python 
-	: 2.7 
-	: c:\\users\\stuko\\ovito\\python32\\python.exe 
-	: c:\\users\\stuko\\ovito\\python32\\include
-	: c:\\users\\stuko\\ovito\\python32\\libs ;
+	: 3.4
+	: ..\\32bit\\Python\\python.exe 
+	: ..\\32bit\\Python\\include
+	: ..\\32bit\\Python\\libs ;
 
-b2 --prefix=C:\Users\stuko\ovito\boost32 toolset=gcc link=shared threading=multi --ignore-mpi --layout=tagged --with-system --with-thread --with-python install
-
----- 64 bit ---
-
-Create file user-config.jam in HOME directory:
-
-using python 
-	: 2.7 
-	: c:\\users\\stuko\\ovito\\mingw64\\opt\\bin\\python.exe 
-	: c:\\users\\stuko\\ovito\\Python-2.7.6\\Include
-	: c:\\users\\stuko\\ovito\\mingw64\\opt\\lib\\python2.7\\config ;
-  
-rename 'mingw64\opt\lib\python2.7\config\libpython2.7.dll.a' to 'libpython27.a'
-  
-b2 --prefix=C:\Users\stuko\ovito\boost64 toolset=gcc link=shared threading=multi --ignore-mpi --layout=tagged --with-system --with-thread --with-python define=MS_WIN64 install
+--- Compile Boost:
+cd 
+bootstrap.bat msvc
+b2 --prefix=../32bit/boost --user-config=../32bit/user-config.jam address-model=32 link=shared threading=multi runtime-link=shared toolset=msvc --ignore-mpi --with-system --with-thread --with-python install
+b2 --prefix=../64bit/boost --user-config=../64bit/user-config.jam address-model=64 link=shared threading=multi runtime-link=shared toolset=msvc --ignore-mpi --with-system --with-thread --with-python install
 
 **************************************************************************
-Build CGAL library (release 4.3):
+Build CGAL library (version 4.5):
 **************************************************************************
+--- Install precompiled CGAL library including GMP/MPFR libraries to directory ./CGALprecompiled/
+mkdir CGAL
+cd CGAL
+cmake -G "NMake Makefiles" ^
+   -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_Core=OFF ^
+   -DCMAKE_BUILD_TYPE=Release ^
+   -DBOOST_INCLUDEDIR=%cd:\=/%/../boost/include  ^
+   -DGMP_INCLUDE_DIR=%cd:\=/%/../CGALprecompiled/auxiliary/gmp/include/ ^
+   -DGMP_LIBRARIES=%cd:\=/%/../CGALprecompiled/auxiliary/gmp/lib/libgmp-10.lib ^
+   -DMPFR_INCLUDE_DIR=%cd:\=/%/../CGALprecompiled/auxiliary/gmp/include/ ^
+   -DMPFR_LIBRARIES=%cd:\=/%/../CGALprecompiled/auxiliary/gmp/lib/libmpfr-4.lib ^
+   ../../CGAL-4.5/
 
-cmake -DBOOST_INCLUDE_DIR=c:/Users/stuko/ovito/boost64/include \
-	-DGMP_LIBRARIES=c:/Users/stuko/ovito/Qt5.2.1-x86_64 \
-	-DMPFR_LIBRARIES=c:/Users/stuko/ovito/mpfr64_install \
-	-DWITH_CGAL_Qt3=OFF \
-	-DWITH_CGAL_Qt4=OFF \
-	-DWITH_CGAL_ImageIO=OFF \
-	.
-	
-**************************************************************************
-OVITO CMake settings:
-**************************************************************************
+nmake
 
-SPHINX_PROCESSOR = C:/Users/stuko/ovito/python32/Scripts/sphinx-build-script.py
+**************************************************************************
+HDF5 (version 1.8.x)
+**************************************************************************
+mkdir hdf5
+cd hdf5
+cmake -G "NMake Makefiles" ^
+   -DCMAKE_BUILD_TYPE=Release ^
+   -DCMAKE_INSTALL_PREFIX=../hdf5_install ^
+   -DBUILD_SHARED_LIBS=ON ^
+   -DHDF5_ENABLE_Z_LIB_SUPPORT=ON ^
+   -DHDF5_BUILD_HL_LIB=ON ^
+   -DZLIB_INCLUDE_DIR=%cd:\=/%/../zlib_install/include ^
+   -DZLIB_LIBRARY=%cd:\=/%/../zlib_install/lib/zlib.lib ^
+   ../../hdf5-1.8.14
+
+nmake install
+
+**************************************************************************
+NetCDF (version 4.3.x)
+**************************************************************************
+mkdir netcdf
+cd netcdf
+cmake -G "NMake Makefiles" ^
+   -DCMAKE_BUILD_TYPE=Release ^
+   -DCMAKE_INSTALL_PREFIX=../netcdf_install ^
+   -DENABLE_DAP=OFF ^
+   -DENABLE_EXAMPLES=OFF ^
+   -DENABLE_TESTS=OFF ^
+   -DBUILD_TESTING=OFF ^
+   -DBUILD_UTILITIES=OFF ^
+   -DENABLE_HDF4=OFF ^
+   -DUSE_HDF5=ON ^
+   -DHDF5_INCLUDE_DIR=%cd:\=/%/../hdf5_install/include ^
+   -DHDF5_LIB=%cd:\=/%/../hdf5_install/lib/hdf5.lib ^
+   -DHDF5_HL_LIB=%cd:\=/%/../hdf5_install/lib/hdf5_hl.lib ^
+   -DZLIB_INCLUDE_DIR=%cd:\=/%/../zlib_install/include ^
+   -DZLIB_LIBRARY=%cd:\=/%/../zlib_install/lib/zlib.lib ^
+   ../../netcdf-4.3.2
+
+nmake install
+
+**************************************************************************
+Qt
+**************************************************************************
+Install components (Qt 5.3.2): 
+   msvc2013 32-bit OpenGL
+   msvc2013 64-bit OpenGL
+   
+**************************************************************************
+QScintilla2
+**************************************************************************
+mkdir qscintilla
+cd qscintilla
+qmake ..\..\QScintilla-gpl-2.8.4\Qt4Qt5\qscintilla.pro
+nmake
+
+**************************************************************************
+libav
+**************************************************************************
+- Install MSYS (MinGW)
+- Download YASM (32 and 64 bit)
+git clone git://git.libav.org/libav.git libav
+cd 32bit
+mkdir libav
+cd libav
+export PATH="$PWD/../yasm:$PATH"
+../../libav/configure \
+   --toolchain=msvc \
+   --disable-programs \
+   --enable-gpl \
+   --disable-static \
+   --enable-shared \
+   --prefix=../libav_install \
+   --extra-cflags=-I$PWD/../zlib_install/include  \
+   --extra-ldflags=-L$PWD/../zlib_install/lib \
+   --enable-zlib \
+   --disable-doc \
+   --disable-network \
+   --disable-debug
+make install
+
+**************************************************************************
+OVITO:
+**************************************************************************
+mkdir ovito_release
+cd ovito_release
+cmake -G "NMake Makefiles" ^
+   -DCMAKE_BUILD_TYPE=Release ^
+   -DCMAKE_INSTALL_PREFIX=../ovito_release_install ^
+   -DZLIB_INCLUDE_DIR=%cd:\=/%/../zlib_install/include ^
+   -DZLIB_LIBRARY=%cd:\=/%/../zlib_install/lib/zlib.lib ^
+   -DCGAL_DIR=%cd:\=/%/../CGAL ^
+   -Dnetcdf_DIR=%cd:\=/%/../netcdf_install/share/cmake ^
+   -DBOOST_INCLUDEDIR=%cd:\=/%/../boost/include ^
+   -DQSCINTILLA_INCLUDE_DIR=%cd:\=/%/../../QScintilla-gpl-2.8.4\Qt4Qt5 ^
+   -DQSCINTILLA_LIBRARY=%cd:\=/%/../qscintilla/release/qscintilla2.lib ^
+   -DPYTHON_LIBRARY=%cd:\=/%/../Python/libs/python34.lib ^
+   -DPYTHON_INCLUDE_DIR=%cd:\=/%/../Python/include ^
+   -DXSLT_PROCESSOR=../../libxslt-1.1.26.win32/bin/xsltproc.exe ^
+   -DSPHINX_PROCESSOR_PATH=%cd:\=/%/../Python/Scripts ^
+   -DLIBAV_INCLUDE_DIR=%cd:\=/%/../libav_install/include ^
+   -DLIBAV_LIBRARY_DIR=%cd:\=/%/../libav_install/bin ^
+   -DOVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON ^
+   -DOVITO_BUILD_PLUGIN_NETCDFPLUGIN=ON ^
+   -DOVITO_BUILD_PLUGIN_PYSCRIPT=ON ^
+   -DOVITO_BUILD_PLUGIN_PARTICLES=ON ^
+   -DOVITO_BUILD_DOCUMENTATION=ON ^
+   -DOVITO_VIDEO_OUTPUT_SUPPORT=ON ^
+   ../../source
+
+nmake install
+
+---- Copy missing DLLs into installation dir of 32-bit version ----
+
+C:\Program Files (x86)\CMake 2.8\bin\libeay32.dll
+C:\Program Files (x86)\CMake 2.8\bin\ssleay32.dll

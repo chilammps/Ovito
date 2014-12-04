@@ -32,11 +32,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "SpatialCorrelationFunctionModifier.h"
 
-namespace Particles {
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifier, AsynchronousParticleModifier);
-IMPLEMENT_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifierEditor, ParticleModifierEditor);
-SET_OVITO_OBJECT_EDITOR(SpatialCorrelationFunctionModifier, SpatialCorrelationFunctionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SpatialCorrelationFunctionModifier, Internal::SpatialCorrelationFunctionModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _maxWaveVector, "MaxWaveVector", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _radialAverage, "radialAverage", PROPERTY_FIELD_MEMORIZE);
@@ -55,6 +54,10 @@ SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _propertyAxisRangeS
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _propertyAxisRangeEnd, "Property axis range end");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _sourceProperty1, "First source property");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _sourceProperty2, "Second source property");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -88,7 +91,7 @@ void SpatialCorrelationFunctionModifier::initializeModifier(PipelineObject* pipe
 	if(sourceProperty1().isNull() || sourceProperty1().isNull()) {
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
-		for(SceneObject* o : input.objects()) {
+		for(DataObject* o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
@@ -108,7 +111,7 @@ void SpatialCorrelationFunctionModifier::initializeModifier(PipelineObject* pipe
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunctionModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> SpatialCorrelationFunctionModifier::createEngine(TimePoint time, TimeInterval validityInterval)
 {
 	// Get the source property.
 	if(sourceProperty1().isNull() || sourceProperty2().isNull())
@@ -173,7 +176,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunction
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<SpatialCorrelationAnalysisEngine>(posProperty->storage(),
+	return std::make_shared<SpatialCorrelationAnalysisEngine>(validityInterval, posProperty->storage(),
                                                               property1->storage(), vecComponent1, vecComponentCount1,
                                                               property2->storage(), vecComponent2, vecComponentCount2,
                                                               _numberOfBinsX, _numberOfBinsY, _recX, _recY);
@@ -224,18 +227,18 @@ template<typename T1, typename T2> void doubleFourierTransform2D(const Point3 *p
 /******************************************************************************
 * Performs the actual computation. This method is executed in a worker thread.
 ******************************************************************************/
-void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::perform()
 {
-	futureInterface.setProgressText(tr("Computing spatial correlation function"));
-	if(futureInterface.isCanceled())
+	setProgressText(tr("Computing spatial correlation function"));
+	if(isCanceled())
 		return;
 
     int particleCount = 0;
     int numberOfBinsXHalf = (_numberOfBinsX-1)/2;
     int numberOfBinsYHalf = (_numberOfBinsY-1)/2;
 
-	futureInterface.setProgressRange(numberOfBinsYHalf);
-	futureInterface.setProgressValue(0);
+	setProgressRange(numberOfBinsYHalf);
+	setProgressValue(0);
 
     int numberOfBins = _numberOfBinsX*_numberOfBinsY;
 	_binData1.resize(numberOfBins);
@@ -260,7 +263,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
                                      v2, v2_end, _vecComponentCount2,
                                      _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
-                                     futureInterface);
+                                     *this);
 		}
         else if(property1()->dataType() == qMetaTypeId<int>() && 
                 property2()->dataType() == qMetaTypeId<FloatType>()) {
@@ -274,7 +277,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
                                      v2, v2_end, _vecComponentCount2,
                                      _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
-                                     futureInterface);
+                                     *this);
 		}
 		else if(property1()->dataType() == qMetaTypeId<FloatType>() && 
                 property2()->dataType() == qMetaTypeId<int>()) {
@@ -288,7 +291,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
                                      v2, v2_end, _vecComponentCount2,
                                      _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
-                                     futureInterface);
+                                     *this);
 		}
         else if(property1()->dataType() == qMetaTypeId<int>() && 
                 property2()->dataType() == qMetaTypeId<int>()) {
@@ -302,7 +305,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
                                      v2, v2_end, _vecComponentCount2,
                                      _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
-                                     futureInterface);
+                                     *this);
 		}
 
         // Normalize and compute correlation function.
@@ -319,9 +322,9 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
 }
 
 /******************************************************************************
-* Unpacks the computation results stored in the given engine object.
+* Unpacks the results of the computation engine and stores them in the modifier.
 ******************************************************************************/
-void SpatialCorrelationFunctionModifier::retrieveModifierResults(Engine* engine)
+void SpatialCorrelationFunctionModifier::transferComputationResults(ComputeEngine* engine)
 {
 	SpatialCorrelationAnalysisEngine* eng = static_cast<SpatialCorrelationAnalysisEngine*>(engine);
 
@@ -386,19 +389,19 @@ void SpatialCorrelationFunctionModifier::retrieveModifierResults(Engine* engine)
 ******************************************************************************/
 void SpatialCorrelationFunctionModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute modifier results when the parameters have been changed.
-	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty1) ||
-           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty2) ||
-           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_binDirection) ||
-           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_maxWaveVector) ||
-           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_numberOfRadialBins)) {
-            invalidateCachedResults();
-        }
-	}
-
 	AsynchronousParticleModifier::propertyChanged(field);
+
+	// Recompute modifier results when the parameters have been changed.
+	if(field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty1) ||
+	   field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty2) ||
+	   field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_binDirection) ||
+	   field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_maxWaveVector) ||
+	   field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_numberOfRadialBins)) {
+		invalidateCachedResults();
+	}
 }
+
+namespace Internal {
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -657,5 +660,6 @@ void SpatialCorrelationFunctionModifierEditor::onSaveData()
 	}
 }
 
+}	// End of namespace
 
-};	// End of namespace
+}}}}}	// End of namespace

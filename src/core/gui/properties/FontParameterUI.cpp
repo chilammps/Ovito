@@ -24,7 +24,7 @@
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito {
+namespace Ovito { namespace Gui { namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, FontParameterUI, PropertyParameterUI);
@@ -123,5 +123,4 @@ void FontParameterUI::onButtonClicked()
 	}
 }
 
-};
-
+}}}	// End of namespace

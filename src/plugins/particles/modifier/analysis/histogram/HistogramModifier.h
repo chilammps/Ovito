@@ -24,17 +24,18 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "../../ParticleModifier.h"
+
+#ifndef signals
+#define signals Q_SIGNALS
+#endif
 #include <qcustomplot.h>
 
-class QCustomPlot;
-class QCPItemStraightLine;
+namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
 
-namespace Particles {
-
-/*
- * This modifier computes a value histogram for a particle property.
+/**
+ * \brief This modifier computes a value histogram for a particle property.
  */
 class OVITO_PARTICLES_EXPORT HistogramModifier : public ParticleModifier
 {
@@ -42,9 +43,6 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE HistogramModifier(DataSet* dataset);
-
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Sets the source particle property for which the histogram should be computed.
 	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
@@ -103,18 +101,13 @@ public:
 	/// Returns the end value of the y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
-public:
-
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins);
-	Q_PROPERTY(bool selectInRange READ selectInRange WRITE setSelectInRange);
-	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart);
-	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd);
-
 protected:
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 private:
 
@@ -173,9 +166,11 @@ private:
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
-/******************************************************************************
-* A properties editor for the HistogramModifier class.
-******************************************************************************/
+namespace Internal {
+
+/**
+ * A properties editor for the HistogramModifier class.
+ */
 class HistogramModifierEditor : public ParticleModifierEditor
 {
 public:
@@ -220,6 +215,8 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+}	// End of namespace
+
+}}}}}	// End of namespace
 
 #endif // __OVITO_HISTOGRAM_MODIFIER_H
