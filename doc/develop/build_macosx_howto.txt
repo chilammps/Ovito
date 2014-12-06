@@ -2,8 +2,8 @@
 Install third-party libraries
 **************************************************************************
 export MACOSX_DEPLOYMENT_TARGET=10.7
-sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
-sudo port -s install netcdf python27 py27-sphinx py27-numpy zlib boost +python27 +no_static cgal py-sip
+sudo echo "macosx_deployment_target 10.8" >> /opt/local/etc/macports/macports.conf
+sudo port -s install netcdf python34 py34-sphinx py34-numpy py34-sip zlib boost +python34 +no_static cgal 
 sudo port install cmake docbook-xml docbook-xsl doxygen libxslt
 
 **************************************************************************

@@ -19,26 +19,11 @@
 #
 ###############################################################################
 
-# Place all compiled libraries into OVITO's library directory.
-SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
-
-################# 3rd-party libraries  ####################
-
-ADD_SUBDIRECTORY(3rdparty)
-
-################# Core library  ####################
-
-ADD_SUBDIRECTORY(core)
-
-################# Plugins ####################
-
-ADD_SUBDIRECTORY(plugins)
-
-################# Main executable ####################
-
-# Place the executable into the "bin" output directory.
-SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
-ADD_SUBDIRECTORY(main)
-
-# Propagate the plugin list to the parent scope.
-SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)
+ADD_SUBDIRECTORY(botan)
+ADD_SUBDIRECTORY(qssh)
+ADD_SUBDIRECTORY(muparser)
+ADD_SUBDIRECTORY(qcustomplot)
+ADD_SUBDIRECTORY(voro++)
+IF(OVITO_BUILD_PLUGIN_TACHYON)
+	ADD_SUBDIRECTORY(tachyon)
+ENDIF()

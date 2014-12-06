@@ -206,7 +206,8 @@ TARGET_INCLUDE_DIRECTORIES(Core PRIVATE "${ZLIB_INCLUDE_DIRS}")
 TARGET_INCLUDE_DIRECTORIES(Core PUBLIC ${Boost_INCLUDE_DIRS})
 
 # Link Qt5.
-TARGET_LINK_LIBRARIES(Core Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL Qt5::Concurrent Qt5::Network)
+TARGET_LINK_LIBRARIES(Core PUBLIC Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL Qt5::Concurrent)
+TARGET_LINK_LIBRARIES(Core PRIVATE Qt5::Network)
 
 # Link video encoding lib.
 IF(LIBAV_FOUND)

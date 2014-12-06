@@ -36,7 +36,7 @@ have left modification pipeline the last time it was evaluated::
     DataCollection(['Simulation cell', 'Position', 'Color'])
     
     >>> for key in node.output: 
-    ...     print node.output[key]
+    ...     print(node.output[key])
     <SimulationCell at 0x7fb6238f1b30>
     <ParticleProperty at 0x7fb623d0c760>
     <ParticleProperty at 0x7fb623d0c060>
@@ -62,7 +62,7 @@ is accessible by subsequent modifiers and will eventually arrive in the node's o
     >>> cna = CommonNeighborAnalysis()
     >>> node.modifiers.append(cna)
     >>> node.compute()
-    >>> print node.output["Structure Type"].array
+    >>> print(node.output["Structure Type"].array)
     [1 0 0 ..., 1 2 0]
     
 Note that the :py:class:`~ovito.modifiers.CommonNeighborAnalysisModifier` encodes the computed
@@ -75,7 +75,7 @@ the :py:attr:`~ovito.modifiers.CommonNeighborAnalysisModifier.counts` attribute 
 the numbers of particles found by the modifier for each structural type::
 
     >>> for c in enumerate(cna.counts):
-	...     print "Structure type %i: %i particles" % c
+	...     print("Structure type %i: %i particles" % c)
     Structure type 0: 117317 particles
     Structure type 1: 1262 particles
     Structure type 2: 339 particles
@@ -86,7 +86,7 @@ the numbers of particles found by the modifier for each structural type::
 Note that the :py:class:`~ovito.modifiers.CommonNeighborAnalysisModifier` class defines a set of integer constants 
 that make it easier to refer to individual structure types, e.g.::
 
-    >>> print "Number of FCC atoms:", cna.counts[CommonNeighborAnalysisModifier.Type.FCC]
+    >>> print("Number of FCC atoms:", cna.counts[CommonNeighborAnalysisModifier.Type.FCC])
     Number of FCC atoms: 1262
 
 .. important::

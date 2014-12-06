@@ -50,10 +50,10 @@ ADD_LIBRARY(QSsh
 TARGET_COMPILE_DEFINITIONS(QSsh PRIVATE QSSH_LIBRARY)
 
 # Link to Botan library.
-TARGET_LINK_LIBRARIES(QSsh Botan)
+TARGET_LINK_LIBRARIES(QSsh PRIVATE Botan)
 
 # Link to Qt5.
-TARGET_LINK_LIBRARIES(QSsh Qt5::Core Qt5::Network)
+TARGET_LINK_LIBRARIES(QSsh PUBLIC Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets)
 
 # Make header files of this library available to dependent targets.
 TARGET_INCLUDE_DIRECTORIES(QSsh INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")

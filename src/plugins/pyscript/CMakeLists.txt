@@ -19,7 +19,7 @@
 #
 ###############################################################################
 
-SET(Python_ADDITIONAL_VERSIONS "3.4" "3.5")
+SET(Python_ADDITIONAL_VERSIONS "3.4" "3.5" "3.6")
 FIND_PACKAGE(PythonLibs REQUIRED)
 FIND_PACKAGE(QScintilla REQUIRED)
 

@@ -17,14 +17,10 @@
 	</para>
 	<para>
 	   If you are not familiar with the Python language, you can find several tutorials and books online that cover this subject. 
-	   Note that OVITO supports the Python 2.x language standard.
+	   Note that OVITO supports the Python 3.4 language standard.
 	</para>
 	<para>
 	   OVITO's scripting interface is fully documented in the separate <link xlink:href="python/index.html">OVITO Scripting Reference</link>.
-	</para>
-   	<para>
- 	  <emphasis>Note to 64-bit Windows users:</emphasis> Due to compiler limitations, Python scripting is currently not available in the 64-bit version of OVITO for Windows.
-	  Please download the 32-bit version of OVITO for Windows instead if you want to use this feature.
 	</para>
 
 </section>

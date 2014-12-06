@@ -72,7 +72,7 @@ To load a sequence of simulation files, following a naming pattern like :file:`f
 OVITO will automatically detect the other files in the directory belonging to the same simulation sequence.
 You can check how many animation frames were found by querying the current :py:class:`~ovito.anim.AnimationSettings`::
 
-   >>> print ovito.dataset.anim.last_frame
+   >>> print(ovito.dataset.anim.last_frame)
    100
 
 In this example 101 simulation frames were found by OVITO (frame counting starts at 0). 

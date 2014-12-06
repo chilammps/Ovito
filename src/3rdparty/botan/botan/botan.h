@@ -8,7 +8,7 @@
 #ifndef BOTAN_AMALGAMATION_H__
 #define BOTAN_AMALGAMATION_H__
 
-//#include <QtGlobal>
+#include <QtGlobal>
 
 #include <iosfwd>
 #include <map>

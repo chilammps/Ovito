@@ -10,7 +10,7 @@ import math
 import numpy as np
 
 # Query program version.
-print "This is Ovito version", version
+print("This is Ovito version", version)
 
 # Import a data file.
 node = import_file("../data/NanocrystallinePd.dump.gz")
@@ -41,8 +41,8 @@ node.modifiers.append(SelectExpressionModifier(expression = "PotentialEnergy < -
 node.modifiers.append(DeleteSelectedParticlesModifier())
 
 # Print the modification pipeline of the selected node to the console.
-print "Modification pipeline:"
-print node.modifiers
+print("Modification pipeline:")
+print(node.modifiers)
 	
 # Perform some analysis.
 cna = CommonNeighborAnalysisModifier(adaptive_mode = True)
@@ -52,13 +52,13 @@ node.modifiers.append(cna)
 # the results of all modifiers have been computed.
 node.compute()
 for c in enumerate(cna.counts):
-	print "Type %i: %i particles" % c
-print node.output['Position'].array
+	print("Type %i: %i particles" % c)
+print(node.output['Position'].array)
 for t in node.output.structure_type.type_list:
-	print t.id, t.name, t.color
+	print(t.id, t.name, t.color)
 
 # Read out analysis results.
-print "Number of FCC atoms:", cna.counts[CommonNeighborAnalysisModifier.Type.FCC]
+print("Number of FCC atoms:", cna.counts[CommonNeighborAnalysisModifier.Type.FCC])
 
 # Write processed atoms back to an output file.
 export_file(node, "exported_data.dump", "lammps_dump", 	

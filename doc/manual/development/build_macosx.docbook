@@ -13,14 +13,15 @@
     <title>Installing dependencies</title>
     <para>
     See the <link linkend="development.requirements">list of requirements</link>
-    and install the required build tools and third-party libraries.
+    and install the required build tools and third-party libraries. OVITO should be compiled with
+    Apple's Clang compiler that is shipped with Xcode.
   </para>
   <para>
-    It's easiest to use <link xlink:href="https://www.macports.org/">MacPorts</link> to install most of the required dependencies.
+    It's easiest to use <link xlink:href="https://www.macports.org/">MacPorts</link> to install many of the required dependencies.
     After installing MacPorts, run 
 <screen><command>
-sudo port install netcdf python27 py27-sphinx py27-numpy py-sip zlib \
-                  boost +python27 +no_static cgal cmake docbook-xml \
+sudo port install netcdf python34 py34-sphinx py34-numpy py34-sip zlib \
+                  boost +python34 +no_static cgal cmake docbook-xml \
                   docbook-xsl doxygen libxslt
 </command></screen>
   </para>
@@ -30,13 +31,13 @@ sudo port install netcdf python27 py27-sphinx py27-numpy py-sip zlib \
   <para>
     Download and install PyQt5. Adjust the path to <command>qmake</command> below as needed:
 <screen><command>
-/opt/local/bin/python2.7 configure.py \
+/opt/local/bin/python3.4 configure.py \
 	--qmake $HOME/Qt5.3.2/5.3/clang_64/bin/qmake \
 	--confirm-license \
 	--no-designer-plugin \
 	--no-qml-plugin \
 	--assume-shared \
-	--sip=/opt/local/bin/sip-2.7 \
+	--sip=/opt/local/bin/sip-3.4 \
 	--concatenate \
 	--enable QtCore \
 	--enable QtGui \
@@ -101,6 +102,8 @@ mkdir build
 cd build
 cmake -DOVITO_BUILD_DOCUMENTATION=ON \
       -DCMAKE_BUILD_TYPE=Release \
+      -DPYTHON_INCLUDE_DIR=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/include/python3.4m \
+      -DPYTHON_LIBRARY=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/libpython3.4.dylib \
       ..
 </command></screen>
   </para>

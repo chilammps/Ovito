@@ -13,8 +13,8 @@ Work-flow improvements:
 
 New visualization features:
 
-- Option to include frame number/time-step in a rendered movie.
 - Option to include a length scale bar in a rendered image.
+- Show Periodic Images modifier should replicate bonds too (requested by Sina Rajabdoust <sina.rajabdoust@gmail.com>).
 - More particle representations (e.g. open circles/rectangles)
 - Test OpenGL rendering support for more than 12 million particles.
 

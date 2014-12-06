@@ -38,8 +38,8 @@ ELSE()
 	# Build our own version of the library.
 	ADD_LIBRARY(qcustomplot qcustomplot.cpp)
 
-	# Link Qt5.
-	QT5_USE_MODULES(qcustomplot ${OVITO_REQUIRED_QT_MODULES})
+    # Link to Qt5.
+    TARGET_LINK_LIBRARIES(qcustomplot Qt5::Core Qt5::Gui Qt5::Widgets Qt5::PrintSupport)
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(qcustomplot INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")

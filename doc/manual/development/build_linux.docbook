@@ -10,15 +10,15 @@
   <title>Building OVITO on Linux</title>
 
   <para>
-  Note that the following instructions apply to Ubuntu Linux 14.04 or later. 
-  If you are using a different Linux distribution, some steps might need to be slightly changed. 
+  Note that the following instructions apply to Ubuntu Linux 14.04 and compatible Debian-based Linux distributions.
+  Other Linux distributions may require slightly different steps. 
   </para>
   
  <simplesect>
     <title>Installing dependencies</title>
     <para>
-    To install the <link linkend="development.requirements">build tools and third-party libraries required by OVITO</link>, run the following  
-    on Ubuntu or other Debian-based Linux distributions:
+    Install all required <link linkend="development.requirements">build tools and third-party libraries</link>
+    by running
 <screen><command>
 sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-dev libboost-dev libqt5scintilla2-dev \
                      libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
@@ -32,7 +32,7 @@ sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-de
  <simplesect>
     <title>Downloading the source code</title>
     <para>
-    To download OVITO's source code into a new subdirectory named <filename>ovito</filename>: 
+    Download OVITO's source code into a new subdirectory named <filename>ovito</filename>: 
 <screen><command>git clone git://git.code.sf.net/p/ovito/git ovito</command></screen>
   </para>
   </simplesect>
@@ -54,8 +54,10 @@ cmake -DOVITO_BUILD_DOCUMENTATION=ON \
 </command></screen>
   </para>
   <para>
-    If this step fails, or if you want to disable individual components of OVITO, you can now run "<command>ccmake .</command>" to open the CMake configuration program.
-    The <literal>PYTHON_INCLUDE_DIR</literal>, <literal>PYTHON_LIBRARY</literal>, and <literal>Boost_PYTHON_LIBRARY_RELEASE</literal> settings are required to build OVITO against Python 3 instead of version 2.
+    If this step fails, or if you want to disable certain components of OVITO, you can now run "<command>ccmake .</command>" to open the 
+    <link xlink:href="hhtp://www.cmake.org/">CMake</link> configuration program.
+    The <literal>PYTHON_INCLUDE_DIR</literal>, <literal>PYTHON_LIBRARY</literal>, and <literal>Boost_PYTHON_LIBRARY_RELEASE</literal> settings are required to 
+    build OVITO against Python 3 instead of version 2.
   </para>
   <para>
     Finally, compile OVITO: 

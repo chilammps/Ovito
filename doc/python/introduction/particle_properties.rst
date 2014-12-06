@@ -79,14 +79,14 @@ particle types, each having a name, a display color, and a display radius::
 
     >>> node = import_file('example.poscar')
     >>> ptp = node.source.data.particle_type   # Access the 'Particle Type' property
-    >>> print ptp
+    >>> print(ptp)
     <ParticleTypeProperty at 0x7fe0a2c355d0>
     
-    >>> print ptp.array     # This contains the per-particle data, one integer per particle
+    >>> print(ptp.array)     # This contains the per-particle data, one integer per particle
     [1 1 2 ..., 1 2 1]
     
     >>> for t in ptp.type_list:
-    ...     print t.id, t.name, t.color
+    ...     print(t.id, t.name, t.color)
     1 Cu (1.0 0.4 0.4)
     2 Zr (0.0 1.0 0.4)
 

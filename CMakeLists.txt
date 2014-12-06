@@ -81,7 +81,7 @@ IF(NOT MSVC)
 ENDIF()
 
 IF(APPLE)
-	ADD_COMPILE_OPTIONS("-stdlib=libc++ -Wno-invalid-offsetof")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-invalid-offsetof")
 ENDIF()
 
 # Enable additional optimizations for release builds.
@@ -201,9 +201,8 @@ SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
   
 # Find and set up Qt5 libraries.
-SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets OpenGL Concurrent Network PrintSupport)
-FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
-	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
+FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
+	FIND_PACKAGE(Qt5${component} REQUIRED)
 ENDFOREACH()
 
 # Find OpenGL library.
@@ -235,10 +234,10 @@ ADD_SUBDIRECTORY(src)
 # On Windows, the third-party library DLLs need to be installed in the OVITO directory.
 IF(WIN32)
 	# Gather Qt dynamic link libraries.
-	FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
-		GET_TARGET_PROPERTY(dll Qt5::${COMPONENT} LOCATION_${CMAKE_BUILD_TYPE})
+	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
+		GET_TARGET_PROPERTY(dll Qt5::${component} LOCATION_${CMAKE_BUILD_TYPE})
 		OVITO_INSTALL_DLL("${dll}")
-		IF(${COMPONENT} MATCHES "Core")
+		IF(${component} MATCHES "Core")
 			GET_FILENAME_COMPONENT(QtBinaryPath ${dll} PATH)
 			OVITO_INSTALL_DLL("${QtBinaryPath}/icudt52.dll")		
 			OVITO_INSTALL_DLL("${QtBinaryPath}/icuin52.dll")		

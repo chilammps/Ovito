@@ -67,7 +67,7 @@ unique_indices, counts = row_histogram(voro_indices)
 
 # Print the ten most frequent histogram entries.
 for i in range(10):
-    print "%s\t%i\t(%.1f %%)" % (tuple(unique_indices[i]), 
+    print("%s\t%i\t(%.1f %%)" % (tuple(unique_indices[i]), 
                                  counts[i], 
-                                 100.0*float(counts[i])/len(voro_indices))
+                                 100.0*float(counts[i])/len(voro_indices)))
     

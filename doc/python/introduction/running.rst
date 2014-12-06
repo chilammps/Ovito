@@ -4,17 +4,11 @@ Running scripts
 
 This section explains how to use OVITO's built-in script interpreter.
 
-.. topic:: Note to 64-bit Windows users:
-
-	Due to compiler limitations, Python scripting is currently NOT available in the 64-bit version of OVITO for Windows.
-	Please use the 32-bit version of OVITO instead if you want to use this feature on Windows.
-	The 32-bit Windows version of the program runs on 64-bit operating systems too.
-
 OVITO's Python interpreter
 ----------------------------------
 
 OVITO includes a built-in script interpreter, which can execute programs written in the Python language.
-The current version of OVITO is compatible with the Python 2.7 language standard. 
+The current version of OVITO is compatible with the Python 3.4 language standard. 
 You typically execute a Python script from the terminal using the :program:`ovitos` script launcher that comes with OVITO:
 
 .. code-block:: shell-session
@@ -29,7 +23,7 @@ showing a graphical user interface.
 Let's assume we used a text editor to write a simple Python script file named :file:`hello.py`::
 
 	import ovito
-	print "Hello, this is OVITO %i.%i.%i" % ovito.version
+	print("Hello, this is OVITO %i.%i.%i" % ovito.version)
 
 We can execute the script from a Linux terminal as follows:
 
