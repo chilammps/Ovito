@@ -1,11 +1,10 @@
 **************************************************************************
-This file contains instructions how to prepare the dependencies
-when building the monolithic (statically linked) version of OVITO
-on a Ubuntu Linux system. This is the official build distributed
-through the website. 
-Building a dynamically linked executable on a local system is easier, and 
-one can use the shared libraries provided by the Linux package manager in 
-most cases.
+Note: This file contains instructions how to build the statically linked 
+version of OVITO on a Ubuntu 10.04 Linux system. 
+This procedure is used to create the official distribution on the website. 
+
+Building a dynamically linked executable on a local system is simpler 
+and is described in OVITO's user manual.
 **************************************************************************
 
 **************************************************************************
@@ -18,16 +17,6 @@ sudo apt-get install build-essential perl python git libfreetype6-dev libfontcon
                      libmpfr-dev libsm-dev libice-dev libnetcdf-dev libhdf5-serial-dev \
                      libglu1-mesa-dev libxrender-dev xsltproc docbook-xml docbook-xsl docbook-xsl-doc-html \
                      python-sphinx libssl-dev liblapack3gf ncurses-dev
-
-**************************************************************************
-To build the dynamically-linked executable instead (on Ubuntu 14.04):
-**************************************************************************
-
-sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-dev \
-                     libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
-                     libavutil-dev libswscale-dev libcgal-dev libnetcdf-dev libhdf5-dev libhdf5-serial-dev \
-                     libbotan1.10-dev libmuparser-dev python-dev libboost-python-dev python-sphinx \
-                     xsltproc docbook-xml docbook-xsl docbook-xsl-doc-html
 
 **************************************************************************
 Install GNU g++ 4.8 compiler on Ubuntu 10.04
@@ -46,7 +35,7 @@ export CC=gcc-4.8
 export CXX=g++-4.8
 
 **************************************************************************
-Build static Qt libraries (version 5.3.2) on Ubuntu 10.04:
+Build Qt libraries (version 5.3.2):
 
 Edit file qtbase/mkspecs/common/g++-base.conf and specify
 paths to latest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
@@ -56,7 +45,6 @@ export CC=gcc-4.8
 export CXX=g++-4.8
 ./configure \
 	-opensource \
-	-static \
 	-confirm-license \
 	-no-qml-debug \
 	-nomake examples \
@@ -72,13 +60,22 @@ export CXX=g++-4.8
 	-skip qtconnectivity -skip qtmultimedia -skip qtwebkit -skip qtwebkit-examples -skip qtxmlpatterns -skip qtlocation \
 	-skip qtsensors -skip qtdeclarative -skip qtdoc -skip qtquick1 -skip qtquickcontrols \
 	-skip qtserialport -skip qtgraphicaleffects -skip qttranslations \
-	-prefix $HOME/progs/qt5static
+	-prefix $HOME/progs/qt5
 
 make
 make install
 
 **************************************************************************
-Build Python (version 2.7.x):
+QScintilla2
+**************************************************************************
+export CC=gcc-4.8
+export CXX=g++-4.8
+cd QScintilla-gpl-2.8.4/Qt4Qt5/
+$HOME/progs/qt5/bin/qmake qscintilla.pro
+make
+
+**************************************************************************
+Build Python (version 3.4.x):
 **************************************************************************
 
 Edit Modules/Setup to enable SSL module:
@@ -101,7 +98,7 @@ Install Sphinx:
 
 cd $HOME/progs/python/bin
 wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
-LD_LIBRARY_PATH=$PWD/../lib ./python ez_setup.py --insecure
+LD_LIBRARY_PATH=$PWD/../lib ./python3 ez_setup.py --insecure
 LD_LIBRARY_PATH=$PWD/../lib ./easy_install sphinx
 
 **************************************************************************
@@ -110,19 +107,53 @@ Build NumPy:
 
 export CC=gcc-4.8
 export CXX=g++-4.8
-LD_LIBRARY_PATH=$HOME/progs/python/lib $HOME/progs/python/bin/python setup.py install
+LD_LIBRARY_PATH=$HOME/progs/python/lib $HOME/progs/python/bin/python3 setup.py install
+
+**************************************************************************
+Build SIP:
+**************************************************************************
+
+export CC=gcc-4.8
+export CXX=g++-4.8
+LD_LIBRARY_PATH=$HOME/progs/python/lib $HOME/progs/python/bin/python3 configure.py
+make
+make install
+
+**************************************************************************
+Build PyQt5:
+**************************************************************************
+
+export CC=gcc-4.8
+export CXX=g++-4.8
+LD_LIBRARY_PATH=$HOME/progs/python/lib $HOME/progs/python/bin/python3 configure.py \
+   --concatenate \
+   --concatenate-split 10 \
+   --confirm-license \
+   --no-designer-plugin \
+   --no-qml-plugin \
+   --no-tools \
+   --qmake=$HOME/progs/qt5/bin/qmake \
+   --sip=$HOME/progs/python/bin/sip \
+   --enable QtCore \
+   --enable QtGui \
+   --enable QtWidgets \
+   --enable QtNetwork \
+   --enable QtOpenGL \
+   --enable QtSvg
+make
+make install
 
 **************************************************************************
 Build static versions of Boost libraries (release 1.55):
 **************************************************************************
 
 echo "using gcc : 4.8 : /usr/bin/g++-4.8 ; " >> tools/build/v2/user-config.jam
-echo "using python : 2.7 : /home/stuko/progs/python ; " >> tools/build/v2/user-config.jam
+echo "using python : 3.4 : /home/stuko/progs/python : /home/stuko/progs/python/include/python3.4m ; " >> tools/build/v2/user-config.jam
 ./bootstrap.sh \
 	--with-libraries=system,thread,python \
 	--with-python=$HOME/progs/python/bin/python \
 	--with-python-root=$HOME/progs/python \
-	--with-python-version=2.7 \
+	--with-python-version=3.4 \
 	--prefix=$HOME/progs/booststatic
 
 ./b2 toolset=gcc-4.8 release link=static install
@@ -133,14 +164,15 @@ Build static CGAL library (release 4.3):
 
 export CC=gcc-4.8
 export CXX=g++-4.8
-cmake -DBOOST_ROOT=$HOME/progs/booststatic \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DGMP_LIBRARIES=/usr/lib/libgmp.a \
-	-DMPFR_LIBRARIES=/usr/lib/libmpfr.a \
-	-DWITH_CGAL_Qt3=OFF \
-	-DWITH_CGAL_Qt4=OFF \
-	-DWITH_CGAL_ImageIO=OFF \
-	.
+$HOME/progs/cmake-2.8.12.2/bin/cmake \
+    -DBOOST_ROOT=$HOME/progs/booststatic \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DGMP_LIBRARIES=/usr/lib/libgmp.a \
+    -DMPFR_LIBRARIES=/usr/lib/libmpfr.a \
+    -DWITH_CGAL_Qt3=OFF \
+    -DWITH_CGAL_Qt4=OFF \
+    -DWITH_CGAL_ImageIO=OFF \
+    .
 
 make
 
@@ -164,21 +196,34 @@ export CXX=g++-4.8
 
 make install
 
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/progs/libavstatic/lib/pkgconfig
-
 **************************************************************************
 Set the following flags in the CMake configuration to build all features:
 **************************************************************************
 
 export CC=gcc-4.8
 export CXX=g++-4.8
-ccmake \
-	-DOVITO_BUILD_DOCUMENTATION=ON \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBOOST_ROOT=$HOME/progs/booststatic \
-	-DPYTHON_LIBRARY=$HOME/progs/python/lib/libpython2.7.so.1.0 \
-	-DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python2.7 \
-	-DSPHINX_PROCESSOR=$HOME/progs/python/bin/sphinx-build \
-	....
+$HOME/progs/cmake-2.8.12.2/bin/cmake \
+  -DOVITO_BUILD_DOCUMENTATION=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=../release_install \
+  -DOVITO_MONOLITHIC_BUILD=ON \
+  -DBOOST_ROOT=$HOME/progs/booststatic \
+  -DPYTHON_LIBRARY=$HOME/progs/python/lib/libpython3.4m.so.1.0 \
+  -DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python3.4m \
+  -DSPHINX_PROCESSOR_PATH=$HOME/progs/python/bin \
+  -DQt5Core_DIR=$HOME/progs/qt5/lib/cmake/Qt5Core \
+  -DQt5Gui_DIR=$HOME/progs/qt5/lib/cmake/Qt5Gui \
+  -DQt5Widgets_DIR=$HOME/progs/qt5/lib/cmake/Qt5Widgets \
+  -DQt5Network_DIR=$HOME/progs/qt5/lib/cmake/Qt5Network \
+  -DQt5Concurrent_DIR=$HOME/progs/qt5/lib/cmake/Qt5Concurrent \
+  -DQt5OpenGL_DIR=$HOME/progs/qt5/lib/cmake/Qt5OpenGL \
+  -DQt5PrintSupport_DIR=$HOME/progs/qt5/lib/cmake/Qt5PrintSupport \
+  -DQt5PrintSupport_DIR=$HOME/progs/qt5/lib/cmake/Qt5PrintSupport \
+  -DQSCINTILLA_INCLUDE_DIR=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/ \
+  -DQSCINTILLA_LIBRARY=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/libqscintilla2.so.11 \
+  -DCGAL_DIR=$HOME/progs/CGAL-4.3 \
+  -DLIBAV_INCLUDE_DIR=$HOME/progs/libavstatic/include \
+  -DLIBAV_LIBRARY_DIR=$HOME/progs/libavstatic/lib \
+  ../source/
 
 

@@ -54,7 +54,7 @@ OVITO_FIXUP_BUILD_OBJECT(${PROJECT_NAME})
 
 IF(OVITO_MONOLITHIC_BUILD)
 
-	# Build a monolithic executable that includes everything.
+	# Build a monolithic executable that includes all plugins.
 	# When statically linking, the linker will typically eliminate
 	# unreferenced static objects in the final executable. To prevent this from
 	# happening we have to use the -whole-archive linker option. 
@@ -64,16 +64,22 @@ IF(OVITO_MONOLITHIC_BUILD)
 	ENDFOREACH()
 
 	IF(UNIX AND NOT APPLE)
-		# The static Qt plugins must be linked into the executable.
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqxcb.a")
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqminimal.a")
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libxcb-static.a")
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libQt5PlatformSupport.a")
+		# Install copies of the Qt libraries.
+		FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
+			GET_TARGET_PROPERTY(lib Qt5::${component} LOCATION)
+			GET_TARGET_PROPERTY(lib_soname Qt5::${component} IMPORTED_SONAME_RELEASE)
+			CONFIGURE_FILE("${lib}" "${OVITO_LIBRARY_DIRECTORY}" COPYONLY)		
+			GET_FILENAME_COMPONENT(lib_realname "${lib}" NAME)
+			EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink ${lib_realname} "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/${lib_soname}")
+			INSTALL(FILES "${lib}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+			INSTALL(FILES "${OVITO_LIBRARY_DIRECTORY}/${lib_soname}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+		ENDFOREACH()
 
 		# Some additional system libraries are required.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
 				"freetype" "fontconfig" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a" "util")
 
+		# Make the executable look in lib/ovito/ directory for shared libraries.
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH "1")
 		FIND_LIBRARY(OVITO_LIBSTDCXX NAMES libstdc++.so.6 PATHS /usr/lib NO_DEFAULT_PATH)
@@ -84,7 +90,43 @@ IF(OVITO_MONOLITHIC_BUILD)
 		INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 		
 	ENDIF()
+ENDIF()
 
+# On Windows, the third-party library DLLs need to be installed in the OVITO directory.
+IF(WIN32)
+	# Gather Qt dynamic link libraries.
+	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
+		GET_TARGET_PROPERTY(dll Qt5::${component} LOCATION_${CMAKE_BUILD_TYPE})
+		OVITO_INSTALL_DLL("${dll}")
+		IF(${component} MATCHES "Core")
+			GET_FILENAME_COMPONENT(QtBinaryPath ${dll} PATH)
+			OVITO_INSTALL_DLL("${QtBinaryPath}/icudt52.dll")		
+			OVITO_INSTALL_DLL("${QtBinaryPath}/icuin52.dll")		
+			OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc52.dll")
+		ENDIF()
+	ENDFOREACH()
+	
+	# Install Qt plugins.
+	IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/platforms/qwindowsd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/platforms/")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/imageformats/qjpegd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/imageformats/")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/accessible/qtaccessiblewidgetsd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/accessible/")
+	ELSE()
+		INSTALL(FILES "${QtBinaryPath}/../plugins/platforms/qwindows.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/platforms/")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/imageformats/qjpeg.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/imageformats/")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/accessible/qtaccessiblewidgets.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/accessible/")
+	ENDIF()
+	
+	# Create a qt.conf file.
+	# This is required to let Qt search for its plugin modules in the program directory.
+	INSTALL(CODE "
+	    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nPlugins = plugins/\")
+	    " COMPONENT Runtime)
+		
+	# Install zlib DLL.
+	LIST(GET ZLIB_LIBRARIES 0 ZLIB_FIRST_LIBRARY)
+	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH "${ZLIB_FIRST_LIBRARY}" PATH)
+	OVITO_INSTALL_DLL("${ZLIB_LIBRARY_PATH}/../bin/zlib.dll")
 ENDIF()
 
 IF(APPLE)

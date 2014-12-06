@@ -59,9 +59,9 @@ PythonViewportOverlay::PythonViewportOverlay(DataSet* dataset) : ViewportOverlay
 	setScript("import ovito\n"
 			"# The following function is called by OVITO to let the script\n"
 			"# draw arbitrary graphics content into the viewport.\n"
-			"# It is passed in a QPainter (see http://qt-project.org/doc/qt-5/qpainter.html)\n"
+			"# It is passed a QPainter (see http://qt-project.org/doc/qt-5/qpainter.html).\n"
 			"def render(painter, **args):\n"
-			"\t# This example code prints the current animation frame\n"
+			"\t# This demo code prints the current animation frame\n"
 			"\t# into the upper left corner of the viewport.\n"
 			"\txpos = 10\n"
 			"\typos = 10 + painter.fontMetrics().ascent()\n"
@@ -181,7 +181,7 @@ void PythonViewportOverlayEditor::createUI(const RolloutInsertionParameters& rol
 	_codeEditor->setMarginLineNumbers(0, true);
 	layout->addWidget(_codeEditor, row++, 0);
 
-	QPushButton* applyButton = new QPushButton(tr("Apply"));
+	QPushButton* applyButton = new QPushButton(tr("Apply changes"));
 	layout->addWidget(applyButton, row++, 0);
 
 	layout->addWidget(new QLabel(tr("Script output:")), row++, 0);

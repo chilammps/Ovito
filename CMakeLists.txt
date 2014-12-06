@@ -231,43 +231,6 @@ ENDIF()
 # Build program.
 ADD_SUBDIRECTORY(src)
 
-# On Windows, the third-party library DLLs need to be installed in the OVITO directory.
-IF(WIN32)
-	# Gather Qt dynamic link libraries.
-	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
-		GET_TARGET_PROPERTY(dll Qt5::${component} LOCATION_${CMAKE_BUILD_TYPE})
-		OVITO_INSTALL_DLL("${dll}")
-		IF(${component} MATCHES "Core")
-			GET_FILENAME_COMPONENT(QtBinaryPath ${dll} PATH)
-			OVITO_INSTALL_DLL("${QtBinaryPath}/icudt52.dll")		
-			OVITO_INSTALL_DLL("${QtBinaryPath}/icuin52.dll")		
-			OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc52.dll")
-		ENDIF()
-	ENDFOREACH()
-	
-	# Install Qt plugins.
-	IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		INSTALL(FILES "${QtBinaryPath}/../plugins/platforms/qwindowsd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/platforms/")
-		INSTALL(FILES "${QtBinaryPath}/../plugins/imageformats/qjpegd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/imageformats/")
-		INSTALL(FILES "${QtBinaryPath}/../plugins/accessible/qtaccessiblewidgetsd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/accessible/")
-	ELSE()
-		INSTALL(FILES "${QtBinaryPath}/../plugins/platforms/qwindows.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/platforms/")
-		INSTALL(FILES "${QtBinaryPath}/../plugins/imageformats/qjpeg.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/imageformats/")
-		INSTALL(FILES "${QtBinaryPath}/../plugins/accessible/qtaccessiblewidgets.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/accessible/")
-	ENDIF()
-	
-	# Create a qt.conf file.
-	# This is required to let Qt search for its plugin modules in the program directory.
-	INSTALL(CODE "
-	    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nPlugins = plugins/\")
-	    " COMPONENT Runtime)
-		
-	# Install zlib DLL.
-	LIST(GET ZLIB_LIBRARIES 0 ZLIB_FIRST_LIBRARY)
-	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH "${ZLIB_FIRST_LIBRARY}" PATH)
-	OVITO_INSTALL_DLL("${ZLIB_LIBRARY_PATH}/../bin/zlib.dll")
-ENDIF()
-
 ################# OpenGL test program ####################
 OPTION(OVITO_BUILD_OPENGLTEST "Build the OpenGL test program." "OFF")
 IF(OVITO_BUILD_OPENGLTEST)

@@ -22,10 +22,6 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 
-#if defined(OVITO_MONOLITHIC_BUILD) && defined(Q_OS_LINUX)
-	Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
-#endif
-
 int main(int argc, char** argv)
 {
 #ifdef OVITO_MONOLITHIC_BUILD
