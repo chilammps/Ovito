@@ -16,6 +16,16 @@ If you want to build OVITO from source, see http://www.ovito.org/manual/developm
 Change Log 
 ****************************************************************************************
 
+Development version:
+
+ - The Show Periodic Images modifier now replicates bonds too.
+ - Changed integrated script interpreter from Python 2.7 to Python 3.4.
+ - Switched from MinGW to Visual C++ 2013 compiler for Windows builds. 
+ - Python scripting is now supported by the 64-bit version of OVITO for Windows too.
+ - Added a scriptable viewport overlay, which allows to paint arbitrary 2d contents over the rendered image.
+ - Created C++ API documentation.
+ - Removed old Javascript plugin.
+
 Release 2.4.2 (14-Nov-14):
 
  - The Color Coding modifier now supports user-defined color maps.

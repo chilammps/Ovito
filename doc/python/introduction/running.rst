@@ -8,7 +8,7 @@ OVITO's Python interpreter
 ----------------------------------
 
 OVITO includes a built-in script interpreter, which can execute programs written in the Python language.
-The current version of OVITO is compatible with the Python 3.4 language standard. 
+The current version of OVITO is compatible with the `Python 3.4 <https://docs.python.org/3.4/>` language standard. 
 You typically execute a Python script from the terminal using the :program:`ovitos` script launcher that comes with OVITO:
 
 .. code-block:: shell-session
@@ -17,8 +17,8 @@ You typically execute a Python script from the terminal using the :program:`ovit
 	
 The :program:`ovitos` program is located in the :file:`bin/` subdirectory of OVITO for Linux, in the 
 :file:`Ovito.app/Contents/MacOS/` directory of OVITO for MacOS, and in the main program directory 
-on Windows systems. It should not be confused with :program:`ovito`, the main OVITO program
-showing a graphical user interface.
+on Windows systems. It should not be confused with :program:`ovito`, the main program, which
+has a graphical user interface.
 
 Let's assume we used a text editor to write a simple Python script file named :file:`hello.py`::
 

@@ -254,7 +254,8 @@ int Application::runApplication()
 		// Deliver all events that have been posted during the initialization.
 		QCoreApplication::processEvents();
 		// Just quit the application after all background tasks have finished.
-		datasetContainer()->taskManager().waitForAll();
+		if(_datasetContainer)
+			_datasetContainer->taskManager().waitForAll();
 		return _exitCode;
 	}
 }
