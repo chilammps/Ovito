@@ -1,26 +1,26 @@
 **************************************************************************
 Install third-party libraries
 **************************************************************************
-export MACOSX_DEPLOYMENT_TARGET=10.7
+export MACOSX_DEPLOYMENT_TARGET=10.8
 sudo echo "macosx_deployment_target 10.8" >> /opt/local/etc/macports/macports.conf
 sudo port -s install netcdf python34 py34-sphinx py34-numpy py34-sip zlib boost +python34 +no_static cgal 
 sudo port install cmake docbook-xml docbook-xsl doxygen libxslt
 
 **************************************************************************
-Install Qt libraries, version 5.3.1
+Install Qt libraries, version 5.3.2
 **************************************************************************
 
 **************************************************************************
 Build PyQt5
 **************************************************************************
 
-/opt/local/bin/python2.7 configure.py \
+/opt/local/bin/python3.4 configure.py \
 	--confirm-license \
 	--no-designer-plugin \
 	--no-qml-plugin \
 	--assume-shared \
 	--qmake $HOME/Qt5.3.2/5.3/clang_64/bin/qmake \
-	--sip=/opt/local/bin/sip-2.7 \
+	--sip=/opt/local/bin/sip-3.4 \
 	--concatenate \
 	--enable QtCore \
 	--enable QtGui \

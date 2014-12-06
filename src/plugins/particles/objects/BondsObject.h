@@ -45,15 +45,21 @@ public:
 	void setStorage(BondsStorage* storage);
 
 	/// \brief Returns the internal storage object.
-	BondsStorage* storage() const { return _storage.data(); }
+	const BondsStorage* storage() const { return _storage.data(); }
 
 	/// Returns the list of bonds between particles.
 	const std::vector<BondsStorage::Bond>& bonds() const { return _storage->bonds(); }
 
+	/// Returns the list of bonds that is modifiable.
+	/// When done modifying the returned bonds list, you should call changed().
+	std::vector<BondsStorage::Bond>& modifiableBonds() {
+		_storage.detach();
+		return _storage->bonds();
+	}
+
 	/// Deletes all bonds.
 	void clear() {
-		_storage.detach();
-		_storage->bonds().clear();
+		modifiableBonds().clear();
 		changed();
 	}
 

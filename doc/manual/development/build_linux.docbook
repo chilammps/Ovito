@@ -10,17 +10,16 @@
   <title>Building OVITO on Linux</title>
 
   <para>
-  Note that the following instructions apply to Ubuntu Linux 14.04 and compatible Debian-based Linux distributions.
-  Other Linux distributions may require slightly different steps. 
+  Note that the following instructions have been written for Ubuntu Linux 14.04 or later, or any compatible Debian-based distribution.
+  Other Linux distributions may require slightly modified steps. 
   </para>
   
  <simplesect>
     <title>Installing dependencies</title>
     <para>
-    Install all required <link linkend="development.requirements">build tools and third-party libraries</link>
+    First install all required <link linkend="development.requirements">build tools and third-party libraries</link>
     by running
-<screen><command>
-sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-dev libboost-dev libqt5scintilla2-dev \
+<screen><command>sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-dev libboost-dev libqt5scintilla2-dev \
                      libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
                      libavutil-dev libswscale-dev libnetcdf-dev libhdf5-dev libhdf5-serial-dev \
                      libbotan1.10-dev libmuparser-dev python3-dev libboost-python-dev python3-sphinx python3-numpy \
@@ -32,7 +31,7 @@ sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-de
  <simplesect>
     <title>Downloading the source code</title>
     <para>
-    Download OVITO's source code into a new subdirectory named <filename>ovito</filename>: 
+    Download OVITO's source code into a new subdirectory named <filename>ovito/</filename>: 
 <screen><command>git clone git://git.code.sf.net/p/ovito/git ovito</command></screen>
   </para>
   </simplesect>
@@ -40,7 +39,7 @@ sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-de
   <simplesect>
     <title>Compiling OVITO</title>
     <para>
-    Create a build directory and let CMake generate the Makefile: 
+    Within that directory, create a build directory and let CMake generate the Makefile: 
 <screen>
 <command>cd ovito
 mkdir build
@@ -56,14 +55,14 @@ cmake -DOVITO_BUILD_DOCUMENTATION=ON \
   <para>
     If this step fails, or if you want to disable certain components of OVITO, you can now run "<command>ccmake .</command>" to open the 
     <link xlink:href="hhtp://www.cmake.org/">CMake</link> configuration program.
-    The <literal>PYTHON_INCLUDE_DIR</literal>, <literal>PYTHON_LIBRARY</literal>, and <literal>Boost_PYTHON_LIBRARY_RELEASE</literal> settings are required to 
+    The <literal>PYTHON_INCLUDE_DIR</literal>, <literal>PYTHON_LIBRARY</literal>, and <literal>Boost_PYTHON_LIBRARY_RELEASE</literal> settings are needed to 
     build OVITO against Python 3 instead of version 2.
   </para>
   <para>
     Finally, compile OVITO: 
 <screen>
 <command>make -j4</command></screen>
-After successful compilation, the executable can be found in the <filename>bin</filename> subdirectory.
+After successful compilation, the executable can be found in the <filename>ovito/build/bin</filename> directory.
   </para>
   </simplesect>
   

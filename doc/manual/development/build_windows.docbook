@@ -11,50 +11,25 @@
 
  <simplesect>
     <title>Installing dependencies</title>
-    <para>
-    See the <link linkend="development.requirements">list of requirements</link>
-    and install the required build tools and third-party libraries.
+  <para>
+    OVITO for Windows is typically built using Microsoft's Visual C++ 2013 compiler. However, building
+    it with the MinGW compiler should still be possible too. 
   </para>
   <para>
-    Install the MinGW version of Qt 5.x for 32-bit Windows. It includes the MinGW C++ compiler, which
-    is used to build OVITO. Whether OVITO can also be compiled with a current version of Microsoft's Visual C++ compiler is
-    not known. MSVC 2012 did not support the C++11 language standard needed for OVITO. 
-  </para>
-  <para>
-    Compiling a 64-bit version of OVITO for Windows is more involved, because there is no pre-built Qt5 package that ships with a 
-    64-bit version of the MinGW compiler. The MinGW-w64 compiler needs to be installed separately, and Qt needs to be compiled from source.
-    Furthermore, Python for Windows is not compatible with the MinGW-w64 compiler. That's why Python scripting support is missing
-    from the 64-bit version of OVITO for Windows.       
+    More instructions how to build the required depenencies on Windows and OVITO itself
+    can be found in the file <filename>doc/develop/build_windows_howto.txt</filename> after downloading the source code.
+    The required steps are quite involved, and the available instructions may be insufficient. 
+    Please contact the author if you want to build OVITO on Windows and get stuck.
   </para>
   </simplesect>
 
  <simplesect>
     <title>Downloading the source code</title>
     <para>
-    To download OVITO's source code into a new subdirectory named <filename>ovito</filename>, run: 
+    To download OVITO's source code into a new subdirectory named <filename>ovito</filename>, install <link xlink:href="http://git-scm.com">Git</link> and run: 
 <screen><command>git clone git://git.code.sf.net/p/ovito/git ovito</command></screen>
+    from the command line or go to <link xlink:href="https://sourceforge.net/p/ovito/git/ci/master/tree/">https://sourceforge.net/p/ovito/git/ci/master/tree/</link>
   </para>
   </simplesect>
 
-  <simplesect>
-    <title>Compiling OVITO</title>
-    <para>
-    Create a build directory and let CMake generate the Makefile: 
-<screen>
-<command>cd ovito
-mkdir build
-cd build
-cmake -DOVITO_BUILD_DOCUMENTATION=ON \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
-</command></screen>
-  </para>
-  <para>
-    If this step fails, or if you want to enable/disable individual components of OVITO, you can now run "<command>ccmake .</command>" to open the CMake configuration program.    
-    Finally build OVITO by running 
-<screen>
-<command>mingw32-make</command></screen>
-  </para>
-  </simplesect>
-  
 </section>

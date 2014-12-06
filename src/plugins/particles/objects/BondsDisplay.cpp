@@ -164,16 +164,10 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 			int elementIndex = 0;
 			for(const BondsStorage::Bond& bond : bondsObj->bonds()) {
 				if(bond.index1 < particleCount && bond.index2 < particleCount) {
-					if(bond.pbcShift == Vector_3<int8_t>::Zero()) {
-						_buffer->setElement(elementIndex, positions[bond.index1],
-								(positions[bond.index2] - positions[bond.index1]) * FloatType(0.5), (ColorA)particleColors[bond.index1], bondRadius);
-					}
-					else {
-						Vector3 vec = positions[bond.index2] - positions[bond.index1];
-						for(size_t k = 0; k < 3; k++)
-							if(bond.pbcShift[k] != 0) vec += cell.column(k) * (FloatType)bond.pbcShift[k];
-						_buffer->setElement(elementIndex, positions[bond.index1], vec * FloatType(0.5), (ColorA)particleColors[bond.index1], bondRadius);
-					}
+					Vector3 vec = positions[bond.index2] - positions[bond.index1];
+					for(size_t k = 0; k < 3; k++)
+						if(bond.pbcShift[k] != 0) vec += cell.column(k) * (FloatType)bond.pbcShift[k];
+					_buffer->setElement(elementIndex, positions[bond.index1], vec * FloatType(0.5), (ColorA)particleColors[bond.index1], bondRadius);
 				}
 				else _buffer->setElement(elementIndex, Point3::Origin(), Vector3::Zero(), ColorA(1,1,1), 0);
 				elementIndex++;

@@ -66,6 +66,8 @@
 		<entry>Audio and video processing libraries used by OVITO to write movie files.</entry></row>
 		<row><entry><link xlink:href="http://www.unidata.ucar.edu/software/netcdf/">libnetcdf</link></entry><entry>optional</entry>
 		<entry>Required by the <literal>NetCDF</literal> plugin to read NetCDF files</entry></row>
+		<row><entry><link xlink:href="http://www.riverbankcomputing.com/software/qscintilla/">QScintilla2</link></entry><entry>optional</entry>
+		<entry>Text editing widget required by the <literal>PyScript</literal> plugin.</entry></row>
 		<row><entry><link xlink:href="http://muparser.beltoforion.de/">muparser</link></entry><entry>included</entry>
 		<entry>A math expression parser library. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
 		<row><entry><link xlink:href="http://www.qcustomplot.com/">QCustomPlot</link></entry><entry>included</entry>
@@ -78,8 +80,6 @@
 		<entry>Required to build the <literal>Tachyon</literal> renderer plugin. OVITO's source distribution contains a slightly modified copy of this library, which is automatically used.</entry></row>
 		<row><entry><link xlink:href="http://math.lbl.gov/voro++/">Voro++</link></entry><entry>included</entry>
 		<entry>Voronoi cell construction routine required by the <link linkend="particles.modifiers.voronoi_analysis">Voronoi analysis</link> modifier. OVITO's source distribution contains a copy of this library, which will be used if not found on the system.</entry></row>
-		<row><entry><link xlink:href="http://www.riverbankcomputing.com/software/qscintilla/">QScintilla2</link></entry><entry>optional</entry>
-		<entry>Text editing widget required by the <literal>PyScript</literal> plugin.</entry></row>
 	</tbody></tgroup>
 	</informaltable> 
     </para>

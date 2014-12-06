@@ -22,6 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
+#include <plugins/particles/objects/BondsObject.h>
 #include "ShowPeriodicImagesModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
@@ -71,14 +72,23 @@ ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : Parti
 ******************************************************************************/
 PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	int nPBCx = showImageX() ? std::max(numImagesX(),1) : 1;
-	int nPBCy = showImageY() ? std::max(numImagesY(),1) : 1;
-	int nPBCz = showImageZ() ? std::max(numImagesZ(),1) : 1;
+	std::array<int,3> nPBC;
+	nPBC[0] = showImageX() ? std::max(numImagesX(),1) : 1;
+	nPBC[1] = showImageY() ? std::max(numImagesY(),1) : 1;
+	nPBC[2] = showImageZ() ? std::max(numImagesZ(),1) : 1;
 
 	// Calculate new number of atoms.
-	size_t numCopies = nPBCx * nPBCy * nPBCz;
+	size_t numCopies = nPBC[0] * nPBC[1] * nPBC[2];
 	if(numCopies <= 1 || inputParticleCount() == 0)
 		return PipelineStatus::Success;
+
+	Box3I newImages;
+	newImages.minc[0] = -(nPBC[0]-1)/2;
+	newImages.minc[1] = -(nPBC[1]-1)/2;
+	newImages.minc[2] = -(nPBC[2]-1)/2;
+	newImages.maxc[0] = nPBC[0]/2;
+	newImages.maxc[1] = nPBC[1]/2;
+	newImages.maxc[2] = nPBC[2]/2;
 
 	// Enlarge particle property arrays.
 	size_t oldParticleCount = inputParticleCount();
@@ -99,22 +109,17 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 		newProperty->resize(newParticleCount, false);
 
 		OVITO_ASSERT(originalOutputProperty->size() == oldParticleCount);
-		size_t destinationIndex = oldParticleCount;
+		size_t destinationIndex = 0;
 
-		// Copy original property data.
-		memcpy((char*)newProperty->data(), originalOutputProperty->constData(), newProperty->stride() * oldParticleCount);
-
-		for(int imageX = -(nPBCx-1)/2; imageX <= nPBCx/2; imageX++) {
-			for(int imageY = -(nPBCy-1)/2; imageY <= nPBCy/2; imageY++) {
-				for(int imageZ = -(nPBCz-1)/2; imageZ <= nPBCz/2; imageZ++) {
-					if(imageX == 0 && imageY == 0 && imageZ == 0)
-						continue;
+		for(int imageX = newImages.minc.x(); imageX <= newImages.maxc.x(); imageX++) {
+			for(int imageY = newImages.minc.y(); imageY <= newImages.maxc.y(); imageY++) {
+				for(int imageZ = newImages.minc.z(); imageZ <= newImages.maxc.z(); imageZ++) {
 
 					// Duplicate property data.
 					memcpy((char*)newProperty->data() + (destinationIndex * newProperty->stride()),
 							originalOutputProperty->constData(), newProperty->stride() * oldParticleCount);
 
-					if(newProperty->type() == ParticleProperty::PositionProperty) {
+					if(newProperty->type() == ParticleProperty::PositionProperty && (imageX != 0 || imageY != 0 || imageZ != 0)) {
 						// Shift particle positions by the periodicity vector.
 						const Vector3 imageDelta = simCell * Vector3(imageX, imageY, imageZ);
 
@@ -144,14 +149,67 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 		_output.replaceObject(originalOutputProperty, newProperty);
 	}
 
+	// Extend simulation box if requested.
 	if(adjustBoxSize()) {
-		simCell.column(3) -= (FloatType)((nPBCx-1)/2) * simCell.column(0);
-		simCell.column(3) -= (FloatType)((nPBCy-1)/2) * simCell.column(1);
-		simCell.column(3) -= (FloatType)((nPBCz-1)/2) * simCell.column(2);
-		simCell.column(0) *= nPBCx;
-		simCell.column(1) *= nPBCy;
-		simCell.column(2) *= nPBCz;
+		simCell.translation() += (FloatType)newImages.minc.x() * simCell.column(0);
+		simCell.translation() += (FloatType)newImages.minc.y() * simCell.column(1);
+		simCell.translation() += (FloatType)newImages.minc.z() * simCell.column(2);
+		simCell.column(0) *= nPBC[0];
+		simCell.column(1) *= nPBC[1];
+		simCell.column(2) *= nPBC[2];
 		outputSimulationCell()->setCellMatrix(simCell);
+	}
+
+	// Replicate bonds.
+	for(DataObject* outobj : _output.objects()) {
+		OORef<BondsObject> originalOutputBonds = dynamic_object_cast<BondsObject>(outobj);
+		if(!originalOutputBonds)
+			continue;
+
+		OORef<BondsObject> newBondsObj = cloneHelper()->cloneObject(originalOutputBonds, false);
+
+		// Duplicate bonds and adjust particle indices and PBC shift vectors as needed.
+		// Some bonds may no longer cross periodic boundaries.
+		size_t oldBondCount = newBondsObj->bonds().size();
+		newBondsObj->modifiableBonds().resize(oldBondCount * numCopies);
+		auto outBond = newBondsObj->modifiableBonds().begin();
+		Point3I image;
+		for(image[0] = newImages.minc.x(); image[0] <= newImages.maxc.x(); image[0]++) {
+			for(image[1] = newImages.minc.y(); image[1] <= newImages.maxc.y(); image[1]++) {
+				for(image[2] = newImages.minc.z(); image[2] <= newImages.maxc.z(); image[2]++) {
+					auto inBond = originalOutputBonds->bonds().begin();
+					for(size_t bindex = 0; bindex < oldBondCount; bindex++, ++inBond, ++outBond) {
+						Point3I newImage;
+						Vector_3<int8_t> newShift;
+						for(size_t dim = 0; dim < 3; dim++) {
+							int i = image[dim] + (int)inBond->pbcShift[dim] - newImages.minc[dim];
+							newImage[dim] = SimulationCell::modulo(i, nPBC[dim]) + newImages.minc[dim];
+							newShift[dim] = i >= 0 ? (i / nPBC[dim]) : ((i-nPBC[dim]+1) / nPBC[dim]);
+							if(!adjustBoxSize())
+								newShift[dim] *= nPBC[dim];
+						}
+						OVITO_ASSERT(newImage.x() >= newImages.minc.x() && newImage.x() <= newImages.maxc.x());
+						OVITO_ASSERT(newImage.y() >= newImages.minc.y() && newImage.y() <= newImages.maxc.y());
+						OVITO_ASSERT(newImage.z() >= newImages.minc.z() && newImage.z() <= newImages.maxc.z());
+						size_t imageIndex1 =   ((image.x()-newImages.minc.x()) * nPBC[1] * nPBC[2])
+										 	 + ((image.y()-newImages.minc.y()) * nPBC[2])
+											 +  (image.z()-newImages.minc.z());
+						size_t imageIndex2 =   ((newImage.x()-newImages.minc.x()) * nPBC[1] * nPBC[2])
+										 	 + ((newImage.y()-newImages.minc.y()) * nPBC[2])
+											 +  (newImage.z()-newImages.minc.z());
+						outBond->pbcShift = newShift;
+						outBond->index1 = inBond->index1 + imageIndex1 * oldParticleCount;
+						outBond->index2 = inBond->index2 + imageIndex2 * oldParticleCount;
+						OVITO_ASSERT(outBond->index1 < newParticleCount);
+						OVITO_ASSERT(outBond->index2 < newParticleCount);
+					}
+				}
+			}
+		}
+
+		newBondsObj->changed();
+		// Replace original property with the modified one.
+		_output.replaceObject(originalOutputBonds, newBondsObj);
 	}
 
 	return PipelineStatus::Success;

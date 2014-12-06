@@ -31,6 +31,7 @@
       <listitem><para><link xlink:href="http://libav.org">Libav</link> library</para></listitem>
       <listitem><para><link xlink:href="http://www.unidata.ucar.edu/software/netcdf/">netCDF</link> library by
       University Corporation for Atmospheric Research/Unidata (<link linkend="appendix.license.netcdf">license</link>).</para></listitem>
+      <listitem><para><link xlink:href="http://math.lbl.gov/voro++/">Voro++</link> library by Chris Rycroft.</para></listitem>
     </itemizedlist>
   </para>
 

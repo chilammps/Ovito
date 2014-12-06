@@ -10,9 +10,9 @@
   <title>Scripting</title>
 
 	<para>
-	   OVITO provides a scripting interface that makes it possible to automate various analysis or visualization tasks. This can be useful, for example,
-	   if a large number of input files needs to be processed. The program comes with an integrated Python interpreter which allows you to control
-	   the program and use its functions from a Python script. The scripting interface provides programmatic access to most program features 
+	   OVITO provides a scripting interface that makes it possible to automate analysis or visualization tasks. This can be useful, for example,
+	   if a large number of input files needs to be processed. The program comes with an integrated Python interpreter and allows you to
+	   use its functions from a Python script. The scripting interface provides programmatic access to most program features 
 	   such as import and export of data files, modifiers, and rendering of images or movies.
 	</para>
 	<para>
@@ -20,7 +20,7 @@
 	   Note that OVITO supports the Python 3.4 language standard.
 	</para>
 	<para>
-	   OVITO's scripting interface is fully documented in the separate <link xlink:href="python/index.html">OVITO Scripting Reference</link>.
+	   OVITO's scripting interface is completely documented in the separate <link xlink:href="python/index.html">OVITO Scripting Reference</link>.
 	</para>
 
 </section>

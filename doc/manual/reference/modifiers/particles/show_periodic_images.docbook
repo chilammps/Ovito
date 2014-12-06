@@ -16,7 +16,7 @@
        <imagedata fileref="images/modifiers/show_periodic_images_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  Makes copies of all particles to visualize multiple images of a periodic system.</para>
+  Creates copies of all particles and bonds to visualize multiple images of a periodic system.</para>
 
   <simplesect>
     <title>Parameters</title>
@@ -26,17 +26,16 @@
         <term>Periodic images (X,Y,Z)</term>
 
         <listitem>
-          <para>Enables the generation of copies of the system in the
-          three spatial directions. You can control how many times the system is
-          duplicated in each direction.</para>
+          <para>Enables the replication of the system in the
+          each spatial direction. You can control how many times the system is
+          copied in each direction.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Adjust simulation box size</term>
         <listitem>
-          <para>If this option is activated, the simulation cell is also extended
-          to match the size of the multiplied system.</para>
+          <para>If activated, the simulation cell size is increased to match the size of the extended system.</para>
         </listitem>
       </varlistentry>
 
