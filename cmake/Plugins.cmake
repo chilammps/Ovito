@@ -24,7 +24,7 @@ FUNCTION(OVITO_STANDARD_PLUGIN target_name)
 	TARGET_LINK_LIBRARIES(${target_name} PUBLIC Core)
 
 	# Link other required libraries.
-	TARGET_LINK_LIBRARIES(${target_name} PUBLIC ${lib_dependencies})
+	TARGET_LINK_LIBRARIES(${target_name} PRIVATE ${lib_dependencies})
 
 	# Link Qt5.
 	TARGET_LINK_LIBRARIES(${target_name} PUBLIC Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Concurrent)
@@ -90,11 +90,14 @@ FUNCTION(OVITO_STANDARD_PLUGIN target_name)
 	ENDIF()
 
 	# This plugin will be part of the installation package.
-	IF(NOT OVITO_MONOLITHIC_BUILD)
-		INSTALL(TARGETS ${target_name} EXPORT OVITO
-			RUNTIME DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}"
-			LIBRARY DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
-	ENDIF(NOT OVITO_MONOLITHIC_BUILD)
+	INSTALL(TARGETS ${target_name} EXPORT OVITO
+		RUNTIME DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}"
+		LIBRARY DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
+	
+	# Export target to make it accessible for external plugins.
+	IF(CMAKE_VERSION VERSION_LESS "3")
+		EXPORT(TARGETS ${target_name} NAMESPACE "Ovito::" APPEND FILE "${${PROJECT_NAME}_BINARY_DIR}/OVITOTargets.cmake")
+	ENDIF()
 
     # Build this plugin when building OVITO's main executable
 	ADD_DEPENDENCIES(${PROJECT_NAME} ${target_name})

@@ -1,11 +1,10 @@
 INCLUDE("${CMAKE_CURRENT_LIST_DIR}/OVITOTargets.cmake")
 
 INCLUDE(CMakeParseArguments)
-INCLUDE(CMakeFindDependencyMacro)
 
 # Find Qt5 libraries.
 FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
-	FIND_DEPENDENCY(Qt5${component})
+	FIND_PACKAGE(Qt5${component} REQUIRED)
 ENDFOREACH()
 
 # Tell CMake to run Qt moc whenever necessary.

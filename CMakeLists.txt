@@ -214,5 +214,7 @@ INCLUDE(cmake/Packaging.cmake)
 ############################################################
 
 # Export our targets so that external plugins can use them.
-CONFIGURE_FILE(cmake/OVITOConfig.cmake "${OVITO_BINARY_DIRECTORY}/" @ONLY)
-EXPORT(EXPORT OVITO NAMESPACE "Ovito::" FILE OVITOTargets.cmake)
+CONFIGURE_FILE(cmake/OVITOConfig.cmake "${${PROJECT_NAME}_BINARY_DIR}/" @ONLY)
+IF(NOT CMAKE_VERSION VERSION_LESS "3")
+	EXPORT(EXPORT OVITO NAMESPACE "Ovito::" FILE OVITOTargets.cmake)
+ENDIF()

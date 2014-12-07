@@ -28,7 +28,7 @@ IF(MUPARSER_FOUND)
 	ADD_LIBRARY(muParser SHARED IMPORTED GLOBAL)
 	SET_PROPERTY(TARGET muParser PROPERTY IMPORTED_LOCATION "${MuParser_LIBRARIES}")
 	SET_PROPERTY(TARGET muParser APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MuParser_INCLUDE_DIRS}")
-
+	
 ELSE()
 
 	# Build our own version of the library.
@@ -48,13 +48,12 @@ ELSE()
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(muParser INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-	IF(NOT OVITO_MONOLITHIC_BUILD)
-    	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
-	    SET_PROPERTY(TARGET muParser PROPERTY POSITION_INDEPENDENT_CODE ON)
-	    # Export this target.
-	    INSTALL(TARGETS muParser EXPORT OVITO 
-	        ARCHIVE DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}" 
-	        CONFIGURATIONS "")
-    ENDIF()
+    # Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
+	SET_PROPERTY(TARGET muParser PROPERTY POSITION_INDEPENDENT_CODE ON)
+	
+	# Export this target.
+	INSTALL(TARGETS muParser EXPORT OVITO 
+		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
+		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
     
 ENDIF()
