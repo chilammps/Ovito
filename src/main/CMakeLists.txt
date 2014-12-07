@@ -60,11 +60,20 @@ IF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
 		EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink ${lib_realname} "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/${lib_soname}")
 		INSTALL(FILES "${lib}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 		INSTALL(FILES "${OVITO_LIBRARY_DIRECTORY}/${lib_soname}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+		GET_FILENAME_COMPONENT(QtBinaryPath ${lib} PATH)
 	ENDFOREACH()
 
-	# Some additional system libraries are required.
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
-			"freetype" "fontconfig" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a" "util")
+	# Create a qt.conf file.
+	# This is required to let Qt search for its plugin modules in the program directory.
+	INSTALL(CODE "
+	    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nPlugins = ../${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins_qt/\")
+	    " COMPONENT Runtime)
+
+	# Install Qt plugins.
+	INSTALL(DIRECTORY "${QtBinaryPath}/../plugins/platforms" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins_qt/")
+	INSTALL(DIRECTORY "${QtBinaryPath}/../plugins/accessible" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins_qt/")
+	INSTALL(DIRECTORY "${QtBinaryPath}/../plugins/bearer" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins_qt/")
+	INSTALL(DIRECTORY "${QtBinaryPath}/../plugins/imageformats" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins_qt/")
 
 	# Make the executable look in lib/ovito/ directory for shared libraries.
 	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
@@ -76,6 +85,14 @@ IF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
 	GET_FILENAME_COMPONENT(OVITO_LIBSTDCXX_REAL ${OVITO_LIBSTDCXX} REALPATH)
 	INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 	
+	# Install Boost libraries.
+	FOREACH(lib ${Boost_LIBRARIES})
+		FILE(GLOB lib_versions "${lib}*")
+		FOREACH(lib_version ${lib_versions})
+			INSTALL(FILES "${lib_version}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+		ENDFOREACH()
+	ENDFOREACH()
+
 ENDIF()
 
 # On Windows, the third-party library DLLs need to be installed in the OVITO directory.
@@ -113,6 +130,25 @@ IF(WIN32)
 	LIST(GET ZLIB_LIBRARIES 0 ZLIB_FIRST_LIBRARY)
 	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH "${ZLIB_FIRST_LIBRARY}" PATH)
 	OVITO_INSTALL_DLL("${ZLIB_LIBRARY_PATH}/../bin/zlib.dll")
+
+	# Install Boost libraries.
+	#FOREACH(lib ${Boost_LIBRARIES})
+	#	FILE(GLOB lib_versions "${lib}*")
+	#	FOREACH(lib_version ${lib_versions})
+	#		INSTALL(FILES "${lib_version}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+	#	ENDFOREACH()
+	#ENDFOREACH()
+
+	#IF(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+	#	GET_FILENAME_COMPONENT(BOOST_PYTHON_BASE_NAME "${Boost_PYTHON_LIBRARY_RELEASE}" NAME_WE)
+	#	GET_FILENAME_COMPONENT(BOOST_PYTHON_LIB_PATH "${Boost_PYTHON_LIBRARY_RELEASE}" PATH)
+	#ELSE()
+	#	GET_FILENAME_COMPONENT(BOOST_PYTHON_BASE_NAME "${Boost_PYTHON_LIBRARY_DEBUG}" NAME_WE)
+	#	GET_FILENAME_COMPONENT(BOOST_PYTHON_LIB_PATH "${Boost_PYTHON_LIBRARY_DEBUG}" PATH)
+	#ENDIF()
+	#OVITO_INSTALL_DLL("${BOOST_PYTHON_LIB_PATH}/${BOOST_PYTHON_BASE_NAME}.dll")
+	MESSAGE(FATAL_ERROR "Implement installation of Boost DLLs.")
+
 ENDIF()
 
 IF(APPLE)

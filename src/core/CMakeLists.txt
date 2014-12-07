@@ -192,7 +192,7 @@ ENDIF()
 QT5_ADD_RESOURCES(ResourceFiles resources/core.qrc)
 
 # Build library
-ADD_LIBRARY(Core ${OVITO_DEFAULT_LIBRARY_TYPE} Core.cpp ${SourceFiles} ${ResourceFiles})
+ADD_LIBRARY(Core SHARED Core.cpp ${SourceFiles} ${ResourceFiles})
 
 # Set default include directory.
 TARGET_INCLUDE_DIRECTORIES(Core PUBLIC "$<BUILD_INTERFACE:${OVITO_SOURCE_BASE_DIR}/src>")
@@ -224,12 +224,6 @@ ENDIF()
 # Define the OVITO_DEBUG macro in debug builds.
 TARGET_COMPILE_DEFINITIONS(Core PUBLIC "$<$<CONFIG:Debug>:OVITO_DEBUG>")
 
-IF(OVITO_MONOLITHIC_BUILD)
-	# Let the source code know that we're building a monolithic executable. 
-	# This disables the code that is responsible for dynamic loading of plugins.
-	ADD_COMPILE_DEFINITIONS(Core PUBLIC "-DOVITO_MONOLITHIC_BUILD")
-ENDIF()
-
 IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
 	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
@@ -238,6 +232,7 @@ ENDIF(APPLE)
 # Speed up compilation by using precompiled headers.
 ADD_PRECOMPILED_HEADER(Core core/Core.h)
 
+# Activate @rpath on MacOS.
 SET_TARGET_PROPERTIES(Core PROPERTIES MACOSX_RPATH TRUE)
 
 # This library is part of the installation package.
@@ -250,17 +245,24 @@ IF(CMAKE_VERSION VERSION_LESS "3")
 	EXPORT(TARGETS Core NAMESPACE "Ovito::" APPEND FILE "${${PROJECT_NAME}_BINARY_DIR}/OVITOTargets.cmake")
 ENDIF()
 
-IF(WIN32 AND LIBAV_FOUND)
-	# Install DLLs of Libav video encoding library.
+# Install Libav video encoding libraries.
+IF(LIBAV_FOUND)	
 	FOREACH(lib ${Libav_LIBRARIES})
 		GET_FILENAME_COMPONENT(base_name "${lib}" NAME_WE)
 		GET_FILENAME_COMPONENT(lib_path "${lib}" PATH)
-		FILE(GLOB lib_dll "${lib_path}/${base_name}-*.dll")
-		IF(NOT lib_dll)
-			MESSAGE(FATAL_ERROR "Could not find corresponding DLL for Libav library '${lib}' in same directory.")
+		IF(WIN32)
+			FILE(GLOB lib_dll "${lib_path}/${base_name}-*.dll")
+			IF(NOT lib_dll)
+				MESSAGE(FATAL_ERROR "Could not find corresponding DLL for Libav library '${lib}' in same directory.")
+			ENDIF()
+			FOREACH(dll ${lib_dll})
+				OVITO_INSTALL_DLL("${dll}")
+			ENDFOREACH()
+		ELSEIF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
+			FILE(GLOB lib_versions "${lib}*")
+			FOREACH(lib_version ${lib_versions})
+				INSTALL(FILES "${lib_version}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+			ENDFOREACH()
 		ENDIF()
-		FOREACH(dll ${lib_dll})
-			OVITO_INSTALL_DLL("${dll}")
-		ENDFOREACH()
 	ENDFOREACH()
 ENDIF()

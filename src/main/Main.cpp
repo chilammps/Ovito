@@ -24,13 +24,6 @@
 
 int main(int argc, char** argv)
 {
-#ifdef OVITO_MONOLITHIC_BUILD
-	// If we build a monolithic executable with statically linked libraries, then
-	// the core library's resources don't get automatically initialized.
-	// Therefore it needs to be explicitly done here.
-	Q_INIT_RESOURCE(core);
-#endif
-
 	// Initialize the application.
 	if(!Ovito::Application().instance().initialize(argc, argv))
 		return 1;

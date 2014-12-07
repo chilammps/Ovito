@@ -14,7 +14,7 @@ FUNCTION(OVITO_STANDARD_PLUGIN target_name)
 	SET(python_wrappers ${ARG_PYTHON_WRAPPERS})
 
 	# Create the library target for the plugin.
-    ADD_LIBRARY(${target_name} ${OVITO_DEFAULT_LIBRARY_TYPE} ${plugin_sources})
+    ADD_LIBRARY(${target_name} SHARED ${plugin_sources})
 
     # Set default include directory.
     TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC 
@@ -46,11 +46,9 @@ FUNCTION(OVITO_STANDARD_PLUGIN target_name)
 		ENDIF()
 	ENDFOREACH()
 	
-	IF(NOT OVITO_MONOLITHIC_BUILD)
-		# Set prefix and suffix of library name.
-		# This is needed so that the Python interpreter can load OVITO plugins as modules.
-		SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "" SUFFIX "${OVITO_PLUGIN_LIBRARY_SUFFIX}")
-	ENDIF()
+	# Set prefix and suffix of library name.
+	# This is needed so that the Python interpreter can load OVITO plugins as modules.
+	SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "" SUFFIX "${OVITO_PLUGIN_LIBRARY_SUFFIX}")
 
 	IF(APPLE)
 		# This is required to avoid error by install_name_tool.

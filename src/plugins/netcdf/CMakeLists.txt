@@ -53,4 +53,14 @@ IF(WIN32)
 		GET_FILENAME_COMPONENT(dep_lib_path "${dep}" PATH)
 		OVITO_INSTALL_DLL("${dep_lib_path}/../bin/${dep_base_name}.dll")
 	ENDFOREACH()
+
+ELSEIF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
+
+	# Deploy NetCDF shared library.
+	GET_TARGET_PROPERTY(NETCDF_LIBRARY netcdf LOCATION)
+	FILE(GLOB lib_versions "${NETCDF_LIBRARY}*")
+	FOREACH(lib_version ${lib_versions})
+		INSTALL(FILES "${lib_version}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+	ENDFOREACH()
+
 ENDIF()

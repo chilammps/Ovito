@@ -57,7 +57,6 @@ NativePlugin::NativePlugin(const QString& manifestFile) :
 void NativePlugin::loadPluginImpl()
 {
 	NativeOvitoObjectType* linkedListBefore = nullptr;
-#ifndef OVITO_MONOLITHIC_BUILD
 	if(isCore() == false) {
 		linkedListBefore = NativeOvitoObjectType::_firstInfo;
 
@@ -72,18 +71,12 @@ void NativePlugin::loadPluginImpl()
 			}
 		}
 	}
-#endif
 	NativeOvitoObjectType* linkedListAfter = NativeOvitoObjectType::_firstInfo;
 
 	// Initialize all newly loaded classes and connect them with this plugin.
 	for(NativeOvitoObjectType* clazz = linkedListAfter; clazz != linkedListBefore; clazz = clazz->_next) {
-#ifdef OVITO_MONOLITHIC_BUILD
-		if(clazz->pluginId() != pluginId())
-			continue;
-#else
 		if(clazz->pluginId() != pluginId())
 			throw Exception(QString("Plugin ID %1 assigned to class %2 does not match plugin %3 that contains the class.").arg(clazz->pluginId()).arg(clazz->name()).arg(pluginId()));
-#endif
 		OVITO_ASSERT(clazz->plugin() == nullptr);
 		clazz->initializeClassDescriptor(this);
 		registerClass(clazz);

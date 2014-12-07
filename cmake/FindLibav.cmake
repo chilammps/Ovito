@@ -14,12 +14,7 @@
 # List of required headers.
 SET(LIBAV_HEADER_NAMES libavformat/avformat.h libavcodec/avcodec.h libavutil/avutil.h libswscale/swscale.h)
 # List of required libraries.
-SET(LIBAV_LIBRARY_NAMES avformat avcodec avutil avfilter swscale)
-
-# avresample.dll is an indirect dependency that needs to be deployed on Windows.
-IF(WIN32)
-	LIST(APPEND LIBAV_LIBRARY_NAMES avresample)
-ENDIF()
+SET(LIBAV_LIBRARY_NAMES avformat avcodec avutil avfilter swscale avresample)
 
 # Detect header path.
 FIND_PATH(LIBAV_INCLUDE_DIR NAMES libavcodec/avcodec.h)

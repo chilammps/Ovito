@@ -144,7 +144,7 @@ make
 make install
 
 **************************************************************************
-Build static versions of Boost libraries (release 1.55):
+Build Boost libraries:
 **************************************************************************
 
 echo "using gcc : 4.8 : /usr/bin/g++-4.8 ; " >> tools/build/v2/user-config.jam
@@ -154,45 +154,45 @@ echo "using python : 3.4 : /home/stuko/progs/python : /home/stuko/progs/python/i
 	--with-python=$HOME/progs/python/bin/python \
 	--with-python-root=$HOME/progs/python \
 	--with-python-version=3.4 \
-	--prefix=$HOME/progs/booststatic
+	--prefix=$HOME/progs/boost
 
-./b2 toolset=gcc-4.8 release link=static install
+./b2 toolset=gcc-4.8 release link=shared install
 
 **************************************************************************
-Build static CGAL library (release 4.3):
+Build CGAL library:
 **************************************************************************
 
 export CC=gcc-4.8
 export CXX=g++-4.8
 $HOME/progs/cmake-2.8.12.2/bin/cmake \
-    -DBOOST_ROOT=$HOME/progs/booststatic \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DGMP_LIBRARIES=/usr/lib/libgmp.a \
-    -DMPFR_LIBRARIES=/usr/lib/libmpfr.a \
+    -DBOOST_ROOT=$HOME/progs/boost \
+    -DBUILD_SHARED_LIBS=ON \
     -DWITH_CGAL_Qt3=OFF \
     -DWITH_CGAL_Qt4=OFF \
     -DWITH_CGAL_ImageIO=OFF \
+    -DWITH_CGAL_Core=OFF \
     .
 
 make
 
 **************************************************************************
-Build static libav (release 0.8.8) on Ubuntu 10.04:
+Build static libav (release 11) on Ubuntu 10.04:
 **************************************************************************
 
 sudo apt-get install yasm
-wget http://libav.org/releases/libav-0.8.8.tar.gz
-tar xzfv libav-0.8.8.tar.gz
-cd libav-0.8.8
+cd libav-11.1
 export CC=gcc-4.8
 export CXX=g++-4.8
 ./configure \
-	--disable-ffmpeg \
-	--disable-avprobe \
-	--disable-avplay \
-	--disable-avserver \
+	--enable-pic \
+	--enable-shared \
+    --enable-gpl \
+    --disable-static \
+	--disable-doc \
+	--disable-network \
+    --disable-programs \
 	--disable-debug \
-	--prefix=$HOME/progs/libavstatic
+	--prefix=$HOME/progs/libav
 
 make install
 
@@ -207,7 +207,7 @@ $HOME/progs/cmake-2.8.12.2/bin/cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=../release_install \
   -DOVITO_MONOLITHIC_BUILD=ON \
-  -DBOOST_ROOT=$HOME/progs/booststatic \
+  -DBOOST_ROOT=$HOME/progs/boost \
   -DPYTHON_LIBRARY=$HOME/progs/python/lib/libpython3.4m.so.1.0 \
   -DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python3.4m \
   -DSPHINX_PROCESSOR_PATH=$HOME/progs/python/bin \
@@ -215,8 +215,8 @@ $HOME/progs/cmake-2.8.12.2/bin/cmake \
   -DQSCINTILLA_INCLUDE_DIR=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/ \
   -DQSCINTILLA_LIBRARY=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/libqscintilla2.so.11 \
   -DCGAL_DIR=$HOME/progs/CGAL-4.3 \
-  -DLIBAV_INCLUDE_DIR=$HOME/progs/libavstatic/include \
-  -DLIBAV_LIBRARY_DIR=$HOME/progs/libavstatic/lib \
+  -DLIBAV_INCLUDE_DIR=$HOME/progs/libav/include \
+  -DLIBAV_LIBRARY_DIR=$HOME/progs/libav/lib \
   ../source/
 
 
