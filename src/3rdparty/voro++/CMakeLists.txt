@@ -46,14 +46,19 @@ ELSE()
 	)
 
 	# Build library.
-	ADD_LIBRARY(VoroPlusPlus STATIC EXCLUDE_FROM_ALL ${VOROPLUSPLUS_SOURCE_FILES})
+	ADD_LIBRARY(VoroPlusPlus STATIC ${VOROPLUSPLUS_SOURCE_FILES})
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(VoroPlusPlus INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 	
-	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
 	IF(NOT OVITO_MONOLITHIC_BUILD)
+    	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
 	    SET_PROPERTY(TARGET VoroPlusPlus PROPERTY POSITION_INDEPENDENT_CODE ON)        
+
+	    # Export this target.
+	    INSTALL(TARGETS VoroPlusPlus EXPORT OVITO 
+	        ARCHIVE DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}" 
+	        CONFIGURATIONS "")
     ENDIF()
 
 ENDIF()

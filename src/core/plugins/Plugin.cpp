@@ -52,23 +52,6 @@ Plugin::Plugin(const QString& manifestFile) : _isLoaded(false)
 			throw Exception(tr("Invalid plugin dependency in plugin manifest %1.").arg(manifestFile));
 		_dependencies.push_back(depPluginName);
 	}
-
-	// Parse the list of Qt resource files from the manifest and load them.
-	for(QJsonValue entry : root.value(QStringLiteral("resource-files")).toArray()) {
-		QString path = entry.toString();
-		if(path.isEmpty())
-			throw Exception(QString("Invalid entry in resource file list in plugin manifest %1.").arg(manifestFile));
-
-		// Resolve path.
-		QDir baseDir = QFileInfo(manifestFile).dir();
-		QString fullPath = baseDir.absoluteFilePath(path);
-
-		// Load resource file into memory.
-		if(!QResource::registerResource(fullPath))
-			throw Exception(QString("Failed to load plugin resource file %1 for plugin %2.").arg(fullPath).arg(pluginId()));
-
-		_resourceFiles.push_back(fullPath);
-	}
 }
 
 /******************************************************************************
@@ -76,9 +59,6 @@ Plugin::Plugin(const QString& manifestFile) : _isLoaded(false)
 ******************************************************************************/
 Plugin::~Plugin()
 {
-	// Unload resource files.
-	for(const QString& path : _resourceFiles)
-		QResource::unregisterResource(path);
 }
 
 /******************************************************************************

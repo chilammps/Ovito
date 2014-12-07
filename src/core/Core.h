@@ -72,7 +72,6 @@
 #include <QtWidgets>
 #include <QtDebug>
 #include <QtGui>
-#include <QtNetwork>
 #include <qopengl.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 2, 0)

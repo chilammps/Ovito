@@ -211,14 +211,7 @@ $HOME/progs/cmake-2.8.12.2/bin/cmake \
   -DPYTHON_LIBRARY=$HOME/progs/python/lib/libpython3.4m.so.1.0 \
   -DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python3.4m \
   -DSPHINX_PROCESSOR_PATH=$HOME/progs/python/bin \
-  -DQt5Core_DIR=$HOME/progs/qt5/lib/cmake/Qt5Core \
-  -DQt5Gui_DIR=$HOME/progs/qt5/lib/cmake/Qt5Gui \
-  -DQt5Widgets_DIR=$HOME/progs/qt5/lib/cmake/Qt5Widgets \
-  -DQt5Network_DIR=$HOME/progs/qt5/lib/cmake/Qt5Network \
-  -DQt5Concurrent_DIR=$HOME/progs/qt5/lib/cmake/Qt5Concurrent \
-  -DQt5OpenGL_DIR=$HOME/progs/qt5/lib/cmake/Qt5OpenGL \
-  -DQt5PrintSupport_DIR=$HOME/progs/qt5/lib/cmake/Qt5PrintSupport \
-  -DQt5PrintSupport_DIR=$HOME/progs/qt5/lib/cmake/Qt5PrintSupport \
+  -DCMAKE_PREFIX_PATH=$HOME/progs/qt5/ \
   -DQSCINTILLA_INCLUDE_DIR=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/ \
   -DQSCINTILLA_LIBRARY=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/libqscintilla2.so.11 \
   -DCGAL_DIR=$HOME/progs/CGAL-4.3 \

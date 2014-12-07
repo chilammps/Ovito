@@ -29,21 +29,30 @@
 namespace Ovito { namespace Anim {
 
 /**
- * \brief Stores the general animation settings such as the animation length, current frame number, playback rate, etc.
+ * \brief Stores the animation settings such as the animation length, current frame number, playback rate, etc.
  * 
- * Each \ref Ovito::ObjectSystem::DataSet "DataSet" holds an instance of this class, which can be accessed via DataSet::animationSettings().
+ * Each \ref Ovito::ObjectSystem::DataSet "DataSet" owns an instance of this class, which can be accessed via DataSet::animationSettings().
  *
  * OVITO measures animation time in time tick units, which correspond to 1/4800 of a second. The ::TimePoint data type, which is an alias for
  * \c int, is used to store time tick values. Conversion between time ticks and seconds is possible with the TimeToSeconds() and TimeFromSeconds()
  * global functions.
  *
- * The AnimationSettings class stores the conversion factor from animation frames to time tick units, which can be changed by the user (see setTicksPerFrame()).
- * It determines the animation playback rate, i.e. the number of animation frames per second, which is returned by framesPerSecond().
- *
+ * The conversion factor from animation frames to time tick units can be changed by the user (see setTicksPerFrame()).
+ * This factor determines the animation playback rate, i.e. the number of animation frames per second, which is returned by framesPerSecond().
  * Conversion between animation times and animation frames is done with the frameToTime() and timeToFrame() methods.
  *
- * The current animation time, which is linked to the time slider in OVITO's main window, can be changed
- * with the setTime() method. The current time returned by time() is always the animation time that is shown in the interactive viewports.
+ * The current animation time, which is controlled with the time slider in OVITO's main window, can be changed
+ * with the setTime() method. The time returned by the time() method is the animation time that is currently shown in the
+ * interactive viewports. Alternatively, currentFrame() and setCurrentFrame() allow to control the current animation
+ * time in terms of animation frames. They internally convert from and to time tick units.
+ *
+ * The animation length, i.e. the time range shown in the time slider, is controlled with the animationInterval()
+ * and setAnimationInterval() methods. Alternatively, setFirstFrame() and setLastFrame() allow to specify a frame-based animation
+ * length.
+ *
+ * The automatic key-generation mode can be activated with setAutoKeyMode(). Once activated,
+ * changes to animatable object parameters will automatically lead to the creation of animation keys.
+ * The generation of animation keys can be temporarily suspended via suspendAnim() and resumeAnim().
  */
 class OVITO_CORE_EXPORT AnimationSettings : public RefTarget
 {
@@ -233,7 +242,7 @@ public Q_SLOTS:
 	/// \brief  Sets the current animation time to the start of the animation interval.
 	void jumpToAnimationStart();
 
-	//// \brief Sets the current animation time to the end of the animation interval.
+	/// \brief Sets the current animation time to the end of the animation interval.
 	void jumpToAnimationEnd();
 
 	/// \brief Jumps to the next animation frame.

@@ -26,8 +26,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8.12)
 CMAKE_POLICY(SET CMP0023 OLD)
 IF(NOT CMAKE_VERSION VERSION_LESS "3")
-	CMAKE_POLICY(SET CMP0026 OLD)	# Suppress warning on reading the LOCATION target property.
-	CMAKE_POLICY(SET CMP0042 OLD)	# Suppress warning because MACOSX_RPATH target is not set.
+	CMAKE_POLICY(SET CMP0026 OLD)	# Suppress warning when reading the LOCATION target property.
 	CMAKE_POLICY(SET CMP0043 OLD)	# Suppress warning because COMPILE_DEFINITIONS_* target property is used.
 ENDIF()
 
@@ -45,7 +44,6 @@ SET(OVITO_SOURCE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 LIST(APPEND CMAKE_MODULE_PATH ${OVITO_SOURCE_BASE_DIR}/cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Version.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Plugins.cmake)
-INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/CompileQtResource.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/PrecompiledHeader.cmake)
 
 # Define user options that control the building of OVITO's standard plugins.
@@ -60,16 +58,8 @@ OPTION(OVITO_BUILD_PLUGIN_NETCDFPLUGIN "Build the NetCDF plugin." "ON")
 # It will get populated by the OVITO_PLUGIN macro.
 SET(OVITO_PLUGINS_LIST "")
 
-# Enable software tests
+# Enable software tests.
 ENABLE_TESTING()
-
-# Controls whether a static or a shared OVITO executable is built.
-# In a static build, all plugins (and most third-party libraries) are linked into one big executable,
-# which makes distribution easier. In a shared build, plugins are built as shared objects (dynamic link libraries)
-# and it becomes possible to add or remove plugins after distribution.
-IF(UNIX AND NOT APPLE AND CMAKE_COMPILER_IS_GNUCXX)
-	OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
-ENDIF()
 
 # Enable C++11 standard.
 IF(NOT MSVC)
@@ -98,9 +88,6 @@ IF(MSVC)
 	# Suppress warning on conversion from size_t to int, possible loss of data.
 	ADD_COMPILE_OPTIONS("/wd4267")
 ENDIF()
-
-# Set the base directory for all header files included by OVITO's source code.
-INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
 
 IF(UNIX)
 	IF(APPLE)
@@ -136,33 +123,18 @@ ELSE(UNIX)
 	SET(OVITO_RELATIVE_PLUGINS_DIRECTORY "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins")
 ENDIF(UNIX)
 
-# If a static build is selected, a single executable is created that contains all plugins and most third-party libraries.
-# Otherwise the plugin and core libraries are created as shared objects. This is the default.
-IF(OVITO_MONOLITHIC_BUILD)
-
-	# Create only static .a libraries on Linux.
-	SET(BUILD_SHARED_LIBS "OFF")
-
-	# Let the source code know that we're building a monolithic executable. 
-	# This disables the code that is responsible for dynamic loading of plugins.
-	ADD_DEFINITIONS(-DOVITO_MONOLITHIC_BUILD)
-
-ELSE(OVITO_MONOLITHIC_BUILD)
-
-	# Create dynamic libraries.
-	SET(BUILD_SHARED_LIBS "ON")
-
-	# Setup RPATH
-	SET(CMAKE_SKIP_BUILD_RPATH FALSE)
-	# When building, use the install RPATH already
-	SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-	# The RPATH to be used when building and installing
-	SET(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib/ovito")
-	# Add the automatically determined parts of the RPATH,
-	# which point to directories outside the build tree to the install RPATH
-	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-ENDIF(OVITO_MONOLITHIC_BUILD)
+# Controls whether a static or a shared OVITO executable is built.
+# In a static build, all plugins (and most third-party libraries) are linked into one big executable,
+# which makes distribution easier. In a shared build, plugins are built as shared objects (dynamic link libraries)
+# and it becomes possible to add or remove plugins after distribution.
+IF(UNIX AND NOT APPLE AND CMAKE_COMPILER_IS_GNUCXX)
+	OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
+ENDIF()
+IF(NOT OVITO_MONOLITHIC_BUILD)
+    SET(OVITO_DEFAULT_LIBRARY_TYPE SHARED)
+ELSE()
+    SET(OVITO_DEFAULT_LIBRARY_TYPE STATIC)
+ENDIF()
 
 # The directory where the main executable goes to.
 SET(OVITO_BINARY_DIRECTORY "${${PROJECT_NAME}_BINARY_DIR}/${OVITO_RELATIVE_BINARY_DIRECTORY}")
@@ -172,9 +144,6 @@ SET(OVITO_LIBRARY_DIRECTORY "${${PROJECT_NAME}_BINARY_DIR}/${OVITO_RELATIVE_LIBR
 SET(OVITO_PLUGINS_DIRECTORY "${${PROJECT_NAME}_BINARY_DIR}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
 # The directory where the auxiliary files go to.
 SET(OVITO_SHARE_DIRECTORY "${${PROJECT_NAME}_BINARY_DIR}/${OVITO_RELATIVE_SHARE_DIRECTORY}")
-
-# Our installation path.
-SET(OVITO_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
 # This is the name suffix used for generating plugin libraries.
 SET(OVITO_PLUGIN_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -216,7 +185,6 @@ FIND_PACKAGE(ZLIB REQUIRED)
 
 # Find the Boost library.
 SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
-SET(Boost_REQUIRED_COMPONENTS)
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
 	LIST(APPEND Boost_REQUIRED_COMPONENTS python)
 ENDIF()
@@ -228,7 +196,7 @@ IF(NOT Boost_FOUND)
 	MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
 ENDIF()
 
-# Build program.
+# Generate build targets.
 ADD_SUBDIRECTORY(src)
 
 ################# OpenGL test program ####################
@@ -242,3 +210,9 @@ INCLUDE(cmake/Documentation.cmake)
 
 ##################### Set up CPack #########################
 INCLUDE(cmake/Packaging.cmake)
+
+############################################################
+
+# Export our targets so that external plugins can use them.
+CONFIGURE_FILE(cmake/OVITOConfig.cmake "${OVITO_BINARY_DIRECTORY}/" @ONLY)
+EXPORT(EXPORT OVITO NAMESPACE "Ovito::" FILE OVITOTargets.cmake)

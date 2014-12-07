@@ -19,7 +19,7 @@
 #
 ###############################################################################
 
-SET(OVITO_PARTICLES_SOURCE_FILES 
+SET(SourceFiles 
 	objects/SimulationCellObject.cpp
 	objects/SimulationCellDisplay.cpp
 	objects/ParticlePropertyObject.cpp
@@ -101,7 +101,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 )
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES 
+	LIST(APPEND SourceFiles 
 		scripting/PythonInterface.cpp
 		scripting/ImporterBinding.cpp
 		scripting/ExporterBinding.cpp
@@ -123,10 +123,11 @@ SET(GLUSourceFiles
 	util/polytess/tessmono.c
 )
 
-# Generate plugin module.
-OVITO_PLUGIN(Particles
-	SOURCES Particles.cpp ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
-	RESOURCE particles.rcc resources/particles.qrc
+# Compile resources.
+QT5_ADD_RESOURCES(ResourceFiles resources/particles.qrc)
+
+OVITO_STANDARD_PLUGIN(Particles
+	SOURCES Particles.cpp ${SourceFiles} ${GLUSourceFiles} ${ResourceFiles}
 	LIB_DEPENDENCIES muParser qcustomplot VoroPlusPlus ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
 	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"

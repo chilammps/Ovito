@@ -22,7 +22,7 @@
 # Find Libav libraries for video encoding support.
 FIND_PACKAGE(Libav)
 
-SET(OVITO_CORE_SOURCE_FILES 
+SET(SourceFiles 
 	utilities/Exception.cpp
 	utilities/linalg/AffineDecomposition.cpp
 	utilities/io/SaveStream.cpp
@@ -185,21 +185,26 @@ SET(OVITO_CORE_SOURCE_FILES
 
 # Include video encoder interface code.
 IF(LIBAV_FOUND)
-	LIST(APPEND OVITO_CORE_SOURCE_FILES utilities/io/video/VideoEncoder.cpp)
+	LIST(APPEND SourceFiles utilities/io/video/VideoEncoder.cpp)
 ENDIF()
 
 # Compile resources.
-QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
+QT5_ADD_RESOURCES(ResourceFiles resources/core.qrc)
 
 # Build library
-ADD_LIBRARY(Core Core.cpp ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
-TARGET_LINK_LIBRARIES(Core QSsh)
+ADD_LIBRARY(Core ${OVITO_DEFAULT_LIBRARY_TYPE} Core.cpp ${SourceFiles} ${ResourceFiles})
+
+# Set default include directory.
+TARGET_INCLUDE_DIRECTORIES(Core PUBLIC "$<BUILD_INTERFACE:${OVITO_SOURCE_BASE_DIR}/src>")
+
+# Required by built-in SSH client.
+TARGET_LINK_LIBRARIES(Core PRIVATE QSsh)
 
 # Link to OpenGL library.
-TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
+TARGET_LINK_LIBRARIES(Core PRIVATE ${OPENGL_gl_LIBRARY})
 
 # Link to ZLib library.
-TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
+TARGET_LINK_LIBRARIES(Core PRIVATE ${ZLIB_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(Core PRIVATE "${ZLIB_INCLUDE_DIRS}")
 
 # Add Boost include directories.
@@ -212,12 +217,18 @@ TARGET_LINK_LIBRARIES(Core PRIVATE Qt5::Network)
 # Link video encoding lib.
 IF(LIBAV_FOUND)
 	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_LINK_LIBRARIES(Core ${Libav_LIBRARIES})
+	TARGET_LINK_LIBRARIES(Core PRIVATE ${Libav_LIBRARIES})
 	TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${Libav_INCLUDE_DIRS})
 ENDIF()
 
 # Define the OVITO_DEBUG macro in debug builds.
 TARGET_COMPILE_DEFINITIONS(Core PUBLIC "$<$<CONFIG:Debug>:OVITO_DEBUG>")
+
+IF(OVITO_MONOLITHIC_BUILD)
+	# Let the source code know that we're building a monolithic executable. 
+	# This disables the code that is responsible for dynamic loading of plugins.
+	ADD_COMPILE_DEFINITIONS(Core PUBLIC "-DOVITO_MONOLITHIC_BUILD")
+ENDIF()
 
 IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
@@ -227,11 +238,11 @@ ENDIF(APPLE)
 # Speed up compilation by using precompiled headers.
 ADD_PRECOMPILED_HEADER(Core core/Core.h)
 
-OVITO_FIXUP_BUILD_OBJECT(Core)
+SET_TARGET_PROPERTIES(Core PROPERTIES MACOSX_RPATH TRUE)
 
 # This library is part of the installation package.
 IF(NOT OVITO_MONOLITHIC_BUILD)
-	INSTALL(TARGETS Core 
+	INSTALL(TARGETS Core EXPORT OVITO
 		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 ENDIF()

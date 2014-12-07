@@ -43,14 +43,18 @@ ELSE()
 	)
 
 	# Build library.
-	ADD_LIBRARY(muParser STATIC EXCLUDE_FROM_ALL ${MUPARSER_SOURCE_FILES})
+	ADD_LIBRARY(muParser STATIC ${MUPARSER_SOURCE_FILES})
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(muParser INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
 	IF(NOT OVITO_MONOLITHIC_BUILD)
-	    SET_PROPERTY(TARGET muParser PROPERTY POSITION_INDEPENDENT_CODE ON)        
+    	# Since we will link this into the Particles plugin, we need to use the same setting for the fPIC flag.
+	    SET_PROPERTY(TARGET muParser PROPERTY POSITION_INDEPENDENT_CODE ON)
+	    # Export this target.
+	    INSTALL(TARGETS muParser EXPORT OVITO 
+	        ARCHIVE DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}" 
+	        CONFIGURATIONS "")
     ENDIF()
-
+    
 ENDIF()

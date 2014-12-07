@@ -120,9 +120,6 @@ private:
 	/// Indicates whether the plugin dynamic library has been loaded.
 	bool _isLoaded;
 
-	/// List of external resource files loaded by the plugin.
-	QStringList _resourceFiles;
-
 	friend class PluginManager;
 };
 

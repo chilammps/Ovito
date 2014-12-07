@@ -80,11 +80,11 @@ IF(OVITO_BUILD_DOCUMENTATION)
 					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/python/"
 					COMMENT "Generating scripting documentation")
 		
-		# Run Sphinx only after OVITO and all its plugins have been built.
+		# Run Sphinx only after OVITO and all of its plugins have been built.
 		IF(WIN32)
-			ADD_DEPENDENCIES(scripting_documentation ovitos ${OVITO_PLUGINS_LIST})
+			ADD_DEPENDENCIES(scripting_documentation ovitos)
 		ELSE()
-			ADD_DEPENDENCIES(scripting_documentation ${PROJECT_NAME} ${OVITO_PLUGINS_LIST})
+			ADD_DEPENDENCIES(scripting_documentation ${PROJECT_NAME})
 		ENDIF()
 		# Build the scripting documentation together with the main documentation.
 		ADD_DEPENDENCIES(scripting_documentation documentation)
@@ -92,19 +92,14 @@ IF(OVITO_BUILD_DOCUMENTATION)
 
 ENDIF(OVITO_BUILD_DOCUMENTATION)
 
-# Controls the generation of the API docs.
-OPTION(OVITO_BUILD_API_DOCS "Creates the 'apidocs' make target, which generates developer documentation from C++ source code comments (requires Doxygen)" "OFF")
+# Find the Doxygen program.
+FIND_PACKAGE(Doxygen QUIET)
 
-IF(OVITO_BUILD_API_DOCS)
-
-	# Find the Doxygen program.
-	FIND_PACKAGE(Doxygen REQUIRED)
-	
-	# Generate API documentation files.
+# Generate API documentation files.
+IF(DOXYGEN_FOUND)
 	ADD_CUSTOM_TARGET(apidocs
 					COMMAND "env" "OVITO_VERSION_STRING=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}.${OVITO_VERSION_REVISION}" 
 					"OVITO_INCLUDE_PATH=${CMAKE_SOURCE_DIR}/src/" ${DOXYGEN_EXECUTABLE} Doxyfile
 					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/develop/"
 					COMMENT "Generating C++ API documentation")
-	
-ENDIF(OVITO_BUILD_API_DOCS)
+ENDIF()

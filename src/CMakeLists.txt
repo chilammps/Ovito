@@ -26,19 +26,14 @@ SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
 
 ADD_SUBDIRECTORY(3rdparty)
 
-################# Core library  ####################
+##################### Core library  #######################
 
 ADD_SUBDIRECTORY(core)
 
-################# Plugins ####################
+################### Main executable #######################
 
-ADD_SUBDIRECTORY(plugins)
-
-################# Main executable ####################
-
-# Place the executable into the "bin" output directory.
-SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 ADD_SUBDIRECTORY(main)
 
-# Propagate the plugin list to the parent scope.
-SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)
+####################### Plugins ###########################
+
+ADD_SUBDIRECTORY(plugins)

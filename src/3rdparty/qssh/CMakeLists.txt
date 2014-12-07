@@ -20,7 +20,7 @@
 ###############################################################################
 
 # Build library
-ADD_LIBRARY(QSsh
+ADD_LIBRARY(QSsh ${OVITO_DEFAULT_LIBRARY_TYPE}
 	sftpchannel.cpp
 	sftpdefs.cpp
 	sftpfilesystemmodel.cpp
@@ -56,13 +56,14 @@ TARGET_LINK_LIBRARIES(QSsh PRIVATE Botan)
 TARGET_LINK_LIBRARIES(QSsh PUBLIC Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets)
 
 # Make header files of this library available to dependent targets.
-TARGET_INCLUDE_DIRECTORIES(QSsh INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+TARGET_INCLUDE_DIRECTORIES(QSsh PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 
 # Make this library part of the installation package.
 IF(NOT OVITO_MONOLITHIC_BUILD)
-	INSTALL(TARGETS QSsh 
+	INSTALL(TARGETS QSsh EXPORT OVITO
 		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 ENDIF()
 
-OVITO_FIXUP_BUILD_OBJECT(QSsh)
+#OVITO_FIXUP_BUILD_OBJECT(QSsh)
+SET_TARGET_PROPERTIES(QSsh  PROPERTIES MACOSX_RPATH TRUE)

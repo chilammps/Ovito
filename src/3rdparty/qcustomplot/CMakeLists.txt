@@ -36,13 +36,15 @@ IF(OVITO_USE_SYSTEM_QCUSTOMPLOT)
 ELSE()
 
 	# Build our own version of the library.
-	ADD_LIBRARY(qcustomplot qcustomplot.cpp)
+	ADD_LIBRARY(qcustomplot ${OVITO_DEFAULT_LIBRARY_TYPE} qcustomplot.cpp)
 
     # Link to Qt5.
     TARGET_LINK_LIBRARIES(qcustomplot Qt5::Core Qt5::Gui Qt5::Widgets Qt5::PrintSupport)
 
 	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(qcustomplot INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    SET_TARGET_PROPERTIES(qcustomplot PROPERTIES MACOSX_RPATH TRUE)
 
 	# Export symbols when building a Windows DLL.
 	IF(WIN32)
@@ -52,7 +54,7 @@ ELSE()
 
 	# This library is part of the installation package.
 	IF(NOT OVITO_MONOLITHIC_BUILD)
-		INSTALL(TARGETS qcustomplot 
+		INSTALL(TARGETS qcustomplot EXPORT OVITO 
 			RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
 			LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 	ENDIF()

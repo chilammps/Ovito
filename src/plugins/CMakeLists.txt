@@ -19,10 +19,8 @@
 #
 ###############################################################################
 
-# Place all plugin libraries into the plugins directory.
+# Create the plugins directory.
 FILE(MAKE_DIRECTORY ${OVITO_PLUGINS_DIRECTORY})
-INSTALL(DIRECTORY DESTINATION ${OVITO_RELATIVE_PLUGINS_DIRECTORY})
-SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
 	ADD_SUBDIRECTORY(pyscript)
@@ -59,6 +57,3 @@ IF(OVITO_BUILD_PLUGIN_NETCDFPLUGIN)
 ELSE()
 	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/NetCDFPlugin.json)
 ENDIF()
-
-# Propagate the plugin list to the parent scope.
-SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)

@@ -24,9 +24,6 @@ IF(WIN32)
 	SET(WINDOWS_RESOURCES resources/ovito.rc)
 ENDIF(WIN32)
 
-# Put the executable into the right directory.
-SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
-
 IF(CMAKE_BUILD_TYPE STREQUAL "Release")
 	# This will create a GUI application on Windows platform.
 	SET(OVITO_WIN32_EXECUTABLE "WIN32")
@@ -41,6 +38,9 @@ ADD_EXECUTABLE(${PROJECT_NAME} ${OVITO_WIN32_EXECUTABLE} MACOSX_BUNDLE Main.cpp 
 # The executable depends on the core module of course.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} Core)
 
+# Put the executable into the right directory.
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OVITO_BINARY_DIRECTORY}")
+
 # Set name of executable.
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ovito")
 
@@ -50,46 +50,32 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} Qt5::Core Qt5::Gui)
 # This executable will be part of the installation package.
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
-OVITO_FIXUP_BUILD_OBJECT(${PROJECT_NAME})
-
-IF(OVITO_MONOLITHIC_BUILD)
-
-	# Build a monolithic executable that includes all plugins.
-	# When statically linking, the linker will typically eliminate
-	# unreferenced static objects in the final executable. To prevent this from
-	# happening we have to use the -whole-archive linker option. 
-	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
-	FOREACH(plugin ${OVITO_PLUGINS_LIST})
-		LINK_WHOLE_LIBRARY(${PROJECT_NAME} ${plugin})
+IF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
+	# Install copies of the Qt libraries.
+	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
+		GET_TARGET_PROPERTY(lib Qt5::${component} LOCATION)
+		GET_TARGET_PROPERTY(lib_soname Qt5::${component} IMPORTED_SONAME_RELEASE)
+		CONFIGURE_FILE("${lib}" "${OVITO_LIBRARY_DIRECTORY}" COPYONLY)		
+		GET_FILENAME_COMPONENT(lib_realname "${lib}" NAME)
+		EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink ${lib_realname} "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/${lib_soname}")
+		INSTALL(FILES "${lib}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+		INSTALL(FILES "${OVITO_LIBRARY_DIRECTORY}/${lib_soname}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 	ENDFOREACH()
 
-	IF(UNIX AND NOT APPLE)
-		# Install copies of the Qt libraries.
-		FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
-			GET_TARGET_PROPERTY(lib Qt5::${component} LOCATION)
-			GET_TARGET_PROPERTY(lib_soname Qt5::${component} IMPORTED_SONAME_RELEASE)
-			CONFIGURE_FILE("${lib}" "${OVITO_LIBRARY_DIRECTORY}" COPYONLY)		
-			GET_FILENAME_COMPONENT(lib_realname "${lib}" NAME)
-			EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink ${lib_realname} "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/${lib_soname}")
-			INSTALL(FILES "${lib}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
-			INSTALL(FILES "${OVITO_LIBRARY_DIRECTORY}/${lib_soname}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
-		ENDFOREACH()
+	# Some additional system libraries are required.
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
+			"freetype" "fontconfig" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a" "util")
 
-		# Some additional system libraries are required.
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
-				"freetype" "fontconfig" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a" "util")
-
-		# Make the executable look in lib/ovito/ directory for shared libraries.
-		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
-		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH "1")
-		FIND_LIBRARY(OVITO_LIBSTDCXX NAMES libstdc++.so.6 PATHS /usr/lib NO_DEFAULT_PATH)
-		IF(NOT OVITO_LIBSTDCXX)
-			MESSAGE(FATAL_ERROR "Please specify the location of the C++ standard library with the OVITO_LIBSTDCXX option.") 
-		ENDIF()
-		GET_FILENAME_COMPONENT(OVITO_LIBSTDCXX_REAL ${OVITO_LIBSTDCXX} REALPATH)
-		INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
-		
+	# Make the executable look in lib/ovito/ directory for shared libraries.
+	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
+	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH "1")
+	FIND_LIBRARY(OVITO_LIBSTDCXX NAMES libstdc++.so.6 PATHS /usr/lib NO_DEFAULT_PATH)
+	IF(NOT OVITO_LIBSTDCXX)
+		MESSAGE(FATAL_ERROR "Please specify the location of the C++ standard library with the OVITO_LIBSTDCXX option.") 
 	ENDIF()
+	GET_FILENAME_COMPONENT(OVITO_LIBSTDCXX_REAL ${OVITO_LIBSTDCXX} REALPATH)
+	INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+	
 ENDIF()
 
 # On Windows, the third-party library DLLs need to be installed in the OVITO directory.
@@ -156,9 +142,61 @@ IF(APPLE)
 	# Use BundleUtilities to get all other dependencies for the application to work.
 	# It takes a bundle or executable along with possible plugins and inspects it
 	# for dependencies.  If they are not system dependencies, they are copied.
-	OVITO_FIXUP_BUNDLE()
+	SET(APPS "${CMAKE_INSTALL_PREFIX}/${MACOSX_BUNDLE_NAME}.app")
+		
+	# Install needed Qt plugins by copying directories from the qt installation
+	# One can cull what gets copied by using 'REGEX "..." EXCLUDE'
+	SET(plugin_dest_dir "${MACOSX_BUNDLE_NAME}.app/Contents/MacOS")
+	SET(qtconf_dest_dir "${MACOSX_BUNDLE_NAME}.app/Contents/Resources")
+
+	# Use BundleUtilities to get all other dependencies for the application to work.
+	# It takes a bundle or executable along with possible plugins and inspects it
+	# for dependencies.  If they are not system dependencies, they are copied.
+
+	# Directories to look for dependencies
+	SET(DIRS 
+		${QT_LIBRARY_DIRS} 
+		"${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}" 
+		"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/imageformats"
+		"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/platforms"
+		"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/accessible"
+		"/opt/local/lib")
 	
-	# To create a package, one can run "cpack -G DragNDrop CPackConfig.cmake" on Mac OS X
-	# where CPackConfig.cmake is created by including CPack.
-	SET(CPACK_BINARY_DRAGNDROP ON)	
+	# Now the work of copying dependencies into the bundle/package
+	# The quotes are escaped and variables to use at install time have their $ escaped
+	# An alternative is the do a configure_file() on a script and use install(SCRIPT  ...).
+	# Note that the image plugins depend on QtSvg and QtXml, and it got those copied
+	# over.
+	INSTALL(CODE "
+		CMAKE_POLICY(SET CMP0011 NEW)
+		CMAKE_POLICY(SET CMP0009 NEW)
+		# Returns the path that others should refer to the item by when the item is embedded inside a bundle.
+		# This ensures that all plugin libraries go into the plugins/ directory of the bundle.
+		FUNCTION(gp_item_default_embedded_path_override item default_embedded_path_var)
+			# Let everything that is already in the bundle stay where it comes from.
+	    	IF(item MATCHES \"^.*/.*\\\\${MACOSX_BUNDLE_NAME}.app/.*$\")
+				FILE(RELATIVE_PATH relpath \"${CMAKE_INSTALL_PREFIX}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/\" \"\${item}\")
+				GET_FILENAME_COMPONENT(relpath2 \${relpath} PATH)
+			    SET(path \"@executable_path/\${relpath2}\")
+			ENDIF()
+	    	IF(item MATCHES \"@executable_path\")
+				GET_FILENAME_COMPONENT(path \"\${item}\" PATH)
+			ENDIF()
+	    	IF(item MATCHES \"@rpath\" AND item MATCHES \"${OVITO_PLUGIN_LIBRARY_SUFFIX}\")
+				SET(path \"@executable_path/plugins\")
+			ENDIF()
+			SET(\${default_embedded_path_var} \"\${path}\" PARENT_SCOPE)
+		    MESSAGE(\"Embedding path override: \${item}\ -> \${path}\")
+		ENDFUNCTION()
+		FILE(GLOB_RECURSE QTPLUGINS
+			\"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+		FILE(GLOB_RECURSE OVITO_PLUGINS
+			\"${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}/*${OVITO_PLUGIN_LIBRARY_SUFFIX}\")
+		FILE(GLOB_RECURSE PYTHON_DYNLIBS
+			\"${CMAKE_INSTALL_PREFIX}/${MACOSX_BUNDLE_NAME}.app/Contents/Frameworks/Python.framework/*.so\")
+		SET(BUNDLE_LIBS \${QTPLUGINS} \${OVITO_PLUGINS} \${PYTHON_DYNLIBS})
+		SET(BU_CHMOD_BUNDLE_ITEMS ON)	# Make copies of system libraries writable before install_name_tool tries to change them.
+		INCLUDE(BundleUtilities)
+		FIXUP_BUNDLE(\"${APPS}\" \"\${BUNDLE_LIBS}\" \"${DIRS}\")
+		" COMPONENT Runtime)
 ENDIF()

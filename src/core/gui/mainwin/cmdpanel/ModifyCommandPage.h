@@ -28,6 +28,9 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/reference/RefTargetListener.h>
 
+// QtNetwork module
+#include <QtNetwork>
+
 namespace Ovito { namespace Gui { namespace Internal {
 
 class ModificationListModel;	// defined in ModificationListModel.h

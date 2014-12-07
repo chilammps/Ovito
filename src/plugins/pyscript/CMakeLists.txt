@@ -28,7 +28,7 @@ IF(MSVC)
 	ADD_DEFINITIONS(-Zm150)
 ENDIF()
 
-SET(OVITO_PYSCRIPT_SOURCE_FILES
+SET(SourceFiles
 	engine/ScriptEngine.cpp
 	engine/ScriptAutostarter.cpp
 	binding/PythonInterface.cpp
@@ -43,9 +43,8 @@ SET(OVITO_PYSCRIPT_SOURCE_FILES
 	extensions/PythonViewportOverlay.cpp
 )
 
-# Generate plugin module.
-OVITO_PLUGIN(PyScript
-	SOURCES PyScript.cpp ${OVITO_PYSCRIPT_SOURCE_FILES}
+OVITO_STANDARD_PLUGIN(PyScript
+	SOURCES PyScript.cpp ${SourceFiles}
 	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${QScintilla_LIBRARIES}
 	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/python/"
 )
@@ -87,12 +86,14 @@ ELSEIF(UNIX)
 ELSEIF(WIN32)
 
 	# We have to build a second executable under Windows because the main ovito.exe is not a console application.
-	SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 	ADD_EXECUTABLE(ovitos launcher/WinMain.cpp)
+    SET_TARGET_PROPERTIES(ovitos PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OVITO_BINARY_DIRECTORY}")
 	TARGET_LINK_LIBRARIES(ovitos Core)
-	QT5_USE_MODULES(ovitos ${OVITO_REQUIRED_QT_MODULES})
+	TARGET_LINK_LIBRARIES(ovitos Qt5::Core Qt5::Gui)
 	INSTALL(TARGETS ovitos DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 	GET_PROPERTY(OVITOS_EXECUTABLE TARGET ovitos PROPERTY LOCATION)
+	# Build script launcher after main executable.
+	ADD_DEPENDENCIES(ovitos ${PROJECT_NAME})
 
 ENDIF()
 

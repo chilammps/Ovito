@@ -21,13 +21,6 @@
 
 ######################### Setup CPack #######################
 
-# Gather required system libraries and install them.
-SET(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP ON)
-INCLUDE(InstallRequiredSystemLibraries)
-IF(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS AND WIN32)
-	INSTALL_PROGRAMS("${OVITO_RELATIVE_BINARY_DIRECTORY}" ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
-ENDIF()
-
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OVITO (The Open Visualization Tool) is a scientific visualization and analysis software for atomistic simulation data.")
 SET(CPACK_PACKAGE_VENDOR "Alexander Stukowski")
 SET(CPACK_PACKAGE_CONTACT "Alexander Stukowski <mail@ovito.org>")

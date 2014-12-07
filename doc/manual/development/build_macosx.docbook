@@ -100,15 +100,9 @@ cd build
 cmake -DOVITO_BUILD_DOCUMENTATION=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=../install \
+      -DCMAKE_PREFIX_PATH=$HOME/Qt5.3.2/5.3/clang_64/ \
       -DPYTHON_INCLUDE_DIR=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/include/python3.4m \
       -DPYTHON_LIBRARY=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/libpython3.4.dylib \
-      -DQt5Core_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5Core \
-      -DQt5Gui_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5Gui \
-      -DQt5Widgets_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5Widgets \
-      -DQt5Concurrent_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5Concurrent \
-      -DQt5Network_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5Network \
-      -DQt5OpenGL_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5OpenGL \
-      -DQt5PrintSupport_DIR=$HOME/Qt5.3.2/5.3/clang_64/lib/cmake/Qt5PrintSupport \
       -DLIBAV_INCLUDE_DIR=$HOME/libavstatic/include \
       -DLIBAV_LIBRARY_DIR=$HOME/libavstatic/lib \
       -DQSCINTILLA_INCLUDE_DIR=$HOME/QScintilla-gpl-2.8.4/Qt4Qt5 \

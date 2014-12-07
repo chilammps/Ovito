@@ -19,20 +19,17 @@
 #
 ###############################################################################
 
-SET(OVITO_MESH_SOURCE_FILES 
+SET(SourceFiles 
 	import/TriMeshImportData.cpp
 	import/VTKFileImporter.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	LIST(APPEND OVITO_MESH_SOURCE_FILES 
-		scripting/PythonInterface.cpp
-	)
+	LIST(APPEND SourceFiles scripting/PythonInterface.cpp)
 ENDIF()
 
-# Generate plugin module.
-OVITO_PLUGIN(Mesh
-	SOURCES ${OVITO_MESH_SOURCE_FILES}
+OVITO_STANDARD_PLUGIN(Mesh
+	SOURCES ${SourceFiles}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript	
 	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"
 )

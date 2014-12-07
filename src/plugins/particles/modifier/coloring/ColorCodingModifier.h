@@ -276,7 +276,7 @@ protected:
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
-	/// Modifies the particle object.
+	/// Modifies the particles.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This controller stores the start value of the color scale.

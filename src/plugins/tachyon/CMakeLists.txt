@@ -19,21 +19,17 @@
 #
 ###############################################################################
 
-# The source files of this plugin.
-SET(Tachyon_SRCS
+SET(SourceFiles
 	renderer/TachyonRenderer.cpp
 	renderer/TachyonRendererEditor.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	LIST(APPEND Tachyon_SRCS 
-		scripting/PythonInterface.cpp
-	)
+	LIST(APPEND SourceFiles scripting/PythonInterface.cpp)
 ENDIF()
 
-# Generate plugin module.
-OVITO_PLUGIN(Tachyon
-	SOURCES ${Tachyon_SRCS}
+OVITO_STANDARD_PLUGIN(Tachyon
+	SOURCES ${SourceFiles}
 	LIB_DEPENDENCIES TachyonLib
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript	
 	PYTHON_WRAPPERS "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/"

@@ -27,7 +27,7 @@ ENDIF()
 # Link CGAL library.
 INCLUDE(${CGAL_USE_FILE})
 
-SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
+SET(SourceFiles
 	importer/CAImporter.cpp
 	data/patterns/BurgersVectorFamily.cpp
 	data/patterns/StructurePattern.cpp
@@ -46,14 +46,11 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 )
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	LIST(APPEND OVITO_CRYSTALANALYSIS_SOURCE_FILES 
-		scripting/PythonInterface.cpp
-	)
+	LIST(APPEND SourceFiles scripting/PythonInterface.cpp)
 ENDIF()
 
-# Generate plugin module.
-OVITO_PLUGIN(CrystalAnalysis
-	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES}
+OVITO_STANDARD_PLUGIN(CrystalAnalysis
+	SOURCES ${SourceFiles}
 	PLUGIN_DEPENDENCIES Particles
 	LIB_DEPENDENCIES ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES} ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES PyScript

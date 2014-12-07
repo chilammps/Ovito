@@ -25,6 +25,9 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
 
+// QtNetwork module
+#include <QtNetwork>
+
 // QSsh library:
 #include <sshconnection.h>
 #include <sshconnectionmanager.h>
