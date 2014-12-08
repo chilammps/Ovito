@@ -192,6 +192,8 @@ export CXX=g++-4.8
 	--disable-network \
     --disable-programs \
 	--disable-debug \
+	--disable-filters \
+	--disable-decoders \
 	--prefix=$HOME/progs/libav
 
 make install

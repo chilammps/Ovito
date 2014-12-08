@@ -81,11 +81,8 @@ IF(OVITO_BUILD_DOCUMENTATION)
 					COMMENT "Generating scripting documentation")
 		
 		# Run Sphinx only after OVITO and all of its plugins have been built.
-		IF(WIN32)
-			ADD_DEPENDENCIES(scripting_documentation ovitos)
-		ELSE()
-			ADD_DEPENDENCIES(scripting_documentation ${PROJECT_NAME})
-		ENDIF()
+		ADD_DEPENDENCIES(scripting_documentation ${PROJECT_NAME})
+		
 		# Build the scripting documentation together with the main documentation.
 		ADD_DEPENDENCIES(scripting_documentation documentation)
 	ENDIF()

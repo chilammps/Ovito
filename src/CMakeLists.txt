@@ -30,10 +30,15 @@ ADD_SUBDIRECTORY(3rdparty)
 
 ADD_SUBDIRECTORY(core)
 
+####################### Plugins ###########################
+
+ADD_SUBDIRECTORY(plugins)
+
 ################### Main executable #######################
 
 ADD_SUBDIRECTORY(main)
 
-####################### Plugins ###########################
+# Propagate list of plugins to parent scope.
+SET(OVITO_PLUGIN_LIST ${OVITO_PLUGIN_LIST} PARENT_SCOPE)
 
-ADD_SUBDIRECTORY(plugins)
+

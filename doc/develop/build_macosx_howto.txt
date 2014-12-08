@@ -4,7 +4,7 @@ Install third-party libraries
 export MACOSX_DEPLOYMENT_TARGET=10.8
 sudo echo "macosx_deployment_target 10.8" >> /opt/local/etc/macports/macports.conf
 sudo port -s install netcdf python34 py34-sphinx py34-numpy py34-sip zlib boost +python34 +no_static cgal 
-sudo port install cmake docbook-xml docbook-xsl doxygen libxslt
+sudo port install cmake docbook-xml docbook-xsl doxygen libxslt yasm
 
 **************************************************************************
 Install Qt libraries, version 5.3.2
@@ -33,25 +33,17 @@ make -j2
 make install
 
 **************************************************************************
-Build static libav library (release 0.8.8):
+Build static libav library:
 **************************************************************************
 
-wget http://libav.org/releases/libav-0.8.8.tar.gz
-tar xzfv libav-0.8.8.tar.gz
-cd libav-0.8.8
+cd libav-11.1
+export MACOSX_DEPLOYMENT_TARGET=10.8
 ./configure \
-	--disable-ffmpeg \
-	--disable-avprobe \
-	--disable-avplay \
-	--disable-avserver \
+	--disable-network \
+	--disable-programs \
 	--disable-debug \
 	--disable-doc \
-	--disable-avplay \
-	--disable-avserver \
-	--disable-network \
 	--disable-filters \
-	--disable-decoders \
+	--enable-gpl \
 	--prefix=$HOME/Documents/progs/libavstatic
-
-export MACOSX_DEPLOYMENT_TARGET=10.7
 make -j3 install

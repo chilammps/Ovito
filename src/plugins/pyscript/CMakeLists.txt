@@ -52,6 +52,9 @@ OVITO_STANDARD_PLUGIN(PyScript
 # Add Python include directory.
 TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH})
 
+# Dependency on Python and Boost.Python library should be transitive.
+TARGET_LINK_LIBRARIES(PyScript PUBLIC ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY})
+
 # Add QScintilla include directory.
 TARGET_INCLUDE_DIRECTORIES(PyScript PRIVATE ${QScintilla_INCLUDE_DIRS})
 
@@ -92,8 +95,8 @@ ELSEIF(WIN32)
 	TARGET_LINK_LIBRARIES(ovitos Qt5::Core Qt5::Gui)
 	INSTALL(TARGETS ovitos DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 	GET_PROPERTY(OVITOS_EXECUTABLE TARGET ovitos PROPERTY LOCATION)
-	# Build script launcher after main executable.
-	ADD_DEPENDENCIES(ovitos ${PROJECT_NAME})
+	# Build script launcher together with PyScript plugin.
+	ADD_DEPENDENCIES(PyScript ovitos)
 
 ENDIF()
 

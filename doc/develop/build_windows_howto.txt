@@ -154,6 +154,8 @@ export PATH="$PWD/../yasm:$PATH"
    --enable-zlib \
    --disable-doc \
    --disable-network \
+   --disable-filters \
+   --disable-decoders \
    --disable-debug
 make install
 

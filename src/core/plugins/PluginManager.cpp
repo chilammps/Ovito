@@ -43,8 +43,9 @@ PluginManager::PluginManager() : _corePlugin(nullptr)
 PluginManager::~PluginManager()
 {
 	// Unload plugins in reverse order.
-	for(int i = plugins().size() - 1; i >= 0; --i)
+	for(int i = plugins().size() - 1; i >= 0; --i) {
 		delete plugins()[i];
+	}
 }
 
 /******************************************************************************

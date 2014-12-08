@@ -19,7 +19,7 @@
     After installing MacPorts, run 
 <screen><command>sudo port install netcdf python34 py34-sphinx py34-numpy py34-sip zlib \
                   boost +python34 +no_static cgal cmake docbook-xml \
-                  docbook-xsl doxygen libxslt
+                  docbook-xsl doxygen libxslt yasm
 </command></screen>
   </para>
   <para>
@@ -59,21 +59,16 @@ install_name_tool -id $PWD/libqscintilla2.dylib libqscintilla2.dylib
   <para>
 Download and build a static version of the <emphasis>libav</emphasis> video encoding library:
 <screen><command>
-wget http://libav.org/releases/libav-0.8.8.tar.gz
-tar xzfv libav-0.8.8.tar.gz
-cd libav-0.8.8
+wget https://libav.org/releases/libav-11.1.tar.gz
+tar xzfv libav-11.1.tar.gz
+cd libav-11.1
 ./configure \
-	--disable-ffmpeg \
-	--disable-avprobe \
-	--disable-avplay \
-	--disable-avserver \
+	--disable-network \
+	--disable-programs \
 	--disable-debug \
 	--disable-doc \
-	--disable-avplay \
-	--disable-avserver \
-	--disable-network \
 	--disable-filters \
-	--disable-decoders \
+	--enable-gpl \
 	--prefix=$HOME/libavstatic
 make install
 </command></screen>

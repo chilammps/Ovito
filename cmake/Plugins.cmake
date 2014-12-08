@@ -1,6 +1,6 @@
 
 # Create an official OVITO plugin.
-FUNCTION(OVITO_STANDARD_PLUGIN target_name)
+MACRO(OVITO_STANDARD_PLUGIN target_name)
 
     # Parse macro parameters
     SET(options)
@@ -57,7 +57,11 @@ FUNCTION(OVITO_STANDARD_PLUGIN target_name)
 
     # Enable the use of @rpath on OSX.
     SET_TARGET_PROPERTIES(${target_name} PROPERTIES MACOSX_RPATH TRUE)
-	
+    SET_TARGET_PROPERTIES(${target_name} PROPERTIES INSTALL_RPATH "@loader_path/;@executable_path/")
+    
+    # The build tree target should have rpath of install tree target.
+    SET_TARGET_PROPERTIES(${target_name} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+   
     # Place compiled plugin module in the right directory.
     SET_TARGET_PROPERTIES(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${OVITO_PLUGINS_DIRECTORY}")
 	
@@ -96,9 +100,10 @@ FUNCTION(OVITO_STANDARD_PLUGIN target_name)
 	IF(CMAKE_VERSION VERSION_LESS "3")
 		EXPORT(TARGETS ${target_name} NAMESPACE "Ovito::" APPEND FILE "${${PROJECT_NAME}_BINARY_DIR}/OVITOTargets.cmake")
 	ENDIF()
+	
+	# Keep a list of plugins.
+	LIST(APPEND OVITO_PLUGIN_LIST ${target_name})
+	SET(OVITO_PLUGIN_LIST ${OVITO_PLUGIN_LIST} PARENT_SCOPE)
 
-    # Build this plugin when building OVITO's main executable
-	ADD_DEPENDENCIES(${PROJECT_NAME} ${target_name})
-
-ENDFUNCTION()
+ENDMACRO()
 
