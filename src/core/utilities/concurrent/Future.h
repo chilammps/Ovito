@@ -30,31 +30,31 @@ namespace Ovito { namespace Util { namespace Concurrency {
 class FutureBase {
 public:
 
-	bool isCanceled() const { return interface()->isCanceled(); }
-	bool isFinished() const { return interface()->isFinished(); }
+	bool isCanceled() const { return getinterface()->isCanceled(); }
+	bool isFinished() const { return getinterface()->isFinished(); }
 
-	void cancel() { interface()->cancel(); }
+	void cancel() { getinterface()->cancel(); }
 	void waitForFinished() const {
-		interface()->waitForFinished();
+		getinterface()->waitForFinished();
 	}
 	bool isValid() const { return (bool)_interface; }
 	void reset() { _interface.reset(); }
 
-    int progressValue() const { return interface()->progressValue(); }
-    int progressMaximum() const { return interface()->progressMaximum(); }
-    QString progressText() const { return interface()->progressText(); }
+    int progressValue() const { return getinterface()->progressValue(); }
+    int progressMaximum() const { return getinterface()->progressMaximum(); }
+    QString progressText() const { return getinterface()->progressText(); }
 
 protected:
 
 	FutureBase() {}
 
 	explicit FutureBase(const std::shared_ptr<FutureInterfaceBase>& p) : _interface(p) {}
-
-	std::shared_ptr<FutureInterfaceBase>& interface() {
+	
+	std::shared_ptr<FutureInterfaceBase>& getinterface() {
 		OVITO_ASSERT(isValid());
 		return _interface;
 	}
-	const std::shared_ptr<FutureInterfaceBase>& interface() const {
+	const std::shared_ptr<FutureInterfaceBase>& getinterface() const {
 		OVITO_ASSERT(isValid());
 		return _interface;
 	}
@@ -78,36 +78,36 @@ public:
 
 	/// Create a Future with immediate results.
 	static Future createImmediate(const R& result, const QString& text = QString()) {
-		auto interface = std::make_shared<Interface>();
-		interface->reportStarted();
+		auto iface = std::make_shared<Interface>();
+		iface->reportStarted();
 		if(text.isEmpty() == false)
-			interface->setProgressText(text);
-		interface->setResult(result);
-		interface->reportFinished();
-		return Future(interface);
+			iface->setProgressText(text);
+		iface->setResult(result);
+		iface->reportFinished();
+		return Future(iface);
 	}
 
 	/// Create a Future with a thrown exception.
 	static Future createFailed(const Exception& ex) {
-		auto interface = std::make_shared<Interface>();
-		interface->reportStarted();
-		interface->reportException(std::make_exception_ptr(ex));
-		interface->reportFinished();
-		return Future(interface);
+		auto iface = std::make_shared<Interface>();
+		iface->reportStarted();
+		iface->reportException(std::make_exception_ptr(ex));
+		iface->reportFinished();
+		return Future(iface);
 	}
 
 	/// Create a Future without results that is in the canceled state.
 	static Future createCanceled() {
-		auto interface = std::make_shared<Interface>();
-		interface->reportStarted();
-		interface->cancel();
-		interface->reportFinished();
-		return Future(interface);
+		auto iface = std::make_shared<Interface>();
+		iface->reportStarted();
+		iface->cancel();
+		iface->reportFinished();
+		return Future(iface);
 	}
 
 	const R& result() const {
-		interface()->waitForResult();
-		return static_cast<FutureInterface<R>*>(interface().get())->_result;
+		getinterface()->waitForResult();
+		return static_cast<FutureInterface<R>*>(getinterface().get())->_result;
 	}
 };
 
@@ -118,13 +118,13 @@ public:
 	explicit Future(const std::shared_ptr<FutureInterface<void>>& p) : FutureBase(p) {}
 
 	void result() const {
-		interface()->waitForResult();
+		getinterface()->waitForResult();
 	}
 };
 
 inline void FutureWatcher::setFuture(const FutureBase& future)
 {
-	setFutureInterface(future.interface());
+	setFutureInterface(future.getinterface());
 }
 
 }}}	// End of namespace

@@ -40,7 +40,7 @@ public:
 	/// Constructs the task manager for the given main window.
 	TaskManager(MainWindow* mainWindow);
 
-	/// Shuts down the task manager after canceling all active tasks.
+	/// Shuts down the task manager after cancelling all active tasks.
 	~TaskManager() {
 		cancelAllAndWait();
 	}
@@ -59,7 +59,7 @@ public:
 	/// \brief Executes a function in a different thread and blocks the GUI until the function returns
 	///        or the user cancels the operation.
 	/// \return \c true if the function finished successfully without throwing an exception;
-	///         \c false if the operation has been canceled by the user.
+	///         \c false if the operation has been cancelled by the user.
 	///
 	/// The function signature of \c func must be:
 	///
@@ -105,7 +105,7 @@ public:
 	/// This function is thread-safe.
 	template<typename R>
 	void registerTask(const Future<R>& future) {
-		registerTask(future.interface());
+		registerTask(future.getinterface());
 	}
 
 	/// \brief Registers a future interface with the progress manager, which will display the progress of the background task
@@ -119,12 +119,12 @@ public:
 
 	/// \brief Waits for the given task to finish and displays a modal progress dialog
 	///        to show the task's progress.
-	/// \return False if the task has been canceled by the user.
+	/// \return False if the task has been cancelled by the user.
 	///
 	/// This function must be called from the GUI thread.
 	template<typename R>
 	bool waitForTask(const Future<R>& future) {
-		return waitForTask(future.interface());
+		return waitForTask(future.getinterface());
 	}
 
 	/// \brief Waits for the given task to finish and displays a modal progress dialog

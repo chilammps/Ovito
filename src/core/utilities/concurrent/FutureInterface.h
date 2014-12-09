@@ -57,7 +57,7 @@ public:
 
 	template<typename RS>
 	bool waitForSubTask(Future<RS>& subFuture) {
-		return waitForSubTask(subFuture.interface());
+		return waitForSubTask(subFuture.getinterface());
 	}
 	bool waitForSubTask(const std::shared_ptr<FutureInterfaceBase>& subTask);
 
