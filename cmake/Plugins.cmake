@@ -59,10 +59,12 @@ MACRO(OVITO_STANDARD_PLUGIN target_name)
     SET_TARGET_PROPERTIES(${target_name} PROPERTIES MACOSX_RPATH TRUE)
     SET_TARGET_PROPERTIES(${target_name} PROPERTIES INSTALL_RPATH "@loader_path/;@executable_path/")
     
-    # The build tree target should have rpath of install tree target.
-    SET_TARGET_PROPERTIES(${target_name} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
-   
-    # Place compiled plugin module in the right directory.
+	IF(APPLE)
+	    # The build tree target should have rpath of install tree target.
+	    SET_TARGET_PROPERTIES(${target_name} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+	ENDIF()  
+ 
+    # Place compiled plugin module into the plugins directory.
     SET_TARGET_PROPERTIES(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${OVITO_PLUGINS_DIRECTORY}")
 	
 	# Generate plugin manifest.
