@@ -25,8 +25,8 @@
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
+#include <plugins/particles/util/CutoffNeighborFinder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
 #include "VoronoiAnalysisModifier.h"
 
 #include <voro++.hh>
@@ -132,22 +132,20 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 		r = r*r;
 	}
 
-	OnTheFlyNeighborListBuilder onTheFlyNeighborListBuilder(_cutoff);
-	TreeNeighborListBuilder treeNeighborListBuilder;
+	CutoffNeighborFinder cutoffNeighborFinder;
+	NearestNeighborFinder nearestNeighborFinder;
 
 	double boxDiameter;
 	if(_cutoff > 0) {
 		// Prepare the cutoff-based neighbor list generator.
-		if(!onTheFlyNeighborListBuilder.prepare(_positions.data(), _simCell))
+		if(!cutoffNeighborFinder.prepare(_cutoff, _positions.data(), _simCell, this))
 			return;
 	}
 	else {
 		// Prepare the nearest neighbor list generator.
-		if(!treeNeighborListBuilder.prepare(_positions.data(), _simCell))
+		if(!nearestNeighborFinder.prepare(_positions.data(), _simCell, this))
 			return;
 	}
-	if(isCanceled())
-		return;
 
 	// This is the size we use to initialize Voronoi cells. Must be larger than the simulation box.
 	boxDiameter = sqrt(
@@ -171,7 +169,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 	// Perform analysis, particle-wise parallel.
 	std::mutex mutex;
 	parallelFor(_positions->size(), *this,
-			[&onTheFlyNeighborListBuilder, &treeNeighborListBuilder, this, sqEdgeThreshold, &mutex, boxDiameter,
+			[&cutoffNeighborFinder, &nearestNeighborFinder, this, sqEdgeThreshold, &mutex, boxDiameter,
 			 planeNormals, corner1, corner2](size_t index) {
 
 		// Skip unselected particles (if requested).
@@ -202,24 +200,24 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 			return;
 
 		if(_cutoff > 0) {
-			for(OnTheFlyNeighborListBuilder::iterator niter(onTheFlyNeighborListBuilder, index); !niter.atEnd(); niter.next()) {
+			for(CutoffNeighborFinder::Query neighQuery(cutoffNeighborFinder, index); !neighQuery.atEnd(); neighQuery.next()) {
 				// Skip unselected particles (if requested).
-				if(_selection && _selection->getInt(niter.current()) == 0)
+				if(_selection && _selection->getInt(neighQuery.current()) == 0)
 					continue;
 
 				// Take into account particle radii.
-				FloatType rs = niter.distanceSquared();
+				FloatType rs = neighQuery.distanceSquared();
 				if(!_squaredRadii.empty())
-					 rs += _squaredRadii[index] - _squaredRadii[niter.current()];
+					 rs += _squaredRadii[index] - _squaredRadii[neighQuery.current()];
 
 				// Cut cell with bisecting plane.
-				v.plane(niter.delta().x(), niter.delta().y(), niter.delta().z(), rs);
+				v.plane(neighQuery.delta().x(), neighQuery.delta().y(), neighQuery.delta().z(), rs);
 			}
 		}
 		else {
 			// This function will be called for every neighbor particle.
 			int nvisits = 0;
-			auto visitFunc = [this, &v, &nvisits, index](const TreeNeighborListBuilder::Neighbor& n, FloatType& mrs) {
+			auto visitFunc = [this, &v, &nvisits, index](const NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
 				// Skip unselected particles (if requested).
 				if(!_selection || _selection->getInt(n.index)) {
 					FloatType rs = n.distanceSq;
@@ -235,7 +233,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 			};
 
 			// Visit all neighbors of the current particles.
-			treeNeighborListBuilder.visitNeighbors(treeNeighborListBuilder.particlePos(index), visitFunc);
+			nearestNeighborFinder.visitNeighbors(nearestNeighborFinder.particlePos(index), visitFunc);
 		}
 
 		// Compute cell volume.

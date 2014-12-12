@@ -26,7 +26,7 @@
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
 #include "WignerSeitzAnalysisModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
@@ -194,8 +194,8 @@ void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::perform()
 		return;
 
 	// Prepare the closest-point query structure.
-	TreeNeighborListBuilder neighborTree(0);
-	if(!neighborTree.prepare(refPositions(), refCell()) || isCanceled())
+	NearestNeighborFinder neighborTree(0);
+	if(!neighborTree.prepare(refPositions(), refCell(), this))
 		return;
 
 	// Create output storage.

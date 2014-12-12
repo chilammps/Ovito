@@ -89,8 +89,8 @@ SET(SourceFiles
 	export/lammps/LAMMPSDumpExporter.cpp
 	export/xyz/XYZExporter.cpp
 	export/imd/IMDExporter.cpp
-	util/TreeNeighborListBuilder.cpp
-	util/OnTheFlyNeighborListBuilder.cpp
+	util/NearestNeighborFinder.cpp
+	util/CutoffNeighborFinder.cpp
 	util/ParticlePropertyComboBox.cpp
 	util/CutoffRadiusPresetsUI.cpp
 	util/ParticleInformationApplet.cpp

@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
 #include "CentroSymmetryModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
@@ -75,8 +75,8 @@ void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 	setProgressText(tr("Computing centrosymmetry parameters"));
 
 	// Prepare the neighbor list.
-	TreeNeighborListBuilder neighborListBuilder(_nneighbors);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled()) {
+	NearestNeighborFinder neighFinder(_nneighbors);
+	if(!neighFinder.prepare(positions(), cell(), this)) {
 		return;
 	}
 
@@ -84,28 +84,27 @@ void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 	ParticleProperty* output = csp();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
-		output->setFloat(index, computeCSP(neighborListBuilder, index));
+	parallelFor(positions()->size(), *this, [&neighFinder, output](size_t index) {
+		output->setFloat(index, computeCSP(neighFinder, index));
 	});
 }
 
 /******************************************************************************
 * Computes the centrosymmetry parameter of a single particle.
 ******************************************************************************/
-FloatType CentroSymmetryModifier::computeCSP(TreeNeighborListBuilder& neighList, size_t particleIndex)
+FloatType CentroSymmetryModifier::computeCSP(NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
-	// Create neighbor list finder.
-	TreeNeighborListBuilder::Locator<MAX_CSP_NEIGHBORS> loc(neighList);
+	// Find k nearest neighbor of current atom.
+	NearestNeighborFinder::Query<MAX_CSP_NEIGHBORS> neighQuery(neighFinder);
+	neighQuery.findNeighbors(neighFinder.particlePos(particleIndex));
 
-	// Find N nearest neighbor of current atom.
-	loc.findNeighbors(neighList.particlePos(particleIndex));
-	int numNN = loc.results().size();
+	int numNN = neighQuery.results().size();
 
     // R = Ri + Rj for each of npairs i,j pairs among numNN neighbors.
 	FloatType pairs[MAX_CSP_NEIGHBORS*MAX_CSP_NEIGHBORS/2];
 	FloatType* p = pairs;
-	for(auto ij = loc.results().begin(); ij != loc.results().end(); ++ij) {
-		for(auto ik = ij + 1; ik != loc.results().end(); ++ik) {
+	for(auto ij = neighQuery.results().begin(); ij != neighQuery.results().end(); ++ij) {
+		for(auto ik = ij + 1; ik != neighQuery.results().end(); ++ik) {
 			*p++ = (ik->delta + ij->delta).squaredLength();
 		}
 	}

@@ -20,7 +20,7 @@
     First install all required <link linkend="development.requirements">build tools and third-party libraries</link>
     by running
 <screen><command>sudo apt-get install build-essential git cmake-curses-gui qt5-default libcgal-dev libboost-dev libqt5scintilla2-dev \
-                     libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
+                     libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev \
                      libavutil-dev libswscale-dev libnetcdf-dev libhdf5-dev libhdf5-serial-dev \
                      libbotan1.10-dev libmuparser-dev python3-dev libboost-python-dev python3-sphinx python3-numpy \
                      xsltproc docbook-xml docbook-xsl docbook-xsl-doc-html doxygen
@@ -49,6 +49,7 @@ cmake -DOVITO_BUILD_DOCUMENTATION=ON \
       -DPYTHON_INCLUDE_DIR=/usr/include/python3.4m \
       -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so \
       -DBoost_PYTHON_LIBRARY_RELEASE=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so \
+      -DBoost_PYTHON_LIBRARY_DEBUG=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so \
       ..
 </command></screen>
   </para>

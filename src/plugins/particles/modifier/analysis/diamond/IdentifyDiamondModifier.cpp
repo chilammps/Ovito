@@ -21,7 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/utilities/concurrent/ParallelFor.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
 
 #include "IdentifyDiamondModifier.h"
 #include <plugins/particles/modifier/analysis/cna/CommonNeighborAnalysisModifier.h>
@@ -74,8 +74,8 @@ void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 	setProgressText(tr("Finding nearest neighbors"));
 
 	// Prepare the neighbor list builder.
-	TreeNeighborListBuilder neighborListBuilder(4);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
+	NearestNeighborFinder neighborFinder(4);
+	if(!neighborFinder.prepare(positions(), cell(), this))
 		return;
 
 	// This data structure stores information about a single neighbor.
@@ -87,14 +87,14 @@ void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 	std::vector<std::array<NeighborInfo,4>> neighLists(positions()->size());
 
 	// Determine four nearest neighbors of each atom and store vectors in the working array.
-	parallelFor(positions()->size(), *this, [&neighborListBuilder, &neighLists](size_t index) {
-		TreeNeighborListBuilder::Locator<4> loc(neighborListBuilder);
-		loc.findNeighbors(neighborListBuilder.particlePos(index));
-		for(int i = 0; i < loc.results().size(); i++) {
-			neighLists[index][i].vec = loc.results()[i].delta;
-			neighLists[index][i].index = loc.results()[i].index;
+	parallelFor(positions()->size(), *this, [&neighborFinder, &neighLists](size_t index) {
+		NearestNeighborFinder::Query<4> neighQuery(neighborFinder);
+		neighQuery.findNeighbors(neighborFinder.particlePos(index));
+		for(int i = 0; i < neighQuery.results().size(); i++) {
+			neighLists[index][i].vec = neighQuery.results()[i].delta;
+			neighLists[index][i].index = neighQuery.results()[i].index;
 		}
-		for(int i = loc.results().size(); i < 4; i++) {
+		for(int i = neighQuery.results().size(); i < 4; i++) {
 			neighLists[index][i].vec.setZero();
 			neighLists[index][i].index = -1;
 		}

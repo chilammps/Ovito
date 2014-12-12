@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
+#include <plugins/particles/util/CutoffNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
 class QCustomPlot;

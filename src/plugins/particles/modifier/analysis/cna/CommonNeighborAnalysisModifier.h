@@ -168,10 +168,10 @@ private:
 	};
 
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
-	static StructureType determineStructureAdaptive(TreeNeighborListBuilder& neighList, size_t particleIndex);
+	static StructureType determineStructureAdaptive(NearestNeighborFinder& neighList, size_t particleIndex);
 
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
-	static StructureType determineStructureFixed(OnTheFlyNeighborListBuilder& neighList, size_t particleIndex);
+	static StructureType determineStructureFixed(CutoffNeighborFinder& neighList, size_t particleIndex);
 
 	/// The cutoff radius for the CNA.
 	PropertyField<FloatType> _cutoff;

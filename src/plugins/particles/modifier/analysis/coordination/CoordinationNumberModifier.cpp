@@ -73,8 +73,8 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 	setProgressText(tr("Computing coordination numbers"));
 
 	// Prepare the neighbor list.
-	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
+	CutoffNeighborFinder neighborListBuilder;
+	if(!neighborListBuilder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
 	size_t particleCount = positions()->size();
@@ -98,9 +98,9 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 			for(size_t i = startIndex; i < endIndex;) {
 
 				int coordNumber = 0;
-				for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, i); !neighborIter.atEnd(); neighborIter.next()) {
+				for(CutoffNeighborFinder::Query neighQuery(neighborListBuilder, i); !neighQuery.atEnd(); neighQuery.next()) {
 					coordNumber++;
-					size_t rdfInterval = (size_t)(sqrt(neighborIter.distanceSquared()) / rdfBinSize);
+					size_t rdfInterval = (size_t)(sqrt(neighQuery.distanceSquared()) / rdfBinSize);
 					threadLocalRDF[rdfInterval]++;
 				}
 				coordOutput[i] = coordNumber;

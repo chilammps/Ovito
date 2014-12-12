@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,21 +19,41 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
-#define __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
+#ifndef __OVITO_NEAREST_NEIGHBOR_FINDER_H
+#define __OVITO_NEAREST_NEIGHBOR_FINDER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/utilities/BoundedPriorityQueue.h>
-#include <core/utilities/MemoryPool.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/SimulationCell.h>
+#include <core/utilities/BoundedPriorityQueue.h>
+#include <core/utilities/MemoryPool.h>
+#include <core/utilities/concurrent/FutureInterface.h>
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /**
- * \brief Finds the N nearest neighbors of particles.
+ * \brief This utility class finds the *k* nearest neighbors of a particle or around some point in space.
+ *        *k* is a positive integer.
+ *
+ * OVITO provides two facilities for finding the neighbors of particles: The CutoffNeighborFinder class, which
+ * finds all neighbors within a certain cutoff radius, and the NearestNeighborFinder class, which finds
+ * the *k* nearest neighbor of a particle, where *k* is some positive integer. Note that the cutoff-based neighbor finder
+ * can return an unknown number of neighbor particles, while the nearest neighbor finder will return exactly
+ * the requested number of nearest neighbors (ordered by increasing distance from the central particle).
+ * Whether CutoffNeighborFinder or NearestNeighborFinder is the right choice depends on the application.
+ *
+ * The NearestNeighborFinder class must be initialized by a call to prepare(). This function sorts all input particles
+ * in a binary search for fast nearest neighbor queries.
+ *
+ * After the NearestNeighborFinder has been initialized, one can find the nearest neighbors of some central
+ * particle by constructing an instance of the NearestNeighborFinder::Query class. This is a light-weight class generates
+ * the sorted list of nearest neighbors of a particle.
+ *
+ * The NearestNeighborFinder class takes into account periodic boundary conditions. With periodic boundary conditions,
+ * a particle can be appear multiple times in the neighbor list of another particle. Note, however, that a different neighbor *vector* is
+ * reported for each periodic image of a neighbor.
  */
-class OVITO_PARTICLES_EXPORT TreeNeighborListBuilder
+class OVITO_PARTICLES_EXPORT NearestNeighborFinder
 {
 private:
 
@@ -85,7 +105,7 @@ private:
 public:
 
 	//// Constructor that builds the binary search tree.
-	TreeNeighborListBuilder(int _numNeighbors = 16) : numNeighbors(_numNeighbors), numLeafNodes(0), maxTreeDepth(1) {
+	NearestNeighborFinder(int _numNeighbors = 16) : numNeighbors(_numNeighbors), numLeafNodes(0), maxTreeDepth(1) {
 		bucketSize = std::max(_numNeighbors / 2, 8);
 	}
 
@@ -95,9 +115,9 @@ public:
 	/// \return \c false when the operation has been canceled by the user;
 	///         \c true on success.
 	/// \throw Exception on error.
-	bool prepare(ParticleProperty* posProperty, const SimulationCell& cellData);
+	bool prepare(ParticleProperty* posProperty, const SimulationCell& cellData, FutureInterfaceBase* progress = nullptr);
 
-	/// Returns the position of the i-th particle.
+	/// Returns the coordinates of the i-th input particle.
 	const Point3& particlePos(size_t index) const {
 		OVITO_ASSERT(index >= 0 && index < atoms.size());
 		return atoms[index].pos;
@@ -131,12 +151,12 @@ public:
 
 	/// Iterator over the nearest neighbors of a central particle.
 	template<int MAX_NEIGHBORS_LIMIT>
-	class Locator
+	class Query
 	{
 	public:
 
 		/// Constructor.
-		Locator(const TreeNeighborListBuilder& tree) : t(tree), queue(tree.numNeighbors) {}
+		Query(const NearestNeighborFinder& finder) : t(finder), queue(finder.numNeighbors) {}
 
 		/// Builds the sorted list of neighbors around the given point.
 		void findNeighbors(const Point3& query_point) {
@@ -188,7 +208,7 @@ public:
 		}
 
 	private:
-		const TreeNeighborListBuilder& t;
+		const NearestNeighborFinder& t;
 		Point3 q, qr;
 		BoundedPriorityQueue<Neighbor, std::less<Neighbor>, MAX_NEIGHBORS_LIMIT> queue;
 	};
@@ -286,8 +306,6 @@ private:
 	/// List of pbc image shift vectors.
 	std::vector<Vector3> pbcImages;
 
-public:
-
 	/// The number of leaf nodes in the tree.
 	int numLeafNodes;
 
@@ -297,4 +315,4 @@ public:
 
 }}}} // End of namespace
 
-#endif // __OVITO_TREE_NEIGHBOR_LIST_BUILDER_H
+#endif // __OVITO_NEAREST_NEIGHBOR_FINDER_H

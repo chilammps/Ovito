@@ -26,7 +26,7 @@ Unresolved OpenGL problems:
 
 Unresolved bugs:
 
-- TreeNeighborListBuilder doesn't work properly for triclinic cells with small angles.
+- NearestNeighborFinder doesn't work properly for triclinic cells with small angles.
 
 New analysis features:
 

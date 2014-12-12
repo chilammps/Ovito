@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include "TreeNeighborListBuilder.h"
+#include "NearestNeighborFinder.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
@@ -29,7 +29,7 @@ namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 /******************************************************************************
 * Prepares the neighbor list builder.
 ******************************************************************************/
-bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData)
+bool NearestNeighborFinder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData, FutureInterfaceBase* progress)
 {
 	OVITO_CHECK_POINTER(posProperty);
 
@@ -117,13 +117,13 @@ bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const Simul
 
 	root->convertToAbsoluteCoordinates(simCell);
 
-	return true;
+	return (!progress || !progress->isCanceled());
 }
 
 /******************************************************************************
 * Inserts an atom into the binary tree.
 ******************************************************************************/
-void TreeNeighborListBuilder::insertParticle(NeighborListAtom* atom, const Point3& p, TreeNode* node, int depth)
+void NearestNeighborFinder::insertParticle(NeighborListAtom* atom, const Point3& p, TreeNode* node, int depth)
 {
 	if(node->isLeaf()) {
 		OVITO_ASSERT(node->bounds.classifyPoint(p) != -1);
@@ -149,7 +149,7 @@ void TreeNeighborListBuilder::insertParticle(NeighborListAtom* atom, const Point
 /******************************************************************************
 * Determines in which direction to split the given leaf node.
 ******************************************************************************/
-int TreeNeighborListBuilder::determineSplitDirection(TreeNode* node)
+int NearestNeighborFinder::determineSplitDirection(TreeNode* node)
 {
 	FloatType dmax = 0.0;
 	int dmax_dim = -1;
@@ -167,7 +167,7 @@ int TreeNeighborListBuilder::determineSplitDirection(TreeNode* node)
 /******************************************************************************
 * Splits a leaf node into two new leaf nodes and redistributes the atoms to the child nodes.
 ******************************************************************************/
-void TreeNeighborListBuilder::splitLeafNode(TreeNode* node, int splitDim)
+void NearestNeighborFinder::splitLeafNode(TreeNode* node, int splitDim)
 {
 	NeighborListAtom* atom = node->atoms;
 

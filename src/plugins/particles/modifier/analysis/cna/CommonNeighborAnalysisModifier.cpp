@@ -23,8 +23,8 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
-#include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
+#include <plugins/particles/util/CutoffNeighborFinder.h>
 #include <plugins/particles/util/CutoffRadiusPresetsUI.h>
 
 #include "CommonNeighborAnalysisModifier.h"
@@ -101,16 +101,16 @@ void CommonNeighborAnalysisModifier::AdaptiveCNAEngine::perform()
 	setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
-	TreeNeighborListBuilder neighborListBuilder(MAX_NEIGHBORS);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
+	NearestNeighborFinder neighFinder(MAX_NEIGHBORS);
+	if(!neighFinder.prepare(positions(), cell(), this))
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
-		output->setInt(index, determineStructureAdaptive(neighborListBuilder, index));
+	parallelFor(positions()->size(), *this, [&neighFinder, output](size_t index) {
+		output->setInt(index, determineStructureAdaptive(neighFinder, index));
 	});
 }
 
@@ -122,8 +122,8 @@ void CommonNeighborAnalysisModifier::FixedCNAEngine::perform()
 	setProgressText(tr("Performing common neighbor analysis"));
 
 	// Prepare the neighbor list.
-	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
+	CutoffNeighborFinder neighborListBuilder;
+	if(!neighborListBuilder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
 	// Create output storage.
@@ -235,14 +235,14 @@ int CommonNeighborAnalysisModifier::calcMaxChainLength(CNAPairBond* neighborBond
 * Determines the coordination structure of a single particle using the
 * adaptive common neighbor analysis method.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureAdaptive(TreeNeighborListBuilder& neighList, size_t particleIndex)
+CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureAdaptive(NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
 	// Create neighbor list finder.
-	TreeNeighborListBuilder::Locator<MAX_NEIGHBORS> loc(neighList);
+	NearestNeighborFinder::Query<MAX_NEIGHBORS> neighQuery(neighFinder);
 
 	// Find N nearest neighbor of current atom.
-	loc.findNeighbors(neighList.particlePos(particleIndex));
-	int numNeighbors = loc.results().size();
+	neighQuery.findNeighbors(neighFinder.particlePos(particleIndex));
+	int numNeighbors = neighQuery.results().size();
 
 	{ /////////// 12 neighbors ///////////
 
@@ -256,7 +256,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 	// Compute scaling factor.
 	FloatType localScaling = 0;
 	for(int n = 0; n < nn; n++)
-		localScaling += sqrt(loc.results()[n].distanceSq);
+		localScaling += sqrt(neighQuery.results()[n].distanceSq);
 	FloatType localCutoff = localScaling / nn * (1.0 + sqrt(2.0)) / 2;
 	FloatType localCutoffSquared =  localCutoff * localCutoff;
 
@@ -265,7 +265,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 	for(int ni1 = 0; ni1 < nn; ni1++) {
 		neighborArray.setNeighborBond(ni1, ni1, false);
 		for(int ni2 = ni1+1; ni2 < nn; ni2++)
-			neighborArray.setNeighborBond(ni1, ni2, (loc.results()[ni1].delta - loc.results()[ni2].delta).squaredLength() <= localCutoffSquared);
+			neighborArray.setNeighborBond(ni1, ni2, (neighQuery.results()[ni1].delta - neighQuery.results()[ni2].delta).squaredLength() <= localCutoffSquared);
 	}
 
 	int n421 = 0;
@@ -313,9 +313,9 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 	// Compute scaling factor.
 	FloatType localScaling = 0;
 	for(int n = 0; n < 8; n++)
-		localScaling += sqrt(loc.results()[n].distanceSq / (3.0/4.0));
+		localScaling += sqrt(neighQuery.results()[n].distanceSq / (3.0/4.0));
 	for(int n = 8; n < 14; n++)
-		localScaling += sqrt(loc.results()[n].distanceSq);
+		localScaling += sqrt(neighQuery.results()[n].distanceSq);
 	FloatType localCutoff = localScaling / nn * 1.207;
 	FloatType localCutoffSquared =  localCutoff * localCutoff;
 
@@ -324,7 +324,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 	for(int ni1 = 0; ni1 < nn; ni1++) {
 		neighborArray.setNeighborBond(ni1, ni1, false);
 		for(int ni2 = ni1+1; ni2 < nn; ni2++)
-			neighborArray.setNeighborBond(ni1, ni2, (loc.results()[ni1].delta - loc.results()[ni2].delta).squaredLength() <= localCutoffSquared);
+			neighborArray.setNeighborBond(ni1, ni2, (neighQuery.results()[ni1].delta - neighQuery.results()[ni2].delta).squaredLength() <= localCutoffSquared);
 	}
 
 	int n444 = 0;
@@ -367,9 +367,9 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 	// Compute scaling factor.
 	FloatType localScaling = 0;
 	for(int n = 0; n < 4; n++)
-		localScaling += sqrt(loc.results()[n].distanceSq / (3.0/16.0));
+		localScaling += sqrt(neighQuery.results()[n].distanceSq / (3.0/16.0));
 	for(int n = 4; n < 16; n++)
-		localScaling += sqrt(loc.results()[n].distanceSq / (2.0/4.0));
+		localScaling += sqrt(neighQuery.results()[n].distanceSq / (2.0/4.0));
 	FloatType localCutoff = localScaling / nn * 0.7681;
 	FloatType localCutoffSquared =  localCutoff * localCutoff;
 
@@ -378,7 +378,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 	for(int ni1 = 0; ni1 < nn; ni1++) {
 		neighborArray.setNeighborBond(ni1, ni1, false);
 		for(int ni2 = ni1+1; ni2 < nn; ni2++)
-			neighborArray.setNeighborBond(ni1, ni2, (loc.results()[ni1].delta - loc.results()[ni2].delta).squaredLength() <= localCutoffSquared);
+			neighborArray.setNeighborBond(ni1, ni2, (neighQuery.results()[ni1].delta - neighQuery.results()[ni2].delta).squaredLength() <= localCutoffSquared);
 	}
 
 	int n543 = 0;
@@ -414,14 +414,14 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 * Determines the coordination structure of a single particle using the
 * conventional common neighbor analysis method.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureFixed(OnTheFlyNeighborListBuilder& neighList, size_t particleIndex)
+CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureFixed(CutoffNeighborFinder& neighList, size_t particleIndex)
 {
 	// Store neighbor vectors in a local array.
 	int numNeighbors = 0;
 	Vector3 neighborVectors[MAX_NEIGHBORS];
-	for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighList, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+	for(CutoffNeighborFinder::Query neighborQuery(neighList, particleIndex); !neighborQuery.atEnd(); neighborQuery.next()) {
 		if(numNeighbors == MAX_NEIGHBORS) return OTHER;
-		neighborVectors[numNeighbors] = neighborIter.delta();
+		neighborVectors[numNeighbors] = neighborQuery.delta();
 		numNeighbors++;
 	}
 

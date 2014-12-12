@@ -24,7 +24,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
 
 #include "BondAngleAnalysisModifier.h"
 
@@ -74,38 +74,37 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::perform()
 	setProgressText(tr("Performing bond-angle analysis"));
 
 	// Prepare the neighbor list.
-	TreeNeighborListBuilder neighborListBuilder(14);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
+	NearestNeighborFinder neighborFinder(14);
+	if(!neighborFinder.prepare(positions(), cell(), this))
 		return;
 
 	// Create output storage.
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), *this, [&neighborListBuilder, output](size_t index) {
-		output->setInt(index, determineStructure(neighborListBuilder, index));
+	parallelFor(positions()->size(), *this, [&neighborFinder, output](size_t index) {
+		output->setInt(index, determineStructure(neighborFinder, index));
 	});
 }
 
 /******************************************************************************
-* Determines the coordination structure of a single particle using the bond-angle analysis method.
+* Determines the coordination structure of a single particle using the
+* bond-angle analysis method.
 ******************************************************************************/
-BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex)
+BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
-	// Create neighbor list finder.
-	TreeNeighborListBuilder::Locator<14> loc(neighList);
-
-	// Find N nearest neighbor of current atom.
-	loc.findNeighbors(neighList.particlePos(particleIndex));
+	// Find 14 nearest neighbors of current particle.
+	NearestNeighborFinder::Query<14> neighborQuery(neighFinder);
+	neighborQuery.findNeighbors(neighFinder.particlePos(particleIndex));
 
 	// Reject under-coordinated particles.
-	if(loc.results().size() < 6)
+	if(neighborQuery.results().size() < 6)
 		return OTHER;
 
 	// Mean squared distance of 6 nearest neighbors.
 	FloatType r0_sq = 0;
 	for(int j = 0; j < 6; j++)
-		r0_sq += loc.results()[j].distanceSq;
+		r0_sq += neighborQuery.results()[j].distanceSq;
 	r0_sq /= 6.0f;
 
 	// n0 near neighbors with: distsq<1.45*r0_sq
@@ -113,18 +112,18 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 	FloatType n0_dist_sq = 1.45f * r0_sq;
 	FloatType n1_dist_sq = 1.55f * r0_sq;
 	int n0 = 0;
-	for(auto n = loc.results().begin(); n != loc.results().end(); ++n, ++n0) {
+	for(auto n = neighborQuery.results().begin(); n != neighborQuery.results().end(); ++n, ++n0) {
 		if(n->distanceSq > n0_dist_sq) break;
 	}
-	auto n0end = loc.results().begin() + n0;
+	auto n0end = neighborQuery.results().begin() + n0;
 	int n1 = n0;
-	for(auto n = n0end; n != loc.results().end(); ++n, ++n1) {
+	for(auto n = n0end; n != neighborQuery.results().end(); ++n, ++n1) {
 		if(n->distanceSq >= n1_dist_sq) break;
 	}
 
 	// Evaluate all angles <(r_ij,rik) for all n0 particles with: distsq<1.45*r0_sq
 	int chi[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-	for(auto j = loc.results().begin(); j != n0end; ++j) {
+	for(auto j = neighborQuery.results().begin(); j != n0end; ++j) {
 		FloatType norm_j = sqrt(j->distanceSq);
 		for(auto k = j + 1; k != n0end; ++k) {
 			FloatType norm_k = sqrt(k->distanceSq);

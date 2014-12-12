@@ -74,7 +74,7 @@ private:
 	};
 
 	/// Determines the coordination structure of a single particle using the bond-angle analysis method.
-	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);
+	static StructureType determineStructure(NearestNeighborFinder& neighFinder, size_t particleIndex);
 
 	Q_OBJECT
 	OVITO_OBJECT

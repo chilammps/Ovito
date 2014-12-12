@@ -280,13 +280,13 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 		return;
 
 	// Prepare the neighbor list for the reference configuration.
-	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(refPositions(), refCell()) || isCanceled())
+	CutoffNeighborFinder neighborFinder;
+	if(!neighborFinder.prepare(_cutoff, refPositions(), refCell(), this))
 		return;
 
 	// Perform analysis on each particle.
-	parallelFor(positions()->size(), *this, [&neighborListBuilder, &refToCurrentIndexMap, &currentToRefIndexMap, this](size_t index) {
-		if(!this->computeStrain(index, neighborListBuilder, refToCurrentIndexMap, currentToRefIndexMap))
+	parallelFor(positions()->size(), *this, [&neighborFinder, &refToCurrentIndexMap, &currentToRefIndexMap, this](size_t index) {
+		if(!this->computeStrain(index, neighborFinder, refToCurrentIndexMap, currentToRefIndexMap))
 			_numInvalidParticles.fetchAndAddRelaxed(1);
 	});
 }
@@ -294,7 +294,7 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 /******************************************************************************
 * Computes the strain tensor of a single particle.
 ******************************************************************************/
-bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap)
+bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, CutoffNeighborFinder& neighborFinder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap)
 {
 	// We do the following calculations using double precision to
 	// achieve best results. Final results will be converted back to
@@ -307,9 +307,9 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 	size_t refParticleIndex = currentToRefIndexMap[particleIndex];
 	const Point3 x = positions()->getPoint3(particleIndex);
 	int numNeighbors = 0;
-	for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, refParticleIndex); !neighborIter.atEnd(); neighborIter.next()) {
-		const Vector3& r0 = neighborIter.delta();
-		Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighborIter.current()]) - x;
+	for(CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
+		const Vector3& r0 = neighQuery.delta();
+		Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighQuery.current()]) - x;
 		Vector3 sr = _currentSimCellInv * r;
 		if(!_assumeUnwrappedCoordinates) {
 			for(size_t k = 0; k < 3; k++) {
@@ -372,9 +372,9 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
         size_t refParticleIndex = currentToRefIndexMap[particleIndex];
         const Point3 x = positions()->getPoint3(particleIndex);
         int numNeighbors = 0;
-        for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, refParticleIndex); !neighborIter.atEnd(); neighborIter.next()) {
-            const Vector3& r0 = neighborIter.delta();
-            Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighborIter.current()]) - x;
+        for(CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
+            const Vector3& r0 = neighQuery.delta();
+            Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighQuery.current()]) - x;
             Vector3 sr = _currentSimCellInv * r;
             if(!_assumeUnwrappedCoordinates) {
                 for(size_t k = 0; k < 3; k++) {

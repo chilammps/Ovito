@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,31 +20,25 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include "OnTheFlyNeighborListBuilder.h"
+#include "CutoffNeighborFinder.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
 
 /******************************************************************************
-* Constructor
-******************************************************************************/
-OnTheFlyNeighborListBuilder::OnTheFlyNeighborListBuilder(FloatType cutoffRadius) :
-		_cutoffRadius(cutoffRadius), _cutoffRadiusSquared(cutoffRadius * cutoffRadius)
-{
-}
-
-/******************************************************************************
 * Initialization function.
 ******************************************************************************/
-bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCell& cellData, bool* hasWrappedParticles)
+bool CutoffNeighborFinder::prepare(FloatType cutoffRadius, ParticleProperty* positions, const SimulationCell& cellData, FutureInterfaceBase* progress)
 {
-	OVITO_CHECK_POINTER(posProperty);
+	OVITO_CHECK_POINTER(positions);
 
+	_cutoffRadius = cutoffRadius;
+	_cutoffRadiusSquared = cutoffRadius * cutoffRadius;
 	if(_cutoffRadius <= 0.0)
 		throw Exception("Invalid parameter: Neighbor cutoff radius must be positive.");
 
 	simCell = cellData;
 	if(simCell.volume() <= FLOATTYPE_EPSILON)
-		throw Exception("Simulation cell is degenerate.");
+		throw Exception("Invalid input data: Simulation cell is degenerate.");
 
 	AffineTransformation binCell;
 	binCell.translation() = simCell.matrix().translation();
@@ -128,17 +122,13 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 			break;
 	}
 
-	// Reset flag.
-	if(hasWrappedParticles)
-		*hasWrappedParticles = false;
-
 	// An 3d array of cubic bins.
 	// Each bin is a linked list of particles.
 	bins.resize(binDim[0] * binDim[1] * binDim[2], nullptr);
 
 	// Sort particles into bins.
-	particles.resize(posProperty->size());
-	const Point3* p = posProperty->constDataPoint3();
+	particles.resize(positions->size());
+	const Point3* p = positions->constDataPoint3();
 	for(size_t pindex = 0; pindex < particles.size(); pindex++, ++p) {
 		NeighborListParticle& a = particles[pindex];
 		a.pos = *p;
@@ -160,8 +150,6 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 					a.pbcShift[k] = (int8_t)shift;
 					a.pos += (FloatType)shift * simCell.matrix().column(k);
 					binLocation[k] = SimulationCell::modulo(binLocation[k], binDim[k]);
-					if(hasWrappedParticles)
-						*hasWrappedParticles = true;
 				}
 			}
 			else if(binLocation[k] < 0) {
@@ -179,30 +167,14 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 		bins[binIndex] = &a;
 	}
 
-	return true;
-}
-
-/******************************************************************************
-* Tests whether two particles are closer to each other than the
-* nearest-neighbor cutoff radius.
-******************************************************************************/
-bool OnTheFlyNeighborListBuilder::areNeighbors(size_t particle1, size_t particle2) const
-{
-	OVITO_ASSERT(particle1 < particles.size());
-	OVITO_ASSERT(particle2 < particles.size());
-	OVITO_ASSERT(particle1 != particle2);
-	// Check if particle 2 is in the neighbor list of particle 1.
-	for(iterator neighborIter(*this, particle1); !neighborIter.atEnd(); neighborIter.next()) {
-		if(neighborIter.current() == particle2) return true;
-	}
-	return false;
+	return (!progress || !progress->isCanceled());
 }
 
 /******************************************************************************
 * Iterator constructor
 ******************************************************************************/
-OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilder& builder, size_t particleIndex)
-	: _builder(builder), _centerIndex(particleIndex)
+CutoffNeighborFinder::Query::Query(const CutoffNeighborFinder& finder, size_t particleIndex)
+	: _builder(finder), _centerIndex(particleIndex)
 {
 	OVITO_ASSERT(particleIndex < _builder.particles.size());
 
@@ -225,7 +197,7 @@ OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilde
 /******************************************************************************
 * Iterator function.
 ******************************************************************************/
-void OnTheFlyNeighborListBuilder::iterator::next()
+void CutoffNeighborFinder::Query::next()
 {
 	OVITO_ASSERT(!_atEnd);
 

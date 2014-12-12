@@ -23,7 +23,7 @@
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
-#include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
+#include <plugins/particles/util/CutoffNeighborFinder.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 
 #include "CreateBondsModifier.h"
@@ -198,8 +198,8 @@ void CreateBondsModifier::BondsEngine::perform()
 	}
 
 	// Prepare the neighbor list.
-	OnTheFlyNeighborListBuilder neighborListBuilder(maxCutoff);
-	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || isCanceled())
+	CutoffNeighborFinder neighborFinder;
+	if(!neighborFinder.prepare(maxCutoff, _positions.data(), _simCell, this))
 		return;
 
 	// Generate (half) bonds.
@@ -207,8 +207,8 @@ void CreateBondsModifier::BondsEngine::perform()
 	setProgressRange(particleCount);
 	if(!_particleTypes) {
 		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
-			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
-				_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.unwrappedPbcShift());
+			for(CutoffNeighborFinder::Query neighborQuery(neighborFinder, particleIndex); !neighborQuery.atEnd(); neighborQuery.next()) {
+				_bonds->addBond(particleIndex, neighborQuery.current(), neighborQuery.unwrappedPbcShift());
 			}
 			// Update progress indicator.
 			if((particleIndex % 4096) == 0) {
@@ -220,12 +220,12 @@ void CreateBondsModifier::BondsEngine::perform()
 	}
 	else {
 		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
-			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+			for(CutoffNeighborFinder::Query neighborQuery(neighborFinder, particleIndex); !neighborQuery.atEnd(); neighborQuery.next()) {
 				int type1 = _particleTypes->getInt(particleIndex);
-				int type2 = _particleTypes->getInt(neighborIter.current());
+				int type2 = _particleTypes->getInt(neighborQuery.current());
 				if(type1 >= 0 && type1 < (int)_pairCutoffs.size() && type2 >= 0 && type2 < (int)_pairCutoffs[type1].size()) {
-					if(neighborIter.distanceSquared() <= _pairCutoffs[type1][type2])
-						_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.unwrappedPbcShift());
+					if(neighborQuery.distanceSquared() <= _pairCutoffs[type1][type2])
+						_bonds->addBond(particleIndex, neighborQuery.current(), neighborQuery.unwrappedPbcShift());
 				}
 			}
 			// Update progress indicator.

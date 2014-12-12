@@ -68,8 +68,8 @@ namespace Ovito { namespace Plugins { namespace Particles {
 	namespace Export {}
 	namespace Modifiers {}
 	namespace Util {
-		class TreeNeighborListBuilder;
-		class OnTheFlyNeighborListBuilder;
+		class NearestNeighborFinder;
+		class CutoffNeighborFinder;
 		class ParticlePropertyComboBox;
 	}
 

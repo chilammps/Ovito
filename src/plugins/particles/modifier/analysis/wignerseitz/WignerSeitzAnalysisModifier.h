@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/util/TreeNeighborListBuilder.h>
+#include <plugins/particles/util/NearestNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {

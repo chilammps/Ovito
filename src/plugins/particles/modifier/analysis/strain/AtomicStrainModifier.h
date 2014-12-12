@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
+#include <plugins/particles/util/CutoffNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
 namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
@@ -209,7 +209,7 @@ private:
 	private:
 
 		/// Computes the strain tensor of a single particle.
-		bool computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
+		bool computeStrain(size_t particleIndex, CutoffNeighborFinder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
 
 		FloatType _cutoff;
 		SimulationCell _simCell;

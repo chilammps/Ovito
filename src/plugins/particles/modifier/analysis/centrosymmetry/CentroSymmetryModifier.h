@@ -58,7 +58,7 @@ protected:
 	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Computes the centrosymmetry parameter of a single particle.
-	static FloatType computeCSP(TreeNeighborListBuilder& neighList, size_t particleIndex);
+	static FloatType computeCSP(NearestNeighborFinder& neighList, size_t particleIndex);
 
 private:
 

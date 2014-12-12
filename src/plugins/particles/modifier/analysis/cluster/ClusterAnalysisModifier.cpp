@@ -65,9 +65,9 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 {
 	setProgressText(tr("Performing cluster analysis"));
 
-	// Prepare the neighbor list.
-	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(positions(), cell()) || isCanceled())
+	// Prepare the neighbor finder.
+	CutoffNeighborFinder neighborFinder;
+	if(!neighborFinder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
 	size_t particleCount = positions()->size();
@@ -98,8 +98,8 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 
 			int currentParticle = toProcess.front();
 			toProcess.pop_front();
-			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, currentParticle); !neighborIter.atEnd(); neighborIter.next()) {
-				int neighborIndex = neighborIter.current();
+			for(CutoffNeighborFinder::Query neighQuery(neighborFinder, currentParticle); !neighQuery.atEnd(); neighQuery.next()) {
+				int neighborIndex = neighQuery.current();
 				if(_particleClusters->getInt(neighborIndex) == -1) {
 					_particleClusters->setInt(neighborIndex, cluster);
 					toProcess.push_back(neighborIndex);
