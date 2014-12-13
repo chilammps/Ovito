@@ -171,15 +171,9 @@ ELSEIF(WIN32)
 	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/../DLLs"
 		DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
-	# Install Python interpreter.
-	IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-		# The 64-bit version of Python installs the DLL in the Windows system directory.
-		OVITO_INSTALL_DLL("C:/Windows/Sysnative/${PYTHON_LIBRARY_NAME}.dll")
-	ELSE()
-		# The 32-bit version of Python installs the DLL in the program directory.
-		OVITO_INSTALL_DLL("${PYTHON_LIBRARY_PATH}/../${PYTHON_LIBRARY_NAME}.dll")
-	ENDIF()
-
+	# Install Python interpreter dll.
+	OVITO_INSTALL_DLL("${PYTHON_LIBRARY_PATH}/../${PYTHON_LIBRARY_NAME}.dll")
+	
 	# Install QScintilla DLL.
 	GET_FILENAME_COMPONENT(QSCINTILLA_BASE_NAME "${QScintilla_LIBRARIES}" NAME_WE)
 	GET_FILENAME_COMPONENT(QSCINTILLA_LIB_PATH "${QScintilla_LIBRARIES}" PATH)

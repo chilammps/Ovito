@@ -66,6 +66,7 @@ MACRO(OVITO_STANDARD_PLUGIN target_name)
  
     # Place compiled plugin module into the plugins directory.
     SET_TARGET_PROPERTIES(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${OVITO_PLUGINS_DIRECTORY}")
+    SET_TARGET_PROPERTIES(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OVITO_PLUGINS_DIRECTORY}")
 	
 	# Generate plugin manifest.
 	SET(PLUGIN_MANIFEST "${OVITO_PLUGINS_DIRECTORY}/${target_name}.json")

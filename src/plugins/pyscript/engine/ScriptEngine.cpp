@@ -82,10 +82,10 @@ void ScriptEngine::initializeInterpreter()
 		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the
 		// location of Python standard library, which gets shipped with the static build of OVITO.
 #if PY_MAJOR_VERSION >= 3
-		static std::wstring programName = QCoreApplication::applicationFilePath().toStdWString();
+		static std::wstring programName = QDir::toNativeSeparators(QCoreApplication::applicationFilePath()).toStdWString();
 		Py_SetProgramName(const_cast<wchar_t*>(programName.data()));
 #else
-		static QByteArray programName = QCoreApplication::applicationFilePath().toLocal8Bit();
+		static QByteArray programName = QDir::toNativeSeparators(QCoreApplication::applicationFilePath()).toLocal8Bit();
 		Py_SetProgramName(programName.data());
 #endif
 
@@ -164,6 +164,22 @@ void ScriptEngine::initializeInterpreter()
 
 		// Add directories containing OVITO's Python modules to sys.path.
 		list sys_path = extract<list>(sys_module.attr("path"));
+		
+#if 0
+		qDebug() << "sys.path:";
+		qDebug() <<  extract<QString>(str(sys_path));
+		qDebug() << "Py_GetPrefix():";
+		qDebug() << QString::fromWCharArray(Py_GetPrefix());
+		qDebug() << "Py_GetExecPrefix():";
+		qDebug() << QString::fromWCharArray(Py_GetExecPrefix());
+		qDebug() << "Py_GetPath():";
+		qDebug() << QString::fromWCharArray(Py_GetPath());
+		qDebug() << "Py_GetProgramName():";
+		qDebug() << QString::fromWCharArray(Py_GetProgramName());
+		qDebug() << "Py_GetProgramFullPath():";
+		qDebug() << QString::fromWCharArray(Py_GetProgramFullPath());
+#endif
+		
 		for(const QDir& pluginDir : PluginManager::instance().pluginDirs()) {
 #ifndef Q_OS_WIN
 			sys_path.insert(0, QDir::toNativeSeparators(pluginDir.absolutePath() + "/python"));
