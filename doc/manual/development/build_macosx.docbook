@@ -100,6 +100,7 @@ cmake -DOVITO_BUILD_DOCUMENTATION=ON \
       -DPYTHON_LIBRARY=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/libpython3.4.dylib \
       -DLIBAV_INCLUDE_DIR=$HOME/libavstatic/include \
       -DLIBAV_LIBRARY_DIR=$HOME/libavstatic/lib \
+      -DSPHINX_PROCESSOR=/opt/local/bin/sphinx-build-3.4 \
       -DQSCINTILLA_INCLUDE_DIR=$HOME/QScintilla-gpl-2.8.4/Qt4Qt5 \
       -DQSCINTILLA_LIBRARY=$HOME/QScintilla-gpl-2.8.4/Qt4Qt5/libqscintilla2.dylib \
       ..

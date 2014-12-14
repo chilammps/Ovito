@@ -26,6 +26,7 @@
 #include <core/scene/ObjectNode.h>
 #include <core/scene/objects/DisplayObject.h>
 #include <core/viewport/Viewport.h>
+#include <core/viewport/overlay/ViewportOverlay.h>
 #include "PythonBinding.h"
 
 namespace PyScript {
@@ -68,6 +69,10 @@ BOOST_PYTHON_MODULE(PyScriptContainers)
 	class_<QVector<ModifierApplication*>, boost::noncopyable>("QVectorModifierApplication", no_init)
 		.def(QVector_OO_readonly_indexing_suite<ModifierApplication>())
 	;
+	class_<QVector<ViewportOverlay*>, boost::noncopyable>("QVectorViewportOverlay", no_init)
+		.def(QVector_OO_readonly_indexing_suite<ViewportOverlay>())
+	;
+
 	class_<QVector<int>>("QVectorInt")
 		.def(array_indexing_suite<QVector<int>>())
 	;

@@ -50,7 +50,6 @@ IF(APPLE)
 	# An alternative is the do a configure_file() on a script and use install(SCRIPT  ...).
 	# Note that the image plugins depend on QtSvg and QtXml, and it got those copied
 	# over.
-	#IF(FALSE)
 	INSTALL(CODE "
 		CMAKE_POLICY(SET CMP0011 NEW)
 		CMAKE_POLICY(SET CMP0009 NEW)
@@ -75,5 +74,4 @@ IF(APPLE)
 		INCLUDE(BundleUtilities)
 		FIXUP_BUNDLE(\"${APPS}\" \"\${BUNDLE_LIBS}\" \"${DIRS}\")
 		" COMPONENT Runtime)
-	#ENDIF()
 ENDIF()

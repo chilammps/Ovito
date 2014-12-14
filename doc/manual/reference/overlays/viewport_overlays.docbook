@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viewport_overlays" 
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Viewport overlays</title>
+
+  <para>
+  Viewport overlays render two-dimensional graphics or text on top of an image of the three-dimensional scene.
+  They can be added to a viewport by the user. Viewport overlays are managed on the "Overlays" tab of OVITO's command panel.
+  </para>
+  <para>
+  The following types of viewport overlays exist: 
+  
+  <informaltable>
+        <tgroup cols="2">
+          <colspec colname='name'/>
+          <colspec colname='descr'/>
+          <thead>
+            <row>
+              <entry>Overlay type</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>          
+            <row>
+              <entry>Coordinate tripod</entry>
+              <entry>Renders an axes tripod into the image to indicate the view orientation.</entry>
+            </row>
+            <row>
+              <entry>Color legend</entry>
+              <entry>Renders the color map of a <link linkend="particles.modifiers.color_coding">Color coding</link> modifier into the image as a legend.</entry>
+            </row>
+            <row>
+              <entry><link linkend="viewport_overlays.python_script">Python script</link></entry>
+              <entry>Use a Python script to draw arbitrary graphics on top of the rendered image.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+   </para>
+  
+  <xi:include href="python_script_overlay.docbook"/>
+  
+</section>

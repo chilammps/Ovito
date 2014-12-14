@@ -47,7 +47,7 @@ public:
 
 	/// \brief Returns the script engine that is currently active (i.e. which is executing a script).
 	/// \return The active script engine or NULL if no script is currently being executed.
-	static ScriptEngine* activeEngine() { return _activeEngine.load(); }
+	static ScriptEngine* activeEngine() { return _activeEngine; }
 
 	/// \brief Executes a Python script consisting of one or more statements.
 	/// \param script The script source code.
@@ -84,14 +84,15 @@ private:
 	/// This helper class redirects Python script write calls to the sys.stdout stream to this script engine.
 	struct InterpreterStdOutputRedirector {
 		void write(const QString& str) {
-			if(ScriptEngine* eng = _activeEngine.load()) eng->scriptOutput(str);
+			if(_activeEngine) _activeEngine->scriptOutput(str);
 			else std::cout << str.toStdString();
 		}
 	};
+
 	/// This helper class redirects Python script write calls to the sys.stderr stream to this script engine.
 	struct InterpreterStdErrorRedirector {
 		void write(const QString& str) {
-			if(ScriptEngine* eng = _activeEngine.load()) eng->scriptError(str);
+			if(_activeEngine) _activeEngine->scriptError(str);
 			else std::cerr << str.toStdString();
 		}
 	};
@@ -106,7 +107,7 @@ private:
 	static bool _isInterpreterInitialized;
 
 	/// The script engine that is currently active (i.e. which is executing a script).
-	static QAtomicPointer<ScriptEngine> _activeEngine;
+	static ScriptEngine* _activeEngine;
 
 	Q_OBJECT
 };

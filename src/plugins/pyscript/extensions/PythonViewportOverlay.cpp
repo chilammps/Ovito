@@ -67,15 +67,15 @@ PythonViewportOverlay::PythonViewportOverlay(DataSet* dataset) : ViewportOverlay
 			"\typos = 10 + painter.fontMetrics().ascent()\n"
 			"\ttext = \"Frame {}\".format(ovito.dataset.anim.current_frame)\n"
 			"\tpainter.drawText(xpos, ypos, text)\n"
-			"\t# The following code prints the number of atoms\n"
+			"\t# The following code prints the current number of particles\n"
 			"\t# into the lower left corner of the viewport.\n"
 			"\txpos = 10\n"
 			"\typos = painter.window().height() - 10\n"
 			"\tif ovito.dataset.selected_node:\n"
 			"\t\tpositions = ovito.dataset.selected_node.compute().position\n"
-			"\t\ttext = \"{} atoms\".format(positions.size)\n"
+			"\t\ttext = \"{} particles\".format(positions.size)\n"
 			"\telse:\n"
-			"\t\ttext = \"no atoms\"\n"
+			"\t\ttext = \"no particles\"\n"
 			"\tpainter.drawText(xpos, ypos, text)\n");
 }
 
@@ -137,10 +137,15 @@ void PythonViewportOverlay::render(Viewport* viewport, QPainter& painter, const 
 				"import numpy\n"
 				"import PyQt5.QtGui\n"
 				"render(sip.wrapinstance(__painter_pointer, PyQt5.QtGui.QPainter), "
-				"viewport=__viewport, render_settings=__renderSettings, is_perspective=__projParams.isPerspective, "
-				"fov=__projParams.fieldOfView, view_tm=numpy.asarray(__projParams.viewMatrix), proj_tm=numpy.asarray(__projParams.projectionMatrix))");
+				"   viewport=__viewport, "
+				"   render_settings=__renderSettings, "
+				"   is_perspective=__projParams.isPerspective, "
+				"   fov=__projParams.fieldOfView, "
+				"   view_tm=numpy.asarray(__projParams.viewMatrix), "
+				"   proj_tm=numpy.asarray(__projParams.projectionMatrix)"
+				")");
 	}
-	catch(Exception& ex) {
+	catch(const Exception& ex) {
 		_scriptOutput += ex.message();
 	}
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
@@ -154,7 +159,7 @@ namespace Internal {
 void PythonViewportOverlayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Python script"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Python script"), rolloutParams, "viewport_overlays.python_script.html");
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);

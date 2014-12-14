@@ -16,8 +16,11 @@
        <imagedata fileref="images/display_objects/vectors_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
     
-    This display object is responsible for visualizing vector quantities assigned to particles using arrow glyphs.
-    Displacement vectors, for instance, can be computed with the <link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link> modifier.
+    This display object is responsible for visualizing per-particle vector quantities using arrow glyphs.
+    
+    The <link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link> modifier, for example, 
+    calculates the displacement vector of each particle. The modifier also creates a vector display object to 
+    render the displacement vectors as arrows.
   </para>
 
    <simplesect>

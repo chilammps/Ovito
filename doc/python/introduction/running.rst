@@ -8,7 +8,7 @@ OVITO's Python interpreter
 ----------------------------------
 
 OVITO includes a built-in script interpreter, which can execute programs written in the Python language.
-The current version of OVITO is compatible with the `Python 3.4 <https://docs.python.org/3.4/>` language standard. 
+The current version of OVITO is compatible with the `Python 3.4 <https://docs.python.org/3.4/>`_ language standard. 
 You typically execute a Python script from the terminal using the :program:`ovitos` script launcher that comes with OVITO:
 
 .. code-block:: shell-session

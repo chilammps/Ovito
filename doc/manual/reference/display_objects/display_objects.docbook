@@ -12,9 +12,14 @@
 
   <para>
   
-  Display objects are responsible for generating the visual representation of data that leave OVITO's <link
-  linkend="usage.modification_pipeline">modification pipeline</link>. The following table
-  lists the types of display objects. 
+  Display objects are responsible for generating the visual representation of data that leaves OVITO's <link
+  linkend="usage.modification_pipeline">modification pipeline</link>. They are automatically
+  created by OVITO and are listed in the "Display" section of the <link linkend="usage.modification_pipeline.pipeline_listbox">
+  pipeline editor</link>.
+  
+  </para>
+  <para>
+  The following types of display objects exist: 
   
   <informaltable>
         <tgroup cols="2">
