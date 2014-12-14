@@ -261,12 +261,9 @@ void MainWindow::createMainMenu()
 	QMenu* helpMenu = menuBar->addMenu(tr("&Help"));
 	helpMenu->setObjectName(QStringLiteral("HelpMenu"));
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_SHOW_ONLINE_HELP));
-#ifndef  Q_OS_WIN64
-	// If it is installed, insert link to the scripting reference manual to the help menu.
 	connect(helpMenu->addAction(tr("Scripting Reference")), &QAction::triggered, [this]() {
 		openHelpTopic(QStringLiteral("python/index.html"));
 	});
-#endif
 	helpMenu->addSeparator();
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_OPENGL_INFO));
 #ifndef  Q_OS_MACX
