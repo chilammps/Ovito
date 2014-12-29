@@ -30,7 +30,7 @@
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "AtomicStrainModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AtomicStrainModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(AtomicStrainModifier, Internal::AtomicStrainModifierEditor);
@@ -280,7 +280,7 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 		return;
 
 	// Prepare the neighbor list for the reference configuration.
-	CutoffNeighborFinder neighborFinder;
+	Util::CutoffNeighborFinder neighborFinder;
 	if(!neighborFinder.prepare(_cutoff, refPositions(), refCell(), this))
 		return;
 
@@ -294,7 +294,7 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 /******************************************************************************
 * Computes the strain tensor of a single particle.
 ******************************************************************************/
-bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, CutoffNeighborFinder& neighborFinder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap)
+bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, Util::CutoffNeighborFinder& neighborFinder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap)
 {
 	// We do the following calculations using double precision to
 	// achieve best results. Final results will be converted back to
@@ -307,7 +307,7 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 	size_t refParticleIndex = currentToRefIndexMap[particleIndex];
 	const Point3 x = positions()->getPoint3(particleIndex);
 	int numNeighbors = 0;
-	for(CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
+	for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
 		const Vector3& r0 = neighQuery.delta();
 		Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighQuery.current()]) - x;
 		Vector3 sr = _currentSimCellInv * r;
@@ -372,7 +372,7 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
         size_t refParticleIndex = currentToRefIndexMap[particleIndex];
         const Point3 x = positions()->getPoint3(particleIndex);
         int numNeighbors = 0;
-        for(CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
+        for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
             const Vector3& r0 = neighQuery.delta();
             Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighQuery.current()]) - x;
             Vector3 sr = _currentSimCellInv * r;
@@ -581,4 +581,4 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

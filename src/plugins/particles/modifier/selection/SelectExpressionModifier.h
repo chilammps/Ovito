@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
 
 /**
  * \brief Selects particles based on a user-defined Boolean expression.
@@ -118,6 +118,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_SELECT_EXPRESSION_MODIFIER_H

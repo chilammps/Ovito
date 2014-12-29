@@ -25,7 +25,7 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "FreezePropertyModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, FreezePropertyModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(FreezePropertyModifier, Internal::FreezePropertyModifierEditor);
@@ -203,6 +203,8 @@ void SavedParticleProperty::reset(ParticlePropertyObject* property, ParticleProp
 ******************************************************************************/
 void FreezePropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
+	using namespace Particles::Util;
+
 	QWidget* rollout = createRollout(tr("Freeze property"), rolloutParams, "particles.modifiers.freeze_property.html");
 
     // Create the rollout contents.
@@ -263,4 +265,4 @@ void FreezePropertyModifierEditor::onSourcePropertyChanged()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

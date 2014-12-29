@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ParticlePropertyObject.h
+ * \file
  * \brief Contains the definition of the Particles::ParticlePropertyObject class.
  */
 
@@ -32,7 +32,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief Stores one particle property.
@@ -537,6 +537,8 @@ private:
  * A ParticlePropertyReference consists of the ParticleProperty::Type identifier, the name of the property
  * (only used for user-defined properties), and an optional vector component (can be -1 to indicate that the entire
  * vector property is referenced).
+ *
+ * \sa ParticleProperty, ParticlePropertyObject
  */
 class ParticlePropertyReference
 {
@@ -625,6 +627,7 @@ private:
 };
 
 /// Writes a ParticlePropertyReference to an output stream.
+/// \relates ParticlePropertyReference
 inline SaveStream& operator<<(SaveStream& stream, const ParticlePropertyReference& r)
 {
 	stream << r.type();
@@ -634,6 +637,7 @@ inline SaveStream& operator<<(SaveStream& stream, const ParticlePropertyReferenc
 }
 
 /// Reads a ParticlePropertyReference from an input stream.
+/// \relates ParticlePropertyReference
 inline LoadStream& operator>>(LoadStream& stream, ParticlePropertyReference& r)
 {
 	ParticleProperty::Type type;
@@ -649,8 +653,8 @@ inline LoadStream& operator>>(LoadStream& stream, ParticlePropertyReference& r)
 	return stream;
 }
 
-}}}}	// End of namespace
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Objects::ParticlePropertyReference);
+Q_DECLARE_METATYPE(Ovito::Particles::ParticlePropertyReference);
 
 #endif // __OVITO_PARTICLE_PROPERTY_OBJECT_H

@@ -30,57 +30,63 @@
 #  define OVITO_PARTICLES_EXPORT Q_DECL_IMPORT
 #endif
 
-/*! \namespace Ovito::Plugins::Particles
+/*! \namespace Ovito::Particles
     \brief This root namespace of the particles plugin.
 */
-/*! \namespace Ovito::Plugins::Particles::Data
-    \brief This namespace contains container classes for particle related data.
+/*! \namespace Ovito::Particles::Import
+    \brief This namespace contains basic classes for importing particle data.
 */
-/*! \namespace Ovito::Plugins::Particles::Objects
-    \brief This namespace contains data object classes.
+/*! \namespace Ovito::Particles::Import::Formats
+    \brief This namespace contains particle data importers for various file formats.
 */
-/*! \namespace Ovito::Plugins::Particles::Objects::Display
-    \brief This namespace contains display objects for particle-related data.
+/*! \namespace Ovito::Particles::Export
+    \brief This namespace contains basic classes for exporting particle data.
 */
-/*! \namespace Ovito::Plugins::Particles::Import
-    \brief This namespace contains file importers for particle data.
+/*! \namespace Ovito::Particles::Export::Formats
+    \brief This namespace contains particle data exporters for various file formats.
 */
-/*! \namespace Ovito::Plugins::Particles::Export
-    \brief This namespace contains file exporters for particle data.
+/*! \namespace Ovito::Particles::Modifiers
+    \brief This namespace contains modifiers for particle data.
 */
-/*! \namespace Ovito::Plugins::Particles::Modifiers
-    \brief This namespace contains modifiers for particle data
+/*! \namespace Ovito::Particles::Modifiers::Analysis
+    \brief This namespace contains analysis modifiers for particle systems.
 */
-/*! \namespace Ovito::Plugins::Particles::Util
-    \brief This namespace contains various particle-related utility classes.
+/*! \namespace Ovito::Particles::Modifiers::Coloring
+    \brief This namespace contains color-related modifiers for particle systems.
+*/
+/*! \namespace Ovito::Particles::Modifiers::Modify
+    \brief This namespace contains modifiers for particle systems.
+*/
+/*! \namespace Ovito::Particles::Modifiers::Properties
+    \brief This namespace contains modifiers that modify particle properties.
+*/
+/*! \namespace Ovito::Particles::Modifiers::Selection
+    \brief This namespace contains modifiers that select particles.
+*/
+/*! \namespace Ovito::Particles::Util
+    \brief This namespace contains particle-related utility classes.
 */
 
-namespace Ovito { namespace Plugins { namespace Particles {
-
-	namespace Objects {
+namespace Ovito {
+	namespace Particles {
 		class ParticlePropertyObject;
-		namespace Display {}
-	}
-	namespace Data {
 		class ParticleProperty;
-	}
-	namespace Import {}
-	namespace Export {}
-	namespace Modifiers {}
-	namespace Util {
-		class NearestNeighborFinder;
-		class CutoffNeighborFinder;
-		class ParticlePropertyComboBox;
-	}
 
-	using namespace Objects;
-	using namespace Objects::Display;
-	using namespace Data;
-	using namespace Import;
-	using namespace Export;
-	using namespace Modifiers;
-	using namespace Util;
+		namespace Modifiers {
+		}
 
-}}}
+		namespace Import {
+		}
+
+		namespace Export {
+		}
+
+		namespace Util {
+			class NearestNeighborFinder;
+			class CutoffNeighborFinder;
+			class ParticlePropertyComboBox;
+		}
+	}
+}
 
 #endif

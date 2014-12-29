@@ -28,7 +28,7 @@
 
 #include "CreateBondsModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CreateBondsModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, Internal::CreateBondsModifierEditor);
@@ -186,6 +186,8 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CreateBondsModifier
 ******************************************************************************/
 void CreateBondsModifier::BondsEngine::perform()
 {
+	using namespace Particles::Util;
+
 	setProgressText(tr("Generating bonds"));
 
 	// Determine maximum cutoff.
@@ -401,4 +403,4 @@ bool CreateBondsModifierEditor::PairCutoffTableModel::setData(const QModelIndex&
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

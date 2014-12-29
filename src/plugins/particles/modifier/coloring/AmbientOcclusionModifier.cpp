@@ -28,7 +28,7 @@
 #include "AmbientOcclusionModifier.h"
 #include "AmbientOcclusionRenderer.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, Internal::AmbientOcclusionModifierEditor);
@@ -50,7 +50,7 @@ enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
 * Constructs the modifier object.
 ******************************************************************************/
 AmbientOcclusionModifier::AmbientOcclusionModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_intensity(0.7f), _samplingCount(20), _bufferResolution(3)
+	_intensity(0.7f), _samplingCount(40), _bufferResolution(3)
 {
 	INIT_PROPERTY_FIELD(AmbientOcclusionModifier::_intensity);
 	INIT_PROPERTY_FIELD(AmbientOcclusionModifier::_samplingCount);
@@ -300,4 +300,4 @@ void AmbientOcclusionModifierEditor::createUI(const RolloutInsertionParameters& 
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

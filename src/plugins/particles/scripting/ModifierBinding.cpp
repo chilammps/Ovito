@@ -58,18 +58,19 @@
 #include <plugins/particles/modifier/analysis/voronoi/VoronoiAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/diamond/IdentifyDiamondModifier.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
+namespace Ovito { namespace Particles { namespace Internal {
 
 using namespace boost::python;
 using namespace PyScript;
-using namespace Particles::Modifiers::Modify;
-using namespace Particles::Modifiers::Selection;
-using namespace Particles::Modifiers::Coloring;
-using namespace Particles::Modifiers::Analysis;
-using namespace Particles::Modifiers::Properties;
 
 BOOST_PYTHON_MODULE(ParticlesModify)
 {
+	using namespace Modifiers;
+	using namespace Modifiers::Modify;
+	using namespace Modifiers::Selection;
+	using namespace Modifiers::Coloring;
+	using namespace Modifiers::Analysis;
+	using namespace Modifiers::Properties;
 
 	ovito_abstract_class<ParticleModifier, Modifier>()
 	;
@@ -164,7 +165,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"The number of light exposure samples to compute. A large number takes longer to compute but leads to a more "
 				"even light distribution."
 				"\n\n"
-				":Default: 20\n")
+				":Default: 40\n")
 		.add_property("buffer_resolution", &AmbientOcclusionModifier::bufferResolution, &AmbientOcclusionModifier::setBufferResolution,
 				"A positive integer controlling the resolution of the internal render buffer, which is used to compute how much "
 				"light each particle receives. When the number of particles is large, a larger buffer resolution should be used."
@@ -901,4 +902,4 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesModify);
 
-}}}}	// End of namespace
+}}}	// End of namespace

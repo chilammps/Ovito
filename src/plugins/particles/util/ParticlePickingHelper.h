@@ -30,7 +30,7 @@
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /**
  * \brief Utility class that supports the picking of particles in the viewports.
@@ -93,6 +93,6 @@ protected:
 	std::shared_ptr<ParticlePrimitive> _particleBuffer;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_PICKING_HELPER_H

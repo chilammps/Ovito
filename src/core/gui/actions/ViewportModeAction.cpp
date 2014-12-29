@@ -24,7 +24,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/viewport/input/ViewportInputManager.h>
 
-namespace Ovito { namespace Gui { namespace View {
+namespace Ovito { namespace Gui { namespace ViewportInput {
 
 /******************************************************************************
 * Initializes the action object.

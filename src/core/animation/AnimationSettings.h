@@ -53,6 +53,8 @@ namespace Ovito { namespace Anim {
  * The automatic key-generation mode can be activated with setAutoKeyMode(). Once activated,
  * changes to animatable object parameters will automatically lead to the creation of animation keys.
  * The generation of animation keys can be temporarily suspended via suspendAnim() and resumeAnim().
+ *
+ * \sa AnimationSuspender
  */
 class OVITO_CORE_EXPORT AnimationSettings : public RefTarget
 {
@@ -351,6 +353,8 @@ private:
  *
  * The AnimationSuspender() constructor calls AnimationSettings::suspendAnim() and
  * the ~AnimationSuspender() destructor calls AnimationSettings::resumeAnim().
+ *
+ * \sa AnimationSettings
  */
 class AnimationSuspender
 {

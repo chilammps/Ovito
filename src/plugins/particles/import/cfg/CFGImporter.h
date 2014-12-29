@@ -26,7 +26,7 @@
 #include <plugins/particles/import/ParticleImporter.h>
 #include <plugins/particles/import/InputColumnMapping.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace AtomEye {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 /**
  * \brief File parser for AtomEye CFG files.
@@ -57,7 +57,7 @@ public:
 		return std::make_shared<CFGImportTask>(dataset()->container(), frame, isNewlySelectedFile());
 	}
 
-protected:
+private:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
 	class CFGImportTask : public ParticleFrameLoader
@@ -83,6 +83,6 @@ protected:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_CFG_FILE_IMPORTER_H

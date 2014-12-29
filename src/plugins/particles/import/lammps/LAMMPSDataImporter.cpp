@@ -28,7 +28,7 @@
 #include <core/gui/app/Application.h>
 #include "LAMMPSDataImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace Lammps {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSDataImporter, ParticleImporter);
 DEFINE_PROPERTY_FIELD(LAMMPSDataImporter, _atomStyle, "AtomStyle");
@@ -414,4 +414,4 @@ bool LAMMPSDataImporter::LAMMPSDataImportTask::detectAtomStyle(const char* first
 	return false;
 }
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

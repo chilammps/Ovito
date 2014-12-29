@@ -32,7 +32,7 @@
 
 #include "SimulationCellObject.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A display object for SimulationCellObject.
@@ -161,6 +161,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_SIMULATION_CELL_DISPLAY_H

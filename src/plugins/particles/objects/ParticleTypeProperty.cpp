@@ -23,7 +23,7 @@
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include "ParticleTypeProperty.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, ParticleTypePropertyEditor, PropertiesEditor);
@@ -124,4 +124,4 @@ void ParticleTypePropertyEditor::createUI(const RolloutInsertionParameters& roll
 
 }	// End of namespace
 
-}}}}	// End of namespace
+}}	// End of namespace

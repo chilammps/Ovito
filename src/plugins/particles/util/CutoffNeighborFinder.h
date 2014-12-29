@@ -27,7 +27,7 @@
 #include <plugins/particles/data/SimulationCell.h>
 #include <core/utilities/concurrent/FutureInterface.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /**
  * \brief This utility class finds all neighbor particles within a cutoff radius of a central particle.
@@ -172,6 +172,6 @@ private:
 	std::vector<Vector3I> stencil;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_CUTOFF_NEIGHBOR_FINDER_H

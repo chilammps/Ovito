@@ -29,7 +29,7 @@
 #include <plugins/particles/objects/ParticleDisplay.h>
 #include "ParticlePickingHelper.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /******************************************************************************
 * Finds the particle under the mouse cursor.
@@ -256,4 +256,4 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	glDepthFunc(oldDepthFunc);
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

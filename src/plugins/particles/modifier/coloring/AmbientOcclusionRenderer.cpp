@@ -24,7 +24,7 @@
 #include <core/viewport/Viewport.h>
 #include "AmbientOcclusionRenderer.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring { namespace Internal {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionRenderer, ViewportSceneRenderer);
 
@@ -136,4 +136,4 @@ void AmbientOcclusionRenderer::endRender()
 	ViewportSceneRenderer::endRender();
 }
 
-}}}}}}	// End of namespace
+}}}}}	// End of namespace

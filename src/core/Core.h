@@ -138,14 +138,11 @@
 /*! \namespace Ovito::Gui::Params
     \brief This namespace contains GUI classes for parameter editing.
 */
-/*! \namespace Ovito::Gui::View
+/*! \namespace Ovito::Gui::ViewportInput
     \brief This namespace contains classes for interaction with the viewports.
 */
 /*! \namespace Ovito::Gui::Dialogs
     \brief This namespace contains common dialog box classes.
-*/
-/*! \namespace Ovito::Plugins
-    \brief This namespace contains the plugins of OVITO.
 */
 
 /******************************************************************************

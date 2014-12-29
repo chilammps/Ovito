@@ -26,7 +26,7 @@
 #include <core/scene/objects/DataObject.h>
 #include <plugins/particles/data/BondsStorage.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief Stores the bonds between particles.
@@ -91,6 +91,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_BONDS_OBJECT_H

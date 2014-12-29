@@ -33,7 +33,7 @@
 #include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/objects/SurfaceMesh.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
+namespace Ovito { namespace Particles { namespace Internal {
 
 using namespace boost::python;
 using namespace PyScript;
@@ -339,10 +339,10 @@ BOOST_PYTHON_MODULE(Particles)
 				"The display name of this particle type.")
 	;
 
-	class_<ParticleTypeList, boost::noncopyable>("ParticleTypeList", no_init)
+	class_<QVector<ParticleType*>, boost::noncopyable>("QVector<ParticleType*>", no_init)
 		.def(QVector_OO_readonly_indexing_suite<ParticleType>())
 	;
-	python_to_container_conversion<ParticleTypeList>();
+	python_to_container_conversion<QVector<ParticleType*>>();
 
 	ovito_class<ParticleDisplay, DisplayObject>(
 			":Base: :py:class:`ovito.vis.Display`\n\n"
@@ -484,4 +484,4 @@ BOOST_PYTHON_MODULE(Particles)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);
 
-}}}}	// End of namespace
+}}}	// End of namespace

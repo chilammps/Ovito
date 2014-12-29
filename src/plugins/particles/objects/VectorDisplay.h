@@ -29,7 +29,7 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include "ParticlePropertyObject.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A scene display object for per-particle vectors.
@@ -189,6 +189,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_VECTOR_DISPLAY_H

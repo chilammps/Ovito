@@ -27,7 +27,7 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "SelectParticleTypeModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, Internal::SelectParticleTypeModifierEditor);
@@ -129,7 +129,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
-	propertyListBox = new ParticlePropertyComboBox();
+	propertyListBox = new Util::ParticlePropertyComboBox();
 	layout->addWidget(new QLabel(tr("Property:"), rollout));
 	layout->addWidget(propertyListBox);
 
@@ -264,4 +264,4 @@ bool SelectParticleTypeModifierEditor::referenceEvent(RefTarget* source, Referen
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

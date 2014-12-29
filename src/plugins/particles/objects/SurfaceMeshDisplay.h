@@ -32,7 +32,7 @@
 #include <core/animation/controller/Controller.h>
 #include <plugins/particles/data/SimulationCell.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A display object for the SurfaceMesh data object class.
@@ -195,6 +195,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_SURFACE_MESH_DISPLAY_H

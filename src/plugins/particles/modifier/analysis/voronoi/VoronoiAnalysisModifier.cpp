@@ -31,7 +31,7 @@
 
 #include <voro++.hh>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, VoronoiAnalysisModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(VoronoiAnalysisModifier, Internal::VoronoiAnalysisModifierEditor);
@@ -132,8 +132,8 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 		r = r*r;
 	}
 
-	CutoffNeighborFinder cutoffNeighborFinder;
-	NearestNeighborFinder nearestNeighborFinder;
+	Util::CutoffNeighborFinder cutoffNeighborFinder;
+	Util::NearestNeighborFinder nearestNeighborFinder;
 
 	double boxDiameter;
 	if(_cutoff > 0) {
@@ -200,7 +200,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 			return;
 
 		if(_cutoff > 0) {
-			for(CutoffNeighborFinder::Query neighQuery(cutoffNeighborFinder, index); !neighQuery.atEnd(); neighQuery.next()) {
+			for(Util::CutoffNeighborFinder::Query neighQuery(cutoffNeighborFinder, index); !neighQuery.atEnd(); neighQuery.next()) {
 				// Skip unselected particles (if requested).
 				if(_selection && _selection->getInt(neighQuery.current()) == 0)
 					continue;
@@ -217,7 +217,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 		else {
 			// This function will be called for every neighbor particle.
 			int nvisits = 0;
-			auto visitFunc = [this, &v, &nvisits, index](const NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
+			auto visitFunc = [this, &v, &nvisits, index](const Util::NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
 				// Skip unselected particles (if requested).
 				if(!_selection || _selection->getInt(n.index)) {
 					FloatType rs = n.distanceSq;
@@ -437,4 +437,4 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

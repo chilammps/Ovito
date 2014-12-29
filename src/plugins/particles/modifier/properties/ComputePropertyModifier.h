@@ -28,7 +28,7 @@
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
 
 /**
  * \brief Computes the values of a particle property from a user-defined math expression.
@@ -203,6 +203,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_COMPUTE_PROPERTY_MODIFIER_H

@@ -25,7 +25,7 @@
 #include "XYZExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace XYZ {
+namespace Ovito { namespace Particles { namespace Export { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZExporter, ParticleExporter);
 
@@ -213,4 +213,4 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	return true;
 }
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

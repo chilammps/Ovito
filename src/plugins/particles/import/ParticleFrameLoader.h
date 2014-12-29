@@ -29,7 +29,7 @@
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/data/SimulationCell.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { namespace Import {
 
 /**
  * \brief Background loading task and data container used by a ParticleImporter.
@@ -184,6 +184,6 @@ private:
 	bool _isNewFile;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_FRAME_LOADER_H

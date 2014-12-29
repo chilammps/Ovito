@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 /**
  * \brief This modifier deletes the selected particles.
@@ -81,6 +81,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_DELETE_PARTICLES_MODIFIER_H

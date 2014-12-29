@@ -25,11 +25,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include "AssignColorModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
-
-namespace Internal {
-	IMPLEMENT_OVITO_OBJECT(Particles, AssignColorModifierEditor, ParticleModifierEditor);
-}
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AssignColorModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(AssignColorModifier, Internal::AssignColorModifierEditor);
@@ -37,6 +33,10 @@ DEFINE_FLAGS_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", Controlle
 DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection");
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color");
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, AssignColorModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -138,4 +138,4 @@ void AssignColorModifierEditor::createUI(const RolloutInsertionParameters& rollo
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

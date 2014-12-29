@@ -32,7 +32,7 @@
 namespace Ovito { namespace ObjectSystem {
 
 /**
- * RefMaker derived classes use this implement their properties and reference fields.
+ * \brief RefMaker derived classes use this implement properties and reference fields.
  */
 class OVITO_CORE_EXPORT PropertyFieldBase
 {
@@ -78,7 +78,7 @@ private:
 };
 
 /**
- * Stores a non-animatable property of a RefTarget derived class.
+ * \brief Stores a non-animatable property of a RefTarget derived class.
  */
 template<typename property_data_type, typename qvariant_data_type = property_data_type, int additionalChangeMessage = 0>
 class PropertyField : public PropertyFieldBase
@@ -270,6 +270,8 @@ public:
 ///
 /// Returns the given object cast to type \c T if the object is of type \c T
 /// (or of a subclass); otherwise returns \c NULL.
+///
+/// \relates ReferenceField
 template<class T, class U>
 inline T* dynamic_object_cast(const ReferenceField<U>& field) {
 	return dynamic_object_cast<T,U>(field.value());

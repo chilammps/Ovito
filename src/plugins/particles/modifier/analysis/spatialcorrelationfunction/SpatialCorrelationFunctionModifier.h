@@ -37,7 +37,7 @@
 #endif
 #include <qcustomplot.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief This modifier computes the Fourier transform of a (spatial) cross correlation function
@@ -375,9 +375,9 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Ovito::Particles::Modifiers::Analysis::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SPATIAL_CORRELATION_FUNCTION_MODIFIER_H

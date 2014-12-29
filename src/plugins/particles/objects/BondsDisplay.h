@@ -31,7 +31,7 @@
 #include "ParticlePropertyObject.h"
 #include "SimulationCellObject.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A scene display object for bonds.
@@ -169,6 +169,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_BONDS_DISPLAY_H

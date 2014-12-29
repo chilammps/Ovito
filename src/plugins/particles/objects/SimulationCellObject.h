@@ -28,7 +28,7 @@
 #include <core/gui/properties/FloatParameterUI.h>
 #include <plugins/particles/data/SimulationCell.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief Stores the geometry and boundary conditions of a simulation box.
@@ -288,6 +288,6 @@ private:
 
 }	// End of namespace
 
-}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_SIMULATION_CELL_OBJECT_H

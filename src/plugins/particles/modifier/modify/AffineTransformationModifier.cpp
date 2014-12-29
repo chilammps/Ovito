@@ -30,7 +30,7 @@
 
 #include <QtConcurrent>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AffineTransformationModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, Internal::AffineTransformationModifierEditor);
@@ -373,4 +373,4 @@ void AffineTransformationModifierEditor::onSpinnerDragAbort()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

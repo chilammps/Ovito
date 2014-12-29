@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 /**
  * \brief This modifier wraps around the atomic positions in directions with periodic boundary
@@ -56,6 +56,6 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Modification");
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_WRAP_PERIODIC_IMAGES_MODIFIER_H

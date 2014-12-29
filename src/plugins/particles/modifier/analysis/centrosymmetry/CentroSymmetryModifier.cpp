@@ -25,7 +25,7 @@
 #include <plugins/particles/util/NearestNeighborFinder.h>
 #include "CentroSymmetryModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /// The maximum number of neighbors that can be taken into account to compute the CSP.
 enum { MAX_CSP_NEIGHBORS = 32 };
@@ -75,7 +75,7 @@ void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 	setProgressText(tr("Computing centrosymmetry parameters"));
 
 	// Prepare the neighbor list.
-	NearestNeighborFinder neighFinder(_nneighbors);
+	Util::NearestNeighborFinder neighFinder(_nneighbors);
 	if(!neighFinder.prepare(positions(), cell(), this)) {
 		return;
 	}
@@ -92,10 +92,10 @@ void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 /******************************************************************************
 * Computes the centrosymmetry parameter of a single particle.
 ******************************************************************************/
-FloatType CentroSymmetryModifier::computeCSP(NearestNeighborFinder& neighFinder, size_t particleIndex)
+FloatType CentroSymmetryModifier::computeCSP(Util::NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
 	// Find k nearest neighbor of current atom.
-	NearestNeighborFinder::Query<MAX_CSP_NEIGHBORS> neighQuery(neighFinder);
+	Util::NearestNeighborFinder::Query<MAX_CSP_NEIGHBORS> neighQuery(neighFinder);
 	neighQuery.findNeighbors(neighFinder.particlePos(particleIndex));
 
 	int numNN = neighQuery.results().size();
@@ -191,4 +191,4 @@ void CentroSymmetryModifierEditor::createUI(const RolloutInsertionParameters& ro
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

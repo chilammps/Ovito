@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
 
 /**
  * \brief Saves the current state of a particle property and preserves it over time.
@@ -154,6 +154,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_FREEZE_PROPERTY_MODIFIER_H

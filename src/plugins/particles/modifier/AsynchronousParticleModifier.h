@@ -26,7 +26,7 @@
 #include <core/utilities/concurrent/Task.h>
 #include <plugins/particles/modifier/ParticleModifier.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
+namespace Ovito { namespace Particles { namespace Modifiers {
 
 /**
  * \brief Base class for modifiers that compute their results in a background thread.
@@ -122,6 +122,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_ASYNC_PARTICLE_MODIFIER_H

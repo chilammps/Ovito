@@ -24,7 +24,7 @@
 
 #include <QtConcurrent>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, WrapPeriodicImagesModifier, ParticleModifier);
 
@@ -72,4 +72,4 @@ PipelineStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 	return PipelineStatus::Success;
 }
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

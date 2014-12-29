@@ -25,7 +25,7 @@
 #include "ParticleDisplay.h"
 #include "VectorDisplay.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, DataObject);
 
@@ -218,4 +218,4 @@ ParticlePropertyObject* ParticlePropertyReference::findInState(const PipelineFlo
 	return nullptr;
 }
 
-}}}}	// End of namespace
+}}	// End of namespace

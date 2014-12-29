@@ -35,7 +35,7 @@
 #endif
 #include <qcustomplot.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief This modifier computes a spatial average (over splices) for a particle property.
@@ -268,11 +268,11 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType);
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType);
+Q_DECLARE_METATYPE(Ovito::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Ovito::Particles::Modifiers::Analysis::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Particles::Modifiers::Analysis::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_BIN_AND_REDUCE_MODIFIER_H

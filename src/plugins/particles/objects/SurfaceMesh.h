@@ -27,7 +27,7 @@
 #include <core/utilities/mesh/HalfEdgeMesh.h>
 #include <plugins/particles/data/SimulationCell.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A closed triangle mesh representing a surface.
@@ -98,6 +98,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_SURFACE_MESH_H

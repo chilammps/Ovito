@@ -97,8 +97,11 @@ private:
 }; 
 
 /// Writes an ImageInfo to an output stream.
+/// \relates ImageInfo
 SaveStream& operator<<(SaveStream& stream, const ImageInfo& i);
+
 /// Reads an ImageInfo from an input stream.
+/// \relates ImageInfo
 LoadStream& operator>>(LoadStream& stream, ImageInfo& i);
 
 /******************************************************************************

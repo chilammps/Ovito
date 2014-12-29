@@ -26,7 +26,7 @@
 #include <core/utilities/concurrent/TaskManager.h>
 #include "AsynchronousParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
+namespace Ovito { namespace Particles { namespace Modifiers {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier);
 
@@ -222,4 +222,4 @@ void AsynchronousParticleModifier::deleteReferenceObject()
 }
 
 
-}}}}	// End of namespace
+}}}	// End of namespace

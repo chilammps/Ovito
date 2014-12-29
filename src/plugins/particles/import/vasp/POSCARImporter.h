@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace Vasp {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 /**
  * \brief File parser for POSCAR files as used by the VASP DFT code.
@@ -78,6 +78,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_POSCAR_IMPORTER_H

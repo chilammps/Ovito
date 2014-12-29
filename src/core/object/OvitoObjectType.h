@@ -197,7 +197,7 @@ protected:
 
 /// This macro is used to assign a PropertiesEditor-derived class to a RefTarget-derived class.
 #define SET_OVITO_OBJECT_EDITOR(RefTargetClass, PropertiesEditorClass)								\
-	static Ovito::ObjectSystem::OvitoObjectType::EditorClassSetter __editorSetter##RefTargetClass(const_cast<Ovito::ObjectSystem::Internal::NativeOvitoObjectType&>(RefTargetClass::OOType), &PropertiesEditorClass::OOType);
+	static Ovito::OvitoObjectType::EditorClassSetter __editorSetter##RefTargetClass(const_cast<Ovito::NativeOvitoObjectType&>(RefTargetClass::OOType), &PropertiesEditorClass::OOType);
 
 }}	// End of namespace
 

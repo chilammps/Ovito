@@ -27,7 +27,7 @@
 #include <plugins/particles/util/CutoffNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief This modifier determines decomposes the particle set into clusters.
@@ -147,6 +147,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_CLUSTER_ANALYSIS_MODIFIER_H

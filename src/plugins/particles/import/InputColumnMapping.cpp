@@ -26,7 +26,7 @@
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { namespace Import {
 
 /******************************************************************************
  * Saves the mapping to the given stream.
@@ -385,4 +385,4 @@ void InputColumnReader::readParticle(size_t particleIndex, const double* values,
 	}
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

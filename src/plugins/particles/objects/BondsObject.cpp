@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "BondsObject.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsObject, DataObject);
 
@@ -119,4 +119,4 @@ void BondsObject::particlesDeleted(const boost::dynamic_bitset<>& deletedParticl
 	changed();
 }
 
-}}}}	// End of namespace
+}}	// End of namespace

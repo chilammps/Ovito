@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief Memory storage for bonds between particles.
@@ -82,6 +82,6 @@ protected:
 	std::vector<Bond> _bonds;
 };
 
-}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_BONDS_STORAGE_H

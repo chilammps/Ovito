@@ -37,20 +37,16 @@
 #include <plugins/particles/import/lammps/LAMMPSBinaryDumpImporter.h>
 #include <plugins/particles/import/lammps/LAMMPSDataImporter.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
+namespace Ovito { namespace Particles { namespace Internal {
 
 using namespace boost::python;
 using namespace PyScript;
-using namespace Particles::Import::Lammps;
-using namespace Particles::Import::Vasp;
-using namespace Particles::Import::AtomEye;
-using namespace Particles::Import::IMD;
-using namespace Particles::Import::Parcas;
-using namespace Particles::Import::PDB;
-using namespace Particles::Import::XYZ;
 
 BOOST_PYTHON_MODULE(ParticlesImporter)
 {
+	using namespace Import;
+	using namespace Import::Formats;
+
 	docstring_options docoptions(true, false);
 
 	class_<InputColumnMapping>("InputColumnMapping", init<>())
@@ -131,4 +127,4 @@ BOOST_PYTHON_MODULE(ParticlesImporter)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesImporter);
 
-}}}}	// End of namespace
+}}}	// End of namespace

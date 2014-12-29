@@ -32,7 +32,7 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "BinAndReduceModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BinAndReduceModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, Internal::BinAndReduceModifierEditor);
@@ -313,6 +313,8 @@ namespace Internal {
 ******************************************************************************/
 void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
+	using namespace Particles::Util;
+
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Bin and reduce"), rolloutParams, "particles.modifiers.bin_and_reduce.html");
 
@@ -612,4 +614,4 @@ void BinAndReduceModifierEditor::onSaveData()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

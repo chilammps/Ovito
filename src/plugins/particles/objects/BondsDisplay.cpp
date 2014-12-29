@@ -32,7 +32,7 @@
 #include "SimulationCellObject.h"
 #include "ParticleTypeProperty.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, BondsDisplayEditor, PropertiesEditor);
@@ -234,4 +234,4 @@ void BondsDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParam
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace

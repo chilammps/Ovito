@@ -36,11 +36,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include "ColorLegendOverlay.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
-
-namespace Internal {
-	IMPLEMENT_OVITO_OBJECT(Particles, ColorLegendOverlayEditor, PropertiesEditor);
-}
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorLegendOverlay, ViewportOverlay);
 SET_OVITO_OBJECT_EDITOR(ColorLegendOverlay, Internal::ColorLegendOverlayEditor);
@@ -72,6 +68,10 @@ SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _label1, "Label 1");
 SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _label2, "Label 2");
 SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetX, PercentParameterUnit);
 SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetY, PercentParameterUnit);
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, ColorLegendOverlayEditor, PropertiesEditor);
+}
 
 /******************************************************************************
 * Constructor.
@@ -387,4 +387,4 @@ void ColorLegendOverlayEditor::createUI(const RolloutInsertionParameters& rollou
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

@@ -27,7 +27,7 @@
 #include <plugins/particles/util/NearestNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
@@ -216,6 +216,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_WIGNER_SEITZ_ANALYSIS_MODIFIER_H

@@ -24,7 +24,7 @@
 #include "ParticleExporterSettingsDialog.h"
 #include "OutputColumnMapping.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { namespace Export {
 
 /******************************************************************************
 * Constructor.
@@ -269,4 +269,4 @@ void ParticleExporterSettingsDialog::onOk()
 	}
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

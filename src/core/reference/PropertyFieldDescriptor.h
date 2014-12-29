@@ -30,7 +30,7 @@ namespace Ovito { namespace ObjectSystem {
 class SingleReferenceFieldBase;		// defined in PropertyField.h
 class VectorReferenceFieldBase;		// defined in PropertyField.h
 
-/// Bit-flags that control the behavior of a property field.
+/// Bit-flags controlling the behavior of a property field.
 enum PropertyFieldFlag
 {
 	/// Selects the default behavior.
@@ -59,10 +59,9 @@ enum PropertyFieldFlag
 Q_DECLARE_FLAGS(PropertyFieldFlags, PropertyFieldFlag);
 Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags);
 
-/******************************************************************************
-* This class describes one member field of a RefMaker that stores
-* a property of the object.
-******************************************************************************/
+/**
+ * \brief This class describes one member field of a RefMaker that stores a property of the object.
+ */
 class OVITO_CORE_EXPORT PropertyFieldDescriptor
 {
 public:

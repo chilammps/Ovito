@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains forward declarations of OVITO's classes.
+ * \brief Contains forward declarations of OVITO's classes and namespaces.
  */
 
 #ifndef __OVITO_FORWARD_DECL_H
@@ -29,40 +29,38 @@
 
 namespace Ovito {
 
-	namespace Util {
-		namespace IO {
+	inline namespace Util {
+		inline namespace IO {
 			class ObjectSaveStream;
 			class ObjectLoadStream;
-			namespace Internal {
+			inline namespace Internal {
 				class VideoEncoder;
 				class SftpDownloadJob;
 			}
 		}
-		namespace Concurrency {
+		inline namespace Concurrency {
 		}
-		namespace Mesh {
+		inline namespace Mesh {
 			class TriMesh;
 			class HalfEdgeMesh;
 		}
-		namespace Math {
-			using namespace Ovito::Util::IO;
+		inline namespace Math {
 		}
 	}
-	namespace Anim {
+	inline namespace Anim {
 		class AnimationSettings;
 		class LookAtController;
 	}
-	namespace PluginSystem {
+	inline namespace PluginSystem {
 		class Plugin;
 		class PluginManager;
 		class AutoStartObject;
 		class UtilityApplet;
-		namespace Internal {
+		inline namespace Internal {
 			class NativePlugin;
 		}
-		using namespace Internal;
 	}
-	namespace ObjectSystem {
+	inline namespace ObjectSystem {
 		class OvitoObject;
 		class OvitoObjectType;
 		class CloneHelper;
@@ -71,14 +69,14 @@ namespace Ovito {
 		class PropertyFieldDescriptor;
 		class DataSet;
 		class DataSetContainer;
-		namespace Units {
+		inline namespace Units {
 			class ParameterUnit;
 		}
-		namespace Undo {
+		inline namespace Undo {
 			class UndoStack;
 			class UndoableOperation;
 		}
-		namespace Scene {
+		inline namespace Scene {
 			class SceneNode;
 			class CompoundObject;
 			class DataObject;
@@ -90,66 +88,61 @@ namespace Ovito {
 			class PipelineFlowState;
 			class PipelineObject;
 			class DisplayObject;
-			namespace StdObj {
+			inline namespace StdObj {
 			}
-			using namespace StdObj;
 		}
-		namespace Internal {
+		inline namespace Internal {
 			class NativeOvitoObjectType;
 		}
-		using namespace Units;
-		using namespace Undo;
-		using namespace Scene;
-		using namespace Internal;
 	}
-	namespace Rendering {
+	inline namespace Rendering {
 		class SceneRenderer;
 		class ObjectPickInfo;
 		class RenderSettings;
 		class FrameBuffer;
 		class ViewportSceneRenderer;
-		namespace Internal {
+		inline namespace Internal {
 		}
-		using namespace Internal;
 	}
-	namespace View {
+	inline namespace View {
 		class Viewport;
 		class ViewportConfiguration;
 		class ViewportSettings;
 		struct ViewProjectionParameters;
 		class ViewportOverlay;
-		namespace Internal {
+		inline namespace Internal {
 			class PickingSceneRenderer;
 		}
-		using namespace Internal;
 	}
-	namespace DataIO {
+	inline namespace DataIO {
+		class FileImporter;
+		class FileExporter;
 		class FileSource;
 		class FileSourceImporter;
 	}
-	namespace Gui {
+	inline namespace Gui {
 		class MainWindow;
 		class Application;
 		class ActionManager;
-		namespace Widgets {
+		inline namespace Widgets {
 			class PropertiesPanel;
 			class SpinnerWidget;
 			class ColorPickerWidget;
 			class RolloutContainer;
+			class FrameBufferWindow;
+			class FrameBufferWidget;
 		}
-		namespace Params {
+		inline namespace Params {
 			class PropertiesEditor;
 		}
-		namespace View {
+		inline namespace ViewportInput {
 			class ViewportInputManager;
 			class ViewportInputMode;
 			class ViewportModeAction;
 		}
-		namespace Dialogs {
+		inline namespace Dialogs {
 		}
-		namespace Internal {
-			class FrameBufferWindow;
-			class FrameBufferWidget;
+		inline namespace Internal {
 			class CoordinateDisplayWidget;
 			class CommandPanel;
 			class ModifyCommandPage;
@@ -159,33 +152,31 @@ namespace Ovito {
 			class ViewportMenu;
 			class ViewportWindow;
 		}
-		using namespace Gui::Widgets;
-		using namespace Gui::Params;
-		using namespace Gui::View;
-		using namespace Gui::Dialogs;
-		using namespace Gui::Internal;
 	}
 
-	// Pull all sub-namespaces into the root Ovito namespace.
+	// This should only be visible to Doxygen:
+#ifdef DOXYGEN_SHOULD_SKIP_THIS
 	using namespace Util;
 	using namespace Util::IO;
-	using namespace Util::Concurrency;
-	using namespace Util::Mesh;
 	using namespace Util::Math;
+	using namespace Util::Mesh;
+	using namespace Util::Concurrency;
 	using namespace Rendering;
-	using namespace Anim;
 	using namespace View;
+	using namespace DataIO;
+	using namespace Anim;
+	using namespace Gui;
+	using namespace Gui::Params;
+	using namespace Gui::Dialogs;
+	using namespace Gui::ViewportInput;
+	using namespace Gui::Widgets;
+	using namespace PluginSystem;
 	using namespace ObjectSystem;
+	using namespace ObjectSystem::Units;
 	using namespace ObjectSystem::Undo;
 	using namespace ObjectSystem::Scene;
 	using namespace ObjectSystem::Scene::StdObj;
-	using namespace PluginSystem;
-	using namespace DataIO;
-	using namespace Gui;
-	using namespace Gui::Widgets;
-	using namespace Gui::Params;
-	using namespace Gui::Internal;
-
+#endif
 }
 
 #endif // __OVITO_FORWARD_DECL_H

@@ -26,7 +26,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <muParser.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { namespace Util { namespace Internal {
 
 /**
  * \brief Helper class that evaluates one or more math expressions for every particle.
@@ -134,6 +134,6 @@ protected:
 	static QByteArray _validVariableNameChars;
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_EXPRESSION_EVALUATOR_H

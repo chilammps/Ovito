@@ -27,7 +27,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
 
 /**
  * \brief This modifier assigns a certain color to all selected particles.
@@ -111,6 +111,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_ASSIGN_COLOR_MODIFIER_H

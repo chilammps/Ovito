@@ -29,7 +29,7 @@
 #include <plugins/particles/util/NearestNeighborFinder.h>
 #include "WignerSeitzAnalysisModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, WignerSeitzAnalysisModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(WignerSeitzAnalysisModifier, Internal::WignerSeitzAnalysisModifierEditor);
@@ -194,7 +194,7 @@ void WignerSeitzAnalysisModifier::WignerSeitzAnalysisEngine::perform()
 		return;
 
 	// Prepare the closest-point query structure.
-	NearestNeighborFinder neighborTree(0);
+	Util::NearestNeighborFinder neighborTree(0);
 	if(!neighborTree.prepare(refPositions(), refCell(), this))
 		return;
 
@@ -349,4 +349,4 @@ void WignerSeitzAnalysisModifierEditor::createUI(const RolloutInsertionParameter
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

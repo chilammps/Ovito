@@ -26,7 +26,7 @@
 #include <qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CoordinationNumberModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, Internal::CoordinationNumberModifierEditor);
@@ -73,7 +73,7 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 	setProgressText(tr("Computing coordination numbers"));
 
 	// Prepare the neighbor list.
-	CutoffNeighborFinder neighborListBuilder;
+	Util::CutoffNeighborFinder neighborListBuilder;
 	if(!neighborListBuilder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
@@ -98,7 +98,7 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 			for(size_t i = startIndex; i < endIndex;) {
 
 				int coordNumber = 0;
-				for(CutoffNeighborFinder::Query neighQuery(neighborListBuilder, i); !neighQuery.atEnd(); neighQuery.next()) {
+				for(Util::CutoffNeighborFinder::Query neighQuery(neighborListBuilder, i); !neighQuery.atEnd(); neighQuery.next()) {
 					coordNumber++;
 					size_t rdfInterval = (size_t)(sqrt(neighQuery.distanceSquared()) / rdfBinSize);
 					threadLocalRDF[rdfInterval]++;
@@ -300,4 +300,4 @@ void CoordinationNumberModifierEditor::onSaveData()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

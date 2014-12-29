@@ -34,17 +34,16 @@
 
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Internal {
+namespace Ovito { namespace Particles { namespace Internal {
 
 using namespace boost::python;
 using namespace PyScript;
-using namespace Particles::Export::Lammps;
-using namespace Particles::Export::XYZ;
-using namespace Particles::Export::Vasp;
-using namespace Particles::Export::IMD;
 
 BOOST_PYTHON_MODULE(ParticlesExporter)
 {
+	using namespace Export;
+	using namespace Export::Formats;
+
 	docstring_options docoptions(true, false);
 
 	class_<OutputColumnMapping>("OutputColumnMapping", init<>())
@@ -88,4 +87,4 @@ BOOST_PYTHON_MODULE(ParticlesExporter)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesExporter);
 
-}}}}	// End of namespace
+}}}	// End of namespace

@@ -41,7 +41,7 @@ extern "C" {
 	#error "The OVITO Tachyon plugin requires version 0.99 or newer of the Tachyon library."
 #endif
 
-namespace Ovito { namespace Plugins { namespace Tachyon {
+namespace Ovito { namespace Tachyon {
 
 using namespace Internal;
 
@@ -561,5 +561,5 @@ void* TachyonRenderer::getTachyonTexture(FloatType r, FloatType g, FloatType b, 
 	return rt_texture(_rtscene, &tex);
 }
 
-}}}	// End of namespace
+}}	// End of namespace
 

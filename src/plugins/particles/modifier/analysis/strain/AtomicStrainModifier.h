@@ -27,7 +27,7 @@
 #include <plugins/particles/util/CutoffNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Calculates the per-particle strain tensors based on a reference configuration.
@@ -209,7 +209,7 @@ private:
 	private:
 
 		/// Computes the strain tensor of a single particle.
-		bool computeStrain(size_t particleIndex, CutoffNeighborFinder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
+		bool computeStrain(size_t particleIndex, Util::CutoffNeighborFinder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
 
 		FloatType _cutoff;
 		SimulationCell _simCell;
@@ -338,6 +338,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_ATOMIC_STRAIN_MODIFIER_H

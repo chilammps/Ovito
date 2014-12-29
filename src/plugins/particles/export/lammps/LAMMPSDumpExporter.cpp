@@ -25,7 +25,7 @@
 #include "LAMMPSDumpExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace Lammps {
+namespace Ovito { namespace Particles { namespace Export { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSDumpExporter, ParticleExporter);
 
@@ -193,4 +193,4 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 	return true;
 }
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

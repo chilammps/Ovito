@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleExporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace Vasp {
+namespace Ovito { namespace Particles { namespace Export { namespace Formats {
 
 /**
  * \brief Exporter that writes the particles to a POSCAR file.
@@ -57,6 +57,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_POSCAR_EXPORTER_H

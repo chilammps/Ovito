@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/FileSource.h>
 #include "ParticleImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { namespace Import {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleImporter, FileSourceImporter);
 DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFile");
@@ -131,4 +131,4 @@ bool ParticleImporter::inspectNewFile(FileSource* obj)
 	return true;
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

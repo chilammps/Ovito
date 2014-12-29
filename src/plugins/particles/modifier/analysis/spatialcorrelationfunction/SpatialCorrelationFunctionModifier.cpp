@@ -32,7 +32,7 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "SpatialCorrelationFunctionModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(SpatialCorrelationFunctionModifier, Internal::SpatialCorrelationFunctionModifierEditor);
@@ -662,4 +662,4 @@ void SpatialCorrelationFunctionModifierEditor::onSaveData()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

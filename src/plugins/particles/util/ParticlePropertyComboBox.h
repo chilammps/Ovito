@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /**
  * \brief Widget that allows the user to select a particle property from a list.
@@ -96,6 +96,6 @@ public:
 	}
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_PROPERTY_COMBO_BOX_H

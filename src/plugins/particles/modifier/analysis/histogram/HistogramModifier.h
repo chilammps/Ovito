@@ -32,7 +32,7 @@
 #endif
 #include <qcustomplot.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief This modifier computes a value histogram for a particle property.
@@ -217,6 +217,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_HISTOGRAM_MODIFIER_H

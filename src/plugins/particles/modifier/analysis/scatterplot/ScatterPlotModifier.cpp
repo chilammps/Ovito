@@ -30,7 +30,7 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ScatterPlotModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ScatterPlotModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(ScatterPlotModifier, Internal::ScatterPlotModifierEditor);
@@ -322,6 +322,8 @@ namespace Internal {
 ******************************************************************************/
 void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
+	using namespace Particles::Util;
+
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Scatter plot"), rolloutParams, "particles.modifiers.scatter_plot.html");
 
@@ -600,4 +602,4 @@ void ScatterPlotModifierEditor::onSaveData()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

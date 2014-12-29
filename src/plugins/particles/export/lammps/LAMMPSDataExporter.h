@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleExporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace Lammps {
+namespace Ovito { namespace Particles { namespace Export { namespace Formats {
 
 /**
  * \brief Exporter that writes the particles to a LAMMPS data file.
@@ -57,6 +57,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_LAMMPS_DATA_FILE_EXPORTER_H

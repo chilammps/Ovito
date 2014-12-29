@@ -25,7 +25,7 @@
 #include <core/dataset/importexport/FileSource.h>
 #include "PDBImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace PDB {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, PDBImporter, ParticleImporter);
 
@@ -156,4 +156,4 @@ void PDBImporter::PDBImportTask::parseFile(CompressedTextReader& stream)
 	setStatus(tr("Number of particles: %1").arg(numAtoms));
 }
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

@@ -31,7 +31,7 @@
 #include "ParticlePropertyObject.h"
 #include "ParticleTypeProperty.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A scene display object for particles.
@@ -218,6 +218,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_DISPLAY_H

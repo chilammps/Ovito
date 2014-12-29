@@ -31,10 +31,15 @@
 namespace Ovito { namespace ObjectSystem {
 
 /**
- * \brief This class stores everything that belongs to a scene.
+ * \brief Stores the current state including the three-dimensional scene, viewport configuration,
+ *        render settings etc.
  *
- * A DataSet is the document (or scene) edited by the user.
- * It can be saved to and loaded from a file.
+ * A DataSet represents the current document being edited by the user.
+ * It can be completely saved to a file (.ovito extension) and loaded again at a later time.
+ *
+ * The DataSet class consists of various sub-objects that store different aspects. The
+ * ViewportConfiguration object returned by viewportConfig(), for example, stores the list
+ * of viewports.
  */
 class OVITO_CORE_EXPORT DataSet : public RefTarget
 {
@@ -42,7 +47,7 @@ public:
 
 	/// \brief Constructs an empty dataset.
 	/// \param self This parameter is not used and is there to provide a constructor signature that is compatible
-	///             with the RefTarget class.
+	///             with the RefTarget base class.
 	Q_INVOKABLE DataSet(DataSet* self = nullptr);
 
 	/// \brief Returns a reference to the viewport configuration associated with this dataset.
@@ -86,7 +91,7 @@ public:
 	/// \return The main window, or NULL if this data set is not being edited in any window.
 	MainWindow* mainWindow() const;
 
-	/// \brief Returns the container to which this dataset belongs.
+	/// \brief Returns the container this dataset belongs to.
 	DataSetContainer* container() const;
 
 	/// \brief Deletes all nodes from the scene.
@@ -144,22 +149,22 @@ Q_SIGNALS:
 	/// \brief This signal is emitted whenever the current viewport configuration of this dataset
 	///        has been replaced by a new one.
 	/// \note This signal is NOT emitted when parameters of the current viewport configuration change.
-    void viewportConfigReplaced(Ovito::View::ViewportConfiguration* newViewportConfiguration);
+    void viewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
 
 	/// \brief This signal is emitted whenever the current animation settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current animation settings object change.
-    void animationSettingsReplaced(Ovito::Anim::AnimationSettings* newAnimationSettings);
+    void animationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 	/// \brief This signal is emitted whenever the current render settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current render settings object change.
-    void renderSettingsReplaced(Ovito::Rendering::RenderSettings* newRenderSettings);
+    void renderSettingsReplaced(RenderSettings* newRenderSettings);
 
 	/// \brief This signal is emitted whenever the current selection set of this dataset
 	///        has been replaced by another one.
 	/// \note This signal is NOT emitted when nodes are added or removed from the current selection set.
-    void selectionSetReplaced(Ovito::ObjectSystem::Scene::SelectionSet* newSelectionSet);
+    void selectionSetReplaced(SelectionSet* newSelectionSet);
 
 protected:
 

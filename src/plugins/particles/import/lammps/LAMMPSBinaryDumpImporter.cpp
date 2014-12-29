@@ -30,7 +30,7 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include "LAMMPSBinaryDumpImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace Lammps {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSBinaryDumpImporter, ParticleImporter);
 SET_OVITO_OBJECT_EDITOR(LAMMPSBinaryDumpImporter, Internal::LAMMPSBinaryDumpImporterEditor);
@@ -503,4 +503,4 @@ void LAMMPSBinaryDumpImporterEditor::onEditColumnMapping()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

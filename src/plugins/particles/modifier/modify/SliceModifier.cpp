@@ -37,7 +37,7 @@
 #include <plugins/particles/objects/SimulationCellObject.h>
 #include "SliceModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SliceModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(SliceModifier, Internal::SliceModifierEditor);
@@ -675,4 +675,4 @@ Box3 PickParticlePlaneInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneR
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

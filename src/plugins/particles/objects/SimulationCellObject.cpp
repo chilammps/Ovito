@@ -27,7 +27,7 @@
 
 #include "SimulationCellObject.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellEditor, PropertiesEditor);
@@ -305,4 +305,4 @@ void SimulationCellEditor::onSizeSpinnerDragAbort(int dim)
 
 }	// End of namespace
 
-}}}}	// End of namespace
+}}	// End of namespace

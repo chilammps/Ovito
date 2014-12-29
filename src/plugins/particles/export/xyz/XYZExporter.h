@@ -26,7 +26,7 @@
 #include "../ParticleExporter.h"
 #include "../OutputColumnMapping.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace XYZ {
+namespace Ovito { namespace Particles { namespace Export { namespace Formats {
 
 /**
  * \brief Exporter that writes the particles to a LAMMPS data file.
@@ -85,9 +85,9 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Export::XYZ::XYZExporter::XYZSubFormat);
-Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Export::XYZ::XYZExporter::XYZSubFormat, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Particles::Export::Formats::XYZExporter::XYZSubFormat);
+Q_DECLARE_TYPEINFO(Ovito::Particles::Export::Formats::XYZExporter::XYZSubFormat, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_XYZ_FILE_EXPORTER_H

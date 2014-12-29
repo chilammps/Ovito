@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/SpinnerWidget.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 /**
  * \brief This modifier applies an arbitrary affine transformation to the
@@ -179,6 +179,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __AFFINE_TRANSFORMATION_MODIFIER_H

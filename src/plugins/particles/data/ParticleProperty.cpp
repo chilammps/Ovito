@@ -23,7 +23,7 @@
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "ParticleProperty.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
+namespace Ovito { namespace Particles {
 
 /******************************************************************************
 * Default constructor.
@@ -582,4 +582,4 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	}
 }
 
-}}}}	// End of namespace
+}}	// End of namespace

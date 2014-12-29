@@ -31,7 +31,7 @@
 #include <core/viewport/Viewport.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
 
 /**
  * \brief Abstract base class for color gradients that can be used with a ColorCodingModifier.
@@ -378,6 +378,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_COLOR_CODING_MODIFIER_H

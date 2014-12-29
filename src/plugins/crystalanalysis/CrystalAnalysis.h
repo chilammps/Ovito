@@ -34,7 +34,9 @@
 namespace Ovito {
 	namespace Plugins {
 		namespace CrystalAnalysis {
-			using namespace Ovito::Plugins::Particles;
+			using namespace Ovito::Particles;
+			using namespace Ovito::Particles::Import;
+			using namespace Ovito::Particles::Modifiers;
 		}
 	}
 }

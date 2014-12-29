@@ -33,10 +33,10 @@
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/objects/SimulationCellObject.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
+namespace Ovito { namespace Particles { namespace Modifiers {
 
 /**
- * Abstract base class for modifiers that operate on a system of particles.
+ * \brief Abstract base class for modifiers that operate on a system of particles.
  */
 class OVITO_PARTICLES_EXPORT ParticleModifier : public Modifier
 {
@@ -176,7 +176,7 @@ private:
 };
 
 /**
- * Base class for properties editors for ParticleModifier derived classes.
+ * \brief Base class for properties editors for ParticleModifier derived classes.
  */
 class OVITO_PARTICLES_EXPORT ParticleModifierEditor : public PropertiesEditor
 {
@@ -210,6 +210,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_MODIFIER_H

@@ -58,13 +58,28 @@
 #define NCERR(x)  _ncerr(x, __FILE__, __LINE__)
 #define NCERRI(x, info)  _ncerr_with_info(x, __FILE__, __LINE__, info)
 
-namespace Ovito { namespace Plugins { namespace NetCDF {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDFPlugin, NetCDFImporter, ParticleImporter);
-IMPLEMENT_OVITO_OBJECT(NetCDFPlugin, NetCDFImporterEditor, PropertiesEditor);
-SET_OVITO_OBJECT_EDITOR(NetCDFImporter, NetCDFImporterEditor);
+SET_OVITO_OBJECT_EDITOR(NetCDFImporter, Internal::NetCDFImporterEditor);
 DEFINE_PROPERTY_FIELD(NetCDFImporter, _useCustomColumnMapping, "UseCustomColumnMapping");
 SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file column mapping");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(NetCDFPlugin, NetCDFImporterEditor, PropertiesEditor);
+}
+
+// Convert full tensor to Voigt tensor
+template<typename T> void fullToVoigt(size_t particleCount, T *full, T *voigt) {
+	for (size_t i = 0; i < particleCount; i++) {
+		voigt[6*i] = full[9*i];
+		voigt[6*i+1] = full[9*i+4];
+		voigt[6*i+2] = full[9*i+8];
+		voigt[6*i+3] = 0.5*(full[9*i+5]+full[9*i+7]);
+		voigt[6*i+4] = 0.5*(full[9*i+2]+full[9*i+6]);
+		voigt[6*i+5] = 0.5*(full[9*i+1]+full[9*i+3]);
+    }
+}
 
 /******************************************************************************
 * Check for NetCDF error and throw exception
@@ -775,6 +790,8 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 }
 
+namespace Internal {
+
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
@@ -813,4 +830,6 @@ void NetCDFImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
-}}}	// End of namespace
+}	// End of namespace
+
+}}}}	// End of namespace

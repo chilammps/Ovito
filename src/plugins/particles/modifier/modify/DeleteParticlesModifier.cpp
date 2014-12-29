@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "DeleteParticlesModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, DeleteParticlesModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(DeleteParticlesModifier, Internal::DeleteParticlesModifierEditor);
@@ -87,4 +87,4 @@ void DeleteParticlesModifierEditor::createUI(const RolloutInsertionParameters& r
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

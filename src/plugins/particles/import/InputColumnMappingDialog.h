@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "InputColumnMapping.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { namespace Import {
 
 /**
  * \brief Dialog box that lets the user edit an InputColumnMapping.
@@ -78,6 +78,6 @@ protected:
 	QTextEdit* _fileExcerptField;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_INPUT_COLUMN_MAPPING_DIALOG_H

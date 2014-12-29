@@ -29,7 +29,7 @@
 
 #include "CommonNeighborAnalysisModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CommonNeighborAnalysisModifier, StructureIdentificationModifier);
 SET_OVITO_OBJECT_EDITOR(CommonNeighborAnalysisModifier, Internal::CommonNeighborAnalysisModifierEditor);
@@ -101,7 +101,7 @@ void CommonNeighborAnalysisModifier::AdaptiveCNAEngine::perform()
 	setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
-	NearestNeighborFinder neighFinder(MAX_NEIGHBORS);
+	Util::NearestNeighborFinder neighFinder(MAX_NEIGHBORS);
 	if(!neighFinder.prepare(positions(), cell(), this))
 		return;
 
@@ -122,7 +122,7 @@ void CommonNeighborAnalysisModifier::FixedCNAEngine::perform()
 	setProgressText(tr("Performing common neighbor analysis"));
 
 	// Prepare the neighbor list.
-	CutoffNeighborFinder neighborListBuilder;
+	Util::CutoffNeighborFinder neighborListBuilder;
 	if(!neighborListBuilder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
@@ -235,10 +235,10 @@ int CommonNeighborAnalysisModifier::calcMaxChainLength(CNAPairBond* neighborBond
 * Determines the coordination structure of a single particle using the
 * adaptive common neighbor analysis method.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureAdaptive(NearestNeighborFinder& neighFinder, size_t particleIndex)
+CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureAdaptive(Util::NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
 	// Create neighbor list finder.
-	NearestNeighborFinder::Query<MAX_NEIGHBORS> neighQuery(neighFinder);
+	Util::NearestNeighborFinder::Query<MAX_NEIGHBORS> neighQuery(neighFinder);
 
 	// Find N nearest neighbor of current atom.
 	neighQuery.findNeighbors(neighFinder.particlePos(particleIndex));
@@ -414,12 +414,12 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 * Determines the coordination structure of a single particle using the
 * conventional common neighbor analysis method.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureFixed(CutoffNeighborFinder& neighList, size_t particleIndex)
+CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureFixed(Util::CutoffNeighborFinder& neighList, size_t particleIndex)
 {
 	// Store neighbor vectors in a local array.
 	int numNeighbors = 0;
 	Vector3 neighborVectors[MAX_NEIGHBORS];
-	for(CutoffNeighborFinder::Query neighborQuery(neighList, particleIndex); !neighborQuery.atEnd(); neighborQuery.next()) {
+	for(Util::CutoffNeighborFinder::Query neighborQuery(neighList, particleIndex); !neighborQuery.atEnd(); neighborQuery.next()) {
 		if(numNeighbors == MAX_NEIGHBORS) return OTHER;
 		neighborVectors[numNeighbors] = neighborQuery.delta();
 		numNeighbors++;
@@ -529,7 +529,7 @@ namespace Internal {
 ******************************************************************************/
 void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	using namespace Util::Internal;
+	using namespace Particles::Util::Internal;
 
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Common neighbor analysis"), rolloutParams, "particles.modifiers.common_neighbor_analysis.html");
@@ -578,4 +578,4 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

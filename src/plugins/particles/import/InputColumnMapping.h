@@ -26,7 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { namespace Import {
 
 /**
  * \brief Defines the mapping between one column of an particle input file and
@@ -185,9 +185,9 @@ private:
 	bool _usingNamedParticleTypes;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Import::InputColumnInfo);
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Import::InputColumnMapping);
+Q_DECLARE_METATYPE(Ovito::Particles::Import::InputColumnInfo);
+Q_DECLARE_METATYPE(Ovito::Particles::Import::InputColumnMapping);
 
 #endif // __OVITO_INPUT_COLUMN_MAPPING_H

@@ -27,7 +27,7 @@
 #include "NavigationModes.h"
 #include "XFormModes.h"
 
-namespace Ovito { namespace Gui { namespace View {
+namespace Ovito { namespace Gui { namespace ViewportInput {
 
 /**
  * \brief Manages a stack of viewport input handlers.

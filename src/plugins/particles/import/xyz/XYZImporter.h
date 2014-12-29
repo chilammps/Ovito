@@ -27,7 +27,7 @@
 #include <plugins/particles/import/InputColumnMapping.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace XYZ {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 /**
  * \brief File parser for the text-based XYZ file format.
@@ -79,7 +79,7 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::Plugins::Particles::Import::InputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
+	Q_PROPERTY(Ovito::Particles::Import::InputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
 
 private:
 
@@ -168,6 +168,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_XYZ_IMPORTER_H

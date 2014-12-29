@@ -80,6 +80,7 @@ private:
 /// \param stream The output stream.
 /// \param s The status to write to the output stream \a stream.
 /// \return The output stream \a stream.
+/// \relates PipelineStatus
 inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 {
 	stream.beginChunk(0x02);
@@ -93,6 +94,7 @@ inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 /// \param stream The input stream.
 /// \param s Reference to a variable where the parsed data will be stored.
 /// \return The input stream \a stream.
+/// \relates PipelineStatus
 inline LoadStream& operator>>(LoadStream& stream, PipelineStatus& s)
 {
 	quint32 version = stream.expectChunkRange(0x0, 0x02);
@@ -105,6 +107,7 @@ inline LoadStream& operator>>(LoadStream& stream, PipelineStatus& s)
 }
 
 /// \brief Writes a status object to the log stream.
+/// \relates PipelineStatus
 inline QDebug operator<<(QDebug debug, const PipelineStatus& s)
 {
 	switch(s.type()) {

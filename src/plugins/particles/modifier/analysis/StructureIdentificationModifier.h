@@ -29,7 +29,7 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include <plugins/particles/objects/ParticleType.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Base class for modifiers that assign a structure type to each particle.
@@ -71,7 +71,7 @@ public:
 	StructureIdentificationModifier(DataSet* dataset);
 
 	/// Returns the array of structure types that are assigned to the particles by this modifier.
-	const ParticleTypeList& structureTypes() const { return _structureTypes; }
+	const QVector<ParticleType*>& structureTypes() const { return _structureTypes; }
 
 	/// Returns an array that contains the number of matching particles for each structure type.
 	const QList<int>& structureCounts() const { return _structureCounts; }
@@ -180,6 +180,6 @@ private:
 	Q_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H

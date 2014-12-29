@@ -28,7 +28,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { namespace Export {
 
 /**
  * \brief This class lists the particle properties that should be written to an output file.
@@ -106,8 +106,8 @@ private:
 	bool _writeTypeNames;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Export::OutputColumnMapping);
+Q_DECLARE_METATYPE(Ovito::Particles::Export::OutputColumnMapping);
 
 #endif // __OVITO_OUTPUT_COLUMN_MAPPING_H

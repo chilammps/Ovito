@@ -26,7 +26,7 @@
 #include <core/gui/properties/ParameterUI.h>
 #include "ParticlePropertyComboBox.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /**
  * \brief This parameter UI lets the user select a particle property.
@@ -95,6 +95,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_PROPERTY_PARAMETER_UI_H

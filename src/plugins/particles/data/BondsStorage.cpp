@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "BondsStorage.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
+namespace Ovito { namespace Particles {
 
 /******************************************************************************
 * Default constructor.
@@ -67,4 +67,4 @@ void BondsStorage::loadFromStream(LoadStream& stream)
 	stream.closeChunk();
 }
 
-}}}}	// End of namespace
+}}	// End of namespace

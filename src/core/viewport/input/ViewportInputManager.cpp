@@ -26,7 +26,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/gui/mainwin/MainWindow.h>
 
-namespace Ovito { namespace Gui { namespace View {
+namespace Ovito { namespace Gui { namespace ViewportInput {
 
 /******************************************************************************
 * Initializes the viewport input manager.

@@ -26,7 +26,7 @@
 #include "ParticlePropertyObject.h"
 #include "ParticleType.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief A particle property that stores the particle types.
@@ -44,10 +44,10 @@ public:
 	void insertParticleType(ParticleType* ptype);
 
 	/// Returns the list of particle types.
-	const ParticleTypeList& particleTypes() const { return _particleTypes; }
+	const QVector<ParticleType*>& particleTypes() const { return _particleTypes; }
 
 	/// Replaces the list of particle types.
-	void setParticleTypes(const ParticleTypeList& types) { _particleTypes = types; }
+	void setParticleTypes(const QVector<ParticleType*>& types) { _particleTypes = types; }
 
 	/// Returns the particle type with the given ID, or NULL if no such type exists.
 	ParticleType* particleType(int id) const {
@@ -143,6 +143,6 @@ private:
 
 }	// End of namespace
 
-}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_TYPE_PROPERTY_H

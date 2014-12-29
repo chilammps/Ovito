@@ -26,7 +26,7 @@
 #include <plugins/particles/objects/BondsDisplay.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 /**
  * \brief A modifier that creates bonds between pairs of particles based on their distance.
@@ -237,9 +237,9 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Modifiers::Modify::CreateBondsModifier::CutoffMode);
-Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Modifiers::Modify::CreateBondsModifier::CutoffMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Particles::Modifiers::Modify::CreateBondsModifier::CutoffMode);
+Q_DECLARE_TYPEINFO(Ovito::Particles::Modifiers::Modify::CreateBondsModifier::CutoffMode, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_CREATE_BONDS_MODIFIER_H

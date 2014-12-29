@@ -28,7 +28,7 @@
 #include <core/gui/properties/StringParameterUI.h>
 #include "SelectExpressionModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectExpressionModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, Internal::SelectExpressionModifierEditor);
@@ -175,4 +175,4 @@ void SelectExpressionModifierEditor::updateEditorFields()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

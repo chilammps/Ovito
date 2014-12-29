@@ -192,6 +192,8 @@ private:
 ///
 /// Returns a pointer to the input object, cast to type \c T if the object is of type \c T
 /// (or a subclass); otherwise returns \c NULL.
+///
+/// \relates OvitoObject
 template<class T, class U>
 inline T* dynamic_object_cast(U* obj) {
 	return qobject_cast<T*>(obj);
@@ -201,6 +203,8 @@ inline T* dynamic_object_cast(U* obj) {
 ///
 /// Returns a constant pointer to the input object, cast to type \c T if the object is of type \c T
 /// (or subclass); otherwise returns \c NULL.
+///
+/// \relates OvitoObject
 template<class T, class U>
 inline const T* dynamic_object_cast(const U* obj) {
 	return qobject_cast<const T*>(obj);
@@ -211,6 +215,8 @@ inline const T* dynamic_object_cast(const U* obj) {
 /// Returns a pointer to the object, cast to target type \c T.
 /// Performs a runtime check in debug builds to make sure the input object
 /// is really an instance of the target class.
+///
+/// \relates OvitoObject
 template<class T, class U>
 inline T* static_object_cast(U* obj) {
 	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
@@ -222,6 +228,8 @@ inline T* static_object_cast(U* obj) {
 /// Returns a const pointer to the object, cast to target type \c T.
 /// Performs a runtime check in debug builds to make sure the input object
 /// is really an instance of the target class.
+///
+/// \relates OvitoObject
 template<class T, class U>
 inline const T* static_object_cast(const U* obj) {
 	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
@@ -233,6 +241,8 @@ inline const T* static_object_cast(const U* obj) {
 ///
 /// Returns a smart pointer to the input object, cast to type \c T if the object is of type \c T
 /// (or a subclass); otherwise returns \c NULL.
+///
+/// \relates OORef
 template<class T, class U>
 inline OORef<T> dynamic_object_cast(const OORef<U>& obj) {
 	return qobject_cast<T*>(obj.get());
@@ -242,6 +252,8 @@ inline OORef<T> dynamic_object_cast(const OORef<U>& obj) {
 ///
 /// Returns the given object cast to type \c T.
 /// Performs a runtime check of the object type in debug build.
+///
+/// \relates OORef
 template<class T, class U>
 inline OORef<T> static_object_cast(const OORef<U>& obj) {
 	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");

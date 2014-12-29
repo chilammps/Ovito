@@ -29,7 +29,7 @@
 #include "SimulationCellDisplay.h"
 #include "SimulationCellObject.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellDisplayEditor, PropertiesEditor);
@@ -220,4 +220,4 @@ void SimulationCellDisplayEditor::createUI(const RolloutInsertionParameters& rol
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace

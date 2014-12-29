@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "CutoffNeighborFinder.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /******************************************************************************
 * Initialization function.
@@ -258,4 +258,4 @@ void CutoffNeighborFinder::Query::next()
 	}
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

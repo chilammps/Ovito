@@ -24,7 +24,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include "ParticlePropertyParameterUI.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Particles, ParticlePropertyParameterUI, PropertyParameterUI);
@@ -184,5 +184,5 @@ void ParticlePropertyParameterUI::updatePropertyValue()
 	}
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace
 

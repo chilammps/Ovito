@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
 
 /**
  * \brief Selects particles of one or more types.
@@ -124,7 +124,7 @@ protected:
 private:
 
 	/// The list of particle type properties.
-	ParticlePropertyComboBox* propertyListBox;
+	Util::ParticlePropertyComboBox* propertyListBox;
 
 	/// The list of particle types.
 	QListWidget* particleTypesBox;
@@ -135,6 +135,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_SELECT_PARTICLE_TYPE_MODIFIER_H

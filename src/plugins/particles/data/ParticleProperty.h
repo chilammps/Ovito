@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Data {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief Memory storage for a per-particle property.
@@ -570,9 +570,9 @@ protected:
 	std::unique_ptr<uint8_t[]> _data;
 };
 
-}}}}	// End of namespace
+}}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plugins::Particles::Data::ParticleProperty::Type);
-Q_DECLARE_TYPEINFO(Ovito::Plugins::Particles::Data::ParticleProperty::Type, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Particles::ParticleProperty::Type);
+Q_DECLARE_TYPEINFO(Ovito::Particles::ParticleProperty::Type, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PARTICLE_PROPERTY_H

@@ -29,7 +29,7 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "HistogramModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, HistogramModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(HistogramModifier, Internal::HistogramModifierEditor);
@@ -241,6 +241,8 @@ namespace Internal {
 ******************************************************************************/
 void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
+	using namespace Particles::Util;
+
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Histogram"), rolloutParams, "particles.modifiers.histogram.html");
 
@@ -484,4 +486,4 @@ void HistogramModifierEditor::onSaveData()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

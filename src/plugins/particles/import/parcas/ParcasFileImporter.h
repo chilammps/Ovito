@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace Parcas {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 /**
  * \brief File parser for simulation files written by the Parcas MD code.
@@ -78,6 +78,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_PARCAS_FILE_IMPORTER_H

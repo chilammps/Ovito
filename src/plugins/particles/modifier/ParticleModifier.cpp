@@ -28,7 +28,7 @@
 
 #include <QtConcurrent>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers {
+namespace Ovito { namespace Particles { namespace Modifiers {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor);
@@ -537,5 +537,5 @@ StatusWidget* ParticleModifierEditor::statusLabel()
 	return _statusLabel;
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace
 

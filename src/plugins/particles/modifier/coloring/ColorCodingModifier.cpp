@@ -38,11 +38,7 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ColorCodingModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Coloring {
-
-namespace Internal {
-	IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
-}
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, Internal::ColorCodingModifierEditor);
@@ -66,6 +62,10 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHotGradient, ColorCodi
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodingGradient);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingImageGradient, ColorCodingGradient);
 DEFINE_PROPERTY_FIELD(ColorCodingImageGradient, _image, "Image");
+
+namespace Internal {
+	IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
+}
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -363,6 +363,8 @@ namespace Internal {
 ******************************************************************************/
 void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
+	using namespace Particles::Util;
+
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Color coding"), rolloutParams, "particles.modifiers.color_coding.html");
 
@@ -648,4 +650,4 @@ QIcon ColorCodingModifierEditor::iconFromColorMap(ColorCodingGradient* map)
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

@@ -29,7 +29,7 @@
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "ParticleExporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { namespace Export {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleExporter, FileExporter);
 DEFINE_PROPERTY_FIELD(ParticleExporter, _outputFilename, "OutputFile");
@@ -288,4 +288,4 @@ bool ParticleExporter::exportFrame(const QVector<SceneNode*>& nodes, int frameNu
 	return exportParticles(state, frameNumber, time, filePath, progressInterface);
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

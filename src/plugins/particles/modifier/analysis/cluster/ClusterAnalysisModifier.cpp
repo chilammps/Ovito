@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "ClusterAnalysisModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClusterAnalysisModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, Internal::ClusterAnalysisModifierEditor);
@@ -66,7 +66,7 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 	setProgressText(tr("Performing cluster analysis"));
 
 	// Prepare the neighbor finder.
-	CutoffNeighborFinder neighborFinder;
+	Util::CutoffNeighborFinder neighborFinder;
 	if(!neighborFinder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
@@ -98,7 +98,7 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 
 			int currentParticle = toProcess.front();
 			toProcess.pop_front();
-			for(CutoffNeighborFinder::Query neighQuery(neighborFinder, currentParticle); !neighQuery.atEnd(); neighQuery.next()) {
+			for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, currentParticle); !neighQuery.atEnd(); neighQuery.next()) {
 				int neighborIndex = neighQuery.current();
 				if(_particleClusters->getInt(neighborIndex) == -1) {
 					_particleClusters->setInt(neighborIndex, cluster);
@@ -182,4 +182,4 @@ void ClusterAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

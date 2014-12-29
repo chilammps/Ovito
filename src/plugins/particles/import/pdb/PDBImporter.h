@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace PDB {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 /**
  * \brief File parser for Protein Data Bank (PDB) files.
@@ -77,6 +77,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_PDB_IMPORTER_H

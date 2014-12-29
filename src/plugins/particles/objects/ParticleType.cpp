@@ -26,7 +26,7 @@
 
 #include "ParticleType.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, ParticleTypeEditor, PropertiesEditor);
@@ -92,4 +92,4 @@ void ParticleTypeEditor::createUI(const RolloutInsertionParameters& rolloutParam
 
 }	// End of namespace
 
-}}}}	// End of namespace
+}}	// End of namespace

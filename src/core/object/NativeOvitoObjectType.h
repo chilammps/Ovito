@@ -92,16 +92,16 @@ private:
 /// This macro must be included in the class definition of a OvitoObject-derived class.
 #define OVITO_OBJECT													\
 	public:																\
-		static const Ovito::ObjectSystem::Internal::NativeOvitoObjectType OOType;				\
-		virtual const Ovito::ObjectSystem::OvitoObjectType& getOOType() const { return OOType; }
+		static const Ovito::NativeOvitoObjectType OOType;				\
+		virtual const Ovito::OvitoObjectType& getOOType() const { return OOType; }
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_OVITO_OBJECT(plugin, name, basename)							\
-	const Ovito::ObjectSystem::Internal::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
+	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(plugin, name, basename)				\
-	const Ovito::ObjectSystem::Internal::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
+	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
 
 }}}	// End of namespace
 

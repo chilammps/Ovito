@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "ParticlePropertyComboBox.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /******************************************************************************
 * Returns the particle property that is currently selected in the combo box.
@@ -53,4 +53,4 @@ ParticlePropertyReference ParticlePropertyComboBox::currentProperty() const
 	}
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

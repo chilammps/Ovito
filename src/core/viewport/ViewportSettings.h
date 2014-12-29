@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_GLOBAL_VIEWPORT_SETTINGS_H
-#define __OVITO_GLOBAL_VIEWPORT_SETTINGS_H
+#ifndef __OVITO_VIEWPORT_SETTINGS_H
+#define __OVITO_VIEWPORT_SETTINGS_H
 
 #include <core/Core.h>
 
@@ -33,28 +33,28 @@ class OVITO_CORE_EXPORT ViewportSettings : public QObject
 {
 public:
 
-	/// Standard colors for drawing several things in the viewport.
+	/// Standard colors for drawing various things in the viewports.
 	enum ViewportColor {
-		COLOR_VIEWPORT_BKG,				//< The viewport background color
-		COLOR_GRID,						//< The color of the minor construction grid lines
-		COLOR_GRID_INTENS,				//< The color of the major construction grid lines
-		COLOR_GRID_AXIS,				//< The color of the construction grid axis lines
-		COLOR_VIEWPORT_CAPTION,			//< The color used to render the viewport caption
-		COLOR_SELECTION,				//< The color used for selected objects in wireframe mode
-		COLOR_UNSELECTED,				//< The color used for unselected objects in wireframe mode
-		COLOR_ACTIVE_VIEWPORT_BORDER,	//< The color used to draw the border of the active viewport
-		COLOR_ANIMATION_MODE,			//< The color used to indicate that the animation mode is active
-		COLOR_CAMERAS,					//< The color used to render camera dummies in the viewports
+		COLOR_VIEWPORT_BKG,				///< Viewport background
+		COLOR_GRID,						///< Minor construction grid lines
+		COLOR_GRID_INTENS,				///< Major construction grid lines
+		COLOR_GRID_AXIS,				///< Construction grid axis lines
+		COLOR_VIEWPORT_CAPTION,			///< Viewport caption text
+		COLOR_SELECTION,				///< Selected objects in wireframe mode
+		COLOR_UNSELECTED,				///< Unselected objects in wireframe mode
+		COLOR_ACTIVE_VIEWPORT_BORDER,	///< Border of the active viewport
+		COLOR_ANIMATION_MODE,			///< Border color when animation mode is active
+		COLOR_CAMERAS,					///< Camera icons
 
 		NUMBER_OF_COLORS
 	};
 	Q_ENUMS(ViewportColor);
 
-	/// Specifies the "up" direction in the viewports.
+	/// Selects the "up" direction in the viewports.
 	enum UpDirection {
-		X_AXIS, //< Rotate around X axis
-		Y_AXIS, //< Rotate around Y axis
-		Z_AXIS, //< Rotate around Z axis (the default)
+		X_AXIS, ///< Makes the X axis the vertical axis
+		Y_AXIS, ///< Makes the Y axis the vertical axis
+		Z_AXIS, ///< Makes the Z axis the vertical axis (the default)
 	};
 	Q_ENUMS(UpDirection);
 

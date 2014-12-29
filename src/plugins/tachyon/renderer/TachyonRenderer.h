@@ -27,10 +27,10 @@
 #define TACHYON_INTERNAL 1
 #include <tachyon/tachyon.h>
 
-namespace Ovito { namespace Plugins { namespace Tachyon {
+namespace Ovito { namespace Tachyon {
 
-/*
- * A scene renderer that is based on the Tachyon open source ray-tracing engine
+/**
+ * \brief A scene renderer that is based on the Tachyon open source ray-tracing engine
  */
 class TachyonRenderer : public NonInteractiveSceneRenderer
 {
@@ -172,6 +172,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_ambientOcclusionBrightness);
 };
 
-}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_TACHYON_RENDERER_H

@@ -26,7 +26,7 @@
 
 #include <QtConcurrent>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { namespace Util { namespace Internal {
 
 /// List of characters allowed in variable names.
 QByteArray ParticleExpressionEvaluator::_validVariableNameChars("0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.");
@@ -396,4 +396,4 @@ QString ParticleExpressionEvaluator::inputVariableTable() const
 	return str;
 }
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

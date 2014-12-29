@@ -30,7 +30,7 @@
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "CalculateDisplacementsModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CalculateDisplacementsModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(CalculateDisplacementsModifier, Internal::CalculateDisplacementsModifierEditor);
@@ -417,4 +417,4 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

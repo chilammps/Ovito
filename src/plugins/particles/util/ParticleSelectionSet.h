@@ -26,7 +26,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { namespace Util {
 
 /**
  * \brief Stores a particle selection set and provides modification functions.
@@ -118,6 +118,6 @@ private:
 	friend class ReplaceSelectionOperation;
 };
 
-}}}}	// End of namespace
+}}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_SELECTION_SET_H

@@ -26,7 +26,7 @@
 #include <core/utilities/mesh/TriMesh.h>
 #include "polytess/glu.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { namespace Util { namespace Internal {
 
 /**
  * \brief Helper class that can tessellate a set of non-convex polygons into triangles.
@@ -164,6 +164,6 @@ private:
 	std::vector<int> vertices;
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_CAP_POLY_TESSELLATOR_H

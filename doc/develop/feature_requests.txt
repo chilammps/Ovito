@@ -1,5 +1,6 @@
 User interface improvements:
 
+- Default directory for image/movie output should be the path of the current data file.
 - Let the user configure the default colors and radii assigned to different atom types.
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).

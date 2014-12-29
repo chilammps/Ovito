@@ -29,7 +29,7 @@
 #include <plugins/particles/util/ParticlePickingHelper.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 /**
  * \brief The slice modifier deletes all particles on one side of a 3d plane.
@@ -209,7 +209,7 @@ private:
 * The viewport input mode that lets the user select three particles
 * to define the slicing plane.
 ******************************************************************************/
-class PickParticlePlaneInputMode : public ViewportInputMode, ParticlePickingHelper
+class PickParticlePlaneInputMode : public ViewportInputMode, Particles::Util::ParticlePickingHelper
 {
 public:
 
@@ -250,6 +250,6 @@ private:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_SLICE_MODIFIER_H

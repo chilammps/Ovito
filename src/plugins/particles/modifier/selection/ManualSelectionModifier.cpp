@@ -31,7 +31,9 @@
 #include <plugins/particles/util/ParticleSelectionSet.h>
 #include "ManualSelectionModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
+
+using namespace Particles::Util;
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ManualSelectionModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, Internal::ManualSelectionModifierEditor);
@@ -441,4 +443,4 @@ void ManualSelectionModifierEditor::onFence(const QVector<Point2>& fence, Viewpo
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

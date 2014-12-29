@@ -23,7 +23,7 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "OutputColumnMapping.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { namespace Export {
 
 /******************************************************************************
  * Saves the mapping to the given stream.
@@ -145,4 +145,4 @@ void OutputColumnWriter::writeParticle(size_t particleIndex, CompressedTextWrite
 	stream << '\n';
 }
 
-}}}}	// End of namespace
+}}}	// End of namespace

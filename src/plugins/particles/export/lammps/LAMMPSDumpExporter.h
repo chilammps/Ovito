@@ -26,7 +26,7 @@
 #include "../ParticleExporter.h"
 #include "../OutputColumnMapping.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Export { namespace Lammps {
+namespace Ovito { namespace Particles { namespace Export { namespace Formats {
 
 /**
  * \brief Exporter that writes the particles to a LAMMPS dump file.
@@ -55,7 +55,7 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::Plugins::Particles::Export::OutputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
+	Q_PROPERTY(Ovito::Particles::Export::OutputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
 
 protected:
 
@@ -71,6 +71,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_LAMMPS_DUMP_FILE_EXPORTER_H

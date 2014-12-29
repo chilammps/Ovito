@@ -27,7 +27,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include "ComputePropertyModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ComputePropertyModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(ComputePropertyModifier, Internal::ComputePropertyModifierEditor);
@@ -187,6 +187,8 @@ namespace Internal {
 ******************************************************************************/
 void ComputePropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
+	using namespace Particles::Util;
+
 	rollout = createRollout(tr("Compute property"), rolloutParams, "particles.modifiers.compute_property.html");
 
     // Create the rollout contents.
@@ -306,4 +308,4 @@ void ComputePropertyModifierEditor::onExpressionEditingFinished()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

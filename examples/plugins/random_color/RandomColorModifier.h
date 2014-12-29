@@ -4,10 +4,9 @@
 // This header defines the base class for modifiers that act on particles.
 #include <plugins/particles/modifier/ParticleModifier.h>
 
-using namespace Ovito::Anim;
-using namespace Ovito::ObjectSystem;
-using namespace Ovito::ObjectSystem::Scene;
-using namespace Ovito::Plugins::Particles::Modifiers;
+using namespace Ovito;
+using namespace Ovito::Particles;
+using namespace Ovito::Particles::Modifiers;
 
 /// This modifier assigns a random color to every particle.
 class RandomColorModifier : public ParticleModifier
@@ -18,7 +17,7 @@ public:
 	/// Must be marked as Q_INVOKABLE so that the system can instantiate the class at runtime.
 	/// The modifier will become part of the given DataSet.
 	Q_INVOKABLE RandomColorModifier(DataSet* dataset) : ParticleModifier(dataset) {
-		// Nothing to do here...
+		// Nothing to do here for this modifier...
 	}
 
 protected:

@@ -26,7 +26,7 @@
 #include "IdentifyDiamondModifier.h"
 #include <plugins/particles/modifier/analysis/cna/CommonNeighborAnalysisModifier.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IdentifyDiamondModifier, StructureIdentificationModifier);
 SET_OVITO_OBJECT_EDITOR(IdentifyDiamondModifier, Internal::IdentifyDiamondModifierEditor);
@@ -74,7 +74,7 @@ void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 	setProgressText(tr("Finding nearest neighbors"));
 
 	// Prepare the neighbor list builder.
-	NearestNeighborFinder neighborFinder(4);
+	Util::NearestNeighborFinder neighborFinder(4);
 	if(!neighborFinder.prepare(positions(), cell(), this))
 		return;
 
@@ -88,7 +88,7 @@ void IdentifyDiamondModifier::DiamondIdentificationEngine::perform()
 
 	// Determine four nearest neighbors of each atom and store vectors in the working array.
 	parallelFor(positions()->size(), *this, [&neighborFinder, &neighLists](size_t index) {
-		NearestNeighborFinder::Query<4> neighQuery(neighborFinder);
+		Util::NearestNeighborFinder::Query<4> neighQuery(neighborFinder);
 		neighQuery.findNeighbors(neighborFinder.particlePos(index));
 		for(int i = 0; i < neighQuery.results().size(); i++) {
 			neighLists[index][i].vec = neighQuery.results()[i].delta;
@@ -232,4 +232,4 @@ void IdentifyDiamondModifierEditor::createUI(const RolloutInsertionParameters& r
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

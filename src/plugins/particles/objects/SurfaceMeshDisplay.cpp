@@ -32,7 +32,7 @@
 #include "SurfaceMeshDisplay.h"
 #include "SurfaceMesh.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects { namespace Display {
+namespace Ovito { namespace Particles {
 
 namespace Internal {
 	IMPLEMENT_OVITO_OBJECT(Particles, SurfaceMeshDisplayEditor, PropertiesEditor);
@@ -345,7 +345,7 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 		}
 
 		// Feed contours into tessellator to create triangles.
-		Util::Internal::CapPolygonTessellator tessellator(output, dim);
+		Particles::Util::Internal::CapPolygonTessellator tessellator(output, dim);
 		tessellator.beginPolygon();
 		for(const auto& contour : closedContours) {
 			tessellator.beginContour();
@@ -865,4 +865,4 @@ void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}	// End of namespace

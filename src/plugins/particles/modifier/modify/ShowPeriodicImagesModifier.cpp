@@ -25,7 +25,7 @@
 #include <plugins/particles/objects/BondsObject.h>
 #include "ShowPeriodicImagesModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ShowPeriodicImagesModifier, ParticleModifier);
 SET_OVITO_OBJECT_EDITOR(ShowPeriodicImagesModifier, Internal::ShowPeriodicImagesModifierEditor);
@@ -260,4 +260,4 @@ void ShowPeriodicImagesModifierEditor::createUI(const RolloutInsertionParameters
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

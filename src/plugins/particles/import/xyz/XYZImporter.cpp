@@ -35,7 +35,7 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include "XYZImporter.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Import { namespace XYZ {
+namespace Ovito { namespace Particles { namespace Import { namespace Formats {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZImporter, ParticleImporter);
 SET_OVITO_OBJECT_EDITOR(XYZImporter, Internal::XYZImporterEditor);
@@ -615,4 +615,4 @@ void XYZImporterEditor::onEditColumnMapping()
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace

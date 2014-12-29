@@ -27,7 +27,7 @@
 #include <core/dataset/importexport/FileImporter.h>
 #include "../../ParticleModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Calculates the per-particle displacement vectors based on a reference configuration.
@@ -159,6 +159,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H

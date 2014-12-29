@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/ParameterUI.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { namespace Util { namespace Internal {
 
 class OVITO_PARTICLES_EXPORT ChemicalElement
 {
@@ -86,6 +86,6 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_CUTOFF_RADIUS_PRESETS_H

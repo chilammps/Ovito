@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief A modifier that performs the structure analysis developed by Ackland and Jones.
@@ -74,7 +74,7 @@ private:
 	};
 
 	/// Determines the coordination structure of a single particle using the bond-angle analysis method.
-	static StructureType determineStructure(NearestNeighborFinder& neighFinder, size_t particleIndex);
+	static StructureType determineStructure(Util::NearestNeighborFinder& neighFinder, size_t particleIndex);
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -106,6 +106,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H

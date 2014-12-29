@@ -56,6 +56,8 @@ NativePlugin::NativePlugin(const QString& manifestFile) :
 ******************************************************************************/
 void NativePlugin::loadPluginImpl()
 {
+	using namespace Ovito::ObjectSystem::Internal;
+
 	NativeOvitoObjectType* linkedListBefore = nullptr;
 	if(isCore() == false) {
 		linkedListBefore = NativeOvitoObjectType::_firstInfo;

@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 /**
  * \brief Calculates the centro-symmetry parameter (CSP) for particles.
@@ -58,7 +58,7 @@ protected:
 	virtual PipelineStatus applyComputationResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Computes the centrosymmetry parameter of a single particle.
-	static FloatType computeCSP(NearestNeighborFinder& neighList, size_t particleIndex);
+	static FloatType computeCSP(Util::NearestNeighborFinder& neighList, size_t particleIndex);
 
 private:
 
@@ -133,6 +133,6 @@ protected:
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
 
 #endif // __OVITO_CENTRO_SYMMETRY_MODIFIER_H

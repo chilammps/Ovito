@@ -26,10 +26,12 @@
 #include <core/reference/RefTarget.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Objects {
+namespace Ovito { namespace Particles {
 
 /**
  * \brief Represents a particle type and stores it properties such as name, color, and radius.
+ *
+ * \ingroup particles_objects
  */
 class OVITO_PARTICLES_EXPORT ParticleType : public RefTarget
 {
@@ -101,14 +103,11 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_PROPERTY_FIELD(_id)
-	DECLARE_PROPERTY_FIELD(_name)
-	DECLARE_PROPERTY_FIELD(_color)
-	DECLARE_PROPERTY_FIELD(_radius)
+	DECLARE_PROPERTY_FIELD(_id);
+	DECLARE_PROPERTY_FIELD(_name);
+	DECLARE_PROPERTY_FIELD(_color);
+	DECLARE_PROPERTY_FIELD(_radius);
 };
-
-/// A list of ParticleType objects.
-typedef QVector<ParticleType*> ParticleTypeList;
 
 namespace Internal {
 
@@ -135,6 +134,6 @@ private:
 
 }	// End of namespace
 
-}}}}	// End of namespace
+}}	// End of namespace
 
 #endif // __OVITO_PARTICLE_TYPE_H

@@ -28,7 +28,7 @@
 
 #include "BondAngleAnalysisModifier.h"
 
-namespace Ovito { namespace Plugins { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier);
 SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, Internal::BondAngleAnalysisModifierEditor);
@@ -74,7 +74,7 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::perform()
 	setProgressText(tr("Performing bond-angle analysis"));
 
 	// Prepare the neighbor list.
-	NearestNeighborFinder neighborFinder(14);
+	Util::NearestNeighborFinder neighborFinder(14);
 	if(!neighborFinder.prepare(positions(), cell(), this))
 		return;
 
@@ -91,10 +91,10 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::perform()
 * Determines the coordination structure of a single particle using the
 * bond-angle analysis method.
 ******************************************************************************/
-BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(NearestNeighborFinder& neighFinder, size_t particleIndex)
+BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(Util::NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
 	// Find 14 nearest neighbors of current particle.
-	NearestNeighborFinder::Query<14> neighborQuery(neighFinder);
+	Util::NearestNeighborFinder::Query<14> neighborQuery(neighFinder);
 	neighborQuery.findNeighbors(neighFinder.particlePos(particleIndex));
 
 	// Reject under-coordinated particles.
@@ -194,4 +194,4 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 
 }	// End of namespace
 
-}}}}}	// End of namespace
+}}}}	// End of namespace
