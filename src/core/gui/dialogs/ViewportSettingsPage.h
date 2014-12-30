@@ -26,7 +26,7 @@
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
 #include <core/viewport/ViewportSettings.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * Page of the application settings dialog, which hosts viewport-related program options.

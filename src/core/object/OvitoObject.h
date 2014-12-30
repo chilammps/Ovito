@@ -26,7 +26,7 @@
 #include "OvitoObjectReference.h"
 #include "NativeOvitoObjectType.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 #ifdef OVITO_DEBUG
 	/// Checks whether a pointer to an OvitoObject is valid.

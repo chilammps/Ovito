@@ -26,7 +26,7 @@
 #include <core/utilities/io/SaveStream.h>
 #include <core/utilities/io/LoadStream.h>
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /** 
  * \brief A point in animation time.

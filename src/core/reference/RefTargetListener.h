@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "RefTarget.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief A helper class that can be used to monitor notification events

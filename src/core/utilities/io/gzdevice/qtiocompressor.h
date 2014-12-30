@@ -49,7 +49,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Util {
+namespace Ovito { inline namespace Util {
 
 class QtIOCompressorPrivate;
 

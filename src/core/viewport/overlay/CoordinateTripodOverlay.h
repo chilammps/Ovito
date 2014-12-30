@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include "ViewportOverlay.h"
 
-namespace Ovito { namespace View { namespace Internal {
+namespace Ovito { inline namespace View { inline namespace Internal {
 
 /**
  * \brief A viewport overlay that displays the coordinate system orientation.

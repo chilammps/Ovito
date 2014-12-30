@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "KeyframeController.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, KeyframeController, Controller);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(KeyframeController, _keys, "Keys", AnimationKey, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);

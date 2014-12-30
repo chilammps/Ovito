@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PropertyFieldDescriptor.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Internal {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Internal {
 
 /******************************************************************************
 * This structure describes one member field of a RefMaker object that stores

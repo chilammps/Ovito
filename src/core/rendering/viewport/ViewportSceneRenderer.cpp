@@ -40,7 +40,7 @@
 #include "OpenGLMeshPrimitive.h"
 #include "OpenGLHelpers.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
 

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/AffineTransformationParameterUI.h>
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, AffineTransformationParameterUI, FloatParameterUI);

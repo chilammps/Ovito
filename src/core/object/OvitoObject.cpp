@@ -24,7 +24,7 @@
 #include "OvitoObject.h"
 #include "OvitoObjectType.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 const Ovito::ObjectSystem::Internal::NativeOvitoObjectType OvitoObject::OOType("OvitoObject", "Core", nullptr, &OvitoObject::staticMetaObject, true);
 

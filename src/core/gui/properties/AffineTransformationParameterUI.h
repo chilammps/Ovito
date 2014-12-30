@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "FloatParameterUI.h"
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 /******************************************************************************
 * A parameter UI for AffineTransformation type properties.

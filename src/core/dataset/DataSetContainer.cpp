@@ -38,7 +38,7 @@
 	#include <signal.h>
 #endif
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker);
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO);

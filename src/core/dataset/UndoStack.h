@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Undo {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Undo {
 
 /**
  * \brief Abstract base class for records of undoable operations.

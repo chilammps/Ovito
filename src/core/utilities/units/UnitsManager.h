@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Units {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Units {
 
 /**
  * \brief Base class for parameter unit conversion services. 

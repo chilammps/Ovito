@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/viewport/overlay/ViewportOverlay.h>
 
-namespace Ovito { namespace View {
+namespace Ovito { inline namespace View {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportOverlay, RefTarget);
 

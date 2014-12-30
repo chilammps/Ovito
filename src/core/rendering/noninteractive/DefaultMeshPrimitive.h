@@ -26,7 +26,7 @@
 #include <core/rendering/MeshPrimitive.h>
 #include <core/utilities/mesh/TriMesh.h>
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Buffer object that stores triangle mesh geometry to be rendered by a non-interactive renderer.

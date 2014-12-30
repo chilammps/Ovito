@@ -4,11 +4,9 @@
 
 \section sec_intro Introduction
 
-This reference contains all classes from OVITO's core module and the standard plugin modules that are potentially relevant
-to plugin developers.
-
-The documentation is not complete yet, and the author is working on a high-level introduction into
-OVITO's C++ API.
+This developer reference contains all classes from OVITO's core module and the standard plugin modules that are relevant
+to plugin developers. Note, however, that the documentation is not complete yet, and the author is working on a 
+high-level introduction into OVITO's C++ API.
 
 For instructions how to build OVITO from source, see the [user manual](http://ovito.org/manual/development.html). 
 

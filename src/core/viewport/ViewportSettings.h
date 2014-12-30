@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace View {
+namespace Ovito { inline namespace View {
 
 /**
  * \brief Stores general settings related to the viewports.

@@ -26,7 +26,7 @@
 #include "Future.h"
 #include "Task.h"
 
-namespace Ovito { namespace Util { namespace Concurrency {
+namespace Ovito { inline namespace Util { inline namespace Concurrency {
 
 /**
  * \brief Manages the background tasks.

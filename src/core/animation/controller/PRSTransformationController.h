@@ -30,7 +30,7 @@
 #include <core/Core.h>
 #include "Controller.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /**
  * \brief Standard implementation of a transformation controller.

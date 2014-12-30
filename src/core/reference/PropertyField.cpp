@@ -26,7 +26,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /******************************************************************************
 * Connects the property field to its owning RefMaker derived class.

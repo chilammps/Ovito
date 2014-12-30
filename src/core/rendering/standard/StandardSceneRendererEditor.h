@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /******************************************************************************
 * The editor component for the StandardSceneRenderer class.

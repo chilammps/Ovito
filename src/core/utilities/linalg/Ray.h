@@ -34,7 +34,7 @@
 #include "Point3.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief An infinite ray in 3d space, defined by a base point and a direction vector.

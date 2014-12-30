@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/ParticlePrimitive.h>
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Buffer object that stores a set of particles to be rendered by a non-interactive renderer.

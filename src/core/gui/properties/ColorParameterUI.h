@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/ColorPickerWidget.h>
 #include "ParameterUI.h"
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 /******************************************************************************
 * Allows the user to edit a color parameter in the properties panel.

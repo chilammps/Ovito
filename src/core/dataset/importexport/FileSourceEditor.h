@@ -30,7 +30,7 @@
 
 #include "FileSource.h"
 
-namespace Ovito { namespace DataIO { namespace Internal {
+namespace Ovito { inline namespace DataIO { namespace Internal {
 
 /**
  * A properties editor for the FileSource object.

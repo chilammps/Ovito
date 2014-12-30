@@ -33,7 +33,7 @@
 #include "Vector3.h"
 #include "Quaternion.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief A transformation that describes a non-uniform scaling in an arbitrary axis system.

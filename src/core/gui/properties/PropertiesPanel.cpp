@@ -23,7 +23,7 @@
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * Constructs the panel.

@@ -26,7 +26,7 @@
 #include <core/scene/objects/DataObject.h>
 #include "ModifierApplication.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief This is a data flow pipeline. It has a source object, which provides the input data,

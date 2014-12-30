@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * The command panel page lets user render the scene.

@@ -23,7 +23,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "SpinnerWidget.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 using namespace Ovito::ObjectSystem::Units;
 

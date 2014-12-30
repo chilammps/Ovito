@@ -26,7 +26,7 @@
 #include <core/rendering/FrameBuffer.h>
 #include "HistoryFileDialog.h"
 
-namespace Ovito { namespace Gui { namespace Dialogs {
+namespace Ovito { inline namespace Gui { inline namespace Dialogs {
 
 /**
  * \brief This file chooser dialog lets the user select an image file from disk.

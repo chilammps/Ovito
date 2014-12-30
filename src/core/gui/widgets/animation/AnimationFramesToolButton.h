@@ -26,7 +26,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * A combo-box widget that allows to select the current animation frame.

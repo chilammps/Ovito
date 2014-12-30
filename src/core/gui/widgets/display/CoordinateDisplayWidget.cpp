@@ -27,7 +27,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include "CoordinateDisplayWidget.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * Constructor.

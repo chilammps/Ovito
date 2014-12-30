@@ -26,7 +26,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { namespace View {
+namespace Ovito { inline namespace View {
 
 /**
  * \brief This class holds a collection of Viewport objects.

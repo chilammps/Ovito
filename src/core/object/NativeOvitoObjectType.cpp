@@ -26,7 +26,7 @@
 #include <core/dataset/DataSet.h>
 #include <core/plugins/Plugin.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Internal {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Internal {
 
 // Head of linked list.
 NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;

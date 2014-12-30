@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 class OpenGLContextInfo;
 class OpenGLContextManager;

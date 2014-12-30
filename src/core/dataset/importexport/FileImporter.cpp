@@ -27,7 +27,7 @@
 #include "FileImporter.h"
 #include "moc_FileExporter.cpp"
 
-namespace Ovito { namespace DataIO {
+namespace Ovito { inline namespace DataIO {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileExporter, RefTarget);

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/scene/SelectionSet.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SelectionSet, RefTarget);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SelectionSet, _selection, "SelectedNodes", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET);

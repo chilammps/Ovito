@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/TextPrimitive.h>
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Buffer object that stores a text string to be rendered by a non-interactive renderer.

@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include <core/plugins/utility/UtilityApplet.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * The utility page lets the user invoke utility plugins.

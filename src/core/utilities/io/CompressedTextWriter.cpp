@@ -24,7 +24,7 @@
 
 #include <boost/spirit/include/karma.hpp>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /******************************************************************************
 * Opens the output file for writing.

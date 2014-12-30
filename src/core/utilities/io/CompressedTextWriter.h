@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/io/gzdevice/qtiocompressor.h>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /**
  * \brief A helper class for writing text-based files that are compressed (gzip format).

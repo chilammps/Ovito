@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "CompoundObject.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CompoundObject, DataObject);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(CompoundObject, _dataObjects, "SceneObjects", DataObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);

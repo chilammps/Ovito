@@ -26,7 +26,7 @@
 #include <core/scene/objects/CompoundObject.h>
 #include "FileSourceImporter.h"
 
-namespace Ovito { namespace DataIO {
+namespace Ovito { inline namespace DataIO {
 
 /**
  * \brief A place holder object that feeds data read from an external file into the scene.

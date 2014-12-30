@@ -25,7 +25,7 @@
 #include <core/dataset/UndoStack.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 // Gives the class run-time type information.
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);

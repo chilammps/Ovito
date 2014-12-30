@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief This is the default scene renderer used for high-quality image output.

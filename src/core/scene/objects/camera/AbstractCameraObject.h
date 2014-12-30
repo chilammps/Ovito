@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/objects/DataObject.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 /**
  * \brief Abstract base class for camera objects.

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "FutureWatcher.h"
 
-namespace Ovito { namespace Util { namespace Concurrency {
+namespace Ovito { inline namespace Util { inline namespace Concurrency {
 
 template<typename R> class Future;						// Defined in Future.h
 

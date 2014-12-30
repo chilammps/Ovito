@@ -24,7 +24,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/plugins/NativePlugin.h>
 
-namespace Ovito { namespace PluginSystem {
+namespace Ovito { inline namespace PluginSystem {
 
 /// The singleton instance of this class.
 PluginManager* PluginManager::_instance = nullptr;

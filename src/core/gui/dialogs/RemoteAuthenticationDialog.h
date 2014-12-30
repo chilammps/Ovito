@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * This dialog asks the user for a username/password for a remote server.

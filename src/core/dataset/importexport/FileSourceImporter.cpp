@@ -31,7 +31,7 @@
 #include "FileSourceImporter.h"
 #include "FileSource.h"
 
-namespace Ovito { namespace DataIO {
+namespace Ovito { inline namespace DataIO {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSourceImporter, FileImporter);
 

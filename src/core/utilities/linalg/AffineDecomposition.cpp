@@ -26,7 +26,7 @@
 #include "AffineDecomposition.h"
 #include "Matrix4.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 void decomp_affine(Matrix4& A, AffineDecomposition* parts);
 

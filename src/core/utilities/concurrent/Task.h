@@ -26,7 +26,7 @@
 #include "FutureInterface.h"
 #include "Future.h"
 
-namespace Ovito { namespace Util { namespace Concurrency {
+namespace Ovito { inline namespace Util { inline namespace Concurrency {
 
 class AsynchronousTask : public FutureInterface<void>, public QRunnable
 {

@@ -27,7 +27,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, NumericalParameterUI, PropertyParameterUI);

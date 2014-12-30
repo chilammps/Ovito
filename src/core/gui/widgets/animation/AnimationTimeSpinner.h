@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * A spinner control for the current animation time.

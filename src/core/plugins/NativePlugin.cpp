@@ -23,7 +23,7 @@
 #include <core/plugins/NativePlugin.h>
 #include <core/object/NativeOvitoObjectType.h>
 
-namespace Ovito { namespace PluginSystem { namespace Internal {
+namespace Ovito { inline namespace PluginSystem { inline namespace Internal {
 
 /******************************************************************************
 * Constructor for the NativePlugin class.

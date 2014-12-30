@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Util {
+namespace Ovito { inline namespace Util {
 
 /**
  * \brief A container class implementing a priority queue with a fixed compile-time maximum capacity and a variable run-time capacity.

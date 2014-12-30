@@ -26,7 +26,7 @@
 /// The maximum resolution of the texture used for billboard rendering of particles. Specified as a power of two.
 #define BILLBOARD_TEXTURE_LEVELS 	8
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /******************************************************************************
 * Constructor.

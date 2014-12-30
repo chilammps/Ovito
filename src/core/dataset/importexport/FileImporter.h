@@ -26,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { namespace DataIO {
+namespace Ovito { inline namespace DataIO {
 
 /**
  * \brief Abstract base class for file import services.

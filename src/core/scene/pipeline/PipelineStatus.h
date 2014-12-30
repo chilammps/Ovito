@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief Stores status information associated with an evaluation of the modification pipeline.

@@ -35,7 +35,7 @@
 #include "AffineTransformation.h"
 
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief An axis-aligned box in 3d space.

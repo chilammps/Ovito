@@ -27,7 +27,7 @@
 #include "PipelineFlowState.h"
 #include "PipelineStatus.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief Base class for algorithms that modify an object or data in some way.

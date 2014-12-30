@@ -25,7 +25,7 @@
 	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 #define IMAGE_FORMAT_FILE_FORMAT_VERSION		1
 

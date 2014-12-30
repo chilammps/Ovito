@@ -27,7 +27,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "OverlayCommandPage.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * Initializes the command panel page.

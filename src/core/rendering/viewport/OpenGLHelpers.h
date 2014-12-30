@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 // The minimum OpenGL version required by Ovito:
 #define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			2

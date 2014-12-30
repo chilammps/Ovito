@@ -25,7 +25,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DataObject, RefTarget);
 DEFINE_PROPERTY_FIELD(DataObject, _saveWithScene, "SaveWithScene");

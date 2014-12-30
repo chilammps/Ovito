@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Util { namespace Mesh {
+namespace Ovito { inline namespace Util { inline namespace Mesh {
 
 /// \brief The maximum number of smoothing groups in a mesh.
 ///

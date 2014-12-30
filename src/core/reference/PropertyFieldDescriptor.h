@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 class SingleReferenceFieldBase;		// defined in PropertyField.h
 class VectorReferenceFieldBase;		// defined in PropertyField.h

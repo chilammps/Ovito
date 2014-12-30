@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Abstract base class for line drawing primitives.

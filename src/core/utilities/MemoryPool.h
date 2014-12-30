@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Util {
+namespace Ovito { inline namespace Util {
 
 /**
  * \brief A simple memory pool for the efficient allocation of a large number of object instances.

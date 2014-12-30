@@ -26,7 +26,7 @@
 #include "OpenGLHelpers.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /**
  * \brief A wrapper for the QOpenGLBuffer class, which adds more features.

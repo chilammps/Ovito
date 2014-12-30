@@ -25,7 +25,7 @@
 #endif
 #include "SaveImageFileDialog.h"
 
-namespace Ovito { namespace Gui { namespace Dialogs {
+namespace Ovito { inline namespace Gui { inline namespace Dialogs {
 
 /******************************************************************************
 * Constructs the dialog window.

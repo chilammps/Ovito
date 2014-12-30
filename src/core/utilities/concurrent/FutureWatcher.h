@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Util { namespace Concurrency {
+namespace Ovito { inline namespace Util { inline namespace Concurrency {
 
 class FutureBase;
 class FutureInterfaceBase;

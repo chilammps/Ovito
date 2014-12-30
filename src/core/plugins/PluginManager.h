@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito { namespace PluginSystem {
+namespace Ovito { inline namespace PluginSystem {
 
 /**
  * \brief Loads and manages the installed plugins.

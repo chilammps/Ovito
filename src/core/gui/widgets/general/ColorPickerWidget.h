@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /**
  * \brief A UI control lets the user choose a color.

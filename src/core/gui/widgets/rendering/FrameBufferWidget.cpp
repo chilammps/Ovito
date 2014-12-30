@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "FrameBufferWidget.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * Sets the FrameBuffer that is currently shown in the widget.

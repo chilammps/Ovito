@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief A weak reference (a.k.a. guarded pointer) that refers to a particular revision of an object.

@@ -28,7 +28,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 
-namespace Ovito { namespace DataIO {
+namespace Ovito { inline namespace DataIO {
 
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.

@@ -30,7 +30,7 @@
 #include "FrameBuffer.h"
 #include "SceneRenderer.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * Stores general settings for rendering pictures and movies.

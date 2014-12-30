@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/objects/DataObject.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief A DataObject that stores a collection of other \ref DataObject "DataObjects".

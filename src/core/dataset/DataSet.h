@@ -28,7 +28,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include "UndoStack.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief Stores the current state including the three-dimensional scene, viewport configuration,

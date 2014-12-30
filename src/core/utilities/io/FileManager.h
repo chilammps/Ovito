@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /**
  * \brief The file manager provides transparent access to remote files.

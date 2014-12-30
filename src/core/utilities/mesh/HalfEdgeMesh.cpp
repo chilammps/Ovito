@@ -23,7 +23,7 @@
 #include "HalfEdgeMesh.h"
 #include "TriMesh.h"
 
-namespace Ovito { namespace Util { namespace Mesh {
+namespace Ovito { inline namespace Util { inline namespace Mesh {
 
 /******************************************************************************
 * Removes all faces, edges, and vertices from this mesh.

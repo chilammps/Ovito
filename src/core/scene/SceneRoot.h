@@ -26,7 +26,7 @@
 #include <core/animation/TimeInterval.h>
 #include "SceneNode.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief This is the scene's root node.

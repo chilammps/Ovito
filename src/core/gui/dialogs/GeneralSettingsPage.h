@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * Page of the application settings dialog, which hosts general program options.

@@ -23,7 +23,7 @@
 #include "DefaultTextPrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /******************************************************************************
 * Returns true if the buffer is filled and can be rendered with the given renderer.

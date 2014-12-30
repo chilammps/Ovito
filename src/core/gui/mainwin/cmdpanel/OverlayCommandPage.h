@@ -28,7 +28,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/overlay/ViewportOverlay.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * The command panel tab lets the user edit the viewport overlays.

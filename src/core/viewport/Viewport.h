@@ -33,7 +33,7 @@
 #include "ViewportSettings.h"
 #include "ViewportWindow.h"
 
-namespace Ovito { namespace View {
+namespace Ovito { inline namespace View {
 
 /******************************************************************************
 * This data structure describes a projection parameters used to render

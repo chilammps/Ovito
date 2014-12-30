@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "Exception.h"
 
-namespace Ovito { namespace Util {
+namespace Ovito { inline namespace Util {
 
 Exception::ExceptionHandler Exception::exceptionHandler = nullptr;
 

@@ -27,7 +27,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * This panel lets the user edit the properties of some RefTarget derived object.

@@ -23,7 +23,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, DataObject);
 DEFINE_REFERENCE_FIELD(PipelineObject, _sourceObject, "InputObject", DataObject);

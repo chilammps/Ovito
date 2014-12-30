@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { namespace View { namespace Internal {
+namespace Ovito { inline namespace View { inline namespace Internal {
 
 /**
  * \brief A viewport renderer used for object picking.

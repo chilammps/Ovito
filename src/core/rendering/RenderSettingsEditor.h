@@ -27,7 +27,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /**
  * The editor component for the RenderSettings class.

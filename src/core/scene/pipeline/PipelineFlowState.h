@@ -28,7 +28,7 @@
 #include <core/scene/objects/VersionedObjectReference.h>
 #include "PipelineStatus.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief This object flows down the geometry pipeline of an ObjectNode.

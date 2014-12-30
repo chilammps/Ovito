@@ -26,7 +26,7 @@
 #include <core/scene/objects/geometry/TriMeshObject.h>
 #include "TriMeshDisplay.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 using namespace Internal;
 

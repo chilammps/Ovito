@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "DisplayObject.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DisplayObject, RefTarget);
 DEFINE_PROPERTY_FIELD(DisplayObject, _isEnabled, "IsEnabled");

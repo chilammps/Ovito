@@ -32,7 +32,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * This is called by the system after the input handler has

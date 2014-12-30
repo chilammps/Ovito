@@ -31,7 +31,7 @@
 #include <core/reference/RefTarget.h>
 #include "PropertiesEditor.h"
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 /**
  * \brief Base class for UI components that allow the user to edit a parameter

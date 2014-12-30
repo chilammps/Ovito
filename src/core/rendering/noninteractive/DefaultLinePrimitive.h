@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/LinePrimitive.h>
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Buffer object that stores line geometry to be rendered by a non-interactive renderer.

@@ -32,7 +32,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /******************************************************************************
 * This viewport mode plays the animation while it is active.

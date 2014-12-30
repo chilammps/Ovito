@@ -23,7 +23,7 @@
 #include <core/plugins/PluginManager.h>
 #include "ApplicationSettingsDialog.h"
 
-namespace Ovito { namespace Gui { namespace Dialogs {
+namespace Ovito { inline namespace Gui { inline namespace Dialogs {
 	
 IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsDialogPage, OvitoObject);
 

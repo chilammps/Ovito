@@ -27,7 +27,7 @@
 #include <core/utilities/mesh/TriMesh.h>
 #include "OpenGLBuffer.h"
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /**
  * \brief Buffer object that stores a triangle mesh to be rendered in the viewports.

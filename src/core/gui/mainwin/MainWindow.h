@@ -26,7 +26,7 @@
 #include <core/gui/app/Application.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /**
  * \brief The main window of the application.

@@ -34,7 +34,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/SelectionSet.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_QUIT command.

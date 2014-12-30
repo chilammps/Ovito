@@ -27,7 +27,7 @@
 #include "DataSet.h"
 #include "importexport/FileImporter.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief Manages the DataSet being edited.

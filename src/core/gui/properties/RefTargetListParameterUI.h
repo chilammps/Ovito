@@ -26,7 +26,7 @@
 #include "ParameterUI.h"
 #include "PropertiesEditor.h"
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 /******************************************************************************
 * A list view that shows the RefTarget items contained in a vector reference field.

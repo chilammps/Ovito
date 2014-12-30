@@ -48,7 +48,7 @@
 #include "qtiocompressor.h"
 #include <zlib.h>
 
-namespace Ovito { namespace Util {
+namespace Ovito { inline namespace Util {
 
 typedef Bytef ZlibByte;
 typedef uInt ZlibSize;

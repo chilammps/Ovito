@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 IMPLEMENT_OVITO_OBJECT(Core, RefTargetListenerBase, RefMaker);
 IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListenerBase, RefMaker);

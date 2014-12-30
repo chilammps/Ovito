@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * A Qt model/view system list model that contains all scene nodes in the current scene.

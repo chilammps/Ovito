@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief A vector with four components.

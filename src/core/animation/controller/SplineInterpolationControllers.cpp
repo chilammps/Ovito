@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "SplineInterpolationControllers.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FloatSplineAnimationKey, FloatAnimationKey);
 DEFINE_PROPERTY_FIELD(FloatSplineAnimationKey, _inTangent, "InTangent");

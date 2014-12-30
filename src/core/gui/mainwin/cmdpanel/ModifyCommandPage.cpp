@@ -35,7 +35,7 @@
 #include "ModificationListModel.h"
 #include "ModifierListBox.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * Initializes the modify page.

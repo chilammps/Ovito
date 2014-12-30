@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Modifier.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief Stores information about an application of a Modifier

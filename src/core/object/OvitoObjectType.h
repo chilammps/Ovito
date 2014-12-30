@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "OvitoObjectReference.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief Stores meta-information about a class in OVITO's object system.

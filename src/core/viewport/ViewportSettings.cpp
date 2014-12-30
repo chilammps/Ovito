@@ -23,7 +23,7 @@
 #include <core/viewport/ViewportSettings.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito { namespace View {
+namespace Ovito { inline namespace View {
 
 /// The current settings record.
 Q_GLOBAL_STATIC(ViewportSettings, _currentViewportSettings);

@@ -28,7 +28,7 @@
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief Tree node in the scene hierarchy.

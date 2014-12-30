@@ -28,7 +28,7 @@
 #include "RenderSettings.h"
 #include "RenderSettingsEditor.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
 SET_OVITO_OBJECT_EDITOR(RenderSettings, Internal::RenderSettingsEditor);

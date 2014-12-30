@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ElidedTextLabel.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * Returns the rect that is available for us to draw the document

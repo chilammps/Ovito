@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "LoadImageFileDialog.h"
 
-namespace Ovito { namespace Gui { namespace Dialogs {
+namespace Ovito { inline namespace Gui { inline namespace Dialogs {
 
 /******************************************************************************
 * Constructs the dialog window.

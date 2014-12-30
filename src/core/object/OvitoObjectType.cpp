@@ -31,7 +31,7 @@
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /******************************************************************************
 * Constructor of the object.

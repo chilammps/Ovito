@@ -34,7 +34,7 @@
 #include "Quaternion.h"
 #include "Matrix3.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief A rotation in 3d space, described by a rotation axis and an angle.

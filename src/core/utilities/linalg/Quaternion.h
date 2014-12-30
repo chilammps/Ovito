@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 template<typename T> class AffineTransformationT;
 template<typename T> class Matrix_3;
@@ -272,7 +272,7 @@ public:
 #include "AffineTransformation.h"
 #include "Matrix3.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 // Initializes the quaternion from rotational part of a transformation matrix.
 template<typename T>

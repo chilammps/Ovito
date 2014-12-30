@@ -23,11 +23,14 @@
     very flexible manner.
   </para> 
   <para>
-    Each type of modifier provided by the program has a certain set of parameters that control its operation. OVITO's data flow concept allows working non-destructively with the simulation data. 
-    That means, you can change modifier parameters at any time, and OVITO will immediately recalculate the effect on the original simulation data and
-    update the particle display. To accomplish this, OVITO keeps two copies of the simulation data in memory: The original particles loaded from the external input
-    file and the processed data, which resulted from the last evaluation of the modification pipeline. The latter is recomputed every time you alter the modification pipeline 
-    in some way. An efficient caching mechanism keeps the amount of data processing to a minimum by re-evaluating only those modifiers that are affected by a parameter change.
+    Each type of modifier provided by the program has a certain set of parameters that control its operation. 
+    OVITO's data flow concept allows to work non-destructively with the simulation data. 
+    That means, you can change modifier parameters at any time, and OVITO will immediately recalculate the effect of the modifier on the original simulation data and
+    update the particle display. To accomplish this, OVITO keeps two copies of the data in memory: 
+    The original set of particles loaded from the external input file and the processed data, which resulted from the last evaluation of the modification pipeline. 
+    The latter is recomputed every time you alter the modification pipeline in some way. 
+    An efficient caching mechanism keeps the amount of data processing to a minimum by re-evaluating only 
+    those modifiers that are affected by a parameter change.
   </para>
 
   <simplesect xml:id="usage.modification_pipeline.pipeline_listbox">
@@ -36,25 +39,27 @@
 	    <figure><title>The modification pipeline editor</title><screenshot><mediaobject><imageobject>
 	       <imagedata fileref="images/command_panel/pipeline_editor.png" format="PNG" />
 	    </imageobject></mediaobject></screenshot></figure>
-       The pipeline editor, shown on the right, is the central place to set up the sequence of modifications. 
-       It displays the current modification pipeline and lets you insert new modifiers and change their parameters.
+       The pipeline editor, shown in the screenshot on the right, is the central place to set up the sequence of modifiers. 
+       It displays the current modification pipeline and lets you insert new modifiers, re-arrange them, or change their parameters.
     </para>
     <para>   
-       After importing a new simulation file in OVITO, the modification 
+       After first importing a simulation file in OVITO, the modification 
        pipeline is initially empty. However, the pipeline editor already shows two sections labeled "Display" and "Input", which are always present.
        The "Display" section contains one or more items controlling the visual display of particles and other elements such as the simulation box. 
-       The items under the "Input" section represent the imported data, i.e. the original contents of the external data file which enter the modification pipeline.
+       Items under the "Input" section represent the imported data, i.e. the original content of the external data file 
+       which enters the modification pipeline.
     </para>
     <para>
        Above the pipeline editor you find a drop-down box labeled "Add modification...", which contains the list of <link linkend="particles.modifiers">available modifiers</link>
        that can be applied to the data. 
        Picking an entry from that box inserts a new modifier into the modification pipeline. The new modifier will be inserted right above the
        currently selected pipeline item. Note that the modification pipeline is displayed in bottom-up order. That means the data source 
-       is located at the bottom and the modifier at the top is executed last.
+       is located at the bottom, and the modifier at the top of the list is executed last.
     </para>
     <para>
-       You can temporarily disable individual modifiers in the modification pipeline by unchecking the box next to them. To permanently remove a modifier from the pipeline, use the 
-       <emphasis>Delete Modifier</emphasis> button in the toolbar on the right. The up and down arrow buttons change the order of modifiers in the pipeline.
+       You can temporarily disable individual modifiers in the modification pipeline by unchecking the box next to them. 
+       To permanently remove a modifier from the pipeline, use the <emphasis>Delete Modifier</emphasis> button in the toolbar on the right. 
+       The up and down arrow buttons change the order of modifiers in the pipeline.
     </para>
   </simplesect>
 
@@ -89,6 +94,31 @@
     </para>
     <para>
       You can turn off the display of individual elements by unchecking the corresponding box in the pipeline editor.
+    </para>
+  </simplesect>
+
+  <simplesect xml:id="usage.modification_particle_selection">
+    <title>Particle selection</title>
+    <para>
+      OVITO provides several modifiers that allow to select a subset of particles (e.g. the <link linkend="particles.modifiers.select_particle_type">Select particle types</link> modifier). 
+      Other modifiers, when placed further down the modification pipeline, act only on the selected particles 
+      (e.g. the <link linkend="particles.modifiers.delete_selected_particles">Delete selected particles</link> modifier).
+      OVITO stores the current selection state in a standard particle property called <literal>Selection</literal>.
+      Its value is 1 for particle that are selected, and 0 otherwise. Particle whose <literal>Selection</literal> property
+      is nonzero are rendered with a red color in OVITO's interactive viewports to indicate that they are currently selected.
+      However, their normal display color is always used when rendering an output image.
+    </para>
+    <para>
+      Like any other particle property, the <literal>Selection</literal> property
+      can be changed multiple times within a modification pipeline, for example to select a first group of particles, change their color using
+      the <link linkend="particles.modifiers.assign_color">Assign color</link> modifier, then
+      select another group of particles,
+      and assign a different color to them using a second <link linkend="particles.modifiers.assign_color">Assign color</link> modifier.
+      In other words, the selection property of a particle can have different values at different points along the
+      modification pipeline. Which selection a modifiers sees depends on where it is placed in the modification pipeline.
+      Note that some modifiers like the <link linkend="particles.modifiers.assign_color">Assign color</link> modifier 
+      clear the current selection by default to prevent the particles from being rendered in the red selection marker color
+      (which would mask the particles' real color assigned by the modifier).
     </para>
   </simplesect>
 

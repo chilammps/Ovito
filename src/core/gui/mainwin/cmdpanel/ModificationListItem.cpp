@@ -25,7 +25,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include "ModificationListItem.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefMaker);
 DEFINE_FLAGS_REFERENCE_FIELD(ModificationListItem, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_WEAK_REF);

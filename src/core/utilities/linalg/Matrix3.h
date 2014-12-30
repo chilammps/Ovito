@@ -34,7 +34,7 @@
 #include "Vector3.h"
 #include "Point3.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 template<typename T> class RotationT;
 template<typename T> class QuaternionT;
@@ -437,7 +437,7 @@ public:
 #include "Scaling.h"
 #include "Rotation.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 // Generates a rotation matrix from an axis and an angle.
 template<typename T>

@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Gui { namespace Dialogs {
+namespace Ovito { inline namespace Gui { inline namespace Dialogs {
 
 /**
  * \brief The file chooser dialog that saves a history of recently visited directories.

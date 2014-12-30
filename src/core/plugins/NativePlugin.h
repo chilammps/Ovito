@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito { namespace PluginSystem { namespace Internal {
+namespace Ovito { inline namespace PluginSystem { inline namespace Internal {
 
 /**
  * \brief A plugin that is implemented as a native shared library.

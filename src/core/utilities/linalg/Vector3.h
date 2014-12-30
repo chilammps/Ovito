@@ -31,7 +31,7 @@
 #include <core/utilities/io/SaveStream.h>
 #include <core/utilities/io/LoadStream.h>
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief A vector with three components.

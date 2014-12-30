@@ -26,7 +26,7 @@
 #include <core/rendering/FrameBuffer.h>
 #include "FrameBufferWidget.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /**
  * This window displays the contents of a FrameBuffer.

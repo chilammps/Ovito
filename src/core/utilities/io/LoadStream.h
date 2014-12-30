@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /**
  * \brief An input stream that reads binary data from a file in a platform-independent way.

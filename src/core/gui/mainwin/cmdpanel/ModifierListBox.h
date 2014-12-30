@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObjectType.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 class ModificationListModel;
 class ModificationListItem;

@@ -33,7 +33,7 @@
 #include "Vector2.h"
 #include "Point2.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief An axis-aligned box in 2d space.

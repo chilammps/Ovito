@@ -24,7 +24,7 @@
 #include <core/animation/controller/LookAtController.h>
 #include <core/scene/SceneNode.h>
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, Controller);
 DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", Controller);

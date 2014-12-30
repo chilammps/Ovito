@@ -24,7 +24,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "UnitsManager.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Units {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Units {
 
 /******************************************************************************
 * Constructor.

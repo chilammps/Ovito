@@ -27,7 +27,7 @@
 #include "PropertyField.h"
 #include "RefTarget.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief Helper class that is used to clone a RefTarget derived object.

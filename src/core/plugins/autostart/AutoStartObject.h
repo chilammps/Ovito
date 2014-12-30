@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace PluginSystem {
+namespace Ovito { inline namespace PluginSystem {
 
 /**
  * \brief Base class that allows plugins to execute code on application startup.

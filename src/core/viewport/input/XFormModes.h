@@ -26,7 +26,7 @@
 #include <core/reference/RefTargetListener.h>
 #include "ViewportInputMode.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * The default input mode for the viewports. This mode lets the user

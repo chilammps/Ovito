@@ -35,7 +35,7 @@
 #include "Point3.h"
 #include "Matrix3.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief A 3x4 matrix, which describes an affine transformation in 3d space.

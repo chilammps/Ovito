@@ -33,7 +33,7 @@ extern "C" {
 	#define CODEC_ID_NONE AV_CODEC_ID_NONE
 #endif
 
-namespace Ovito { namespace Util { namespace IO { namespace Internal {
+namespace Ovito { inline namespace Util { inline namespace IO { inline namespace Internal {
 
 /// The list of supported video formats.
 QList<VideoEncoder::Format> VideoEncoder::_supportedFormats;

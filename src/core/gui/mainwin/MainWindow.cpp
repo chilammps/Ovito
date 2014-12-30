@@ -35,7 +35,7 @@
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /******************************************************************************
 * The constructor of the main window class.

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, NonInteractiveSceneRenderer, SceneRenderer);
 

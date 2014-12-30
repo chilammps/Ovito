@@ -25,7 +25,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_GOTO_START_OF_ANIMATION command.

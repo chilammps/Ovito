@@ -30,7 +30,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 /**
  * \brief A scene display object for triangle meshes.

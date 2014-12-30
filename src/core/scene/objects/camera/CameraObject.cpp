@@ -31,7 +31,7 @@
 #include "CameraObject.h"
 #include "moc_AbstractCameraObject.cpp"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, DataObject);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraObject, AbstractCameraObject);

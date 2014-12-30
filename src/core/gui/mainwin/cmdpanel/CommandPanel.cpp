@@ -26,7 +26,7 @@
 #include "OverlayCommandPage.h"
 #include "UtilityCommandPage.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * The constructor of the command panel class.

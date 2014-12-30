@@ -31,7 +31,7 @@
 // QtNetwork module
 #include <QtNetwork>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 class ModificationListModel;	// defined in ModificationListModel.h
 class ModificationListItem;		// defined in ModificationListModel.h

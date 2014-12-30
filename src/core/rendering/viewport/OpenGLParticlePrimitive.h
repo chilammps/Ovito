@@ -27,7 +27,7 @@
 #include "OpenGLBuffer.h"
 #include "OpenGLTexture.h"
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /**
  * \brief This class is responsible for rendering particle primitives using OpenGL.

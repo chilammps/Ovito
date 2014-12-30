@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ColorPickerWidget.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * Constructs the control.

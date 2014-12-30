@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "SceneNode.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief Stores a selection of scene nodes.

@@ -15,7 +15,6 @@ Work-flow improvements:
 New visualization features:
 
 - Option to include a length scale bar in a rendered image.
-- Show Periodic Images modifier should replicate bonds too (requested by Sina Rajabdoust <sina.rajabdoust@gmail.com>).
 - More particle representations (e.g. open circles/rectangles)
 - Test OpenGL rendering support for more than 12 million particles.
 
@@ -53,8 +52,15 @@ Performance improvements:
 Scripting features:
 
 - Scripting interface for viewport overlays.
-- Python 3.x compatibility (requested by jan.oliver.oelerich@physik.uni-marburg.de). 
 - Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
+
+Other:
+
+- Update VideoEncoder class to avoid use of deprecated Libav functions.
+
+Documentation:
+
+-
 
 NirajGupta@my.unt.edu:
 

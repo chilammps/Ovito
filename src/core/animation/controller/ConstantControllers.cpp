@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ConstantControllers.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstFloatController, Controller);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstIntegerController, Controller);

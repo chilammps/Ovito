@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/scene/pipeline/PipelineStatus.h>
 
-namespace Ovito { namespace View {
+namespace Ovito { inline namespace View {
 
 /**
  * \brief Abstract base class for all viewport overlays.

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "SaveStream.h"
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /**
  * \brief An output stream that can serialize an OvitoObject graph a file.

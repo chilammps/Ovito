@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "Controller.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /**
  * \brief Base class for animation keys.

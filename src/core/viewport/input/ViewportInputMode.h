@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Gui { namespace ViewportInput {
+namespace Ovito { inline namespace Gui { inline namespace ViewportInput {
 
 /**
  * \brief Abstract base class for viewport input modes that handle mouse input

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/MemoryPool.h>
 
-namespace Ovito { namespace Util { namespace Mesh {
+namespace Ovito { inline namespace Util { inline namespace Mesh {
 
 /**
  * Stores a polygonal mesh using a half-edge data structure.

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "AnimationSettings.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AnimationSettings, RefTarget);
 DEFINE_PROPERTY_FIELD(AnimationSettings, _time, "Time");

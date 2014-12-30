@@ -26,7 +26,7 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include "OpenGLBuffer.h"
 
-namespace Ovito { namespace Rendering { namespace Internal {
+namespace Ovito { inline namespace Rendering { inline namespace Internal {
 
 /**
  * \brief Buffer object that stores a set of arrows to be rendered in the viewports.

@@ -24,7 +24,7 @@
 
 #define MAX_DIRECTORY_HISTORY_SIZE	5
 
-namespace Ovito { namespace Gui { namespace Dialogs {
+namespace Ovito { inline namespace Gui { inline namespace Dialogs {
 
 /******************************************************************************
 * Constructs the dialog window.

@@ -27,7 +27,7 @@
 #include "FileManager.h"
 #include "SftpJob.h"
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 using namespace Internal;
 

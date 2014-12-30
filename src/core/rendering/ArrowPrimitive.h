@@ -26,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Abstract base class for rendering arrow glyphs and cylinders.

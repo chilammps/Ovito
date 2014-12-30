@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/pipeline/PipelineStatus.h>
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /**
  * \brief A widget that displays information from the PipelineStatus class.

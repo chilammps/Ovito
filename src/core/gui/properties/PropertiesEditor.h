@@ -27,7 +27,7 @@
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include "PropertiesPanel.h"
 
-namespace Ovito { namespace Gui { namespace Params {
+namespace Ovito { inline namespace Gui { inline namespace Params {
 
 /**
  * \brief Base class for property editors for RefTarget derived objects.

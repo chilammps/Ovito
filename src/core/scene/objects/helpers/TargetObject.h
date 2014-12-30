@@ -28,7 +28,7 @@
 #include <core/scene/objects/DisplayObject.h>
 #include <core/rendering/LinePrimitive.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 /**
  * A simple helper object that serves as direction target for camera and light objects.

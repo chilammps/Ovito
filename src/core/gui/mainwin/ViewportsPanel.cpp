@@ -30,7 +30,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "ViewportsPanel.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * The constructor of the viewports panel class.

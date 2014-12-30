@@ -31,7 +31,7 @@
 #include "DefaultTextPrimitive.h"
 #include "DefaultMeshPrimitive.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * \brief Abstract base class for non-interactive scene renderers.

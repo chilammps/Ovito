@@ -30,7 +30,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/XFormModes.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * Handles the mouse down event for the given viewport.

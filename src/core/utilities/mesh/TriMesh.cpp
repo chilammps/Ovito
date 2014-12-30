@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "TriMesh.h"
 
-namespace Ovito { namespace Util { namespace Mesh {
+namespace Ovito { inline namespace Util { inline namespace Mesh {
 
 /******************************************************************************
 * Clears all vertices and faces.

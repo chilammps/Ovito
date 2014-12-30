@@ -23,7 +23,7 @@
 #include "CloneHelper.h"
 #include "RefTarget.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /******************************************************************************
 * This creates a copy of the RefTarget. 

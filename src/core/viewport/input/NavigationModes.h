@@ -27,7 +27,7 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include "ViewportInputMode.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * \brief Base class for viewport navigation modes likes zoom, pan and orbit.

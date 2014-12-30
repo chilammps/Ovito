@@ -35,7 +35,7 @@
 	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 using namespace Util::IO::Internal;
 

@@ -28,7 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "FileSourceEditor.h"
 
-namespace Ovito { namespace DataIO { namespace Internal {
+namespace Ovito { inline namespace DataIO { namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, FileSourceEditor, PropertiesEditor);
 

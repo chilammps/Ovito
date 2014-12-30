@@ -31,7 +31,7 @@
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include "CoordinateTripodOverlay.h"
 
-namespace Ovito { namespace View { namespace Internal {
+namespace Ovito { inline namespace View { inline namespace Internal {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CoordinateTripodOverlay, ViewportOverlay);
 IMPLEMENT_OVITO_OBJECT(Core, CoordinateTripodOverlayEditor, PropertiesEditor);

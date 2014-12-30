@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file LinAlg.h 
+ * \file
  * \brief This high-level header file includes other headers to import the most important linear algebra classes.
  */
 

@@ -27,7 +27,7 @@
 #include "objects/DataObject.h"
 #include "objects/DisplayObject.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief A node in the scene that represents an object.

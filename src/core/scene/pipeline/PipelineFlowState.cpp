@@ -23,7 +23,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/objects/DataObject.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /******************************************************************************
 * Tries to convert one of the to data objects stored in this flow state to

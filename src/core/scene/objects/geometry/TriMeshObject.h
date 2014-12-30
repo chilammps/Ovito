@@ -26,7 +26,7 @@
 #include <core/scene/objects/DataObject.h>
 #include <core/utilities/mesh/TriMesh.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 /**
  * \brief A data object type that consist of a triangle mesh.

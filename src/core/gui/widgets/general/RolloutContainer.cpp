@@ -23,7 +23,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "RolloutContainer.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * Constructs the container.

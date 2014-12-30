@@ -22,7 +22,7 @@
 #include <core/viewport/Viewport.h>
 #include "ViewportWindow.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * \brief The context menu of the viewports.

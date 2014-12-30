@@ -25,7 +25,7 @@
 #include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/NavigationModes.h>
 
-namespace Ovito { namespace Gui { namespace ViewportInput {
+namespace Ovito { inline namespace Gui { inline namespace ViewportInput {
 
 /******************************************************************************
 * Destructor.

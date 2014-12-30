@@ -35,7 +35,7 @@
 #include "FileSource.h"
 #include "FileSourceEditor.h"
 
-namespace Ovito { namespace DataIO {
+namespace Ovito { inline namespace DataIO {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSource, CompoundObject);
 SET_OVITO_OBJECT_EDITOR(FileSource, Internal::FileSourceEditor);

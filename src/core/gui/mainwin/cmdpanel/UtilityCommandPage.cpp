@@ -25,7 +25,7 @@
 #include <core/dataset/DataSetContainer.h>
 #include "UtilityCommandPage.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /******************************************************************************
 * Initializes the utility panel.

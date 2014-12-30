@@ -28,7 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /// The singleton instance of the manager class.
 ControllerManager* ControllerManager::_instance = nullptr;

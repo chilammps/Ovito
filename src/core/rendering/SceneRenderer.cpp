@@ -28,7 +28,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRenderer, RefTarget);
 IMPLEMENT_OVITO_OBJECT(Core, ObjectPickInfo, OvitoObject);

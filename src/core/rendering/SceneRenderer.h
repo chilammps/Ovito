@@ -38,7 +38,7 @@
 #include "ArrowPrimitive.h"
 #include "MeshPrimitive.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /**
  * Abstract base class for object-specific information used in the picking system.

@@ -26,7 +26,7 @@
 #include <core/reference/RefMaker.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 
-namespace Ovito { namespace PluginSystem {
+namespace Ovito { inline namespace PluginSystem {
 
 /**
  * \brief Abstract base class for utility applets.

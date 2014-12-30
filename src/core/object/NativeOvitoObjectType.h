@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "OvitoObjectType.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Internal {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Internal {
 
 /**
  * \brief Every C++ class derived from OvitoObject is described by an instance of this class.

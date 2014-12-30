@@ -22,7 +22,6 @@
 #ifndef __OVITO_CRYSTALANALYSIS_H
 #define __OVITO_CRYSTALANALYSIS_H
 
-#include <core/Core.h>
 #include <plugins/particles/Particles.h>
 
 #ifdef CrystalAnalysis_EXPORTS		// This is defined by CMake when building the plugin library.

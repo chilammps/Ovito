@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * This dialog box lets the user adjust the camera settings of the

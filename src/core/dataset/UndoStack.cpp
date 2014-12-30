@@ -23,7 +23,7 @@
 #include <core/reference/RefMaker.h>
 #include "UndoStack.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Undo {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Undo {
 
 /******************************************************************************
 * Increments the suspend count of the undo stack associated with the given

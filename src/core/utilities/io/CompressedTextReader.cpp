@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "CompressedTextReader.h"
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /******************************************************************************
 * Opens the stream for reading.

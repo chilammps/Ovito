@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "TriMeshObject.h"
 
-namespace Ovito { namespace ObjectSystem { namespace Scene { namespace StdObj {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, DataObject);
 

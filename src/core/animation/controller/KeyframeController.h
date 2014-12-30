@@ -28,7 +28,7 @@
 #include "Controller.h"
 #include "AnimationKeys.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /**
  * \brief Base class for animation controllers that are based on animation keys.

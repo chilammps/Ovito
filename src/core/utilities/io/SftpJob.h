@@ -33,7 +33,7 @@
 #include <sshconnectionmanager.h>
 #include <sftpchannel.h>
 
-namespace Ovito { namespace Util { namespace IO { namespace Internal {
+namespace Ovito { inline namespace Util { inline namespace IO { inline namespace Internal {
 
 /**
  * \brief Base class for background jobs that access remote files and directories via SFTP.

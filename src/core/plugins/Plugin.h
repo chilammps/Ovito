@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 
-namespace Ovito { namespace PluginSystem {
+namespace Ovito { inline namespace PluginSystem {
 
 /**
  * \brief Represents a plugin that is loaded at runtime.

@@ -27,7 +27,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * An item of the ModificationListModel.

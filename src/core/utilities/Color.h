@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include <core/utilities/io/SaveStream.h>
 
-namespace Ovito { namespace Util {
+namespace Ovito { inline namespace Util {
 
 /**
  * \brief A color value with red, blue, and green components.

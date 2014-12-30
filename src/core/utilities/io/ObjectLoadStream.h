@@ -27,7 +27,7 @@
 #include <core/object/OvitoObjectReference.h>
 #include "LoadStream.h"
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /**
  * \brief An input stream that can deserialize an OvitoObject graph stored in a file.

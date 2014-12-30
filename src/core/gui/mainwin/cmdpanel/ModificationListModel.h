@@ -29,7 +29,7 @@
 #include <core/scene/SceneNode.h>
 #include "ModificationListItem.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * This Qt model class is used to populate the QListView widget.

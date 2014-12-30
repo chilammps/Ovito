@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/Exception.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /**
  * \brief The main application.

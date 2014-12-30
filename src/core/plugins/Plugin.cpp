@@ -23,7 +23,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito { namespace PluginSystem {
+namespace Ovito { inline namespace PluginSystem {
 
 /******************************************************************************
 * Constructor for the Plugin class.

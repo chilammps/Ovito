@@ -28,7 +28,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/objects/DisplayObject.h>
 
-namespace Ovito { namespace ObjectSystem { namespace Scene {
+namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
 
 /**
  * \brief Abstract base class for all objects in the scene.

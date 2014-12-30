@@ -25,7 +25,7 @@
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 using namespace std;
 

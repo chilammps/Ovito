@@ -29,7 +29,7 @@
 #include <core/reference/ReferenceEvent.h>
 #include <core/plugins/Plugin.h>
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief RefMaker derived classes use this implement properties and reference fields.

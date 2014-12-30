@@ -27,7 +27,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 /******************************************************************************
 * Opens the stream for reading.

@@ -24,7 +24,7 @@
 #include <core/reference/RefMaker.h>
 #include "PropertyFieldDescriptor.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /******************************************************************************
 * Return the human readable and localized name of the parameter field.

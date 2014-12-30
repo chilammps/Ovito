@@ -23,7 +23,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportConfiguration.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 /******************************************************************************
 * Handles the ACTION_VIEWPORT_MAXIMIZE command.

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito { namespace Gui {
+namespace Ovito { inline namespace Gui {
 
 //////////////////////// Action identifiers ///////////////////////////
 

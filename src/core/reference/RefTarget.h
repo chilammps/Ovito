@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "RefMaker.h"
 
-namespace Ovito { namespace ObjectSystem {
+namespace Ovito { inline namespace ObjectSystem {
 
 /**
  * \brief Base class for objects that are referenced by RefMaker objects.

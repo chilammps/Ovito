@@ -25,7 +25,7 @@
 #include <core/animation/TimeInterval.h>
 #include <core/utilities/linalg/AffineDecomposition.h>
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PRSTransformationController, Controller);
 DEFINE_REFERENCE_FIELD(PRSTransformationController, _position, "Position", Controller);

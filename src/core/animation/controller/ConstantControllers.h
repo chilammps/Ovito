@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Controller.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /**
  * \brief An animation controller with a constant float value.

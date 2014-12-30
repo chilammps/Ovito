@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /**
  * \brief A QLabel-like widget that display a line of text, which is shortened if necessary to fit the available space.

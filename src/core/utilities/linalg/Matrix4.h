@@ -36,7 +36,7 @@
 #include "Vector4.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { namespace Util { namespace Math {
+namespace Ovito { inline namespace Util { inline namespace Math {
 
 /**
  * \brief A 4x4 matrix.

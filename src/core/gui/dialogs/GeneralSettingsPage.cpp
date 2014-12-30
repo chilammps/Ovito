@@ -23,7 +23,7 @@
 #include <core/viewport/ViewportWindow.h>
 #include "GeneralSettingsPage.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, GeneralSettingsPage, ApplicationSettingsDialogPage);
 

@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "TimeInterval.h"
 
-namespace Ovito { namespace Anim {
+namespace Ovito { inline namespace Anim {
 
 /**
  * \brief Stores the animation settings such as the animation length, current frame number, playback rate, etc.

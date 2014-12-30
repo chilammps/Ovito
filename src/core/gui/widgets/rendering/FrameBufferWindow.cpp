@@ -23,7 +23,7 @@
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include "FrameBufferWindow.h"
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /******************************************************************************
 * Constructor.

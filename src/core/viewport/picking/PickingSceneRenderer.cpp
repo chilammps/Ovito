@@ -25,7 +25,7 @@
 #include <core/rendering/RenderSettings.h>
 #include "PickingSceneRenderer.h"
 
-namespace Ovito { namespace View { namespace Internal {
+namespace Ovito { inline namespace View { inline namespace Internal {
 
 IMPLEMENT_OVITO_OBJECT(Core, PickingSceneRenderer, ViewportSceneRenderer);
 

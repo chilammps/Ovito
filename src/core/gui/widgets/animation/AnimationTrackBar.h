@@ -27,7 +27,7 @@
 #include <core/animation/controller/KeyframeController.h>
 #include "AnimationTimeSlider.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * The track bar displays the animation keys of the selected scene node.

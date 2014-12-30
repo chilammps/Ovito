@@ -23,7 +23,7 @@
 #include "DefaultArrowPrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
-namespace Ovito { namespace Rendering {
+namespace Ovito { inline namespace Rendering {
 
 /******************************************************************************
 * Sets the properties of a single element.

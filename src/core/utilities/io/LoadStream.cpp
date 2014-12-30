@@ -23,7 +23,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include <core/utilities/Exception.h>
 
-namespace Ovito { namespace Util { namespace IO {
+namespace Ovito { inline namespace Util { inline namespace IO {
 
 using namespace std;
 

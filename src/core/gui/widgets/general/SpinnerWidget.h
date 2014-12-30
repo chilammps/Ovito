@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito { namespace Gui { namespace Widgets {
+namespace Ovito { inline namespace Gui { inline namespace Widgets {
 
 /**
  * \brief A spinner control for editing a numeric value.

@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/FileImporter.h>
 #include "HistoryFileDialog.h"
 
-namespace Ovito { namespace Gui { namespace Internal {
+namespace Ovito { inline namespace Gui { inline namespace Internal {
 
 /**
  * This file chooser dialog lets the user select a file to be imported.
