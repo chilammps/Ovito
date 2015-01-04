@@ -79,26 +79,7 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		_oldFieldOfView = vp->fieldOfView();
 		_oldViewMatrix = vp->viewMatrix();
 		_oldInverseViewMatrix = vp->inverseViewMatrix();
-
-		// Use the target of a camera as the orbit center.
-		if(vp->viewNode() != nullptr && vp->viewType() == Viewport::VIEW_SCENENODE && vp->viewNode()->lookatTargetNode() != nullptr) {
-			TimeInterval iv;
-			TimePoint time = vp->dataset()->animationSettings()->time();
-			_currentOrbitCenter = Point3::Origin() + vp->viewNode()->lookatTargetNode()->getWorldTransform(time, iv).translation();
-		}
-		else {
-			_currentOrbitCenter = _viewport->dataset()->viewportConfig()->orbitCenter();
-
-			if(vp->viewNode() != nullptr && _viewport->isPerspectiveProjection()) {
-				// If a free camera node is selected, the current orbit center is at the same location as the camera.
-				// In this case, we should shift the orbit center such that it is in front of the camera.
-				Point3 camPos = Point3::Origin() + vp->inverseViewMatrix().translation();
-				if(_currentOrbitCenter.equals(camPos)) {
-					_currentOrbitCenter = camPos - 50.0f * vp->inverseViewMatrix().column(2);
-				}
-			}
-		}
-
+		_currentOrbitCenter = vp->orbitCenter();
 		_viewport->dataset()->undoStack().beginCompoundOperation(tr("Modify camera"));
 	}
 }

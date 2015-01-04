@@ -159,6 +159,9 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 			backgroundColor = renderSettings()->backgroundColor();
 		OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
 	}
+
+	// Reset OpenGL state.
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 /******************************************************************************
@@ -735,7 +738,7 @@ void ViewportSceneRenderer::renderGrid()
 	_constructionGridGeometry->render(this);
 }
 
-namespace Internal {
+inline namespace Internal {
 
 /******************************************************************************
 * Reports OpenGL error status codes.

@@ -167,7 +167,11 @@ void VideoEncoder::openFile(const QString& filename, int width, int height, int 
 		throw Exception(tr("Could not open video codec: %1").arg(errorMessage(errCode)));
 
 	// Allocate and init a YUV frame.
+#if LIBAVCODEC_VERSION_MAJOR >= 56
+	_frame.reset(av_frame_alloc(), &av_free);
+#else
 	_frame.reset(avcodec_alloc_frame(), &av_free);
+#endif
 	if(!_frame)
 		throw Exception(tr("Could not allocate video frame."));
 

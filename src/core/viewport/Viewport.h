@@ -249,6 +249,12 @@ public:
 	/// \brief Sets whether the grid is shown in the viewport.
 	void setGridVisible(bool showGrid) { _showGrid = showGrid; }
 
+	/// \brief Returns whether stereoscopic rendering is enabled for this viewport.
+	bool stereoscopicMode() const { return _stereoscopicMode; }
+
+	/// \brief Enables or disables stereoscopic rendering for this viewport.
+	void setStereoscopicMode(bool enable) { _stereoscopicMode = enable; }
+
 	/// \brief Gets the scene node used as camera for the viewport.
 	/// \return The scene node or \c NULL if no scene node has been set.
 	ObjectNode* viewNode() const { return _viewNode; }
@@ -258,6 +264,9 @@ public:
 	///             viewport type must have been set to ViewType::VIEW_SCENENODE using setViewType()
 	///             to enable the camera tracking mode for this viewport.
 	void setViewNode(ObjectNode* node) { _viewNode = node; }
+
+	/// \brief Returns the current orbit center for this viewport.
+	Point3 orbitCenter();
 
 	/// \brief Computes the scaling factor of an object that should always appear in the same size on the screen, independent of its
 	///        position with respect to the camera.
@@ -444,6 +453,9 @@ private:
 	/// Indicates whether the grid is shown.
 	PropertyField<bool> _showGrid;
 
+	/// Enables stereoscopic rendering.
+	PropertyField<bool> _stereoscopicMode;
+
 	/// The scene node (camera) that has been selected as the view node.
 	ReferenceField<ObjectNode> _viewNode;
 
@@ -503,6 +515,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 	DECLARE_PROPERTY_FIELD(_cameraTM);
 	DECLARE_PROPERTY_FIELD(_showGrid);
+	DECLARE_PROPERTY_FIELD(_stereoscopicMode);
 	DECLARE_VECTOR_REFERENCE_FIELD(_overlays);
 
 	friend class Ovito::Gui::Internal::ViewportWindow;

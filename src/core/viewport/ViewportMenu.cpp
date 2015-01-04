@@ -46,6 +46,9 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	action = addAction(tr("Show Grid"), this, SLOT(onShowGrid(bool)));
 	action->setCheckable(true);
 	action->setChecked(_viewport->isGridVisible());
+	action = addAction(tr("Stereoscopic Mode (anaglyphs)"), this, SLOT(onStereoscopicMode(bool)));
+	action->setCheckable(true);
+	action->setChecked(_viewport->stereoscopicMode());
 	addSeparator();
 
 	_viewTypeMenu = addMenu(tr("View Type"));
@@ -155,6 +158,14 @@ void ViewportMenu::onRenderPreviewMode(bool checked)
 void ViewportMenu::onShowGrid(bool checked)
 {
 	_viewport->setGridVisible(checked);
+}
+
+/******************************************************************************
+* Handles the menu item event.
+******************************************************************************/
+void ViewportMenu::onStereoscopicMode(bool checked)
+{
+	_viewport->setStereoscopicMode(checked);
 }
 
 /******************************************************************************

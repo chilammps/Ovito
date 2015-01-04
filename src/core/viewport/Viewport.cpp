@@ -55,6 +55,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _renderPreviewMode, "ShowRenderFrame", PRO
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraTM, "CameraTransformation", PROPERTY_FIELD_NO_UNDO);
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO);
+DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _stereoscopicMode, "StereoscopicMode", PROPERTY_FIELD_NO_UNDO);
 DEFINE_VECTOR_REFERENCE_FIELD(Viewport, _overlays, "Overlays", ViewportOverlay);
 
 /******************************************************************************
@@ -71,7 +72,8 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_pickingRenderer(new PickingSceneRenderer(dataset)),
 		_cameraTM(AffineTransformation::Identity()),
 		_gridMatrix(AffineTransformation::Identity()),
-		_showGrid(false)
+		_showGrid(false),
+		_stereoscopicMode(false)
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
@@ -84,6 +86,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(Viewport::_cameraTM);
 	INIT_PROPERTY_FIELD(Viewport::_showGrid);
 	INIT_PROPERTY_FIELD(Viewport::_overlays);
+	INIT_PROPERTY_FIELD(Viewport::_stereoscopicMode);
 
 	connect(&ViewportSettings::getSettings(), &ViewportSettings::settingsChanged, this, &Viewport::viewportSettingsChanged);
 }
@@ -592,11 +595,57 @@ void Viewport::render(QOpenGLContext* context)
 		if(renderPreviewMode())
 			adjustProjectionForRenderFrame(_projParams);
 
-		// Pass final projection parameters to renderer.
-		renderer->setProjParams(_projParams);
+		if(!_projParams.isPerspective || !stereoscopicMode()) {
 
-		// Call the viewport renderer to render the scene objects.
-		renderer->renderFrame(nullptr, nullptr);
+			// Pass final projection parameters to renderer.
+			renderer->setProjParams(_projParams);
+
+			// Call the viewport renderer to render the scene objects.
+			renderer->renderFrame(nullptr, nullptr);
+
+		}
+		else {
+
+			// Stereoscopic parameters
+			FloatType eyeSeparation = 10.0;
+			FloatType convergence = (orbitCenter() - Point3::Origin() - _projParams.inverseViewMatrix.translation()).length();
+			convergence = std::max(convergence, _projParams.znear);
+			ViewProjectionParameters params = _projParams;
+
+			// Setup project of left eye.
+			FloatType top = params.znear * tan(params.fieldOfView / 2);
+			FloatType bottom = -top;
+			FloatType a = tan(params.fieldOfView / 2) / params.aspectRatio * convergence;
+			FloatType b = a - eyeSeparation / 2;
+			FloatType c = a + eyeSeparation / 2;
+			FloatType left = -b * params.znear / convergence;
+			FloatType right = c * params.znear / convergence;
+			params.projectionMatrix = Matrix4::frustum(left, right, bottom, top, params.znear, params.zfar);
+			params.inverseProjectionMatrix = params.projectionMatrix.inverse();
+			params.viewMatrix = AffineTransformation::translation(Vector3(eyeSeparation / 2, 0, 0)) * _projParams.viewMatrix;
+			params.inverseViewMatrix = params.viewMatrix.inverse();
+			renderer->setProjParams(params);
+
+			// Render image of left eye.
+			glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
+			renderer->renderFrame(nullptr, nullptr);
+
+			// Setup project of right eye.
+			left = -c * params.znear / convergence;
+			right = b * params.znear / convergence;
+			params.projectionMatrix = Matrix4::frustum(left, right, bottom, top, params.znear, params.zfar);
+			params.inverseProjectionMatrix = params.projectionMatrix.inverse();
+			params.viewMatrix = AffineTransformation::translation(Vector3(-eyeSeparation / 2, 0, 0)) * _projParams.viewMatrix;
+			params.inverseViewMatrix = params.viewMatrix.inverse();
+			renderer->setProjParams(params);
+
+			// Render image of right eye.
+			glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
+			renderer->renderFrame(nullptr, nullptr);
+
+			// Restore default OpenGL state.
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
 
 		if(renderPreviewMode()) {
 			// Render render frame.
@@ -1072,5 +1121,31 @@ bool Viewport::computeConstructionPlaneIntersection(const Point2& viewportPositi
 
 	return true;
 }
+
+/******************************************************************************
+* Returns the current orbit center for this viewport.
+******************************************************************************/
+Point3 Viewport::orbitCenter()
+{
+	// Use the target of a camera as the orbit center.
+	if(viewNode() && viewType() == Viewport::VIEW_SCENENODE && viewNode()->lookatTargetNode()) {
+		TimeInterval iv;
+		TimePoint time = dataset()->animationSettings()->time();
+		return Point3::Origin() + viewNode()->lookatTargetNode()->getWorldTransform(time, iv).translation();
+	}
+	else {
+		Point3 currentOrbitCenter = dataset()->viewportConfig()->orbitCenter();
+
+		if(viewNode() && isPerspectiveProjection()) {
+			// If a free camera node is selected, the current orbit center is at the same location as the camera.
+			// In this case, we should shift the orbit center such that it is in front of the camera.
+			Point3 camPos = Point3::Origin() + inverseViewMatrix().translation();
+			if(currentOrbitCenter.equals(camPos))
+				currentOrbitCenter = camPos - 50.0f * inverseViewMatrix().column(2);
+		}
+		return currentOrbitCenter;
+	}
+}
+
 
 }}	// End of namespace

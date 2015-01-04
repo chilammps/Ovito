@@ -396,6 +396,16 @@ public:
 				 T(0), T(0), T(0), T(1) };
 	}
 
+	/// \brief Generates a perspective projection matrix.
+	static Matrix_4<T> frustum(T left, T right, T bottom, T top, T znear, T zfar) {
+		OVITO_ASSERT(znear < zfar);
+		return { T(2)*znear/(right-left), T(0),  (right + left) / (right - left), T(0),
+				 T(0), T(2)*znear/(top-bottom), (top + bottom) / (top - bottom), T(0),
+				 T(0), T(0), -(zfar + znear) / (zfar - znear), -(T(2)*zfar*znear)/(zfar - znear),
+				 T(0), T(0), T(-1), T(0) };
+	}
+
+
 private:
 
 	// Computes the determinant of a 2x2 sub-matrix. This is for internal use only.

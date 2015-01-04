@@ -43,6 +43,7 @@ private Q_SLOTS:
 
 	void onRenderPreviewMode(bool checked);
 	void onShowGrid(bool checked);
+	void onStereoscopicMode(bool checked);
 	void onShowViewTypeMenu();
 	void onViewType(QAction* action);
 	void onAdjustView();
