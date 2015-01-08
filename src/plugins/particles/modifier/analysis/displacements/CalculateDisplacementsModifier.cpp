@@ -152,6 +152,9 @@ PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, T
 
 		// Use frame offset relative to current configuration.
 		referenceFrame = currentFrame + _referenceFrameOffset;
+
+		// Results are only valid for current frame.
+		validityInterval.intersect(time);
 	}
 	else {
 		// Always use the same, user-specified frame as reference configuration.
@@ -181,8 +184,6 @@ PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, T
 	// Make sure we really got back the requested reference frame.
 	if(refState.attributes().value(QStringLiteral("Frame"), referenceFrame).toInt() != referenceFrame)
 		throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
-
-	validityInterval.intersect(refState.stateValidity());
 
 	// Get the reference positions.
 	ParticlePropertyObject* refPosProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::PositionProperty);

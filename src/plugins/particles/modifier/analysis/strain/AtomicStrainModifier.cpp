@@ -145,7 +145,10 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> AtomicStrainModifie
 
 		// Use frame offset relative to current configuration.
 		referenceFrame = currentFrame + _referenceFrameOffset;
-	}
+
+		// Results will only be valid for duration of current frame.
+		validityInterval.intersect(time);
+}
 	else {
 		// Always use the same, user-specified frame as reference configuration.
 		referenceFrame = _referenceFrameNumber;
