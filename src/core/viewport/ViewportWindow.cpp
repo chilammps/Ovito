@@ -312,7 +312,7 @@ void ViewportWindow::renderNow()
 	// is currently active so we can restore it when we are done.
 	// This is necessary, because multiple viewport repaint requests can be
 	// processed simultaneously.
-	QOpenGLContext* oldContext = QOpenGLContext::currentContext();
+	QPointer<QOpenGLContext> oldContext = QOpenGLContext::currentContext();
 	QSurface* oldSurface = oldContext ? oldContext->surface() : nullptr;
 
 	if(!_context->makeCurrent(this)) {
@@ -397,7 +397,7 @@ void ViewportWindow::renderNow()
 	OVITO_REPORT_OPENGL_ERRORS();
 
 	// Restore old GL context.
-	if(oldSurface) {
+	if(oldSurface && oldContext) {
 		if(!oldContext->makeCurrent(oldSurface))
 			qWarning() << "Failed to restore old OpenGL context.";
 	}
