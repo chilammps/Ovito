@@ -428,7 +428,7 @@ private Q_SLOTS:
 private:
 
 	/// The type of the viewport (top, left, perspective, etc.)
-	PropertyField<ViewType> _viewType;
+	PropertyField<ViewType, int> _viewType;
 
 	/// The orientation of the grid.
 	PropertyField<AffineTransformation> _gridMatrix;

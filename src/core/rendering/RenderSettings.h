@@ -170,7 +170,7 @@ private:
 	PropertyField<bool> _skipExistingImages;
 
 	/// Specifies which part of the animation should be rendered.
-    PropertyField<RenderingRangeType> _renderingRangeType;
+    PropertyField<RenderingRangeType, int> _renderingRangeType;
 
 	/// The first frame to render when rendering range is set to CUSTOM_INTERVAL.
 	PropertyField<int> _customRangeStart;

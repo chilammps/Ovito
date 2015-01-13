@@ -39,9 +39,9 @@ class OVITO_CORE_EXPORT ViewportConfiguration : public RefTarget
 public:
 
 	enum OrbitCenterMode {
-		ORBIT_SELECTION_CENTER,		/// Take the center of mass of the current selection as orbit center.
-									/// If there is no selection, use scene bounding box.
-		ORBIT_USER_DEFINED			/// Use the orbit center set by the user.
+		ORBIT_SELECTION_CENTER,		///< Take the center of mass of the current selection as orbit center.
+									///< If there is no selection, use scene bounding box.
+		ORBIT_USER_DEFINED			///< Use the orbit center set by the user.
 	};
 	Q_ENUMS(OrbitCenterMode);
 
@@ -195,7 +195,7 @@ private:
 	OORef<ViewportSceneRenderer> _viewportRenderer;
 
 	/// Controls around which point the viewport camera should orbit.
-    PropertyField<OrbitCenterMode> _orbitCenterMode;
+    PropertyField<OrbitCenterMode, int> _orbitCenterMode;
 
 	/// Position of the orbiting center picked by the user.
 	PropertyField<Point3> _userOrbitCenter;

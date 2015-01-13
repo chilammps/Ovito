@@ -94,6 +94,10 @@ public:
 	/// Connects the property field to its owning RefMaker derived class.
 	inline void init(RefMaker* owner, PropertyFieldDescriptor* descriptor) {
 		PropertyFieldBase::init(owner, descriptor);
+
+		// For enum types, the QVariant data type must always be set to 'int'.
+		static_assert(!std::is_enum<property_data_type>::value || std::is_same<qvariant_data_type, int>::value,
+				"When using PropertyField<> with an enum type, the QVariant data type must always be set to 'int'. For example: PropertyField<MyEnumType, int>");
 	}
 
 	/// Cast the property field to the property value.
