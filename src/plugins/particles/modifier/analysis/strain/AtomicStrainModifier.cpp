@@ -212,15 +212,15 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 	setProgressText(tr("Computing atomic strain tensors"));
 
 	// Build particle-to-particle index maps.
-	std::vector<size_t> currentToRefIndexMap(positions()->size());
-	std::vector<size_t> refToCurrentIndexMap(refPositions()->size());
+	std::vector<int> currentToRefIndexMap(positions()->size());
+	std::vector<int> refToCurrentIndexMap(refPositions()->size());
 	if(_identifiers && _refIdentifiers) {
 		OVITO_ASSERT(_identifiers->size() == positions()->size());
 		OVITO_ASSERT(_refIdentifiers->size() == refPositions()->size());
 
 		// Build map of particle identifiers in reference configuration.
-		std::map<int, size_t> refMap;
-		size_t index = 0;
+		std::map<int, int> refMap;
+		int index = 0;
 		for(int id : _refIdentifiers->constIntRange()) {
 			if(refMap.insert(std::make_pair(id, index)).second == false)
 				throw Exception(tr("Particles with duplicate identifiers detected in reference configuration."));
@@ -237,7 +237,7 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 		if(std::adjacent_find(idSet.begin(), idSet.end()) != idSet.end())
 			throw Exception(tr("Particles with duplicate identifiers detected in input configuration."));
 #else
-		std::map<int, size_t> currentMap;
+		std::map<int, int> currentMap;
 		index = 0;
 		for(int id : _identifiers->constIntRange()) {
 			if(currentMap.insert(std::make_pair(id, index)).second == false)
@@ -253,9 +253,10 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 		const int* id = _identifiers->constDataInt();
 		for(auto& mappedIndex : currentToRefIndexMap) {
 			auto iter = refMap.find(*id);
-			if(iter == refMap.end())
-				throw Exception(tr("Particle id %1 from current configuration not found in reference configuration.").arg(*id));
-			mappedIndex = iter->second;
+			if(iter != refMap.end())
+				mappedIndex = iter->second;
+			else
+				mappedIndex = -1;
 			++id;
 		}
 
@@ -265,9 +266,10 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 		id = _refIdentifiers->constDataInt();
 		for(auto& mappedIndex : refToCurrentIndexMap) {
 			auto iter = currentMap.find(*id);
-			if(iter == currentMap.end())
-				throw Exception(tr("Particle id %1 from reference configuration not found in current configuration.").arg(*id));
-			mappedIndex = iter->second;
+			if(iter != currentMap.end())
+				mappedIndex = iter->second;
+			else
+				mappedIndex = -1;
 			++id;
 		}
 	}
@@ -276,8 +278,8 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 		if(positions()->size() != refPositions()->size())
 			throw Exception(tr("Cannot calculate displacements. Numbers of particles in reference configuration and current configuration do not match."));
 		// When particle identifiers are not available, use trivial 1-to-1 mapping.
-		std::iota(refToCurrentIndexMap.begin(), refToCurrentIndexMap.end(), size_t(0));
-		std::iota(currentToRefIndexMap.begin(), currentToRefIndexMap.end(), size_t(0));
+		std::iota(refToCurrentIndexMap.begin(), refToCurrentIndexMap.end(), 0);
+		std::iota(currentToRefIndexMap.begin(), currentToRefIndexMap.end(), 0);
 	}
 	if(isCanceled())
 		return;
@@ -297,39 +299,43 @@ void AtomicStrainModifier::AtomicStrainEngine::perform()
 /******************************************************************************
 * Computes the strain tensor of a single particle.
 ******************************************************************************/
-bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, Util::CutoffNeighborFinder& neighborFinder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap)
+bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, Util::CutoffNeighborFinder& neighborFinder, const std::vector<int>& refToCurrentIndexMap, const std::vector<int>& currentToRefIndexMap)
 {
 	// We do the following calculations using double precision to
-	// achieve best results. Final results will be converted back to
+	// get best results. Final results will be converted back to
 	// standard precision numbers.
 
 	Matrix_3<double> V = Matrix_3<double>::Zero();
 	Matrix_3<double> W = Matrix_3<double>::Zero();
-
-	// Iterate over neighbor vectors of central particle.
-	size_t refParticleIndex = currentToRefIndexMap[particleIndex];
-	const Point3 x = positions()->getPoint3(particleIndex);
 	int numNeighbors = 0;
-	for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
-		const Vector3& r0 = neighQuery.delta();
-		Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighQuery.current()]) - x;
-		Vector3 sr = _currentSimCellInv * r;
-		if(!_assumeUnwrappedCoordinates) {
-			for(size_t k = 0; k < 3; k++) {
-				if(_simCell.pbcFlags()[k])
-					sr[k] -= floor(sr[k] + FloatType(0.5));
-			}
-		}
-		r = _reducedToAbsolute * sr;
 
-		for(size_t i = 0; i < 3; i++) {
-			for(size_t j = 0; j < 3; j++) {
-				V(i,j) += r0[j] * r0[i];
-				W(i,j) += r0[j] * r[i];
+	// Iterate over neighbors of central particle.
+	int particleIndexReference = currentToRefIndexMap[particleIndex];
+	if(particleIndexReference != -1) {
+		const Point3 x = positions()->getPoint3(particleIndex);
+		for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, particleIndexReference); !neighQuery.atEnd(); neighQuery.next()) {
+			const Vector3& r0 = neighQuery.delta();
+			int neighborIndexCurrent = refToCurrentIndexMap[neighQuery.current()];
+			if(neighborIndexCurrent == -1) continue;
+			Vector3 r = positions()->getPoint3(neighborIndexCurrent) - x;
+			Vector3 sr = _currentSimCellInv * r;
+			if(!_assumeUnwrappedCoordinates) {
+				for(size_t k = 0; k < 3; k++) {
+					if(_simCell.pbcFlags()[k])
+						sr[k] -= floor(sr[k] + FloatType(0.5));
+				}
 			}
-		}
+			r = _reducedToAbsolute * sr;
 
-		numNeighbors++;
+			for(size_t i = 0; i < 3; i++) {
+				for(size_t j = 0; j < 3; j++) {
+					V(i,j) += r0[j] * r0[i];
+					W(i,j) += r0[j] * r[i];
+				}
+			}
+
+			numNeighbors++;
+		}
 	}
 
 	// Check if matrix can be inverted.
@@ -368,16 +374,17 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 		_strainTensors->setSymmetricTensor2(particleIndex, (SymmetricTensor2)strain);
 
     // Calculate nonaffine displacements.
-    if (_nonaffineSquaredDisplacements) {
+    if(_nonaffineSquaredDisplacements) {
         double D2min = 0.0;
 
         // Again iterate over neighbor vectors of central particle.
-        size_t refParticleIndex = currentToRefIndexMap[particleIndex];
+        numNeighbors = 0;
         const Point3 x = positions()->getPoint3(particleIndex);
-        int numNeighbors = 0;
-        for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, refParticleIndex); !neighQuery.atEnd(); neighQuery.next()) {
+        for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, particleIndexReference); !neighQuery.atEnd(); neighQuery.next()) {
             const Vector3& r0 = neighQuery.delta();
-            Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighQuery.current()]) - x;
+			int neighborIndexCurrent = refToCurrentIndexMap[neighQuery.current()];
+			if(neighborIndexCurrent == -1) continue;
+            Vector3 r = positions()->getPoint3(neighborIndexCurrent) - x;
             Vector3 sr = _currentSimCellInv * r;
             if(!_assumeUnwrappedCoordinates) {
                 for(size_t k = 0; k < 3; k++) {
