@@ -50,14 +50,17 @@ bool CutoffNeighborFinder::prepare(FloatType cutoffRadius, ParticleProperty* pos
 		binDim[i] = std::max((int)floor(simCell.matrix().column(i).dot(planeNormals[i]) / _cutoffRadius), 1);
 	}
 	// Impose limit on the total number of bins.
-	const int binCountLimit = 128*128*128;
-	// Scale bin count in each dimension to stay below limit.
-	if(binDim[0] * binDim[1] * binDim[2] > binCountLimit) {
-		FloatType factor = pow((FloatType)binCountLimit / (binDim[0] * binDim[1] * binDim[2]), 1.0/3.0);
-		for(size_t i = 0; i < 3; i++) {
+	qint64 binCount = (qint64)binDim[0] * (qint64)binDim[1] * (qint64)binDim[2];
+	const qint64 binCountLimit = 128*128*128;
+	// Reduce bin count in each dimension by the same fraction to stay below total upper limit.
+	if(binCount > binCountLimit) {
+		FloatType factor = pow((FloatType)binCountLimit / binCount, 1.0/3.0);
+		for(size_t i = 0; i < 3; i++)
 			binDim[i] = std::max((int)(binDim[i] * factor), 1);
-		}
 	}
+	binCount = (qint64)binDim[0] * (qint64)binDim[1] * (qint64)binDim[2];
+	OVITO_ASSERT(binCount < 0xFFFFFFFF);
+
 	for(size_t i = 0; i < 3; i++) {
 		binCell.column(i) = simCell.matrix().column(i) / binDim[i];
 	}
@@ -124,7 +127,7 @@ bool CutoffNeighborFinder::prepare(FloatType cutoffRadius, ParticleProperty* pos
 
 	// An 3d array of cubic bins.
 	// Each bin is a linked list of particles.
-	bins.resize(binDim[0] * binDim[1] * binDim[2], nullptr);
+	bins.resize(binCount, nullptr);
 
 	// Sort particles into bins.
 	particles.resize(positions->size());
