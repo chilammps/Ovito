@@ -62,6 +62,8 @@ MACRO(OVITO_STANDARD_PLUGIN target_name)
 	IF(APPLE)
 	    # The build tree target should have rpath of install tree target.
 	    SET_TARGET_PROPERTIES(${target_name} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+	ELSEIF(UNIX)
+        SET_TARGET_PROPERTIES(${target_name} PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/..")	
 	ENDIF()  
  
     # Place compiled plugin module into the plugins directory.

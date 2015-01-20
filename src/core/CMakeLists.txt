@@ -224,17 +224,18 @@ ENDIF()
 # Define the OVITO_DEBUG macro in debug builds.
 TARGET_COMPILE_DEFINITIONS(Core PUBLIC "$<$<CONFIG:Debug>:OVITO_DEBUG>")
 
-IF(APPLE)
-	# This is required to avoid error by install_name_tool on MacOS.
-	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
-ENDIF(APPLE)
-
 # Speed up compilation by using precompiled headers.
 ADD_PRECOMPILED_HEADER(Core core/Core.h)
 
-# Activate @rpath on MacOS.
-SET_TARGET_PROPERTIES(Core PROPERTIES MACOSX_RPATH TRUE)
-
+IF(APPLE)
+    # Activate @rpath on MacOS.
+    SET_TARGET_PROPERTIES(Core PROPERTIES MACOSX_RPATH TRUE)
+	# This is required to avoid error by install_name_tool on MacOS.
+	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
+ELSEIF(UNIX)
+    SET_TARGET_PROPERTIES(Core PROPERTIES INSTALL_RPATH "$ORIGIN")
+ENDIF()
+    
 # This library is part of the installation package.
 INSTALL(TARGETS Core EXPORT OVITO
 	RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"

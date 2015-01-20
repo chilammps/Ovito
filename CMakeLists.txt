@@ -132,6 +132,11 @@ IF(UNIX AND NOT APPLE AND CMAKE_COMPILER_IS_GNUCXX)
 ENDIF()
 IF(NOT OVITO_MONOLITHIC_BUILD)
     SET(OVITO_DEFAULT_LIBRARY_TYPE SHARED)
+    
+	# Add the automatically determined parts of the RPATH,
+	# which point to directories outside the build tree to the install RPATH
+	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+	    
 ELSE()
     SET(OVITO_DEFAULT_LIBRARY_TYPE STATIC)
 ENDIF()
