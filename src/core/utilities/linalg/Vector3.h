@@ -121,7 +121,7 @@ public:
     /////////////////////////////// Unary operators //////////////////////////////
 
 	/// Returns the reverse vector (-x(), -y(), -z()).
-	Q_DECL_CONSTEXPR Vector_3 operator-() const { return {-x(), -y(), -z()}; }
+	Q_DECL_CONSTEXPR Vector_3 operator-() const { return Vector_3(-x(), -y(), -z()); }
 
 	///////////////////////////// Assignment operators ///////////////////////////
 
@@ -204,9 +204,9 @@ public:
 
 	/// Computes the cross product of this vector with the vector \a b.
 	Q_DECL_CONSTEXPR Vector_3 cross(const Vector_3& b) const {
-		return {y() * b.z() - z() * b.y(),
-				z() * b.x() - x() * b.z(),
-				x() * b.y() - y() * b.x()};
+		return Vector_3(y() * b.z() - z() * b.y(),
+						z() * b.x() - x() * b.z(),
+						x() * b.y() - y() * b.x());
 	}
 
 	/// Computes the squared length of the vector.

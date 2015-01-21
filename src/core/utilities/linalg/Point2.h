@@ -214,7 +214,7 @@ public:
 /// \relates Point_2
 template<typename T>
 Q_DECL_CONSTEXPR Point_2<T> operator+(const Point_2<T>& a, const Vector_2<T>& b) {
-	return { a.x() + b.x(), a.y() + b.y() };
+	return Point_2<T>{ a.x() + b.x(), a.y() + b.y() };
 }
 
 /// \brief Computes the sum of a vector and a point.
@@ -228,35 +228,35 @@ Q_DECL_CONSTEXPR Point_2<T> operator+(const Vector_2<T>& a, const Point_2<T>& b)
 /// \relates Point_2
 template<typename T>
 Q_DECL_CONSTEXPR Vector_2<T> operator-(const Point_2<T>& a, const Point_2<T>& b) {
-	return { a.x() - b.x(), a.y() - b.y() };
+	return Vector_2<T>{ a.x() - b.x(), a.y() - b.y() };
 }
 
 /// \brief Subtracts a vector from a point.
 /// \relates Point_2
 template<typename T>
 Q_DECL_CONSTEXPR Point_2<T> operator-(const Point_2<T>& a, const Vector_2<T>& b) {
-	return { a.x() - b.x(), a.y() - b.y() };
+	return Point_2<T>{ a.x() - b.x(), a.y() - b.y() };
 }
 
 /// \brief Computes the component-wise product of a point and a scalar value.
 /// \relates Point_2
 template<typename T>
 Q_DECL_CONSTEXPR Point_2<T> operator*(const Point_2<T>& a, T s) {
-	return { a.x() * s, a.y() * s };
+	return Point_2<T>{ a.x() * s, a.y() * s };
 }
 
 /// \brief Computes the component-wise product of a point and a scalar value.
 /// \relates Point_2
 template<typename T>
 Q_DECL_CONSTEXPR Point_2<T> operator*(T s, const Point_2<T>& a) {
-	return { a.x() * s, a.y() * s };
+	return Point_2<T>{ a.x() * s, a.y() * s };
 }
 
 /// \brief Computes the component-wise division of a vector by a scalar value.
 /// \relates Point_2
 template<typename T>
 Q_DECL_CONSTEXPR Point_2<T> operator/(const Point_2<T>& a, T s) {
-	return { a.x() / s, a.y() / s };
+	return Point_2<T>{ a.x() / s, a.y() / s };
 }
 
 /// \brief Writes a point to a text output stream.
