@@ -109,15 +109,24 @@ bool LAMMPSDataImporter::showAtomStyleDialog(QWidget* parent)
 	};
 	QStringList itemList = styleList.keys();
 
-	int currentIndex = itemList.indexOf("atomic");
+	QSettings settings;
+	settings.beginGroup(LAMMPSDataImporter::OOType.plugin()->pluginId());
+	settings.beginGroup(LAMMPSDataImporter::OOType.name());
+
+	int currentIndex = -1;
 	for(int i = 0; i < itemList.size(); i++)
 		if(atomStyle() == styleList[itemList[i]])
 			currentIndex = i;
+	if(currentIndex == -1)
+		currentIndex = itemList.indexOf(settings.value("DefaultAtomStyle").toString());
+	if(currentIndex == -1)
+		currentIndex = itemList.indexOf("atomic");
 
 	bool ok;
 	QString selectedItem = QInputDialog::getItem(parent, tr("LAMMPS data file"), tr("Select the LAMMPS atom style used by the data file:"), itemList, currentIndex, false, &ok);
 	if(!ok) return false;
 
+	settings.setValue("DefaultAtomStyle", selectedItem);
 	setAtomStyle(styleList[selectedItem]);
 
 	return true;
@@ -135,14 +144,15 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 	// Read comment line
 	stream.readLine();
 
-	// Read header
 	int natoms = 0;
 	int natomtypes = 0;
+	int nbonds = 0;
 	FloatType xlo = 0, xhi = 0;
 	FloatType ylo = 0, yhi = 0;
 	FloatType zlo = 0, zhi = 0;
 	FloatType xy = 0, xz = 0, yz = 0;
 
+	// Read header
 	while(true) {
 
 		string line(stream.readLine());
@@ -180,7 +190,10 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
     		if(sscanf(line.c_str(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &xy, &xz, &yz) != 3)
     			throw Exception(tr("Invalid xy/xz/yz values (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
-    	else if(line.find("bonds") != string::npos) {}
+    	else if(line.find("bonds") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &nbonds) != 1)
+    			throw Exception(tr("Invalid number of bonds (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
     	else if(line.find("angles") != string::npos) {}
     	else if(line.find("dihedrals") != string::npos) {}
     	else if(line.find("impropers") != string::npos) {}
@@ -324,7 +337,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 		}
 		else if(keyword.startsWith("Velocities")) {
 
-			/// Get the atomic IDs.
+			// Get the atomic IDs.
 			ParticleProperty* identifierProperty = particleProperty(ParticleProperty::IdentifierProperty);
 			if(!identifierProperty)
 				throw Exception(tr("Atoms section must precede Velocities section in data file (error in line %1).").arg(stream.lineNumber()));
@@ -345,7 +358,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 
     			int atomIndex = i;
     			if(atomId != identifierProperty->getInt(i)) {
-    				atomIndex = find(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size(), atomId) - identifierProperty->constDataInt();
+    				atomIndex = std::find(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size(), atomId) - identifierProperty->constDataInt();
 					if(atomIndex >= (int)identifierProperty->size())
     					throw Exception(tr("Nonexistent atom ID encountered in line %1 of data file.").arg(stream.lineNumber()));
     			}
@@ -361,8 +374,53 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 			for(int i = 0; i < natomtypes*(natomtypes+1)/2; i++)
 				stream.readLine();
 		}
+		else if(keyword.startsWith("Bonds")) {
+
+			// Get the atomic IDs and positions.
+			ParticleProperty* identifierProperty = particleProperty(ParticleProperty::IdentifierProperty);
+			ParticleProperty* posProperty = particleProperty(ParticleProperty::PositionProperty);
+			if(!identifierProperty || !posProperty)
+				throw Exception(tr("Atoms section must precede Bonds section in data file (error in line %1).").arg(stream.lineNumber()));
+
+			// Create bonds storage.
+			setBonds(new BondsStorage());
+			bonds()->bonds().reserve(nbonds);
+			setProgressRange(nbonds);
+			for(int i = 0; i < nbonds; i++) {
+				if(!reportProgress(i)) return;
+				stream.readLine();
+
+				int bondId, bondType, atomId1, atomId2;
+    			if(sscanf(stream.line(), "%u %u %u %u", &bondId, &bondType, &atomId1, &atomId2) != 4)
+					throw Exception(tr("Invalid bond specification (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+
+   				unsigned int atomIndex1 = std::find(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size(), atomId1) - identifierProperty->constDataInt();
+   				unsigned int atomIndex2 = std::find(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size(), atomId2) - identifierProperty->constDataInt();
+				if(atomIndex1 >= identifierProperty->size() || atomIndex2 >= identifierProperty->size())
+					throw Exception(tr("Nonexistent atom ID encountered in line %1 of data file.").arg(stream.lineNumber()));
+
+				// Use minimum image convention to determine PBC shift vector of the bond.
+				Vector3 delta = simulationCell().absoluteToReduced(posProperty->getPoint3(atomIndex2) - posProperty->getPoint3(atomIndex1));
+				Vector_3<int8_t> shift = Vector_3<int8_t>::Zero();
+				for(size_t dim = 0; dim < 3; dim++) {
+					if(simulationCell().pbcFlags()[dim]) {
+						while(delta[dim] > FloatType(0.5)) {
+							delta[dim] -= FloatType(0.5);
+							shift[dim]++;
+						}
+						while(delta[dim] < FloatType(-0.5)) {
+							delta[dim] += FloatType(0.5);
+							shift[dim]--;
+						}
+					}
+				}
+
+				bonds()->addBond(atomIndex1, atomIndex2,  shift);
+				bonds()->addBond(atomIndex2, atomIndex1, -shift);
+			}
+		}
 		else if(keyword.isEmpty() == false) {
-			throw Exception(tr("Unknown keyword in line %1 of LAMMPS data file: %2.\nNote that the file parser supports only \"atomic style\" LAMMPS data files.").arg(stream.lineNumber()-1).arg(QString::fromLocal8Bit(keyword)));
+			throw Exception(tr("Unknown or unsupported keyword in line %1 of LAMMPS data file: %2.").arg(stream.lineNumber()-1).arg(QString::fromLocal8Bit(keyword)));
 		}
 		else break;
 

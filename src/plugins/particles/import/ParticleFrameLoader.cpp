@@ -24,6 +24,8 @@
 #include <core/utilities/io/FileManager.h>
 #include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/objects/SimulationCellDisplay.h>
+#include <plugins/particles/objects/BondsObject.h>
+#include <plugins/particles/objects/BondsDisplay.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
@@ -115,7 +117,7 @@ void ParticleFrameLoader::handOver(CompoundObject* container)
 {
 	QSet<DataObject*> activeObjects;
 
-	// Adopt simulation cell.
+	// Transfer simulation cell.
 	OORef<SimulationCellObject> cell = container->findDataObject<SimulationCellObject>();
 	if(!cell) {
 		cell = new SimulationCellObject(container->dataset(), simulationCell());
@@ -142,7 +144,7 @@ void ParticleFrameLoader::handOver(CompoundObject* container)
 	}
 	activeObjects.insert(cell);
 
-	// Adopt particle properties.
+	// Transfer particle properties.
 	for(auto& property : _properties) {
 		OORef<ParticlePropertyObject> propertyObj;
 		for(const auto& dataObj : container->dataObjects()) {
@@ -165,6 +167,25 @@ void ParticleFrameLoader::handOver(CompoundObject* container)
 			insertParticleTypes(propertyObj);
 		}
 		activeObjects.insert(propertyObj);
+	}
+
+	// Transfer bonds.
+	if(bonds()) {
+		OORef<BondsObject> bondsObj = container->findDataObject<BondsObject>();
+		if(!bondsObj) {
+			bondsObj = new BondsObject(container->dataset(), QSharedDataPointer<BondsStorage>(_bonds.release()));
+
+			// Create a display object for the bonds.
+			OORef<BondsDisplay> bondsDisplay = new BondsDisplay(container->dataset());
+			bondsDisplay->loadUserDefaults();
+			bondsObj->addDisplayObject(bondsDisplay);
+
+			container->addDataObject(bondsObj);
+		}
+		else {
+			bondsObj->setStorage(QSharedDataPointer<BondsStorage>(_bonds.release()));
+		}
+		activeObjects.insert(bondsObj);
 	}
 
 	// Pass timestep number to modification pipeline system.

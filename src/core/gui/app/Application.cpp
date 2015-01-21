@@ -86,7 +86,7 @@ bool Application::initialize(int& argc, char** argv)
 	// Register our floating-point data type with the Qt type system.
 	qRegisterMetaType<FloatType>("FloatType");
 
-	// Register stream operators for basic types.
+	// Register Qt stream operators for basic types.
 	qRegisterMetaTypeStreamOperators<Vector2>("Ovito::Vector2");
 	qRegisterMetaTypeStreamOperators<Vector3>("Ovito::Vector3");
 	qRegisterMetaTypeStreamOperators<Vector4>("Ovito::Vector4");
@@ -102,6 +102,12 @@ bool Application::initialize(int& argc, char** argv)
 	qRegisterMetaTypeStreamOperators<Quaternion>("Ovito::Quaternion");
 	qRegisterMetaTypeStreamOperators<Color>("Ovito::Color");
 	qRegisterMetaTypeStreamOperators<ColorA>("Ovito::ColorA");
+
+	// Register Qt conversion operators for custom types.
+	QMetaType::registerConverter<QColor, Color>();
+	QMetaType::registerConverter<Color, QColor>();
+	QMetaType::registerConverter<QColor, ColorA>();
+	QMetaType::registerConverter<ColorA, QColor>();
 
 	// Register command line arguments.
 	_cmdLineParser.setApplicationDescription(tr("OVITO - Open Visualization Tool"));

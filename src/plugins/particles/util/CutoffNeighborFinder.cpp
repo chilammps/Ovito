@@ -44,14 +44,15 @@ bool CutoffNeighborFinder::prepare(FloatType cutoffRadius, ParticleProperty* pos
 	binCell.translation() = simCell.matrix().translation();
 	std::array<Vector3,3> planeNormals;
 
-	// Determine the number of bins in each spatial direction.
+	// Determine the number of bins along each simulation cell vector.
+	const qint64 binCountLimit = 128*128*128;
 	for(size_t i = 0; i < 3; i++) {
 		planeNormals[i] = simCell.cellNormalVector(i);
-		binDim[i] = std::max((int)floor(simCell.matrix().column(i).dot(planeNormals[i]) / _cutoffRadius), 1);
+		FloatType x = std::abs(simCell.matrix().column(i).dot(planeNormals[i]) / _cutoffRadius);
+		binDim[i] = std::max((int)floor(std::min(x, FloatType(binCountLimit))), 1);
 	}
 	// Impose limit on the total number of bins.
 	qint64 binCount = (qint64)binDim[0] * (qint64)binDim[1] * (qint64)binDim[2];
-	const qint64 binCountLimit = 128*128*128;
 	// Reduce bin count in each dimension by the same fraction to stay below total upper limit.
 	if(binCount > binCountLimit) {
 		FloatType factor = pow((FloatType)binCountLimit / binCount, 1.0/3.0);
@@ -61,10 +62,10 @@ bool CutoffNeighborFinder::prepare(FloatType cutoffRadius, ParticleProperty* pos
 	binCount = (qint64)binDim[0] * (qint64)binDim[1] * (qint64)binDim[2];
 	OVITO_ASSERT(binCount < 0xFFFFFFFF);
 
+	// Compute bin cell.
 	for(size_t i = 0; i < 3; i++) {
 		binCell.column(i) = simCell.matrix().column(i) / binDim[i];
 	}
-	// Compute the reciprocal bin cell for fast lookup.
 	reciprocalBinCell = binCell.inverse();
 
 	// Generate stencil.
