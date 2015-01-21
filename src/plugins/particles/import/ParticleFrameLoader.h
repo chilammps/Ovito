@@ -103,6 +103,17 @@ public:
 		_particleTypes.push_back({ id, name, name.toLocal8Bit().constData(), color, radius });
 	}
 
+	/// Changes the name of an existing particle type.
+	void setParticleTypeName(int id, const QString& name) {
+		for(auto& type : _particleTypes) {
+			if(type.id == id) {
+				type.name = name;
+				type.name8bit = name.toLocal8Bit().constData();
+				break;
+			}
+		}
+	}
+
 	/// Defines a new particle type with the given id.
 	inline int addParticleTypeName(const char* name, const char* name_end) {
 		size_t nameLen = name_end - name;

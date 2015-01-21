@@ -105,7 +105,8 @@ bool LAMMPSDataImporter::showAtomStyleDialog(QWidget* parent)
 			{ QStringLiteral("bond"), AtomStyle_Bond },
 			{ QStringLiteral("charge"), AtomStyle_Charge },
 			{ QStringLiteral("dipole"), AtomStyle_Dipole },
-			{ QStringLiteral("molecular"), AtomStyle_Molecular }
+			{ QStringLiteral("molecular"), AtomStyle_Molecular },
+			{ QStringLiteral("full"), AtomStyle_Full }
 	};
 	QStringList itemList = styleList.keys();
 
@@ -147,6 +148,13 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 	int natoms = 0;
 	int natomtypes = 0;
 	int nbonds = 0;
+	int nangles = 0;
+	int ndihedrals = 0;
+	int nimpropers = 0;
+	int nbondtypes = 0;
+	int nangletypes = 0;
+	int ndihedraltypes = 0;
+	int nimpropertypes = 0;
 	FloatType xlo = 0, xhi = 0;
 	FloatType ylo = 0, yhi = 0;
 	FloatType zlo = 0, zhi = 0;
@@ -194,13 +202,34 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
     		if(sscanf(line.c_str(), "%u", &nbonds) != 1)
     			throw Exception(tr("Invalid number of bonds (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
-    	else if(line.find("angles") != string::npos) {}
-    	else if(line.find("dihedrals") != string::npos) {}
-    	else if(line.find("impropers") != string::npos) {}
-    	else if(line.find("bond types") != string::npos) {}
-    	else if(line.find("angle types") != string::npos) {}
-    	else if(line.find("dihedral types") != string::npos) {}
-    	else if(line.find("improper types") != string::npos) {}
+    	else if(line.find("bond types") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &nbondtypes) != 1)
+    			throw Exception(tr("Invalid number of bond types (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
+    	else if(line.find("angle types") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &nangletypes) != 1)
+    			throw Exception(tr("Invalid number of angle types (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
+    	else if(line.find("dihedral types") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &ndihedraltypes) != 1)
+    			throw Exception(tr("Invalid number of dihedral types (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
+    	else if(line.find("improper types") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &nimpropertypes) != 1)
+    			throw Exception(tr("Invalid number of improper types (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
+    	else if(line.find("angles") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &nangles) != 1)
+    			throw Exception(tr("Invalid number of angles (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
+    	else if(line.find("dihedrals") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &ndihedrals) != 1)
+    			throw Exception(tr("Invalid number of dihedrals (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
+    	else if(line.find("impropers") != string::npos) {
+    		if(sscanf(line.c_str(), "%u", &nimpropers) != 1)
+    			throw Exception(tr("Invalid number of impropers (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
+    	}
     	else if(line.find("extra bond per atom") != string::npos) {}
     	else if(line.find("extra angle per atom") != string::npos) {}
     	else if(line.find("extra dihedral per atom") != string::npos) {}
@@ -238,7 +267,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 		foundAtomsSection = true;
 
 	// Read identifier strings one by one in free-form part of data file.
-	QByteArray keyword = stream.line();
+	QByteArray keyword = QByteArray(stream.line()).trimmed();
 	for(;;) {
 	    // Skip blank line after keyword.
 		if(stream.eof()) break;
@@ -248,7 +277,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 		if(keyword.startsWith("Atoms")) {
 			if(natoms != 0) {
 				stream.readLine();
-				bool withPBCImageFlags = detectAtomStyle(stream.line());
+				bool withPBCImageFlags = detectAtomStyle(stream.line(), keyword);
 				if(_detectAtomStyle)
 					return;
 
@@ -326,6 +355,29 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 							throw Exception(tr("Atom type out of range in Atoms section of LAMMPS data file at line %1.").arg(stream.lineNumber()));
 					}
 				}
+				else if(_atomStyle == AtomStyle_Full) {
+					ParticleProperty* chargeProperty = new ParticleProperty(natoms, ParticleProperty::ChargeProperty, 0, true);
+					addParticleProperty(chargeProperty);
+					FloatType* charge = chargeProperty->dataFloat();
+					ParticleProperty* moleculeProperty = new ParticleProperty(natoms, ParticleProperty::MoleculeProperty, 0, true);
+					addParticleProperty(moleculeProperty);
+					int* molecule = moleculeProperty->dataInt();
+					for(int i = 0; i < natoms; i++, ++pos, ++atomType, ++atomId, ++charge, ++molecule) {
+						if(!reportProgress(i)) return;
+						if(i != 0) stream.readLine();
+						bool invalidLine;
+						if(!pbcImage)
+							invalidLine = (sscanf(stream.line(), "%u %u %u " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, atomId, molecule, atomType, charge, &pos->x(), &pos->y(), &pos->z()) != 7);
+						else {
+							invalidLine = (sscanf(stream.line(), "%u %u %u " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " %i %i %i", atomId, molecule, atomType, charge, &pos->x(), &pos->y(), &pos->z(), &pbcImage->x(), &pbcImage->y(), &pbcImage->z()) != 7+3);
+							++pbcImage;
+						}
+						if(invalidLine)
+							throw Exception(tr("Invalid data in Atoms section of LAMMPS data file at line %1: %2").arg(stream.lineNumber()).arg(stream.lineString()));
+						if(*atomType < 1 || *atomType > natomtypes)
+							throw Exception(tr("Atom type out of range in Atoms section of LAMMPS data file at line %1.").arg(stream.lineNumber()));
+					}
+				}
 				else if(_atomStyle == AtomStyle_Unknown) {
 					throw Exception(tr("Number of columns in Atoms section of data file (line %1) does not match to selected LAMMPS atom style.").arg(stream.lineNumber()));
 				}
@@ -366,13 +418,44 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 				velocityProperty->setVector3(atomIndex, v);
 			}
 		}
-		else if(keyword.startsWith("Masses") || keyword.startsWith("Pair Coeffs")) {
-			for(int i = 0; i < natomtypes; i++)
-				stream.readLine();
+		else if(keyword.startsWith("Masses")) {
+			for(int i = 1; i <= natomtypes; i++) {
+				// Try to parse atom types names, which some data files list as comments in the Masses section.
+				const char* start = stream.readLine();
+				while(*start && *start != '#') start++;
+				if(*start) {
+					QStringList words = QString::fromLocal8Bit(start).split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+					if(words.size() == 2)
+						setParticleTypeName(i, words[1]);
+				}
+			}
+		}
+		else if(keyword.startsWith("Pair Coeffs")) {
+			for(int i = 0; i < natomtypes; i++) stream.readLine();
 		}
 		else if(keyword.startsWith("PairIJ Coeffs")) {
-			for(int i = 0; i < natomtypes*(natomtypes+1)/2; i++)
-				stream.readLine();
+			for(int i = 0; i < natomtypes*(natomtypes+1)/2; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Bond Coeffs")) {
+			for(int i = 0; i < nbondtypes; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Angle Coeffs") || keyword.startsWith("BondAngle Coeffs") || keyword.startsWith("BondBond Coeffs")) {
+			for(int i = 0; i < nangletypes; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Dihedral Coeffs") || keyword.startsWith("EndBondTorsion Coeffs") || keyword.startsWith("BondBond13 Coeffs") || keyword.startsWith("MiddleBondTorsion Coeffs") || keyword.startsWith("AngleAngleTorsion Coeffs")) {
+			for(int i = 0; i < ndihedraltypes; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Improper Coeffs") || keyword.startsWith("AngleAngle Coeffs")) {
+			for(int i = 0; i < nimpropertypes; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Angles")) {
+			for(int i = 0; i < nangles; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Dihedrals")) {
+			for(int i = 0; i < ndihedrals; i++) stream.readLine();
+		}
+		else if(keyword.startsWith("Impropers")) {
+			for(int i = 0; i < nimpropers; i++) stream.readLine();
 		}
 		else if(keyword.startsWith("Bonds")) {
 
@@ -403,16 +486,8 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 				Vector3 delta = simulationCell().absoluteToReduced(posProperty->getPoint3(atomIndex2) - posProperty->getPoint3(atomIndex1));
 				Vector_3<int8_t> shift = Vector_3<int8_t>::Zero();
 				for(size_t dim = 0; dim < 3; dim++) {
-					if(simulationCell().pbcFlags()[dim]) {
-						while(delta[dim] > FloatType(0.5)) {
-							delta[dim] -= FloatType(0.5);
-							shift[dim]++;
-						}
-						while(delta[dim] < FloatType(-0.5)) {
-							delta[dim] += FloatType(0.5);
-							shift[dim]--;
-						}
-					}
+					if(simulationCell().pbcFlags()[dim])
+						shift[dim] -= (int8_t)floor(delta[dim] + FloatType(0.5));
 				}
 
 				bonds()->addBond(atomIndex1, atomIndex2,  shift);
@@ -428,7 +503,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 		while(!stream.eof() && string(stream.readLine()).find_first_not_of(" \t\n\r") == string::npos);
 
 		// Read identifier strings one by one in free-form part of data file.
-		keyword = stream.line();
+		keyword = QByteArray(stream.line()).trimmed();
 	}
 
 	if(!foundAtomsSection)
@@ -440,24 +515,45 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 /******************************************************************************
 * Detects or verifies the LAMMPS atom style used by the data file.
 ******************************************************************************/
-bool LAMMPSDataImporter::LAMMPSDataImportTask::detectAtomStyle(const char* firstLine)
+bool LAMMPSDataImporter::LAMMPSDataImportTask::detectAtomStyle(const char* firstLine, const QByteArray& keywordLine)
 {
-	// Count fields in first line of Atoms section.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
+
+	// Some data files contain a comment after the Atoms keyword that indicates the atom type.
+	QString atomTypeHint;
+	int commentStart = keywordLine.indexOf('#');
+	if(commentStart != -1) {
+		QStringList words = QString::fromLatin1(keywordLine.data() + commentStart).split(ws_re, QString::SkipEmptyParts);
+		if(words.size() == 2)
+			atomTypeHint = words[1];
+	}
+
+	// Count fields in first line of Atoms section.
 	QString str = QString::fromLatin1(firstLine);
-	int commentStart = str.indexOf(QChar('#'));
+	commentStart = str.indexOf(QChar('#'));
 	if(commentStart >= 0) str.truncate(commentStart);
 	QStringList tokens = str.split(ws_re, QString::SkipEmptyParts);
 	int count = tokens.size();
 
-	if(count == 5) {
-		_atomStyle = AtomStyle_Atomic;
-		return false;
+	if(_atomStyle == AtomStyle_Unknown && !atomTypeHint.isEmpty()) {
+		if(atomTypeHint == QStringLiteral("atomic")) _atomStyle = AtomStyle_Atomic;
+		else if(atomTypeHint == QStringLiteral("full")) _atomStyle = AtomStyle_Full;
+		else if(atomTypeHint == QStringLiteral("angle")) _atomStyle = AtomStyle_Angle;
+		else if(atomTypeHint == QStringLiteral("bond")) _atomStyle = AtomStyle_Bond;
+		else if(atomTypeHint == QStringLiteral("charge")) _atomStyle = AtomStyle_Charge;
+		else if(atomTypeHint == QStringLiteral("molecular")) _atomStyle = AtomStyle_Molecular;
 	}
-	else if(count == 5+3) {
-		if(!tokens[5].contains(QChar('.')) && !tokens[6].contains(QChar('.')) && !tokens[7].contains(QChar('.'))) {
+
+	if(_atomStyle == AtomStyle_Unknown) {
+		if(count == 5) {
 			_atomStyle = AtomStyle_Atomic;
-			return true;
+			return false;
+		}
+		else if(count == 5+3) {
+			if(!tokens[5].contains(QChar('.')) && !tokens[6].contains(QChar('.')) && !tokens[7].contains(QChar('.'))) {
+				_atomStyle = AtomStyle_Atomic;
+				return true;
+			}
 		}
 	}
 
