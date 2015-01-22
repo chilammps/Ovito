@@ -360,12 +360,6 @@ void CAImporter::CrystalAnalysisFrameLoader::handOver(CompoundObject* container)
 	// Insert simulation cell.
 	ParticleFrameLoader::handOver(container);
 
-	// Insert dislocations.
-	OORef<DislocationNetwork> dislocationsObj = oldObjects.findObject<DislocationNetwork>();
-	if(!dislocationsObj) {
-		dislocationsObj = new DislocationNetwork(container->dataset());
-	}
-
 	// Insert defect surface.
 	OORef<SurfaceMesh> defectSurfaceObj = oldObjects.findObject<SurfaceMesh>();
 	if(!defectSurfaceObj) {
@@ -473,7 +467,7 @@ void CAImporter::CrystalAnalysisFrameLoader::handOver(CompoundObject* container)
 		}
 	}
 
-	container->addDataObject(dislocationsObj);
+	container->addDataObject(dislocationNetwork);
 	container->addDataObject(defectSurfaceObj);
 	container->addDataObject(patternCatalog);
 	container->addDataObject(clusterGraph);

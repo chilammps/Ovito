@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
+#include <plugins/particles/objects/BondsObject.h>
 #include "WrapPeriodicImagesModifier.h"
 
 #include <QtConcurrent>
@@ -52,6 +53,34 @@ PipelineStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 	expectStandardProperty(ParticleProperty::PositionProperty);
 	ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty, true);
 
+	// Wrap bonds
+	for(const VersionedOORef<DataObject>& obj : output().objects()) {
+		BondsObject* bondsObj = dynamic_object_cast<BondsObject>(obj.get());
+		if(bondsObj) {
+			// Is the object still a shallow copy of the input?
+			if(input().contains(bondsObj)) {
+				// If yes, make a real copy of the object, which may be modified.
+				OORef<BondsObject> newObject = cloneHelper()->cloneObject(bondsObj, false);
+				output().replaceObject(bondsObj, newObject);
+				bondsObj = newObject;
+			}
+
+			// Wrap bonds by adjusting their shift vectors.
+			for(BondsStorage::Bond& bond : bondsObj->modifiableBonds()) {
+				const Point3& p1 = posProperty->getPoint3(bond.index1);
+				const Point3& p2 = posProperty->getPoint3(bond.index2);
+				for(size_t dim = 0; dim < 3; dim++) {
+					if(pbc[dim]) {
+						bond.pbcShift[dim] -= (int)floor(inverseSimCell.prodrow(p1, dim));
+						bond.pbcShift[dim] += (int)floor(inverseSimCell.prodrow(p2, dim));
+					}
+				}
+			}
+			bondsObj->changed();
+		}
+	}
+
+	// Wrap particles coordinates
 	Point3* pbegin = posProperty->dataPoint3();
 	Point3* pend = pbegin + posProperty->size();
 

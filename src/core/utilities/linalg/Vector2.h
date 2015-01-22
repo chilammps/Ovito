@@ -113,7 +113,7 @@ public:
     /////////////////////////////// Unary operators //////////////////////////////
 
 	/// Returns the reverse vector (-x(), -y()).
-	Q_DECL_CONSTEXPR Vector_2 operator-() const { return {-x(), -y()}; }
+	Q_DECL_CONSTEXPR Vector_2 operator-() const { return Vector_2(-x(), -y()); }
 
 	///////////////////////////// Assignment operators ///////////////////////////
 
@@ -267,35 +267,35 @@ public:
 /// \relates Vector_2
 template<typename T>
 Q_DECL_CONSTEXPR Vector_2<T> operator+(const Vector_2<T>& a, const Vector_2<T>& b) {
-	return { a.x() + b.x(), a.y() + b.y() };
+	return Vector_2<T>{ a.x() + b.x(), a.y() + b.y() };
 }
 
 /// \brief Computes the difference of two vectors.
 /// \relates Vector_2
 template<typename T>
 Q_DECL_CONSTEXPR Vector_2<T> operator-(const Vector_2<T>& a, const Vector_2<T>& b) {
-	return { a.x() - b.x(), a.y() - b.y() };
+	return Vector_2<T>{ a.x() - b.x(), a.y() - b.y() };
 }
 
 /// \brief Computes the product of a vector and a scalar value.
 /// \relates Vector_2
 template<typename T>
 Q_DECL_CONSTEXPR Vector_2<T> operator*(const Vector_2<T>& a, T s) {
-	return { a.x() * s, a.y() * s };
+	return Vector_2<T>{ a.x() * s, a.y() * s };
 }
 
 /// \brief Computes the product of a scalar value and a vector.
 /// \relates Vector_2
 template<typename T>
 Q_DECL_CONSTEXPR Vector_2<T> operator*(T s, const Vector_2<T>& a) {
-	return { a.x() * s, a.y() * s };
+	return Vector_2<T>{ a.x() * s, a.y() * s };
 }
 
 /// \brief Computes the division of a vector by a scalar value.
 /// \relates Vector_2
 template<typename T>
 Q_DECL_CONSTEXPR Vector_2<T> operator/(const Vector_2<T>& a, T s) {
-	return { a.x() / s, a.y() / s };
+	return Vector_2<T>{ a.x() / s, a.y() / s };
 }
 
 /// \brief Writes a vector to a text output stream.

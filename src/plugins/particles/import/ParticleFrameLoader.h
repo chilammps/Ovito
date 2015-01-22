@@ -26,6 +26,7 @@
 #include <core/dataset/importexport/FileSourceImporter.h>
 #include <core/utilities/io/CompressedTextReader.h>
 #include <plugins/particles/data/ParticleProperty.h>
+#include <plugins/particles/data/BondsStorage.h>
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include <plugins/particles/data/SimulationCell.h>
 
@@ -102,6 +103,17 @@ public:
 		_particleTypes.push_back({ id, name, name.toLocal8Bit().constData(), color, radius });
 	}
 
+	/// Changes the name of an existing particle type.
+	void setParticleTypeName(int id, const QString& name) {
+		for(auto& type : _particleTypes) {
+			if(type.id == id) {
+				type.name = name;
+				type.name8bit = name.toLocal8Bit().constData();
+				break;
+			}
+		}
+	}
+
 	/// Defines a new particle type with the given id.
 	inline int addParticleTypeName(const char* name, const char* name_end) {
 		size_t nameLen = name_end - name;
@@ -146,6 +158,12 @@ public:
 	/// Returns true if the loaded file format contained information on the simulation timestep.
 	bool hasTimestep() const { return _timestep != -1; }
 
+	/// Sets the bonds between particles.
+	void setBonds(BondsStorage* bonds) { _bonds.reset(bonds); }
+
+	/// Returns the bonds between particles (if present).
+	BondsStorage* bonds() const { return _bonds.get(); }
+
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
@@ -173,6 +191,9 @@ private:
 
 	/// The list of particle types.
 	std::vector<ParticleTypeDefinition> _particleTypes;
+
+	/// The list of bonds between particles (if present).
+	std::unique_ptr<BondsStorage> _bonds;
 
 	/// The simulation timestep number.
 	int _timestep;

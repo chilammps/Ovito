@@ -154,6 +154,8 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 void StandardSceneRenderer::endRender()
 {
 	QOpenGLFramebufferObject::bindDefault();
+	QOpenGLContext* ctxt = QOpenGLContext::currentContext();
+	if(ctxt) ctxt->doneCurrent();
 	_framebufferObject.reset();
 	_offscreenContext.reset();
 	_offscreenSurface.reset();

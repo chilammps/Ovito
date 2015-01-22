@@ -403,9 +403,9 @@ public:
 	static inline AffineTransformationT rotationX(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {T(1), T(0), T(0), T(0),
-				T(0),    c,   -s, T(0),
-				T(0),    s,    c, T(0)};
+		return AffineTransformationT{T(1), T(0), T(0), T(0),
+									 T(0),    c,   -s, T(0),
+									 T(0),    s,    c, T(0)};
 	}
 
 	/// \brief Generates a matrix describing a rotation around the Y axis.
@@ -413,9 +413,9 @@ public:
 	static inline AffineTransformationT rotationY(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {   c, T(0),    s, T(0),
-				T(0), T(1), T(0), T(0),
-				  -s, T(0),    c, T(0)};
+		return AffineTransformationT{   c, T(0),    s, T(0),
+									 T(0), T(1), T(0), T(0),
+									   -s, T(0),    c, T(0)};
 	}
 
 	/// \brief Generates a matrix describing a rotation around the Z axis.
@@ -423,9 +423,9 @@ public:
 	static inline AffineTransformationT rotationZ(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {   c,   -s, T(0), T(0),
-				   s,    c, T(0), T(0),
-				T(0), T(0), T(1), T(0)};
+		return AffineTransformationT{   c,   -s, T(0), T(0),
+										s,    c, T(0), T(0),
+									 T(0), T(0), T(1), T(0)};
 	}
 
 	/// Generates a pure rotation matrix from an axis-angle representation.
@@ -437,8 +437,8 @@ public:
 	/// Generates a pure translation matrix.
 	static Q_DECL_CONSTEXPR AffineTransformationT translation(const Vector_3<T>& t) {
 		return AffineTransformationT(T(1), T(0), T(0), t.x(),
-						 T(0), T(1), T(0), t.y(),
-						 T(0), T(0), T(1), t.z());
+						 	 	 	 T(0), T(1), T(0), t.y(),
+						 	 	 	 T(0), T(0), T(1), t.z());
 	}
 
 	/// Generates a diagonal scaling matrix.
@@ -464,9 +464,9 @@ public:
 	/// Generates a matrix from an OpenGL matrix.
 	static AffineTransformationT fromOpenGL(const T tm[16]) {
 		OVITO_ASSERT(tm[3] == 0 && tm[7] == 0 && tm[11] == 0 && tm[15] == 1);
-		return {tm[0], tm[4], tm[8], tm[12],
-				tm[1], tm[5], tm[9], tm[13],
-				tm[2], tm[6], tm[10], tm[14]};
+		return AffineTransformationT{tm[0], tm[4], tm[8], tm[12],
+									 tm[1], tm[5], tm[9], tm[13],
+									 tm[2], tm[6], tm[10], tm[14]};
 	}
 
 	/// \brief Generates a look-at-matrix. 
@@ -498,9 +498,10 @@ public:
 		xaxis.normalize();
 		auto yaxis = zaxis.cross(xaxis);
 
-		return { xaxis.x(), xaxis.y(), xaxis.z(), -xaxis.dot(camera - typename Point_3<T>::Origin()),
-				 yaxis.x(), yaxis.y(), yaxis.z(), -yaxis.dot(camera - typename Point_3<T>::Origin()),
-				 zaxis.x(), zaxis.y(), zaxis.z(), -zaxis.dot(camera - typename Point_3<T>::Origin()) };
+		return AffineTransformationT{
+					xaxis.x(), xaxis.y(), xaxis.z(), -xaxis.dot(camera - typename Point_3<T>::Origin()),
+					yaxis.x(), yaxis.y(), yaxis.z(), -yaxis.dot(camera - typename Point_3<T>::Origin()),
+					zaxis.x(), zaxis.y(), zaxis.z(), -zaxis.dot(camera - typename Point_3<T>::Origin()) };
 	}
 	
 	///////////////////////////////// Information ////////////////////////////////
@@ -538,9 +539,9 @@ public:
 template<typename T>
 inline Q_DECL_CONSTEXPR Vector_3<T> operator*(const AffineTransformationT<T>& m, const Vector_3<T>& v)
 {
-	return { m(0,0) * v[0] + m(0,1) * v[1] + m(0,2) * v[2],
-			 m(1,0) * v[0] + m(1,1) * v[1] + m(1,2) * v[2],
-			 m(2,0) * v[0] + m(2,1) * v[1] + m(2,2) * v[2] };
+	return Vector_3<T>{ m(0,0) * v[0] + m(0,1) * v[1] + m(0,2) * v[2],
+						m(1,0) * v[0] + m(1,1) * v[1] + m(1,2) * v[2],
+						m(2,0) * v[0] + m(2,1) * v[1] + m(2,2) * v[2] };
 }
 
 /// Computes the product of a 3x4 matrix and a Point3 (which is extended to a 4-vector with the last element being 1).
@@ -548,9 +549,9 @@ inline Q_DECL_CONSTEXPR Vector_3<T> operator*(const AffineTransformationT<T>& m,
 template<typename T>
 inline Q_DECL_CONSTEXPR Point_3<T> operator*(const AffineTransformationT<T>& m, const Point_3<T>& p)
 {
-	return { m(0,0) * p[0] + m(0,1) * p[1] + m(0,2) * p[2] + m(0,3),
-			 m(1,0) * p[0] + m(1,1) * p[1] + m(1,2) * p[2] + m(1,3),
-			 m(2,0) * p[0] + m(2,1) * p[1] + m(2,2) * p[2] + m(2,3) };
+	return Point_3<T>{ m(0,0) * p[0] + m(0,1) * p[1] + m(0,2) * p[2] + m(0,3),
+						m(1,0) * p[0] + m(1,1) * p[1] + m(1,2) * p[2] + m(1,3),
+						m(2,0) * p[0] + m(2,1) * p[1] + m(2,2) * p[2] + m(2,3) };
 }
 
 /// Computes the product of two 3x4 matrices. The last row of the extended 4x4 matrix is assumed to be (0,0,0,1).

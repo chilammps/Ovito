@@ -115,7 +115,7 @@ private:
 		LAMMPSAtomStyle atomStyle() const { return _atomStyle; }
 
 		/// Detects or verifies the LAMMPS atom style used by the data file.
-		bool detectAtomStyle(const char* firstLine);
+		bool detectAtomStyle(const char* firstLine, const QByteArray& keywordLine);
 
 	protected:
 

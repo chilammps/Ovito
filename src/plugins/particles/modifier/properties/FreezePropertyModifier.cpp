@@ -67,12 +67,10 @@ PipelineStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInter
 	if(!savedProperty || !savedProperty->property())
 		throw Exception(tr("No stored values available. Please take a new snapshot of the current property values."));
 
-	// Make sure the number of particles didn't change.
-	if(savedProperty->property()->size() != outputParticleCount())
-		throw Exception(tr("Number of input particles has changed. Cannot restore saved property values. There were %1 particles when the snapshot was taken. Now there are %2.").arg(savedProperty->property()->size()).arg(outputParticleCount()));
-
 	// Make a copy of the stored property values, which will be fed into the modification pipeline.
 	OORef<ParticlePropertyObject> outputProperty = cloneHelper()->cloneObject(savedProperty->property(), false);
+	if(outputProperty->size() != outputParticleCount())
+		outputProperty->resize(outputParticleCount(), false);
 
 	// Get the particle property that will be overwritten by the stored one.
 	ParticlePropertyObject* oldProperty;
@@ -95,37 +93,40 @@ PipelineStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInter
 
 	// Check if particle IDs are present and if the order of particles has changed
 	// since we took the snapshot of the property values.
-	if(savedProperty->identifiers()) {
-		ParticlePropertyObject* idProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
-		if(idProperty) {
-			OVITO_ASSERT(idProperty->size() == savedProperty->identifiers()->size());
-			if(!std::equal(idProperty->constDataInt(), idProperty->constDataInt() + idProperty->size(), savedProperty->identifiers()->constDataInt())) {
+	ParticlePropertyObject* idProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
+	bool usingIdentifiers = false;
+	if(savedProperty->identifiers() && idProperty) {
+		if(idProperty->size() != savedProperty->identifiers()->size() || !std::equal(idProperty->constDataInt(), idProperty->constDataInt() + idProperty->size(), savedProperty->identifiers()->constDataInt())) {
+			usingIdentifiers = true;
 
-				// Build ID-to-index map.
-				std::map<int,int> idmap;
-				int index = 0;
-				for(int id : savedProperty->identifiers()->constIntRange()) {
-					if(!idmap.insert(std::make_pair(id,index)).second)
-						throw Exception(tr("Detected duplicate particle ID %1. Cannot restore saved property values.").arg(id));
-					index++;
-				}
-
-				// Copy and reorder property data.
-				const int* id = idProperty->constDataInt();
-				char* dest = static_cast<char*>(outputProperty->data());
-				const char* src = static_cast<const char*>(savedProperty->property()->constData());
-				size_t stride = outputProperty->stride();
-				for(size_t index = 0; index < outputProperty->size(); index++, ++id, dest += stride) {
-					auto mapEntry = idmap.find(*id);
-					if(mapEntry == idmap.end())
-						throw Exception(tr("Detected unknown particle ID %1. Cannot restore saved property values.").arg(*id));
-					memcpy(dest, src + stride * mapEntry->second, stride);
-				}
-
-				outputProperty->changed();
+			// Build ID-to-index map.
+			std::map<int,int> idmap;
+			int index = 0;
+			for(int id : savedProperty->identifiers()->constIntRange()) {
+				if(!idmap.insert(std::make_pair(id,index)).second)
+					throw Exception(tr("Detected duplicate particle ID %1 in saved snapshot. Cannot restore saved property values.").arg(id));
+				index++;
 			}
+
+			// Copy and reorder property data.
+			const int* id = idProperty->constDataInt();
+			char* dest = static_cast<char*>(outputProperty->data());
+			const char* src = static_cast<const char*>(savedProperty->property()->constData());
+			size_t stride = outputProperty->stride();
+			for(size_t index = 0; index < outputProperty->size(); index++, ++id, dest += stride) {
+				auto mapEntry = idmap.find(*id);
+				if(mapEntry == idmap.end())
+					throw Exception(tr("Detected new particle ID %1, which didn't exist when the snapshot was taken. Cannot restore saved property values.").arg(*id));
+				memcpy(dest, src + stride * mapEntry->second, stride);
+			}
+
+			outputProperty->changed();
 		}
 	}
+
+	// Make sure the number of particles didn't change if no identifiers are present.
+	if(!usingIdentifiers && savedProperty->property()->size() != outputParticleCount())
+		throw Exception(tr("Number of input particles has changed. Cannot restore saved property values. There were %1 particles when the snapshot was taken. Now there are %2.").arg(savedProperty->property()->size()).arg(outputParticleCount()));
 
 	// Insert particle property into modification pipeline.
 	output().addObject(outputProperty);

@@ -663,11 +663,13 @@ void Viewport::render(QOpenGLContext* context)
 						(renderFrameBox.minc.y()+1.0f)*overlayBuffer.height()/2,
 						renderFrameBox.width()*overlayBuffer.width()/2,
 						renderFrameBox.height()*overlayBuffer.height()/2);
+				ViewProjectionParameters renderProjParams = projectionParameters(time, renderSettings->outputImageAspectRatio(), boundingBox);
 				for(ViewportOverlay* overlay : overlays()) {
 					QPainter painter(&overlayBuffer);
-					painter.setWindow(QRect(0,0,renderSettings->outputImageWidth(),renderSettings->outputImageHeight()));
+					painter.setWindow(QRect(0, 0, renderSettings->outputImageWidth(), renderSettings->outputImageHeight()));
 					painter.setViewport(renderFrameRect);
-					overlay->render(this, painter, _projParams, renderSettings);
+					painter.setRenderHint(QPainter::Antialiasing);
+					overlay->render(this, painter, renderProjParams, renderSettings);
 				}
 				std::shared_ptr<ImagePrimitive> overlayBufferPrim = renderer->createImagePrimitive();
 				overlayBufferPrim->setImage(overlayBuffer);
