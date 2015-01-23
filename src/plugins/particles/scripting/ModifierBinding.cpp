@@ -110,7 +110,9 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"then the modifier automatically adjusts them to the minimum and maximum values of the particle property when the modifier "
 				"is inserted into the modification pipeline.")
 			.add_property("property", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty,
-					"The name of the input property that determines the color of particles. ")
+					"The name of the input property that should be used to color particles. "
+					"This can be one of the :ref:`standard particle properties <particle-types-list>` or a custom particle property. "
+					"When using vector properties the component must be included in the name, e.g. ``\"Velocity.X\"``. ")
 			.add_property("start_value", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue,
 					"This parameter defines the value range when mapping the input property to a color.")
 			.add_property("startValueController", make_function(&ColorCodingModifier::startValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setStartValueController)
@@ -162,8 +164,8 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				":Valid range: [0.0, 1.0]\n"
 				":Default: 0.7")
 		.add_property("sample_count", &AmbientOcclusionModifier::samplingCount, &AmbientOcclusionModifier::setSamplingCount,
-				"The number of light exposure samples to compute. A large number takes longer to compute but leads to a more "
-				"even light distribution."
+				"The number of light exposure samples to compute. More samples give a more even light distribution "
+				"but take longer to compute."
 				"\n\n"
 				":Default: 40\n")
 		.add_property("buffer_resolution", &AmbientOcclusionModifier::bufferResolution, &AmbientOcclusionModifier::setBufferResolution,
@@ -209,11 +211,14 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"\n\n"
 				":Default: 3\n")
 		.add_property("adjust_box", &ShowPeriodicImagesModifier::adjustBoxSize, &ShowPeriodicImagesModifier::setAdjustBoxSize,
-				"If ``True``, the simulation cell is extended to fit the multiplied system."
+				"A boolean flag controlling the modification of the simulation cell geometry. "
+				"If ``True``, the simulation cell is extended to fit the multiplied system. "
+				"If ``False``, the original simulation cell (containing only the primary image of the system) is kept. "
 				"\n\n"
 				":Default: ``False``\n")
 		.add_property("unique_ids", &ShowPeriodicImagesModifier::uniqueIdentifiers, &ShowPeriodicImagesModifier::setUniqueIdentifiers,
-				"If ``True``, the modifier automatically generates a new unique ID for each copy of a particle."
+				"If ``True``, the modifier automatically generates a new unique ID for each copy of a particle. "
+				"This option has no effect if the input system does not contain particle IDs. "
 				"\n\n"
 				":Default: ``True``\n")
 	;
@@ -284,7 +289,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 	ovito_class<SelectParticleTypeModifier, ParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
-			"Selects particles of a certain type (or multiple types)."
+			"Selects all particles of a certain type (or types)."
 			"\n\n"
 			"Example::"
 			"\n\n"
@@ -294,11 +299,13 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"                      CommonNeighborAnalysisModifier.Type.HCP }\n"
 			"\n")
 		.add_property("property", make_function(&SelectParticleTypeModifier::sourceProperty, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSourceProperty,
-				"The input particle property the selection created by the modifier should be based on."
+				"The name of the integer particle property to be used as input, which contains the particle types. "
+				"This can be a :ref:`standard particle property <particle-types-list>` such as ``\"Particle Type\"`` or ``\"Structure Type\"``, or "
+				"a custom particle property."
 				"\n\n"
 				":Default: ``\"Particle Type\"``\n")
 		.add_property("types", make_function(&SelectParticleTypeModifier::selectedParticleTypes, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSelectedParticleTypes,
-				"A Python ``set`` of integers specifying the particle types to select. "
+				"A Python ``set`` of integers, which specifies the particle types to select. "
 				"\n\n"
 				":Default: ``set([])``\n")
 	;
@@ -712,7 +719,9 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"   numpy.savetxt(\"histogram.txt\", modifier.histogram)\n"
 			"\n")
 		.add_property("property", make_function(&HistogramModifier::sourceProperty, return_value_policy<copy_const_reference>()), &HistogramModifier::setSourceProperty,
-				"The name of the input particle property for which to compute the histogram.")
+				"The name of the input particle property for which to compute the histogram. "
+				"This can be one of the :ref:`standard particle properties <particle-types-list>` or a custom particle property. "
+				"For vector properties a specific component name must be included in the string, e.g. ``\"Velocity.X\"``. ")
 		.add_property("bin_count", &HistogramModifier::numberOfBins, &HistogramModifier::setNumberOfBins,
 				"The number of histogram bins."
 				"\n\n"
