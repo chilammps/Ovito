@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -33,7 +33,7 @@
 	#include <Carbon/Carbon.h>
 #endif
 
-namespace Ovito {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) 
 
 /// The one and only instance of this class.
 Application Application::_instance;
@@ -367,4 +367,5 @@ void Application::consoleExceptionHandler(const Exception& exception)
 	std::cerr << std::flush;
 }
 
-};
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

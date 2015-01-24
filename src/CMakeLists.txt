@@ -21,6 +21,7 @@
 
 # Place all compiled libraries into OVITO's library directory.
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OVITO_LIBRARY_DIRECTORY}")
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OVITO_LIBRARY_DIRECTORY}")
 
 ################# 3rd-party libraries  ####################
 
