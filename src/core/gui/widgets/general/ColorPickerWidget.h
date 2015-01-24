@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /**
  * \brief A UI control lets the user choose a color.
@@ -81,6 +81,8 @@ protected:
 	Color _color; 
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_COLOR_PICKER_WIDGET_H

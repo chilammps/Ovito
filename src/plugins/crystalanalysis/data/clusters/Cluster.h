@@ -131,6 +131,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_orientation);
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CA_CLUSTER_H

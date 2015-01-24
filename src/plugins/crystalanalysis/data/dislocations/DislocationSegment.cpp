@@ -168,4 +168,6 @@ QString DislocationSegment::formatBurgersVector(const Vector3& b)
 			.arg(QLocale::c().toString(b.z(), 'f'), 7);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

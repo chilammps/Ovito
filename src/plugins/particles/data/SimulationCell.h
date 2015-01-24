@@ -161,6 +161,7 @@ private:
 	std::array<bool,3> _pbcFlags;
 };
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_SIMULATION_CELL_H

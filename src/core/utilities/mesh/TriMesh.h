@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util { inline namespace Mesh {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Mesh)
 
 /// \brief The maximum number of smoothing groups in a mesh.
 ///
@@ -385,8 +385,10 @@ private:
 	QVector<TriMeshFace> _faces;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_TYPEINFO(Ovito::Util::Mesh::TriMeshFace, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::TriMeshFace, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_TRI_MESH_H

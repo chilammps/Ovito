@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 
-namespace Ovito { inline namespace PluginSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(PluginSystem)
 
 /**
  * \brief Represents a plugin that is loaded at runtime.
@@ -123,6 +123,7 @@ private:
 	friend class PluginManager;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PLUGIN_H

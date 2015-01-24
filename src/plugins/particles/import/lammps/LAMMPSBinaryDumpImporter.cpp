@@ -30,13 +30,13 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include "LAMMPSBinaryDumpImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSBinaryDumpImporter, ParticleImporter);
-SET_OVITO_OBJECT_EDITOR(LAMMPSBinaryDumpImporter, Internal::LAMMPSBinaryDumpImporterEditor);
-namespace Internal {
+SET_OVITO_OBJECT_EDITOR(LAMMPSBinaryDumpImporter, LAMMPSBinaryDumpImporterEditor);
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, LAMMPSBinaryDumpImporterEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 struct LAMMPSBinaryDumpHeader
 {
@@ -458,7 +458,7 @@ void LAMMPSBinaryDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -501,6 +501,8 @@ void LAMMPSBinaryDumpImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
 }	// End of namespace
-
-}}}}	// End of namespace
+}	// End of namespace

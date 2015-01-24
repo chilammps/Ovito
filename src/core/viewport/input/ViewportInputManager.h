@@ -27,7 +27,7 @@
 #include "NavigationModes.h"
 #include "XFormModes.h"
 
-namespace Ovito { inline namespace Gui { inline namespace ViewportInput {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(ViewportInput)
 
 /**
  * \brief Manages a stack of viewport input handlers.
@@ -136,6 +136,8 @@ private:
 	RotateMode* _rotateMode;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_INPUT_MANAGER_H

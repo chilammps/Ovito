@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/FileImporter.h>
 #include "HistoryFileDialog.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * This file chooser dialog lets the user select a file to be imported.
@@ -59,6 +59,8 @@ private:
 	QString _selectedFilter;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_IMPORT_FILE_DIALOG_H

@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A renderer used to compute ambient occlusion lighting.
@@ -84,6 +84,10 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_AMBIENT_OCCLUSION_RENDERER_H

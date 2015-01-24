@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Stores status information associated with an evaluation of the modification pipeline.
@@ -121,6 +121,8 @@ inline QDebug operator<<(QDebug debug, const PipelineStatus& s)
 	return debug;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PIPELINE_STATUS_H

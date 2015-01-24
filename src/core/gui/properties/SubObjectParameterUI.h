@@ -26,7 +26,7 @@
 #include "ParameterUI.h"
 #include "PropertiesEditor.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 /******************************************************************************
 * This parameter UI will open up a sub-editor for an object that is
@@ -67,6 +67,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SUBOBJECT_PARAMETER_UI_H

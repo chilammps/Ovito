@@ -24,7 +24,7 @@
 #include "StandardSceneRenderer.h"
 #include "StandardSceneRendererEditor.h"
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 IMPLEMENT_OVITO_OBJECT(Core, StandardSceneRendererEditor, PropertiesEditor);
 
@@ -51,4 +51,6 @@ void StandardSceneRendererEditor::createUI(const RolloutInsertionParameters& rol
 	antialiasingLevelUI->setMaxValue(6);	
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

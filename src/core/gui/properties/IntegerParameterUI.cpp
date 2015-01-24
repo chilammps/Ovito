@@ -25,7 +25,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, IntegerParameterUI, NumericalParameterUI);
@@ -138,4 +138,6 @@ void IntegerParameterUI::setMaxValue(int maxValue)
 	if(spinner()) spinner()->setMaxValue(maxValue);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

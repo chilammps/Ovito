@@ -35,13 +35,13 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include "XYZImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZImporter, ParticleImporter);
-SET_OVITO_OBJECT_EDITOR(XYZImporter, Internal::XYZImporterEditor);
-namespace Internal {
+SET_OVITO_OBJECT_EDITOR(XYZImporter, XYZImporterEditor);
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, XYZImporterEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
  * Sets the user-defined mapping between data columns in the input file and
@@ -570,7 +570,7 @@ void XYZImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -613,6 +613,9 @@ void XYZImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

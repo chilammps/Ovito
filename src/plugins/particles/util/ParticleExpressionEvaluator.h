@@ -26,7 +26,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <muParser.h>
 
-namespace Ovito { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief Helper class that evaluates one or more math expressions for every particle.
@@ -134,6 +134,9 @@ protected:
 	static QByteArray _validVariableNameChars;
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_EXPRESSION_EVALUATOR_H

@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Properties)
 
 /**
  * \brief Saves the current state of a particle property and preserves it over time.
@@ -81,7 +81,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_destinationProperty);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the FreezePropertyModifier class.
@@ -152,8 +152,11 @@ private:
 	DECLARE_REFERENCE_FIELD(_identifiers);
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_FREEZE_PROPERTY_MODIFIER_H

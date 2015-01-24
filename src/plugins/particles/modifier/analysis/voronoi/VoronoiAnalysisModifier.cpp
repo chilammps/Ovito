@@ -31,10 +31,10 @@
 
 #include <voro++.hh>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, VoronoiAnalysisModifier, AsynchronousParticleModifier);
-SET_OVITO_OBJECT_EDITOR(VoronoiAnalysisModifier, Internal::VoronoiAnalysisModifierEditor);
+SET_OVITO_OBJECT_EDITOR(VoronoiAnalysisModifier, VoronoiAnalysisModifierEditor);
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _useCutoff, "UseCutoff");
 DEFINE_FLAGS_PROPERTY_FIELD(VoronoiAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _onlySelected, "OnlySelected");
@@ -54,9 +54,9 @@ SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _faceThreshold, "Face area thr
 SET_PROPERTY_FIELD_UNITS(VoronoiAnalysisModifier, _cutoff, WorldParameterUnit);
 SET_PROPERTY_FIELD_UNITS(VoronoiAnalysisModifier, _edgeThreshold, WorldParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, VoronoiAnalysisModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -132,8 +132,8 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 		r = r*r;
 	}
 
-	Util::CutoffNeighborFinder cutoffNeighborFinder;
-	Util::NearestNeighborFinder nearestNeighborFinder;
+	CutoffNeighborFinder cutoffNeighborFinder;
+	NearestNeighborFinder nearestNeighborFinder;
 
 	double boxDiameter;
 	if(_cutoff > 0) {
@@ -200,7 +200,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 			return;
 
 		if(_cutoff > 0) {
-			for(Util::CutoffNeighborFinder::Query neighQuery(cutoffNeighborFinder, index); !neighQuery.atEnd(); neighQuery.next()) {
+			for(CutoffNeighborFinder::Query neighQuery(cutoffNeighborFinder, index); !neighQuery.atEnd(); neighQuery.next()) {
 				// Skip unselected particles (if requested).
 				if(_selection && _selection->getInt(neighQuery.current()) == 0)
 					continue;
@@ -217,7 +217,7 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 		else {
 			// This function will be called for every neighbor particle.
 			int nvisits = 0;
-			auto visitFunc = [this, &v, &nvisits, index](const Util::NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
+			auto visitFunc = [this, &v, &nvisits, index](const NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
 				// Skip unselected particles (if requested).
 				if(!_selection || _selection->getInt(n.index)) {
 					FloatType rs = n.distanceSq;
@@ -359,7 +359,7 @@ void VoronoiAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& fie
 	invalidateCachedResults();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -435,6 +435,9 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->addWidget(statusLabel());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

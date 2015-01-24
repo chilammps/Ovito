@@ -25,7 +25,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "AnimationSettingsDialog.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * The constructor of the animation settings dialog.
@@ -195,4 +195,6 @@ void AnimationSettingsDialog::onAnimationIntervalChanged()
 	updateValues();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

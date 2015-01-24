@@ -31,12 +31,12 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellDisplayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCellDisplay, DisplayObject);
-SET_OVITO_OBJECT_EDITOR(SimulationCellDisplay, Internal::SimulationCellDisplayEditor);
+SET_OVITO_OBJECT_EDITOR(SimulationCellDisplay, SimulationCellDisplayEditor);
 DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _renderSimulationCell, "RenderSimulationCell");
 DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellLineWidth, "SimulationCellLineWidth");
 DEFINE_FLAGS_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellColor, "SimulationCellRenderingColor", PROPERTY_FIELD_MEMORIZE);
@@ -186,7 +186,7 @@ void SimulationCellDisplay::renderSolid(SimulationCellObject* cell, SceneRendere
 	renderer->endPickObject();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -218,6 +218,7 @@ void SimulationCellDisplayEditor::createUI(const RolloutInsertionParameters& rol
 	layout->addWidget(lineColorUI->colorPicker(), 2, 1);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

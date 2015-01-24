@@ -25,7 +25,7 @@
 #include "SceneNodeSelectionBox.h"
 #include "SceneNodesListModel.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Constructs the widget.
@@ -97,4 +97,6 @@ void SceneNodeSelectionBox::onNodeCountChanged()
 	setEnabled(model()->rowCount() > 1);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

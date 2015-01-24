@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 /**
  * \brief File parser for IMD atom files.
@@ -77,6 +77,9 @@ private:
 	OVITO_OBJECT
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_IMD_FILE_IMPORTER_H

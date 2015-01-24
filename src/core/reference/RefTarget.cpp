@@ -25,7 +25,7 @@
 #include <core/dataset/UndoStack.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 // Gives the class run-time type information.
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);
@@ -251,5 +251,6 @@ bool RefTarget::isBeingEdited() const
 	return false;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

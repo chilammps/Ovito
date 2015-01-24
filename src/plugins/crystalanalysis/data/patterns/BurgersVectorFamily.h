@@ -125,6 +125,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CA_BURGERS_VECTOR_FAMILY_H

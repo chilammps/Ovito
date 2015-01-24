@@ -653,7 +653,8 @@ inline LoadStream& operator>>(LoadStream& stream, ParticlePropertyReference& r)
 	return stream;
 }
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Particles::ParticlePropertyReference);
 

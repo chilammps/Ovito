@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::RotationT class template.
+ * \brief Contains the definition of the Ovito::RotationT class template.
  */
 
 #ifndef __OVITO_ROTATION_H
@@ -34,7 +34,7 @@
 #include "Quaternion.h"
 #include "Matrix3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A rotation in 3d space, described by a rotation axis and an angle.
@@ -535,11 +535,13 @@ inline QDataStream& operator>>(QDataStream& stream, RotationT<T>& r) {
  */
 typedef RotationT<FloatType>		Rotation;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Rotation);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Rotation*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Rotation, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Rotation*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Rotation);
+Q_DECLARE_METATYPE(Ovito::Rotation*);
+Q_DECLARE_TYPEINFO(Ovito::Rotation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rotation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ROTATION_H

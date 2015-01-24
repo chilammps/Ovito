@@ -25,18 +25,18 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include "AssignColorModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AssignColorModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(AssignColorModifier, Internal::AssignColorModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", Controller, PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection");
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color");
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, AssignColorModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -110,7 +110,7 @@ PipelineStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval
 	return PipelineStatus();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -136,6 +136,9 @@ void AssignColorModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout->addWidget(keepSelectionPUI->checkBox(), 1, 0, 1, 2);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

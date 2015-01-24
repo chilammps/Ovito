@@ -23,7 +23,7 @@
 #include <core/viewport/ViewportSettings.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito { inline namespace View {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View)
 
 /// The current settings record.
 Q_GLOBAL_STATIC(ViewportSettings, _currentViewportSettings);
@@ -197,4 +197,5 @@ void ViewportSettings::save(QSettings& store) const
 	store.endGroup();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "InvertSelectionModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Selection)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, InvertSelectionModifier, ParticleModifier);
 
@@ -40,4 +40,7 @@ PipelineStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInte
 	return PipelineStatus::Success;
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

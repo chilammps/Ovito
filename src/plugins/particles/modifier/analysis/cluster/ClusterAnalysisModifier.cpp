@@ -22,17 +22,17 @@
 #include <plugins/particles/Particles.h>
 #include "ClusterAnalysisModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClusterAnalysisModifier, AsynchronousParticleModifier);
-SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, Internal::ClusterAnalysisModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, ClusterAnalysisModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(ClusterAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(ClusterAnalysisModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_UNITS(ClusterAnalysisModifier, _cutoff, WorldParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, ClusterAnalysisModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -66,7 +66,7 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 	setProgressText(tr("Performing cluster analysis"));
 
 	// Prepare the neighbor finder.
-	Util::CutoffNeighborFinder neighborFinder;
+	CutoffNeighborFinder neighborFinder;
 	if(!neighborFinder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
@@ -98,7 +98,7 @@ void ClusterAnalysisModifier::ClusterAnalysisEngine::perform()
 
 			int currentParticle = toProcess.front();
 			toProcess.pop_front();
-			for(Util::CutoffNeighborFinder::Query neighQuery(neighborFinder, currentParticle); !neighQuery.atEnd(); neighQuery.next()) {
+			for(CutoffNeighborFinder::Query neighQuery(neighborFinder, currentParticle); !neighQuery.atEnd(); neighQuery.next()) {
 				int neighborIndex = neighQuery.current();
 				if(_particleClusters->getInt(neighborIndex) == -1) {
 					_particleClusters->setInt(neighborIndex, cluster);
@@ -148,7 +148,7 @@ void ClusterAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& fie
 		invalidateCachedResults();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -180,6 +180,9 @@ void ClusterAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->addWidget(statusLabel());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

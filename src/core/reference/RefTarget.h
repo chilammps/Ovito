@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "RefMaker.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief Base class for objects that are referenced by RefMaker objects.
@@ -301,7 +301,8 @@ private:
 	friend class VectorReferenceFieldBase;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 
 // Also include the CloneHelper header because it is always needed in conjunction with the RefTarget class.

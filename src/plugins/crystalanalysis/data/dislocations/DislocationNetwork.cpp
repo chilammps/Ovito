@@ -87,4 +87,6 @@ void DislocationNetworkEditor::onOpenInspector()
 	inspectorWindow->show();
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

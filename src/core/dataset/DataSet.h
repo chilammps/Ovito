@@ -28,7 +28,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include "UndoStack.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief Stores the current state including the three-dimensional scene, viewport configuration,
@@ -178,7 +178,7 @@ private:
 
 	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
 	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
-			Viewport* viewport, FrameBuffer* frameBuffer, Util::IO::Internal::VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
+			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
 
 	/// Returns a viewport configuration that is used as template for new scenes.
 	OORef<ViewportConfiguration> createDefaultViewportConfiguration();
@@ -228,6 +228,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_renderSettings);
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_DATASET_H

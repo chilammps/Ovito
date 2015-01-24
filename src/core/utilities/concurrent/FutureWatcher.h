@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util { inline namespace Concurrency {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Concurrency)
 
 class FutureBase;
 class FutureInterfaceBase;
@@ -123,6 +123,8 @@ private:
 	Q_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FUTURE_WATCHER_H

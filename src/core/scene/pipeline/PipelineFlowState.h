@@ -28,7 +28,7 @@
 #include <core/scene/objects/VersionedObjectReference.h>
 #include "PipelineStatus.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief This object flows down the geometry pipeline of an ObjectNode.
@@ -155,7 +155,9 @@ private:
 	QVariantMap _attributes;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #include <core/scene/objects/DataObject.h>
 

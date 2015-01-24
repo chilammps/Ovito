@@ -33,7 +33,7 @@
 #include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/objects/SurfaceMesh.h>
 
-namespace Ovito { namespace Particles { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 using namespace boost::python;
 using namespace PyScript;
@@ -484,4 +484,6 @@ BOOST_PYTHON_MODULE(Particles)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

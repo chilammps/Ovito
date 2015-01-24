@@ -26,7 +26,7 @@
 #include "Future.h"
 #include "Task.h"
 
-namespace Ovito { inline namespace Util { inline namespace Concurrency {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Concurrency)
 
 /**
  * \brief Manages the background tasks.
@@ -220,8 +220,10 @@ private:
 	bool _indicatorVisible;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(std::shared_ptr<Ovito::Util::Concurrency::FutureInterfaceBase>);
+Q_DECLARE_METATYPE(std::shared_ptr<Ovito::FutureInterfaceBase>);
 
 #endif // __OVITO_TASK_MANAGER_H

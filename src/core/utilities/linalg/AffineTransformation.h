@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::AffineTransformationT class template.
+ * \brief Contains the definition of the Ovito::AffineTransformationT class template.
  */
 
 #ifndef __OVITO_AFFINE_TRANSFORMATION_H
@@ -35,7 +35,7 @@
 #include "Point3.h"
 #include "Matrix3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A 3x4 matrix, which describes an affine transformation in 3d space.
@@ -88,7 +88,7 @@ public:
 	/// \brief Constructor that initializes 9 elements of the left 3x3 submatrix to the given values.
 	///        The translation (4th column) is set to zero.
 	/// \note Matrix elements are specified in row-major order, i.e. row by row.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR AffineTransformationT(
 						T m11, T m12, T m13,
 					    T m21, T m22, T m23,
@@ -111,7 +111,7 @@ public:
 
 	/// \brief Constructor that initializes the elements of the matrix to the given values.
 	/// \note Elements are specified in row-major order, i.e. row by row.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR AffineTransformationT(
 						T m11, T m12, T m13, T m14,
 					    T m21, T m22, T m23, T m24,
@@ -133,7 +133,7 @@ public:
 #endif
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR AffineTransformationT(const column_type& c1, const column_type& c2, const column_type& c3, const column_type& c4)
 		: std::array<Vector_3<T>,4>{{c1, c2, c3, c4}} {}
 #else
@@ -143,7 +143,7 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR AffineTransformationT(Zero)
 		: std::array<Vector_3<T>,4>{{
 			typename Vector_3<T>::Zero(),
@@ -157,7 +157,7 @@ public:
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR AffineTransformationT(Identity)
 		: std::array<Vector_3<T>,4>{{
 			Vector_3<T>(T(1),T(0),T(0)),
@@ -174,7 +174,7 @@ public:
 
 	/// \brief Initializes the 3x4 matrix from a 3x3 matrix.
 	/// The translation vector (4th column) is set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	explicit Q_DECL_CONSTEXPR AffineTransformationT(const Matrix_3<T>& tm)
 		: std::array<Vector_3<T>,4>{{tm.column(0), tm.column(1), tm.column(2), typename Vector_3<T>::Zero()}} {}
 #else
@@ -784,11 +784,13 @@ inline QDataStream& operator>>(QDataStream& stream, AffineTransformationT<T>& m)
  */
 typedef AffineTransformationT<FloatType>		AffineTransformation;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::AffineTransformation);
-Q_DECLARE_METATYPE(Ovito::Util::Math::AffineTransformation*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::AffineTransformation, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::AffineTransformation*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::AffineTransformation);
+Q_DECLARE_METATYPE(Ovito::AffineTransformation*);
+Q_DECLARE_TYPEINFO(Ovito::AffineTransformation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::AffineTransformation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_AFFINE_TRANSFORMATION_H

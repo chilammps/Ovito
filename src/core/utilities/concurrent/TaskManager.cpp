@@ -24,7 +24,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 
-namespace Ovito { inline namespace Util { inline namespace Concurrency {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Concurrency)
 
 /******************************************************************************
 * Initializes the progress manager.
@@ -265,4 +265,6 @@ bool TaskManager::waitForTask(const std::shared_ptr<FutureInterfaceBase>& future
 	return !futureInterface->isCanceled();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

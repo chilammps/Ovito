@@ -33,7 +33,7 @@
 #include "ViewportSettings.h"
 #include "ViewportWindow.h"
 
-namespace Ovito { inline namespace View {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View)
 
 /******************************************************************************
 * This data structure describes a projection parameters used to render
@@ -518,14 +518,15 @@ private:
 	DECLARE_PROPERTY_FIELD(_stereoscopicMode);
 	DECLARE_VECTOR_REFERENCE_FIELD(_overlays);
 
-	friend class Ovito::Gui::Internal::ViewportWindow;
-	friend class Ovito::Gui::Internal::ViewportMenu;
+	friend class ViewportWindow;
+	friend class ViewportMenu;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::View::Viewport::ViewType);
-Q_DECLARE_TYPEINFO(Ovito::View::Viewport::ViewType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Viewport::ViewType);
+Q_DECLARE_TYPEINFO(Ovito::Viewport::ViewType, Q_PRIMITIVE_TYPE);
 
 #include <core/rendering/SceneRenderer.h>
 

@@ -127,7 +127,9 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Plugins::CrystalAnalysis::StructurePattern::StructureType);
 Q_DECLARE_TYPEINFO(Ovito::Plugins::CrystalAnalysis::StructurePattern::StructureType, Q_PRIMITIVE_TYPE);

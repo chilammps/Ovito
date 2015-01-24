@@ -28,7 +28,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 
-namespace Ovito { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 class ParticleInformationInputMode;		// defined below
 
@@ -108,6 +108,9 @@ private:
 	friend class ParticleInformationApplet;
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_INFORMATION_APPLET_H

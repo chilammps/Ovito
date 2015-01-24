@@ -28,7 +28,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/overlay/ViewportOverlay.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * The command panel tab lets the user edit the viewport overlays.
@@ -99,6 +99,8 @@ private:
 	};
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_OVERLAY_COMMAND_PAGE_H

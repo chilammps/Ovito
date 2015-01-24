@@ -23,7 +23,7 @@
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/tachyon/renderer/TachyonRenderer.h>
 
-namespace Ovito { namespace Tachyon { namespace Internal {
+namespace Ovito { namespace Tachyon { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 using namespace boost::python;
 using namespace Ovito;
@@ -76,4 +76,6 @@ BOOST_PYTHON_MODULE(Tachyon)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Tachyon);
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

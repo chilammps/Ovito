@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Vector_4 class template.
+ * \brief Contains the definition of the Ovito::Vector_4 class template.
  */
 
 #ifndef __OVITO_VECTOR4_H
@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A vector with four components.
@@ -81,21 +81,21 @@ public:
 	Vector_4() {}
 
 	/// Constructs a vector with all four components initialized to the given value.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR explicit Vector_4(T val) : std::array<T, 4>{{val,val,val,val}} {}
 #else
 	explicit Vector_4(T val) { this->fill(val); }
 #endif
 
 		/// Initializes the components of the vector with the given values.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Vector_4(T x, T y, T z, T w) : std::array<T, 4>{{x, y, z, w}} {}
 #else
 	Vector_4(T x, T y, T z, T w) { this->x() = x; this->y() = y; this->z() = z; this->w() = w; }
 #endif
 
 		/// Initializes the vector to the null vector. All components are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Vector_4(Zero) : std::array<T, 4>{{T(0), T(0), T(0), T(0)}} {}
 #else
 	Vector_4(Zero) { this->fill(T(0)); }
@@ -107,7 +107,7 @@ public:
 	/// Initializes the 4-vector from a 3-vector.
 	/// \param v Specifies the xyz components of the new vector.
 	/// \param w The w component of the new vector.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR explicit Vector_4(const Vector_3<T>& v, T w) : std::array<T, 4>{{v.x(), v.y(), v.z(), w}} {}
 #else
 	explicit Vector_4(const Vector_3<T>& v, T w) { this->x() = v.x; this->y() = v.y; this->z() = v.z; this->w() = w; }
@@ -350,15 +350,17 @@ typedef Vector_4<int>			Vector4I;
 inline void glVertex(const Vector_4<GLdouble>& v) { glVertex4dv(v.data()); }
 inline void glVertex(const Vector_4<GLfloat>& v) { glVertex4fv(v.data()); }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector4);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector4I);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector4*);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector4I*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector4, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector4I, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector4*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector4I*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Vector4);
+Q_DECLARE_METATYPE(Ovito::Vector4I);
+Q_DECLARE_METATYPE(Ovito::Vector4*);
+Q_DECLARE_METATYPE(Ovito::Vector4I*);
+Q_DECLARE_TYPEINFO(Ovito::Vector4, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR4_H

@@ -22,8 +22,9 @@
 #include <core/Core.h>
 #include "AutoStartObject.h"
 
-namespace Ovito { inline namespace PluginSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(PluginSystem)
 
 IMPLEMENT_OVITO_OBJECT(Core, AutoStartObject, OvitoObject);
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

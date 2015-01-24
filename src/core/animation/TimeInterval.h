@@ -26,7 +26,7 @@
 #include <core/utilities/io/SaveStream.h>
 #include <core/utilities/io/LoadStream.h>
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /** 
  * \brief A point in animation time.
@@ -230,9 +230,10 @@ inline QDebug operator<<(QDebug stream, const TimeInterval& iv)
 	return stream.space();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Anim::TimeInterval);
-Q_DECLARE_TYPEINFO(Ovito::Anim::TimeInterval, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::TimeInterval);
+Q_DECLARE_TYPEINFO(Ovito::TimeInterval, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_TIME_INTERVAL_H

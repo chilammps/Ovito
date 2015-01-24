@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito { inline namespace PluginSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(PluginSystem)
 
 /**
  * \brief Loads and manages the installed plugins.
@@ -109,10 +109,11 @@ private:
 	/// The singleton instance of this class.
 	static PluginManager* _instance;
 
-	friend class Ovito::Gui::Application;
-	friend class Ovito::PluginSystem::Plugin;
+	friend class Application;
+	friend class Plugin;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PLUGIN_MANAGER_H

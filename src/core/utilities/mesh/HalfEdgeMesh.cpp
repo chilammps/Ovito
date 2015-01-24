@@ -23,7 +23,7 @@
 #include "HalfEdgeMesh.h"
 #include "TriMesh.h"
 
-namespace Ovito { inline namespace Util { inline namespace Mesh {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Mesh)
 
 /******************************************************************************
 * Removes all faces, edges, and vertices from this mesh.
@@ -217,4 +217,6 @@ void HalfEdgeMesh::convertToTriMesh(TriMesh& output) const
 	output.invalidateFaces();
 }
 
-}}} // End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "ParcasFileImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParcasFileImporter, ParticleImporter);
 
@@ -303,4 +303,7 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(CompressedTextReader& t
 	setStatus(tr("%1 atoms at simulation time %2").arg(numAtoms).arg(simu_time));
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

@@ -26,7 +26,7 @@
 #include <core/rendering/MeshPrimitive.h>
 #include <core/utilities/mesh/TriMesh.h>
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief Buffer object that stores triangle mesh geometry to be rendered by a non-interactive renderer.
@@ -69,6 +69,7 @@ private:
 	ColorA _meshColor;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_DEFAULT_TRIMESH_GEOMETRY_BUFFER_H

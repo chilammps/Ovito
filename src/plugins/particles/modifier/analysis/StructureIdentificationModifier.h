@@ -29,7 +29,7 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include <plugins/particles/objects/ParticleType.h>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 /**
  * \brief Base class for modifiers that assign a structure type to each particle.
@@ -180,6 +180,9 @@ private:
 	Q_OBJECT
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H

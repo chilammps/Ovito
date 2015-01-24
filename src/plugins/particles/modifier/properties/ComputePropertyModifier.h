@@ -28,7 +28,7 @@
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Properties)
 
 /**
  * \brief Computes the values of a particle property from a user-defined math expression.
@@ -158,7 +158,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_onlySelectedParticles);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the ComputePropertyModifier class.
@@ -201,8 +201,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_COMPUTE_PROPERTY_MODIFIER_H

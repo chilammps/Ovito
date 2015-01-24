@@ -102,9 +102,9 @@ public:
 
 public:
 
-    Q_PROPERTY(Ovito::Rendering::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
-    Q_PROPERTY(Ovito::Rendering::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
-    Q_PROPERTY(Ovito::Rendering::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape);
+    Q_PROPERTY(Ovito::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+    Q_PROPERTY(Ovito::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+    Q_PROPERTY(Ovito::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape);
 
 protected:
 
@@ -195,7 +195,7 @@ private:
 	OVITO_OBJECT
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the ParticleDisplay class.
@@ -216,8 +216,9 @@ protected:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_DISPLAY_H

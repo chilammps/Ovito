@@ -28,10 +28,10 @@
 
 #include "CreateBondsModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Modify)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CreateBondsModifier, AsynchronousParticleModifier);
-SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, Internal::CreateBondsModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, CreateBondsModifierEditor);
 DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoffMode, "CutoffMode");
 DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _uniformCutoff, "UniformCutoff", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
@@ -40,9 +40,9 @@ SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _uniformCutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsDisplay, "Bonds display");
 SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _uniformCutoff, WorldParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, CreateBondsModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -186,8 +186,6 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> CreateBondsModifier
 ******************************************************************************/
 void CreateBondsModifier::BondsEngine::perform()
 {
-	using namespace Particles::Util;
-
 	setProgressText(tr("Generating bonds"));
 
 	// Determine maximum cutoff.
@@ -277,7 +275,7 @@ PipelineStatus CreateBondsModifier::applyComputationResults(TimePoint time, Time
 	return PipelineStatus(PipelineStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -401,6 +399,9 @@ bool CreateBondsModifierEditor::PairCutoffTableModel::setData(const QModelIndex&
 	return false;
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

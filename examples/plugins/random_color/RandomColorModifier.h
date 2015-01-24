@@ -6,7 +6,6 @@
 
 using namespace Ovito;
 using namespace Ovito::Particles;
-using namespace Ovito::Particles::Modifiers;
 
 /// This modifier assigns a random color to every particle.
 class RandomColorModifier : public ParticleModifier

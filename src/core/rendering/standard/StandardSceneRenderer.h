@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief This is the default scene renderer used for high-quality image output.
@@ -93,6 +93,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_antialiasingLevel);
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_STANDARD_SCENE_RENDERER_H

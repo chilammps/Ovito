@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Modify)
 
 /**
  * \brief This modifier deletes the selected particles.
@@ -56,7 +56,7 @@ private:
 };
 
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the DeleteParticlesModifier class.
@@ -79,8 +79,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_DELETE_PARTICLES_MODIFIER_H

@@ -26,7 +26,7 @@
 #include <core/dataset/DataSet.h>
 #include <core/plugins/Plugin.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 // Head of linked list.
 NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
@@ -105,4 +105,6 @@ OvitoObject* NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
 	return obj;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

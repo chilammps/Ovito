@@ -27,7 +27,7 @@
 #include <plugins/particles/util/CutoffNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 /**
  * \brief Calculates the per-particle strain tensors based on a reference configuration.
@@ -209,7 +209,7 @@ private:
 	private:
 
 		/// Computes the strain tensor of a single particle.
-		bool computeStrain(size_t particleIndex, Util::CutoffNeighborFinder& neighborListBuilder, const std::vector<int>& refToCurrentIndexMap, const std::vector<int>& currentToRefIndexMap);
+		bool computeStrain(size_t particleIndex, CutoffNeighborFinder& neighborListBuilder, const std::vector<int>& refToCurrentIndexMap, const std::vector<int>& currentToRefIndexMap);
 
 		FloatType _cutoff;
 		SimulationCell _simCell;
@@ -313,7 +313,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the AtomicStrainModifier class.
@@ -336,8 +336,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_ATOMIC_STRAIN_MODIFIER_H

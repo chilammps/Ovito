@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PropertyFieldDescriptor.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * This structure describes one member field of a RefMaker object that stores
@@ -155,7 +155,9 @@ public:
 #define DEFINE_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier)						\
 	DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, PROPERTY_FIELD_NO_FLAGS)
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 // The RefTarget header must be present because
 // we are using OORef<RefTarget> here.

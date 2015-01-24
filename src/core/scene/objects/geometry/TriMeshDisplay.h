@@ -30,7 +30,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene) OVITO_BEGIN_INLINE_NAMESPACE(StdObj)
 
 /**
  * \brief A scene display object for triangle meshes.
@@ -99,7 +99,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_transparency);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the TriMeshDisplay class.
@@ -120,8 +120,11 @@ protected:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_TRIMESH_DISPLAY_H

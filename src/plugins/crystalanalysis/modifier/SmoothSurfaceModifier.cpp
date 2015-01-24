@@ -94,4 +94,6 @@ void SmoothSurfaceModifierEditor::createUI(const RolloutInsertionParameters& rol
 	smoothingLevelUI->setMinValue(0);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

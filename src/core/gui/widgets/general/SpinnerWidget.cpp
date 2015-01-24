@@ -23,9 +23,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "SpinnerWidget.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
-
-using namespace Ovito::ObjectSystem::Units;
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Constructs the spinner.
@@ -351,4 +349,6 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

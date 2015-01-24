@@ -30,7 +30,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/XFormModes.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Handles the mouse down event for the given viewport.
@@ -460,4 +460,6 @@ void RotateMode::onCoordinateValueEntered(int component, FloatType value)
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

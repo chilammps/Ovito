@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito { namespace Tachyon { namespace Internal {
+namespace Ovito { namespace Tachyon { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	
 /*
  * \brief The UI component for the TachyonRenderer class.
@@ -49,6 +49,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_TACHYON_RENDERER_EDITOR_H

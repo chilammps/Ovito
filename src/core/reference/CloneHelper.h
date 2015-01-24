@@ -27,7 +27,7 @@
 #include "PropertyField.h"
 #include "RefTarget.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief Helper class that is used to clone a RefTarget derived object.
@@ -145,7 +145,8 @@ private:
 	std::map<RefMaker*, OORef<RefTarget>> _cloneTable;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_CLONE_HELPER_H
 

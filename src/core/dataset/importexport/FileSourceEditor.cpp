@@ -28,7 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "FileSourceEditor.h"
 
-namespace Ovito { inline namespace DataIO { namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 IMPLEMENT_OVITO_OBJECT(Core, FileSourceEditor, PropertiesEditor);
 
@@ -361,4 +361,6 @@ bool FileSourceEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	return PropertiesEditor::referenceEvent(source, event);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

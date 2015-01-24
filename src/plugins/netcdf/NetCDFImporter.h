@@ -27,7 +27,7 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 /**
  * \brief File parser for NetCDF simulation files.
@@ -163,7 +163,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_useCustomColumnMapping);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the NetCDFImporter class.
@@ -191,8 +191,10 @@ private:
 	OVITO_OBJECT
 };
 
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
 }	// End of namespace
-
-}}}}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_NETCDF_IMPORTER_H

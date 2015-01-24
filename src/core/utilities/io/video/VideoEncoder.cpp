@@ -33,7 +33,7 @@ extern "C" {
 	#define CODEC_ID_NONE AV_CODEC_ID_NONE
 #endif
 
-namespace Ovito { inline namespace Util { inline namespace IO { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /// The list of supported video formats.
 QList<VideoEncoder::Format> VideoEncoder::_supportedFormats;
@@ -312,5 +312,8 @@ void VideoEncoder::writeFrame(const QImage& image)
 #endif
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

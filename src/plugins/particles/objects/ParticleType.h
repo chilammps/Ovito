@@ -109,7 +109,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_radius);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the ParticleType class.
@@ -132,8 +132,9 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_TYPE_H

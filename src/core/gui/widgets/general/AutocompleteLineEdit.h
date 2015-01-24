@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /**
  * \brief A line edit widget that provides auto-completion of words.
@@ -71,6 +71,8 @@ protected:
 	QRegularExpression _wordSplitter;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_AUTOCOMPLETE_LINE_EDIT_H

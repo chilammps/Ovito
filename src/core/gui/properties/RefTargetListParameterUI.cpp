@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, RefTargetListParameterUI, ParameterUI);
@@ -422,4 +422,6 @@ QVariant RefTargetListParameterUI::getHorizontalHeaderData(int index, int role)
 	else return QVariant();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

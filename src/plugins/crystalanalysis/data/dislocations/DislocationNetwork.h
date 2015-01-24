@@ -90,6 +90,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CA_DISLOCATION_NETWORK_H

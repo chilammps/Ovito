@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * This dialog box lets the user adjust the camera settings of the
@@ -72,6 +72,8 @@ private:
 	FloatType _oldFOV;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_ADJUST_CAMERA_DIALOG_H

@@ -195,6 +195,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CONSTRUCT_SURFACE_MODIFIER_H

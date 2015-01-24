@@ -26,7 +26,7 @@
 #include <core/dataset/UndoStack.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * This dialog box lets the user manage the animation settings.
@@ -71,6 +71,8 @@ private:
 	QComboBox* playbackSpeedBox;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_ANIM_SETTINGS_DIALOG_H

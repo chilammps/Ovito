@@ -26,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 /**
  * \brief Abstract base class for file import services.
@@ -93,9 +93,10 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::DataIO::FileImporter::ImportMode);
-Q_DECLARE_TYPEINFO(Ovito::DataIO::FileImporter::ImportMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::FileImporter::ImportMode);
+Q_DECLARE_TYPEINFO(Ovito::FileImporter::ImportMode, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_FILE_IMPORTER_H

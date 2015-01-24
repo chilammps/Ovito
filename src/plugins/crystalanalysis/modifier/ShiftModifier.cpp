@@ -127,5 +127,7 @@ void ShiftModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	}
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 

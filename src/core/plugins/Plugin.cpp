@@ -23,7 +23,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito { inline namespace PluginSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(PluginSystem)
 
 /******************************************************************************
 * Constructor for the Plugin class.
@@ -128,5 +128,6 @@ QSet<Plugin*> Plugin::dependencies() const
 	return dep;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

@@ -27,7 +27,7 @@
 #include "FileImporter.h"
 #include "moc_FileExporter.cpp"
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileExporter, RefTarget);
@@ -87,4 +87,5 @@ OORef<FileImporter> FileImporter::autodetectFileFormat(DataSet* dataset, const Q
 	return nullptr;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

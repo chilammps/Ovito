@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "InputColumnMappingDialog.h"
 
-namespace Ovito { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import)
 
 enum {
 	FILE_COLUMN_COLUMN = 0,
@@ -353,4 +353,6 @@ void InputColumnMappingDialog::onLoadPreset()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::MemoryPool class template.
+ * \brief Contains the definition of the Ovito::MemoryPool class template.
  */
 
 #ifndef __OVITO_MEMORY_POOL_H
@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 /**
  * \brief A simple memory pool for the efficient allocation of a large number of object instances.
@@ -120,7 +120,8 @@ private:
 	std::allocator<T> _alloc;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_MEMORY_POOL_H
 

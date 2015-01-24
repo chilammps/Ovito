@@ -28,16 +28,16 @@
 #include <core/gui/properties/StringParameterUI.h>
 #include "SelectExpressionModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Selection)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectExpressionModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, Internal::SelectExpressionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, SelectExpressionModifierEditor);
 DEFINE_PROPERTY_FIELD(SelectExpressionModifier, _expression, "Expression");
 SET_PROPERTY_FIELD_LABEL(SelectExpressionModifier, _expression, "Boolean expression");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, SelectExpressionModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * This modifies the input object.
@@ -48,7 +48,7 @@ PipelineStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInt
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
 
 	// Initialize the evaluator class.
-	Util::Internal::ParticleExpressionEvaluator evaluator;
+	ParticleExpressionEvaluator evaluator;
 	evaluator.initialize(QStringList(expression()), input(), currentFrame);
 
 	// Save list of available input variables, which will be displayed in the modifier's UI.
@@ -108,13 +108,13 @@ void SelectExpressionModifier::initializeModifier(PipelineObject* pipeline, Modi
 
 	// Build list of available input variables.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-	Util::Internal::ParticleExpressionEvaluator evaluator;
+	ParticleExpressionEvaluator evaluator;
 	evaluator.createInputVariables(input);
 	_variableNames = evaluator.inputVariableNames();
 	_variableTable = evaluator.inputVariableTable();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -173,6 +173,9 @@ void SelectExpressionModifierEditor::updateEditorFields()
 	expressionLineEdit->setWordList(mod->inputVariableNames());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

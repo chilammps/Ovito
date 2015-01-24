@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, PropertiesEditor, RefMaker);
@@ -117,4 +117,6 @@ void PropertiesEditor::referenceReplaced(const PropertyFieldDescriptor& field, R
 	RefMaker::referenceReplaced(field, oldTarget, newTarget);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

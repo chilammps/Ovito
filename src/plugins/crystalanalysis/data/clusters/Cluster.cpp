@@ -41,5 +41,7 @@ Cluster::Cluster(DataSet* dataset) : RefTarget(dataset), _id(-1), _atomCount(0),
 	INIT_PROPERTY_FIELD(Cluster::_orientation);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 

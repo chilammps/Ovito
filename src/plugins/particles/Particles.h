@@ -72,20 +72,20 @@ namespace Ovito {
 		class ParticlePropertyObject;
 		class ParticleProperty;
 
-		namespace Modifiers {
-		}
+		OVITO_BEGIN_INLINE_NAMESPACE(Modifiers)
+		OVITO_END_INLINE_NAMESPACE
 
-		namespace Import {
-		}
+		OVITO_BEGIN_INLINE_NAMESPACE(Import)
+		OVITO_END_INLINE_NAMESPACE
 
-		namespace Export {
-		}
+		OVITO_BEGIN_INLINE_NAMESPACE(Export)
+		OVITO_END_INLINE_NAMESPACE
 
-		namespace Util {
+		OVITO_BEGIN_INLINE_NAMESPACE(Util)
 			class NearestNeighborFinder;
 			class CutoffNeighborFinder;
 			class ParticlePropertyComboBox;
-		}
+		OVITO_END_INLINE_NAMESPACE
 	}
 }
 

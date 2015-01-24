@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ElidedTextLabel.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Returns the rect that is available for us to draw the document
@@ -66,4 +66,6 @@ void ElidedTextLabel::paintEvent(QPaintEvent *)
     	setToolTip(text());
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

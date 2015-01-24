@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace View {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View)
 
 /**
  * \brief Stores general settings related to the viewports.
@@ -135,11 +135,12 @@ private:
 	Q_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::View::ViewportSettings::ViewportColor);
-Q_DECLARE_METATYPE(Ovito::View::ViewportSettings::UpDirection);
-Q_DECLARE_TYPEINFO(Ovito::View::ViewportSettings::ViewportColor, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::View::ViewportSettings::UpDirection, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ViewportSettings::ViewportColor);
+Q_DECLARE_METATYPE(Ovito::ViewportSettings::UpDirection);
+Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::ViewportColor, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::UpDirection, Q_PRIMITIVE_TYPE);
 
 #endif	// __OVITO_VIEWPORT_SETTINGS_H

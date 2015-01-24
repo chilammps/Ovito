@@ -26,7 +26,7 @@
 /// The maximum resolution of the texture used for billboard rendering of particles. Specified as a power of two.
 #define BILLBOARD_TEXTURE_LEVELS 	8
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Constructor.
@@ -887,4 +887,6 @@ std::vector<GLuint> OpenGLParticlePrimitive::determineRenderingOrder(const Vecto
 	return indices;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

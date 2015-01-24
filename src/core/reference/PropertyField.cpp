@@ -26,7 +26,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /******************************************************************************
 * Connects the property field to its owning RefMaker derived class.
@@ -359,4 +359,5 @@ VectorReferenceFieldBase::RemoveReferenceOperation::RemoveReferenceOperation(Vec
 	OVITO_ASSERT(_reffield[index] != _reffield.owner()->dataset());
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -36,10 +36,10 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include "ColorLegendOverlay.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorLegendOverlay, ViewportOverlay);
-SET_OVITO_OBJECT_EDITOR(ColorLegendOverlay, Internal::ColorLegendOverlayEditor);
+SET_OVITO_OBJECT_EDITOR(ColorLegendOverlay, ColorLegendOverlayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(ColorLegendOverlay, _alignment, "Alignment", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(ColorLegendOverlay, _orientation, "Orientation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(ColorLegendOverlay, _legendSize, "Size", PROPERTY_FIELD_MEMORIZE);
@@ -69,9 +69,9 @@ SET_PROPERTY_FIELD_LABEL(ColorLegendOverlay, _label2, "Label 2");
 SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetX, PercentParameterUnit);
 SET_PROPERTY_FIELD_UNITS(ColorLegendOverlay, _offsetY, PercentParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, ColorLegendOverlayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructor.
@@ -222,7 +222,7 @@ void ColorLegendOverlay::render(Viewport* viewport, QPainter& painter, const Vie
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -385,6 +385,8 @@ void ColorLegendOverlayEditor::createUI(const RolloutInsertionParameters& rollou
 	sublayout->addWidget(labelFontPUI->fontPicker(), 5, 1, 1, 2);
 }
 
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
 }	// End of namespace
-
-}}}}	// End of namespace
+}	// End of namespace

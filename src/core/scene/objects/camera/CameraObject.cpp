@@ -31,11 +31,11 @@
 #include "CameraObject.h"
 #include "moc_AbstractCameraObject.cpp"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene) OVITO_BEGIN_INLINE_NAMESPACE(StdObj)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, DataObject);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraObject, AbstractCameraObject);
-SET_OVITO_OBJECT_EDITOR(CameraObject, Internal::CameraObjectEditor);
+SET_OVITO_OBJECT_EDITOR(CameraObject, CameraObjectEditor);
 DEFINE_PROPERTY_FIELD(CameraObject, _isPerspective, "IsPerspective");
 DEFINE_REFERENCE_FIELD(CameraObject, _fov, "FOV", Controller);
 DEFINE_REFERENCE_FIELD(CameraObject, _zoom, "Zoom", Controller);
@@ -45,10 +45,10 @@ SET_PROPERTY_FIELD_LABEL(CameraObject, _zoom, "FOV size");
 SET_PROPERTY_FIELD_UNITS(CameraObject, _fov, AngleParameterUnit);
 SET_PROPERTY_FIELD_UNITS(CameraObject, _zoom, WorldParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraDisplayObject, DisplayObject);
 	IMPLEMENT_OVITO_OBJECT(Core, CameraObjectEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs a camera object.
@@ -64,7 +64,7 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 	_zoom = ControllerManager::instance().createFloatController(dataset);
 	_zoom->setFloatValue(0, 200);
 
-	addDisplayObject(new Internal::CameraDisplayObject(dataset));
+	addDisplayObject(new CameraDisplayObject(dataset));
 }
 
 /******************************************************************************
@@ -215,7 +215,7 @@ FloatType CameraObject::targetDistance() const
 	return 50.0f;
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Constructor that creates the UI controls for the editor.
@@ -480,6 +480,9 @@ void CameraDisplayObject::render(TimePoint time, DataObject* dataObject, const P
 	renderer->endPickObject();
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

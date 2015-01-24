@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Modifier.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Stores information about an application of a Modifier
@@ -98,6 +98,8 @@ private:
 	DECLARE_REFERENCE_FIELD(_modifierData);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_MODIFIER_APPLICATION_H

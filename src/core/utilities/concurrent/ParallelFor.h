@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "FutureInterface.h"
 
-namespace Ovito { inline namespace Util { inline namespace Concurrency {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Concurrency)
 
 template<class Function, typename T>
 bool parallelFor(
@@ -139,6 +139,8 @@ void parallelForChunks(size_t loopCount, Function kernel)
 		t.join();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PARALLEL_FOR_H

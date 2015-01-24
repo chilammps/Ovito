@@ -31,7 +31,7 @@
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief This is the default scene renderer used to render the contents
@@ -260,6 +260,7 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_SCENE_RENDERER_H

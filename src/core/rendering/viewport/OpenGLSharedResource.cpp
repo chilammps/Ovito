@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "OpenGLSharedResource.h"
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 class OpenGLContextInfo
 {
@@ -91,7 +91,7 @@ private:
     QList<OpenGLContextInfo *> _contexts;
 };
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef ONLY_FOR_DOXYGEN
 	#include "OpenGLSharedResource.moc"
 #endif
 
@@ -191,4 +191,6 @@ void OpenGLSharedResource::destroyOpenGLResources()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

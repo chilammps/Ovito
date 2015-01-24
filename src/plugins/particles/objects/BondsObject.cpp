@@ -119,4 +119,5 @@ void BondsObject::particlesDeleted(const boost::dynamic_bitset<>& deletedParticl
 	changed();
 }
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

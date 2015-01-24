@@ -28,7 +28,7 @@
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Tree node in the scene hierarchy.
@@ -311,6 +311,8 @@ private:
 	friend class SceneRoot;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SCENE_NODE_H

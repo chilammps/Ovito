@@ -26,7 +26,7 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /******************************************************************************
 * Handles the ACTION_RENDER_ACTIVE_VIEWPORT command.
@@ -54,4 +54,5 @@ void ActionManager::on_RenderActiveViewport_triggered()
 	}
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

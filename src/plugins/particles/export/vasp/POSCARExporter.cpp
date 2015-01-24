@@ -26,7 +26,7 @@
 #include "POSCARExporter.h"
 #include "../ParticleExporterSettingsDialog.h"
 
-namespace Ovito { namespace Particles { namespace Export { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Export) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, POSCARExporter, ParticleExporter);
 
@@ -146,4 +146,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 	return true;
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

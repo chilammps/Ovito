@@ -29,7 +29,7 @@
 #include "StandardSceneRenderer.h"
 #include "StandardSceneRendererEditor.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, StandardSceneRenderer, ViewportSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(StandardSceneRenderer, StandardSceneRendererEditor);
@@ -162,4 +162,5 @@ void StandardSceneRenderer::endRender()
 	ViewportSceneRenderer::endRender();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

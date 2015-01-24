@@ -23,7 +23,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, DataObject);
 DEFINE_REFERENCE_FIELD(PipelineObject, _sourceObject, "InputObject", DataObject);
@@ -317,4 +317,6 @@ void PipelineObject::modifierChanged(int changedIndex)
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

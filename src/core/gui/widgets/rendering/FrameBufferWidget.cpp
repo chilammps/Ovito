@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "FrameBufferWidget.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Sets the FrameBuffer that is currently shown in the widget.
@@ -90,4 +90,6 @@ void FrameBufferWidget::onFrameBufferContentReset()
 	update();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

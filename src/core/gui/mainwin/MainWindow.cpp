@@ -35,7 +35,7 @@
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /******************************************************************************
 * The constructor of the main window class.
@@ -403,4 +403,5 @@ QOpenGLContext* MainWindow::getOpenGLContext()
 	return _glcontext;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

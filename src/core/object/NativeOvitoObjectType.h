@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "OvitoObjectType.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief Every C++ class derived from OvitoObject is described by an instance of this class.
@@ -83,8 +83,8 @@ private:
 	/// The head of the linked list of all native object types.
 	static NativeOvitoObjectType* _firstInfo;
 
-	friend class Ovito::PluginSystem::Internal::NativePlugin;
-	friend class Ovito::ObjectSystem::PropertyFieldDescriptor;
+	friend class NativePlugin;
+	friend class PropertyFieldDescriptor;
 };
 
 ///////////////////////////////////// Macros //////////////////////////////////////////
@@ -103,6 +103,8 @@ private:
 #define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(plugin, name, basename)				\
 	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_NATIVE_OVITO_OBJECT_TYPE_H

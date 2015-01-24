@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Plane_3 class template.
+ * \brief Contains the definition of the Ovito::Plane_3 class template.
  */
 
 #ifndef __OVITO_PLANE_H
@@ -35,7 +35,7 @@
 #include "Ray.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief An infinite plane in 3d space.
@@ -286,11 +286,13 @@ inline QDataStream& operator>>(QDataStream& stream, Plane_3<T>& p) {
  */
 typedef Plane_3<FloatType> Plane3;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Plane3);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Plane3*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Plane3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Plane3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Plane3);
+Q_DECLARE_METATYPE(Ovito::Plane3*);
+Q_DECLARE_TYPEINFO(Ovito::Plane3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Plane3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PLANE_H

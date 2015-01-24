@@ -28,7 +28,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include "ParticleFrameLoader.h"
 
-namespace Ovito { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import)
 
 /**
  * \brief Base class for file parsers that read particle-position data.
@@ -101,6 +101,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_isMultiTimestepFile);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_IMPORTER_H

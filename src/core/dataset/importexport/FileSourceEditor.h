@@ -30,7 +30,7 @@
 
 #include "FileSource.h"
 
-namespace Ovito { inline namespace DataIO { namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the FileSource object.
@@ -93,6 +93,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FILE_SOURCE_OBJECT_EDITOR_H

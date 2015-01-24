@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * The editor component for the StandardSceneRenderer class.
@@ -49,6 +49,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_STANDARD_SCENE_RENDERER_EDITOR_H

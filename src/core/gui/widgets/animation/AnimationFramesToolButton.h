@@ -26,7 +26,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A combo-box widget that allows to select the current animation frame.
@@ -83,6 +83,8 @@ private:
 	DataSetContainer& _datasetContainer;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_ANIMATION_FRAMES_TOOL_BUTTON_H

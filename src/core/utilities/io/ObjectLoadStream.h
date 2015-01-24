@@ -27,7 +27,7 @@
 #include <core/object/OvitoObjectReference.h>
 #include "LoadStream.h"
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /**
  * \brief An input stream that can deserialize an OvitoObject graph stored in a file.
@@ -133,6 +133,8 @@ private:
 	friend class Ovito::RefMaker;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_OBJECT_LOADSTREAM_H

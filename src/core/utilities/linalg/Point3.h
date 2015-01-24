@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Point_3 class template.
+ * \brief Contains the definition of the Ovito::Point_3 class template.
  */
 
 #ifndef __OVITO_POINT3_H
@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A point in 3d space.
@@ -103,21 +103,21 @@ public:
 	Point_3() {}
 
 	/// Constructs a point with all three components initialized to the given value.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR explicit Point_3(T val) : std::array<T, 3>{{val,val,val}} {}
 #else
 	explicit Point_3(T val) { this->fill(val); }
 #endif
 
 	/// Initializes the coordinates of the point with the given values.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Point_3(T x, T y, T z) : std::array<T, 3>{{x, y, z}} {}
 #else
 	Point_3(T x, T y, T z) { this->x() = x; this->y() = y; this->z() = z; }
 #endif
 
 	/// Initializes the point to the origin. All coordinates are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Point_3(Origin) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
 #else
 	Point_3(Origin) { this->fill(T(0)); }
@@ -342,15 +342,17 @@ typedef Point_3<int>			Point3I;
 inline void glVertex(const Point_3<GLdouble>& v) { glVertex3dv(v.data()); }
 inline void glVertex(const Point_3<GLfloat>& v) { glVertex3fv(v.data()); }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Point3);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Point3I);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Point3*);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Point3I*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3I, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Point3I*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Point3);
+Q_DECLARE_METATYPE(Ovito::Point3I);
+Q_DECLARE_METATYPE(Ovito::Point3*);
+Q_DECLARE_METATYPE(Ovito::Point3I*);
+Q_DECLARE_TYPEINFO(Ovito::Point3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point3I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point3I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_POINT3_H

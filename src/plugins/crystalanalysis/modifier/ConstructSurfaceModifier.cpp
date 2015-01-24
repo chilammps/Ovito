@@ -436,5 +436,7 @@ void ConstructSurfaceModifierEditor::createUI(const RolloutInsertionParameters& 
 	new SubObjectParameterUI(this, PROPERTY_FIELD(ConstructSurfaceModifier::_surfaceMeshDisplay), rolloutParams.after(rollout));
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 

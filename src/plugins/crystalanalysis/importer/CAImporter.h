@@ -185,6 +185,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CRYSTALANALYSIS_IMPORTER_H

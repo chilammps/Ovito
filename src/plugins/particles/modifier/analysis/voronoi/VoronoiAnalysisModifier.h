@@ -26,7 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 /**
  * \brief This modifier computes the atomic volume and the Voronoi indices of particles.
@@ -220,7 +220,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_faceThreshold);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the VoronoiAnalysisModifier class.
@@ -243,8 +243,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_VORONOI_ANALYSIS_MODIFIER_H

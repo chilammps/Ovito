@@ -29,12 +29,12 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCellObject, DataObject);
-SET_OVITO_OBJECT_EDITOR(SimulationCellObject, Internal::SimulationCellEditor);
+SET_OVITO_OBJECT_EDITOR(SimulationCellObject, SimulationCellEditor);
 DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellVector1, "CellVector1");
 DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellVector2, "CellVector2");
 DEFINE_PROPERTY_FIELD(SimulationCellObject, _cellVector3, "CellVector3");
@@ -68,7 +68,7 @@ void SimulationCellObject::init()
 	INIT_PROPERTY_FIELD(SimulationCellObject::_pbcZ);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -303,6 +303,7 @@ void SimulationCellEditor::onSizeSpinnerDragAbort(int dim)
 	dataset()->undoStack().endCompoundOperation(false);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

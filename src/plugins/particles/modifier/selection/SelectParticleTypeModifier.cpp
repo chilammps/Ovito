@@ -27,18 +27,18 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "SelectParticleTypeModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Selection)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, Internal::SelectParticleTypeModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor);
 DEFINE_PROPERTY_FIELD(SelectParticleTypeModifier, _sourceProperty, "SourceProperty");
 DEFINE_PROPERTY_FIELD(SelectParticleTypeModifier, _selectedParticleTypes, "SelectedParticleTypes");
 SET_PROPERTY_FIELD_LABEL(SelectParticleTypeModifier, _sourceProperty, "Property");
 SET_PROPERTY_FIELD_LABEL(SelectParticleTypeModifier, _selectedParticleTypes, "Selected types");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * This modifies the input object.
@@ -117,7 +117,7 @@ void SelectParticleTypeModifier::loadFromStream(ObjectLoadStream& stream)
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -131,7 +131,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
-	propertyListBox = new Util::ParticlePropertyComboBox();
+	propertyListBox = new ParticlePropertyComboBox();
 	layout->addWidget(new QLabel(tr("Property:"), rollout));
 	layout->addWidget(propertyListBox);
 
@@ -264,6 +264,9 @@ bool SelectParticleTypeModifierEditor::referenceEvent(RefTarget* source, Referen
 	return ParticleModifierEditor::referenceEvent(source, event);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

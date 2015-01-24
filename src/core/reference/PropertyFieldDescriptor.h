@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 class SingleReferenceFieldBase;		// defined in PropertyField.h
 class VectorReferenceFieldBase;		// defined in PropertyField.h
@@ -218,6 +218,7 @@ protected:
 	friend class RefTarget;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PROPERTY_FIELD_DESCRIPTOR_H

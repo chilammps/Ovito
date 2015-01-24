@@ -99,4 +99,6 @@ void ClusterGraphEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	clusterListUI->tableWidget()->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

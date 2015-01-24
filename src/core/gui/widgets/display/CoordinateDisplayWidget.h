@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * The coordinate display widget at the bottom of the main window,
@@ -62,7 +62,7 @@ public:
 	}
 
 	/// Sets the units of the displayed values.
-	void setUnit(Ovito::ObjectSystem::Units::ParameterUnit* unit) {
+	void setUnit(ParameterUnit* unit) {
 		_spinners[0]->setUnit(unit);
 		_spinners[1]->setUnit(unit);
 		_spinners[2]->setUnit(unit);
@@ -94,6 +94,8 @@ private:
 	QString _undoOperationName;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_COORDINATE_DISPLAY_WIDGET_H

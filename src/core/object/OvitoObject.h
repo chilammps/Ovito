@@ -26,7 +26,7 @@
 #include "OvitoObjectReference.h"
 #include "NativeOvitoObjectType.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 #ifdef OVITO_DEBUG
 	/// Checks whether a pointer to an OvitoObject is valid.
@@ -184,8 +184,8 @@ private:
 	friend class SingleReferenceFieldBase;
 
 	// These classes need to access the protected serialization functions.
-	friend class Ovito::Util::IO::ObjectSaveStream;
-	friend class Ovito::Util::IO::ObjectLoadStream;
+	friend class ObjectSaveStream;
+	friend class ObjectLoadStream;
 };
 
 /// \brief Dynamic cast operator for subclasses of OvitoObject.
@@ -260,9 +260,10 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 	return static_pointer_cast<T>(obj);
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_SMART_POINTER_METATYPE(Ovito::ObjectSystem::OORef);
+Q_DECLARE_SMART_POINTER_METATYPE(Ovito::OORef);
 
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>

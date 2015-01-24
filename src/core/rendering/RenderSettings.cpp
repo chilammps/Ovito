@@ -28,10 +28,10 @@
 #include "RenderSettings.h"
 #include "RenderSettingsEditor.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
-SET_OVITO_OBJECT_EDITOR(RenderSettings, Internal::RenderSettingsEditor);
+SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer, PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", Controller, PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageWidth, "OutputImageWidth");
@@ -162,4 +162,5 @@ OORef<RefTarget> RenderSettings::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

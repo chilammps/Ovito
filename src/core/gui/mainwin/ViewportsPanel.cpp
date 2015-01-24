@@ -30,7 +30,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "ViewportsPanel.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * The constructor of the viewports panel class.
@@ -210,4 +210,6 @@ void ViewportsPanel::layoutViewports()
 		update();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

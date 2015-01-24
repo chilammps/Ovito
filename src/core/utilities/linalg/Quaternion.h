@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::QuaternionT class template.
+ * \brief Contains the definition of the Ovito::QuaternionT class template.
  */
 
 #ifndef __OVITO_QUATERNION_H
@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Vector3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 template<typename T> class AffineTransformationT;
 template<typename T> class Matrix_3;
@@ -96,7 +96,7 @@ public:
 	/// \param y The second quaternion component.
 	/// \param z The third quaternion component.
 	/// \param w The fourth quaternion component.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR QuaternionT(T x, T y, T z, T w) : std::array<T, 4>{{x,y,z,w}} {}
 #else
 	QuaternionT(T x, T y, T z, T w) { this->x() = x; this->y() = y; this->z() = z; this->w() = w; }
@@ -104,7 +104,7 @@ public:
 
 	/// \brief Constructs an identity quaternion.
 	/// The new quaternion represents the null transformation, i.e. no rotation at all.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR explicit QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
 #else
 	explicit QuaternionT(Identity) { this->x() = this->y() = this->z() = T(0); this->w() = T(1); }
@@ -265,14 +265,16 @@ public:
 	}
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #include "Vector3.h"
 #include "Vector4.h"
 #include "AffineTransformation.h"
 #include "Matrix3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 // Initializes the quaternion from rotational part of a transformation matrix.
 template<typename T>
@@ -454,11 +456,13 @@ inline QDataStream& operator>>(QDataStream& stream, QuaternionT<T>& q) {
  */
 typedef QuaternionT<FloatType>		Quaternion;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Quaternion);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Quaternion*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Quaternion, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Quaternion*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Quaternion);
+Q_DECLARE_METATYPE(Ovito::Quaternion*);
+Q_DECLARE_TYPEINFO(Ovito::Quaternion, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Quaternion*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_QUATERNION_H

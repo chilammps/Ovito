@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "TriMeshObject.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene) OVITO_BEGIN_INLINE_NAMESPACE(StdObj)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, DataObject);
 
@@ -69,4 +69,7 @@ OORef<RefTarget> TriMeshObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

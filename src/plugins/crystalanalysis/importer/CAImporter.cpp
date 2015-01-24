@@ -337,7 +337,7 @@ void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& str
 		else particleFileInfo.sourceFile = QUrl::fromLocalFile(atomsFilename);
 
 		// Create and execute the import sub-task.
-		_particleLoadTask = Particles::Import::Formats::LAMMPSTextDumpImporter::createFrameLoader(&datasetContainer(), particleFileInfo, true, false, InputColumnMapping());
+		_particleLoadTask = LAMMPSTextDumpImporter::createFrameLoader(&datasetContainer(), particleFileInfo, true, false, InputColumnMapping());
 		if(!waitForSubTask(_particleLoadTask))
 			return;
 
@@ -505,4 +505,6 @@ void CAImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 	layout->addWidget(loadParticlesUI->checkBox());
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

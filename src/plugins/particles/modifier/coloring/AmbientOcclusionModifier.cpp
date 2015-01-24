@@ -28,10 +28,10 @@
 #include "AmbientOcclusionModifier.h"
 #include "AmbientOcclusionRenderer.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier);
-SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, Internal::AmbientOcclusionModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor);
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity");
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount");
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution");
@@ -40,9 +40,9 @@ SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of ex
 SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution");
 SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
 
@@ -98,7 +98,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::perform()
 	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
 	OORef<DataSet> dataset(new DataSet());
 	// Create the AmbientOcclusionRenderer instance.
-	OORef<Internal::AmbientOcclusionRenderer> renderer(new Internal::AmbientOcclusionRenderer(dataset, QSize(_resolution, _resolution), _offscreenSurface));
+	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset, QSize(_resolution, _resolution), _offscreenSurface));
 
 	renderer->startRender(nullptr, nullptr);
 	try {
@@ -251,7 +251,7 @@ void AmbientOcclusionModifier::propertyChanged(const PropertyFieldDescriptor& fi
 		invalidateCachedResults();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -298,6 +298,9 @@ void AmbientOcclusionModifierEditor::createUI(const RolloutInsertionParameters& 
 	layout1->addWidget(statusLabel());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

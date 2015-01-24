@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::IO::LoadStream class.
+ * \brief Contains the definition of the Ovito::IO::LoadStream class.
  */
 
 #ifndef __OVITO_LOADSTREAM_H
@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /**
  * \brief An input stream that reads binary data from a file in a platform-independent way.
@@ -306,6 +306,8 @@ inline LoadStream& operator>>(LoadStream& stream, QFlags<Enum>& v)
 	return stream;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_LOADSTREAM_H

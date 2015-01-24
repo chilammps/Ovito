@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Exception class.
+ * \brief Contains the definition of the Ovito::Exception class.
  */
 
 #ifndef __OVITO_EXCEPTION_H
@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 #ifdef QT_NO_EXCEPTIONS
 	#error "OVITO requires Qt exception support. It seems that Qt has been built without exceptions (the macro QT_NO_EXCEPTIONS is defined). Please turn on exception support and rebuild the Qt library."
@@ -161,6 +161,7 @@ private:
 	static ExceptionHandler exceptionHandler;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_EXCEPTION_H

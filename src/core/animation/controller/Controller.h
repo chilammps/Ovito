@@ -32,7 +32,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /**
  * \brief Base class for all animation controllers.
@@ -348,9 +348,10 @@ private:
 	/// The singleton instance of this class.
 	static ControllerManager* _instance;
 
-	friend class Ovito::Gui::Application;
+	friend class Application;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_CONTROLLER_H

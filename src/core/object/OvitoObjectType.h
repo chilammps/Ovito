@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "OvitoObjectReference.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief Stores meta-information about a class in OVITO's object system.
@@ -199,10 +199,11 @@ protected:
 #define SET_OVITO_OBJECT_EDITOR(RefTargetClass, PropertiesEditorClass)								\
 	static Ovito::OvitoObjectType::EditorClassSetter __editorSetter##RefTargetClass(const_cast<Ovito::NativeOvitoObjectType&>(RefTargetClass::OOType), &PropertiesEditorClass::OOType);
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(const Ovito::ObjectSystem::OvitoObjectType*);
-Q_DECLARE_TYPEINFO(const Ovito::ObjectSystem::OvitoObjectType*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(const Ovito::OvitoObjectType*);
+Q_DECLARE_TYPEINFO(const Ovito::OvitoObjectType*, Q_MOVABLE_TYPE);
 
 
 #endif // __OVITO_OBJECT_TYPE_H

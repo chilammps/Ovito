@@ -25,7 +25,7 @@
 #include <core/dataset/DataSetContainer.h>
 #include "UtilityCommandPage.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Initializes the utility panel.
@@ -127,4 +127,6 @@ void UtilityCommandPage::closeUtility()
 	currentUtility = nullptr;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

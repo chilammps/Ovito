@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObjectType.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 class ModificationListModel;
 class ModificationListItem;
@@ -78,6 +78,8 @@ private:
 	Q_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_MODIFIER_LIST_BOX_H

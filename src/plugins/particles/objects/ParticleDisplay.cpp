@@ -30,13 +30,13 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, ParticleDisplayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleDisplay, DisplayObject);
 IMPLEMENT_OVITO_OBJECT(Particles, ParticlePickInfo, ObjectPickInfo);
-SET_OVITO_OBJECT_EDITOR(ParticleDisplay, Internal::ParticleDisplayEditor);
+SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality");
@@ -467,7 +467,7 @@ QString ParticlePickInfo::infoString(ObjectNode* objectNode, quint32 subobjectId
 	return str;
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -513,6 +513,7 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	radiusUI->setMinValue(0);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

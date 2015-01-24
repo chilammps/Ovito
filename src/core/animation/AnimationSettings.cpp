@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "AnimationSettings.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AnimationSettings, RefTarget);
 DEFINE_PROPERTY_FIELD(AnimationSettings, _time, "Time");
@@ -235,4 +235,5 @@ void AnimationSettings::onPlaybackTimer()
 	});
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -26,7 +26,7 @@
 #include "FutureInterface.h"
 #include "Future.h"
 
-namespace Ovito { inline namespace Util { inline namespace Concurrency {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Concurrency)
 
 class AsynchronousTask : public FutureInterface<void>, public QRunnable
 {
@@ -61,6 +61,8 @@ private:
 	}
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_TASK_H

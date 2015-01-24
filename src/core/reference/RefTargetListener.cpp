@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 IMPLEMENT_OVITO_OBJECT(Core, RefTargetListenerBase, RefMaker);
 IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListenerBase, RefMaker);
@@ -51,5 +51,6 @@ bool VectorRefTargetListenerBase::referenceEvent(RefTarget* source, ReferenceEve
 	return RefMaker::referenceEvent(source, event);
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

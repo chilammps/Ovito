@@ -28,7 +28,7 @@
 #include <plugins/particles/util/ParticleSelectionSet.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Selection)
 
 /**
  * Modifiers that allows the user to select individual particles by hand.
@@ -56,7 +56,7 @@ public:
 	void toggleParticleSelection(ModifierApplication* modApp, const PipelineFlowState& state, size_t particleIndex);
 
 	/// Replaces the particle selection.
-	void setParticleSelection(ModifierApplication* modApp, const PipelineFlowState& state, const QBitArray& selection, Util::ParticleSelectionSet::SelectionMode mode);
+	void setParticleSelection(ModifierApplication* modApp, const PipelineFlowState& state, const QBitArray& selection, ParticleSelectionSet::SelectionMode mode);
 
 protected:
 
@@ -67,7 +67,7 @@ protected:
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Returns the selection set object stored in the ModifierApplication, or, if it does not exist, creates one when requested.
-	Util::ParticleSelectionSet* getSelectionSet(ModifierApplication* modApp, bool createIfNotExist = false);
+	ParticleSelectionSet* getSelectionSet(ModifierApplication* modApp, bool createIfNotExist = false);
 
 private:
 
@@ -78,7 +78,7 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the ManualSelectionModifier class.
@@ -91,10 +91,10 @@ public:
 	Q_INVOKABLE ManualSelectionModifierEditor() {}
 
 	/// This is called when the user has selected a particle.
-	void onParticlePicked(const Util::ParticlePickingHelper::PickResult& pickResult);
+	void onParticlePicked(const ParticlePickingHelper::PickResult& pickResult);
 
 	/// This is called when the user has drawn a fence around particles.
-	void onFence(const QVector<Point2>& fence, Viewport* viewport, Util::ParticleSelectionSet::SelectionMode mode);
+	void onFence(const QVector<Point2>& fence, Viewport* viewport, ParticleSelectionSet::SelectionMode mode);
 
 protected:
 
@@ -121,8 +121,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_MANUAL_SELECTION_MODIFIER_H

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief Abstract base class for drawing bitmaps.
@@ -55,6 +55,7 @@ private:
 	QImage _image;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_IMAGE_PRIMITIVE_H

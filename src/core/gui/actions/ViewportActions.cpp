@@ -23,7 +23,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportConfiguration.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /******************************************************************************
 * Handles the ACTION_VIEWPORT_MAXIMIZE command.
@@ -73,4 +73,5 @@ void ActionManager::on_ViewportZoomSelectionExtentsAll_triggered()
 	_dataset->viewportConfig()->zoomToSelectionExtents();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

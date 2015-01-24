@@ -33,12 +33,12 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, VectorDisplayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, VectorDisplay, DisplayObject);
-SET_OVITO_OBJECT_EDITOR(VectorDisplay, Internal::VectorDisplayEditor);
+SET_OVITO_OBJECT_EDITOR(VectorDisplay, VectorDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _reverseArrowDirection, "ReverseArrowDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _flipVectors, "FlipVectors", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _arrowColor, "ArrowColor", PROPERTY_FIELD_MEMORIZE);
@@ -191,7 +191,7 @@ void VectorDisplay::render(TimePoint time, DataObject* dataObject, const Pipelin
 	renderer->endPickObject();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -245,6 +245,7 @@ void VectorDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	layout->addWidget(arrowColorUI->colorPicker(), 6, 1);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

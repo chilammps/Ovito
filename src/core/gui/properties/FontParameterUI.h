@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "ParameterUI.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 /******************************************************************************
 * Allows the user to pick a font.
@@ -81,6 +81,8 @@ protected:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FONT_PARAMETER_UI_H

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "CompoundObject.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CompoundObject, DataObject);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(CompoundObject, _dataObjects, "SceneObjects", DataObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
@@ -82,4 +82,6 @@ void CompoundObject::referenceRemoved(const PropertyFieldDescriptor& field, RefT
 	DataObject::referenceRemoved(field, newTarget, listIndex);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -138,7 +138,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_simulationCellColor);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the SimulationCellDisplay class.
@@ -159,8 +159,9 @@ protected:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_SIMULATION_CELL_DISPLAY_H

@@ -29,7 +29,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 // Gives the class run-time type information.
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefMaker, OvitoObject);
@@ -503,5 +503,6 @@ void RefMaker::loadUserDefaults()
 	}
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

@@ -28,7 +28,7 @@
 #include "ParticleExporter.h"
 #include "OutputColumnMapping.h"
 
-namespace Ovito { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Export)
 
 /**
  * \brief This dialog box lets the user adjust the settings of a ParticleExporter.
@@ -67,6 +67,8 @@ protected:
 	QListWidget* _columnMappingWidget;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_EXPORTER_SETTINGS_DIALOG_H

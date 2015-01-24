@@ -23,7 +23,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include <core/utilities/Exception.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 using namespace std;
 
@@ -228,5 +228,7 @@ void LoadStream::checkErrorCondition()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

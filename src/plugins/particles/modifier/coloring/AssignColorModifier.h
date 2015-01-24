@@ -27,7 +27,7 @@
 #include <core/animation/AnimationSettings.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 /**
  * \brief This modifier assigns a certain color to all selected particles.
@@ -86,7 +86,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_keepSelection);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * A properties editor for the AssignColorModifier class.
@@ -109,8 +109,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_ASSIGN_COLOR_MODIFIER_H

@@ -40,7 +40,7 @@
 #include "OpenGLMeshPrimitive.h"
 #include "OpenGLHelpers.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
 
@@ -738,7 +738,7 @@ void ViewportSceneRenderer::renderGrid()
 	_constructionGridGeometry->render(this);
 }
 
-inline namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Reports OpenGL error status codes.
@@ -753,6 +753,6 @@ void checkOpenGLErrorStatus(const char* command, const char* sourceFile, int sou
 	}
 }
 
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
 }	// End of namespace
-
-}}	// End of namespace

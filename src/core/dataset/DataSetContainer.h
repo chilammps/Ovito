@@ -27,7 +27,7 @@
 #include "DataSet.h"
 #include "importexport/FileImporter.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief Manages the DataSet being edited.
@@ -125,7 +125,7 @@ Q_SIGNALS:
 	///       for every node that is added to or removed from the selection set. That is,
 	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
 	///       events but only a single selectionChangeComplete() event.
-    void selectionChanged(Ovito::ObjectSystem::Scene::SelectionSet* selection);
+    void selectionChanged(SelectionSet* selection);
 	
 	/// \brief This signal is emitted after all changes to the selection set have been completed.
 	/// \param selection The current selection set.
@@ -134,27 +134,27 @@ Q_SIGNALS:
 	///       only once after the selection set has been changed. That is,
 	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
 	///       events but only a single selectionChangeComplete() event.
-    void selectionChangeComplete(Ovito::ObjectSystem::Scene::SelectionSet* selection);
+    void selectionChangeComplete(SelectionSet* selection);
 
 	/// \brief This signal is emitted whenever the current selection set has been replaced by another one.
 	/// \note This signal is NOT emitted when nodes are added or removed from the current selection set.
-    void selectionSetReplaced(Ovito::ObjectSystem::Scene::SelectionSet* newSelectionSet);
+    void selectionSetReplaced(SelectionSet* newSelectionSet);
 
 	/// \brief This signal is emitted whenever the current viewport configuration of current dataset has been replaced by a new one.
 	/// \note This signal is NOT emitted when the parameters of the current viewport configuration change.
-    void viewportConfigReplaced(Ovito::View::ViewportConfiguration* newViewportConfiguration);
+    void viewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
 
 	/// \brief This signal is emitted whenever the current animation settings of the current dataset have been replaced by new ones.
 	/// \note This signal is NOT emitted when the parameters of the current animation settings object change.
-    void animationSettingsReplaced(Ovito::Anim::AnimationSettings* newAnimationSettings);
+    void animationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 	/// \brief This signal is emitted whenever the current render settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current render settings object change.
-    void renderSettingsReplaced(Ovito::Rendering::RenderSettings* newRenderSettings);
+    void renderSettingsReplaced(RenderSettings* newRenderSettings);
 
 	/// \brief This signal is emitted when the current animation time has changed or if the current animation settings have been replaced.
-    void timeChanged(Ovito::Anim::TimePoint newTime);
+    void timeChanged(TimePoint newTime);
 
 	/// \brief This signal is emitted when the scene becomes ready after the current animation time has changed.
 	void timeChangeComplete();
@@ -167,10 +167,10 @@ protected:
 protected Q_SLOTS:
 
 	/// This handler is invoked when the current selection set of the current dataset has been replaced.
-    void onSelectionSetReplaced(Ovito::ObjectSystem::Scene::SelectionSet* newSelectionSet);
+    void onSelectionSetReplaced(SelectionSet* newSelectionSet);
 
 	/// This handler is invoked when the current animation settings of the current dataset have been replaced.
-    void onAnimationSettingsReplaced(Ovito::Anim::AnimationSettings* newAnimationSettings);
+    void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 private:
 
@@ -198,6 +198,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_currentSet);
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_DATASET_CONTAINER_H

@@ -27,10 +27,10 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include "ComputePropertyModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Properties)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ComputePropertyModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(ComputePropertyModifier, Internal::ComputePropertyModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ComputePropertyModifier, ComputePropertyModifierEditor);
 DEFINE_PROPERTY_FIELD(ComputePropertyModifier, _expressions, "Expressions");
 DEFINE_PROPERTY_FIELD(ComputePropertyModifier, _outputProperty, "OutputProperty");
 DEFINE_PROPERTY_FIELD(ComputePropertyModifier, _onlySelectedParticles, "OnlySelectedParticles");
@@ -38,9 +38,9 @@ SET_PROPERTY_FIELD_LABEL(ComputePropertyModifier, _expressions, "Expressions");
 SET_PROPERTY_FIELD_LABEL(ComputePropertyModifier, _outputProperty, "Output property");
 SET_PROPERTY_FIELD_LABEL(ComputePropertyModifier, _onlySelectedParticles, "Compute only for selected particles");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, ComputePropertyModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Sets the number of vector components of the property to create.
@@ -83,7 +83,7 @@ PipelineStatus ComputePropertyModifier::modifyParticles(TimePoint time, TimeInte
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
 
 	// Initialize the evaluator class.
-	Util::Internal::ParticleExpressionEvaluator evaluator;
+	ParticleExpressionEvaluator evaluator;
 	evaluator.initialize(expressions(), input(), currentFrame);
 
 	// Save list of available input variables, which will be displayed in the modifier's UI.
@@ -153,7 +153,7 @@ void ComputePropertyModifier::initializeModifier(PipelineObject* pipeline, Modif
 
 	// Generate list of available input variables.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-	Util::Internal::ParticleExpressionEvaluator evaluator;
+	ParticleExpressionEvaluator evaluator;
 	evaluator.createInputVariables(input);
 	_inputVariableNames = evaluator.inputVariableNames();
 	_inputVariableTable = evaluator.inputVariableTable();
@@ -180,15 +180,13 @@ bool ComputePropertyModifier::loadPropertyFieldFromStream(ObjectLoadStream& stre
 	return ParticleModifier::loadPropertyFieldFromStream(stream, serializedField);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
 void ComputePropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	using namespace Particles::Util;
-
 	rollout = createRollout(tr("Compute property"), rolloutParams, "particles.modifiers.compute_property.html");
 
     // Create the rollout contents.
@@ -306,6 +304,9 @@ void ComputePropertyModifierEditor::onExpressionEditingFinished()
 	});
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

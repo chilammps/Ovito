@@ -26,7 +26,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { inline namespace View {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View)
 
 /**
  * \brief This class holds a collection of Viewport objects.
@@ -231,9 +231,10 @@ private:
 	ViewportConfiguration& _vpconf;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::View::ViewportConfiguration::OrbitCenterMode);
-Q_DECLARE_TYPEINFO(Ovito::View::ViewportConfiguration::OrbitCenterMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ViewportConfiguration::OrbitCenterMode);
+Q_DECLARE_TYPEINFO(Ovito::ViewportConfiguration::OrbitCenterMode, Q_PRIMITIVE_TYPE);
 
 #endif		// __OVITO_VIEWPORT_CONFIGURATION_H

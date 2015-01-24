@@ -27,7 +27,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/gui/mainwin/MainWindow.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /// The vendor of the OpenGL implementation in use.
 QByteArray ViewportWindow::_openGLVendor;
@@ -406,4 +406,6 @@ void ViewportWindow::renderNow()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

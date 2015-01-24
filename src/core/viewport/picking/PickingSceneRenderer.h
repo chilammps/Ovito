@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
-namespace Ovito { inline namespace View { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A viewport renderer used for object picking.
@@ -107,6 +107,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PICKING_SCENE_RENDERER_H

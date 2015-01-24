@@ -30,7 +30,7 @@
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "ParticleInformationApplet.h"
 
-namespace Ovito { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleInformationApplet, UtilityApplet);
 
@@ -248,4 +248,7 @@ Box3 ParticleInformationInputMode::overlayBoundingBox(Viewport* vp, ViewportScen
 	return bbox;
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

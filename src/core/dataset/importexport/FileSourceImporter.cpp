@@ -31,7 +31,7 @@
 #include "FileSourceImporter.h"
 #include "FileSource.h"
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSourceImporter, FileImporter);
 
@@ -378,4 +378,5 @@ bool FileSourceImporter::matchesWildcardPattern(const QString& pattern, const QS
 	return p == pattern.constEnd() && f == filename.constEnd();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

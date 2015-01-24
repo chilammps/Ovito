@@ -34,7 +34,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/SelectionSet.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /******************************************************************************
 * Handles the ACTION_QUIT command.
@@ -379,4 +379,5 @@ void ActionManager::on_FileExport_triggered()
 	}
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

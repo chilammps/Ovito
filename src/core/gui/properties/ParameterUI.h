@@ -31,7 +31,7 @@
 #include <core/reference/RefTarget.h>
 #include "PropertiesEditor.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 /**
  * \brief Base class for UI components that allow the user to edit a parameter
@@ -87,7 +87,7 @@ public:
 
 public:	
 	
-    Q_PROPERTY(Ovito::ObjectSystem::RefTarget* editObject READ editObject);
+    Q_PROPERTY(Ovito::RefTarget* editObject READ editObject);
 	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
 	Q_PROPERTY(bool isDisabled READ isDisabled WRITE setDisabled);
 		
@@ -236,6 +236,8 @@ private:
 	DECLARE_REFERENCE_FIELD(_parameterObject);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PARAMETER_UI_H

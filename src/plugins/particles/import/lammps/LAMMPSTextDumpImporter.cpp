@@ -31,15 +31,15 @@
 #include <plugins/particles/import/InputColumnMappingDialog.h>
 #include "LAMMPSTextDumpImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSTextDumpImporter, ParticleImporter);
-SET_OVITO_OBJECT_EDITOR(LAMMPSTextDumpImporter, Internal::LAMMPSTextDumpImporterEditor);
+SET_OVITO_OBJECT_EDITOR(LAMMPSTextDumpImporter, LAMMPSTextDumpImporterEditor);
 DEFINE_PROPERTY_FIELD(LAMMPSTextDumpImporter, _useCustomColumnMapping, "UseCustomColumnMaspping");
 SET_PROPERTY_FIELD_LABEL(LAMMPSTextDumpImporter, _useCustomColumnMapping, "Custom file column mapping");
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, LAMMPSTextDumpImporterEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
  * Sets the user-defined mapping between data columns in the input file and
@@ -481,7 +481,7 @@ void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -530,6 +530,9 @@ void LAMMPSTextDumpImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

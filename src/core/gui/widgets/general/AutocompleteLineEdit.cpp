@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "AutocompleteLineEdit.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Returns the rect that is available for us to draw the document
@@ -105,4 +105,6 @@ void AutocompleteLineEdit::keyPressEvent(QKeyEvent* event)
 		_completer->popup()->hide();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

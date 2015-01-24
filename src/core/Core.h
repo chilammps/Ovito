@@ -90,16 +90,16 @@
 /*! \namespace Ovito::Util
     \brief This namespace contains general utility classes and typedefs used throughout OVITO's codebase.
 */
-/*! \namespace Ovito::Util::IO
+/*! \namespace Ovito::IO
     \brief This namespace contains I/O-related utility classes.
 */
-/*! \namespace Ovito::Util::Concurrency
+/*! \namespace Ovito::Concurrency
     \brief This namespace contains class related to multi-threading, parallelism, and asynchronous tasks.
 */
-/*! \namespace Ovito::Util::Mesh
+/*! \namespace Ovito::Mesh
     \brief This namespace contains classes for working with triangular and polyhedral meshes.
 */
-/*! \namespace Ovito::Util::Math
+/*! \namespace Ovito::Math
     \brief This namespace contains classes related to linear algebra and geometry (vectors, transformation matrices, etc).
 */
 /*! \namespace Ovito::Rendering
@@ -120,13 +120,13 @@
 /*! \namespace Ovito::ObjectSystem
     \brief This namespace contains basic classes of OVITO's object system.
 */
-/*! \namespace Ovito::ObjectSystem::Units
+/*! \namespace Ovito::Units
     \brief This namespace contains classes related to parameter units.
 */
-/*! \namespace Ovito::ObjectSystem::Undo
+/*! \namespace Ovito::Undo
     \brief This namespace contains the implementation of OVITO's undo framework.
 */
-/*! \namespace Ovito::ObjectSystem::Scene
+/*! \namespace Ovito::Scene
     \brief This namespace contains the scene graph and modification pipeline framework.
 */
 /*! \namespace Ovito::Gui

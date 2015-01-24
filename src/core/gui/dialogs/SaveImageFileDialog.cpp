@@ -25,7 +25,7 @@
 #endif
 #include "SaveImageFileDialog.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Dialogs {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Dialogs)
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -50,7 +50,7 @@ SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
 	if(includeVideoFormats) {
 		// Add video formats.
-		for(const auto& videoFormat : Ovito::Util::IO::Internal::VideoEncoder::supportedFormats()) {
+		for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
 			QString filterString = videoFormat.longName + " (";
 			for(const QString& ext : videoFormat.extensions)
 				filterString += "*." + ext;
@@ -99,4 +99,6 @@ void SaveImageFileDialog::onFileSelected(const QString& file)
 		_imageInfo.setFormat(_formatList[index]);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

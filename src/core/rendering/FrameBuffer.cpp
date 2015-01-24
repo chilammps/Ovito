@@ -25,7 +25,7 @@
 	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 #define IMAGE_FORMAT_FILE_FORMAT_VERSION		1
 
@@ -43,7 +43,7 @@ bool ImageInfo::guessFormatFromFilename()
 		return true;
 	}
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-	for(const auto& videoFormat : Ovito::Util::IO::Internal::VideoEncoder::supportedFormats()) {
+	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
 		for(const QString& extension : videoFormat.extensions) {
 			if(filename().endsWith(QStringLiteral(".") + extension, Qt::CaseInsensitive)) {
 				setFormat(videoFormat.name);
@@ -62,7 +62,7 @@ bool ImageInfo::guessFormatFromFilename()
 bool ImageInfo::isMovie() const
 {
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-	for(const auto& videoFormat : Ovito::Util::IO::Internal::VideoEncoder::supportedFormats()) {
+	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
 		if(format() == videoFormat.name)
 			return true;
 	}
@@ -99,4 +99,5 @@ LoadStream& operator>>(LoadStream& stream, ImageInfo& i)
 	return stream;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

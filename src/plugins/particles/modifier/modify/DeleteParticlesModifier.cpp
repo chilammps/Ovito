@@ -22,14 +22,14 @@
 #include <plugins/particles/Particles.h>
 #include "DeleteParticlesModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Modify)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, DeleteParticlesModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(DeleteParticlesModifier, Internal::DeleteParticlesModifierEditor);
+SET_OVITO_OBJECT_EDITOR(DeleteParticlesModifier, DeleteParticlesModifierEditor);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, DeleteParticlesModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Modifies the particle object.
@@ -66,7 +66,7 @@ PipelineStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInte
 	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -85,6 +85,9 @@ void DeleteParticlesModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->addWidget(statusLabel());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

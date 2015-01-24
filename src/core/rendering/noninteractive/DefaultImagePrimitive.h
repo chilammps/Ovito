@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/ImagePrimitive.h>
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief Buffer object that stores an image to be rendered by a non-interactive renderer.
@@ -48,6 +48,7 @@ public:
 
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_DEFAULT_IMAGE_GEOMETRY_BUFFER_H

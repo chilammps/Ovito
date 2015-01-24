@@ -27,7 +27,7 @@
 #include <core/viewport/overlay/ViewportOverlay.h>
 #include "ColorCodingModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 /**
  * \brief A viewport overlay that displays the color legend of a ColorCodingModifier.
@@ -68,7 +68,7 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::Particles::Modifiers::Coloring::ColorCodingModifier* modifier READ modifier WRITE setModifier);
+	Q_PROPERTY(Ovito::Particles::ColorCodingModifier* modifier READ modifier WRITE setModifier);
 
 private:
 
@@ -135,7 +135,7 @@ private:
 	OVITO_OBJECT
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the ColorLegendOverlay class.
@@ -158,8 +158,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_COLOR_LEGEND_OVERLAY_H

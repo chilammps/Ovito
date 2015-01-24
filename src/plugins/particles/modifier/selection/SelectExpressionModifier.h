@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Selection {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Selection)
 
 /**
  * \brief Selects particles based on a user-defined Boolean expression.
@@ -82,7 +82,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_expression);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the SelectExpressionModifier class.
@@ -116,8 +116,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_SELECT_EXPRESSION_MODIFIER_H

@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Matrix_3 class template.
+ * \brief Contains the definition of the Ovito::Matrix_3 class template.
  */
  
 #ifndef __OVITO_MATRIX3_H
@@ -34,7 +34,7 @@
 #include "Vector3.h"
 #include "Point3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 template<typename T> class RotationT;
 template<typename T> class QuaternionT;
@@ -91,7 +91,7 @@ public:
 
 	/// \brief Constructor that initializes all 9 elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_3(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33)
@@ -108,7 +108,7 @@ public:
 #endif
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_3(const column_type& c1, const column_type& c2, const column_type& c3)
 		: std::array<Vector_3<T>,3>{{c1, c2, c3}} {}
 #else
@@ -118,7 +118,7 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_3(Zero)
 		: std::array<Vector_3<T>,3>{{typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero(), typename Vector_3<T>::Zero()}} {}
 #else
@@ -128,7 +128,7 @@ public:
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one, and all off-diagonal elements are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_3(Identity)
 		: std::array<Vector_3<T>,3>{{Vector_3<T>(T(1),T(0),T(0)),
 									 Vector_3<T>(T(0),T(1),T(0)),
@@ -431,13 +431,15 @@ public:
 	static Matrix_3 scaling(const ScalingT<T>& scaling);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #include "Quaternion.h"
 #include "Scaling.h"
 #include "Rotation.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 // Generates a rotation matrix from an axis and an angle.
 template<typename T>
@@ -714,11 +716,13 @@ inline QDataStream& operator>>(QDataStream& stream, Matrix_3<T>& m) {
  */
 typedef Matrix_3<FloatType>		Matrix3;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Matrix3);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Matrix3*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Matrix3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Matrix3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Matrix3);
+Q_DECLARE_METATYPE(Ovito::Matrix3*);
+Q_DECLARE_TYPEINFO(Ovito::Matrix3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Matrix3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX3_H

@@ -34,12 +34,12 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, SurfaceMeshDisplayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMeshDisplay, DisplayObject);
-SET_OVITO_OBJECT_EDITOR(SurfaceMeshDisplay, Internal::SurfaceMeshDisplayEditor);
+SET_OVITO_OBJECT_EDITOR(SurfaceMeshDisplay, SurfaceMeshDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _surfaceColor, "SurfaceColor", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _showCap, "ShowCap", PROPERTY_FIELD_MEMORIZE);
@@ -345,7 +345,7 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 		}
 
 		// Feed contours into tessellator to create triangles.
-		Particles::Util::Internal::CapPolygonTessellator tessellator(output, dim);
+		CapPolygonTessellator tessellator(output, dim);
 		tessellator.beginPolygon();
 		for(const auto& contour : closedContours) {
 			tessellator.beginContour();
@@ -809,7 +809,7 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 	return closestNormal.dot(closestVector) > 0;
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -863,6 +863,7 @@ void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 	capTransparencyUI->setMaxValue(1);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

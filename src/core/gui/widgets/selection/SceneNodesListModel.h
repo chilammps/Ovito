@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A Qt model/view system list model that contains all scene nodes in the current scene.
@@ -68,6 +68,8 @@ private:
 	RefTargetListener<SceneRoot> _rootNodeListener;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SCENE_NODES_LIST_MODEL_H

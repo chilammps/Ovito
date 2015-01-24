@@ -27,7 +27,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /******************************************************************************
 * Opens the stream for reading.
@@ -200,4 +200,6 @@ void ObjectLoadStream::close()
 	LoadStream::close();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

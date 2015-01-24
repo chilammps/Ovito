@@ -25,23 +25,21 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "FreezePropertyModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Properties {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Properties)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, FreezePropertyModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(FreezePropertyModifier, Internal::FreezePropertyModifierEditor);
+SET_OVITO_OBJECT_EDITOR(FreezePropertyModifier, FreezePropertyModifierEditor);
 DEFINE_PROPERTY_FIELD(FreezePropertyModifier, _sourceProperty, "SourceProperty");
 DEFINE_PROPERTY_FIELD(FreezePropertyModifier, _destinationProperty, "DestinationProperty");
 SET_PROPERTY_FIELD_LABEL(FreezePropertyModifier, _sourceProperty, "Property");
 SET_PROPERTY_FIELD_LABEL(FreezePropertyModifier, _destinationProperty, "Destination property");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, FreezePropertyModifierEditor, ParticleModifierEditor);
 	IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SavedParticleProperty, RefTarget);
 	DEFINE_REFERENCE_FIELD(SavedParticleProperty, _property, "Property", ParticlePropertyObject);
 	DEFINE_REFERENCE_FIELD(SavedParticleProperty, _identifiers, "Identifiers", ParticlePropertyObject);
-}
-
-using namespace Internal;
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -183,7 +181,7 @@ void FreezePropertyModifier::takePropertySnapshot(ModifierApplication* modApp, c
 	modApp->setModifierData(nullptr);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Makes a copy of the given source property and, optionally, of the provided
@@ -204,8 +202,6 @@ void SavedParticleProperty::reset(ParticlePropertyObject* property, ParticleProp
 ******************************************************************************/
 void FreezePropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	using namespace Particles::Util;
-
 	QWidget* rollout = createRollout(tr("Freeze property"), rolloutParams, "particles.modifiers.freeze_property.html");
 
     // Create the rollout contents.
@@ -264,6 +260,9 @@ void FreezePropertyModifierEditor::onSourcePropertyChanged()
 	});
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

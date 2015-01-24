@@ -49,7 +49,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 class QtIOCompressorPrivate;
 
@@ -92,6 +92,7 @@ private:
     Q_DISABLE_COPY(QtIOCompressor);
 };
 
-}} // End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif

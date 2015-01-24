@@ -24,7 +24,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::AffineDecomposition class.
+ * \brief Contains the definition of the Ovito::AffineDecomposition class.
  */
 
 #ifndef __OVITO_AFFINE_DECOMP_H
@@ -36,7 +36,7 @@
 #include "Scaling.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief Decomposes an affine transformation matrix into translation, rotation and scaling parts.
@@ -79,6 +79,8 @@ public:
 	AffineDecomposition(const AffineTransformation& tm);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_AFFINE_DECOMP_H

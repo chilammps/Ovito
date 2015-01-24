@@ -26,12 +26,12 @@
 #include <core/reference/RefTarget.h>
 #include "TimeInterval.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /**
  * \brief Stores the animation settings such as the animation length, current frame number, playback rate, etc.
  * 
- * Each \ref Ovito::ObjectSystem::DataSet "DataSet" owns an instance of this class, which can be accessed via DataSet::animationSettings().
+ * Each \ref Ovito::DataSet "DataSet" owns an instance of this class, which can be accessed via DataSet::animationSettings().
  *
  * OVITO measures animation time in time tick units, which correspond to 1/4800 of a second. The ::TimePoint data type, which is an alias for
  * \c int, is used to store time tick values. Conversion between time ticks and seconds is possible with the TimeToSeconds() and TimeFromSeconds()
@@ -365,7 +365,7 @@ public:
 		animSettings->suspendAnim();
 	}
 	/// Suspends the automatic generation of animation keys by calling AnimationSettings::suspendAnim().
-	/// \param object An arbitrary object that belongs to a \ref Ovito::ObjectSystem::DataSet "DataSet" with an AnimationSettings object.
+	/// \param object An arbitrary object that belongs to a \ref Ovito::DataSet "DataSet" with an AnimationSettings object.
 	AnimationSuspender(RefMaker* object) : _animSettings(object->dataset()->animationSettings()) {
 		_animSettings->suspendAnim();
 	}
@@ -377,6 +377,7 @@ private:
 	QPointer<AnimationSettings> _animSettings;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_ANIMATION_SETTINGS_H

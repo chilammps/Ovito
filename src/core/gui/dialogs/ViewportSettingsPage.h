@@ -26,7 +26,7 @@
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
 #include <core/viewport/ViewportSettings.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * Page of the application settings dialog, which hosts viewport-related program options.
@@ -58,6 +58,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_SETTINGS_PAGE_H

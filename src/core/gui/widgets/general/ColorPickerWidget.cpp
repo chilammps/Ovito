@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ColorPickerWidget.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Constructs the control.
@@ -96,4 +96,6 @@ void ColorPickerWidget::activateColorPicker()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

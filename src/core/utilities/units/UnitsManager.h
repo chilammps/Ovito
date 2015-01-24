@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Units {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Units)
 
 /**
  * \brief Base class for parameter unit conversion services. 
@@ -410,6 +410,8 @@ private:
 	WorldParameterUnit* _worldUnit;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_UNITS_MANAGER_H

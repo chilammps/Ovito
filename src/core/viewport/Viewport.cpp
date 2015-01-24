@@ -42,7 +42,7 @@
 /// Controls the margin size between the overlay render frame and the viewport border.
 #define VIEWPORT_RENDER_FRAME_SIZE				0.93f
 
-namespace Ovito { inline namespace View {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM);
@@ -1150,4 +1150,5 @@ Point3 Viewport::orbitCenter()
 }
 
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -97,4 +97,5 @@ void SurfaceMesh::smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, c
 		vertex->pos() += *d++;
 }
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

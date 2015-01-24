@@ -25,19 +25,19 @@
 #include <plugins/particles/util/NearestNeighborFinder.h>
 #include "CentroSymmetryModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 /// The maximum number of neighbors that can be taken into account to compute the CSP.
 enum { MAX_CSP_NEIGHBORS = 32 };
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CentroSymmetryModifier, AsynchronousParticleModifier);
-SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, Internal::CentroSymmetryModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, CentroSymmetryModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(CentroSymmetryModifier, _numNeighbors, "NumNeighbors", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neighbors");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -75,7 +75,7 @@ void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 	setProgressText(tr("Computing centrosymmetry parameters"));
 
 	// Prepare the neighbor list.
-	Util::NearestNeighborFinder neighFinder(_nneighbors);
+	NearestNeighborFinder neighFinder(_nneighbors);
 	if(!neighFinder.prepare(positions(), cell(), this)) {
 		return;
 	}
@@ -92,10 +92,10 @@ void CentroSymmetryModifier::CentroSymmetryEngine::perform()
 /******************************************************************************
 * Computes the centrosymmetry parameter of a single particle.
 ******************************************************************************/
-FloatType CentroSymmetryModifier::computeCSP(Util::NearestNeighborFinder& neighFinder, size_t particleIndex)
+FloatType CentroSymmetryModifier::computeCSP(NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
 	// Find k nearest neighbor of current atom.
-	Util::NearestNeighborFinder::Query<MAX_CSP_NEIGHBORS> neighQuery(neighFinder);
+	NearestNeighborFinder::Query<MAX_CSP_NEIGHBORS> neighQuery(neighFinder);
 	neighQuery.findNeighbors(neighFinder.particlePos(particleIndex));
 
 	int numNN = neighQuery.results().size();
@@ -152,7 +152,7 @@ void CentroSymmetryModifier::propertyChanged(const PropertyFieldDescriptor& fiel
 		invalidateCachedResults();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -189,6 +189,9 @@ void CentroSymmetryModifierEditor::createUI(const RolloutInsertionParameters& ro
 	layout1->addWidget(statusLabel());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

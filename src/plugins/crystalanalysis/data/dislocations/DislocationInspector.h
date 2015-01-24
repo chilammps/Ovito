@@ -191,7 +191,9 @@ private:
 	Q_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Plugins::CrystalAnalysis::SegmentCluster);
 

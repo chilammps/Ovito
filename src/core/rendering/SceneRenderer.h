@@ -38,7 +38,7 @@
 #include "ArrowPrimitive.h"
 #include "MeshPrimitive.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * Abstract base class for object-specific information used in the picking system.
@@ -218,6 +218,7 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SCENE_RENDERER_H

@@ -26,17 +26,17 @@
 #include <qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CoordinationNumberModifier, AsynchronousParticleModifier);
-SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, Internal::CoordinationNumberModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(CoordinationNumberModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -73,7 +73,7 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 	setProgressText(tr("Computing coordination numbers"));
 
 	// Prepare the neighbor list.
-	Util::CutoffNeighborFinder neighborListBuilder;
+	CutoffNeighborFinder neighborListBuilder;
 	if(!neighborListBuilder.prepare(_cutoff, positions(), cell(), this))
 		return;
 
@@ -98,7 +98,7 @@ void CoordinationNumberModifier::CoordinationAnalysisEngine::perform()
 			for(size_t i = startIndex; i < endIndex;) {
 
 				int coordNumber = 0;
-				for(Util::CutoffNeighborFinder::Query neighQuery(neighborListBuilder, i); !neighQuery.atEnd(); neighQuery.next()) {
+				for(CutoffNeighborFinder::Query neighQuery(neighborListBuilder, i); !neighQuery.atEnd(); neighQuery.next()) {
 					coordNumber++;
 					size_t rdfInterval = (size_t)(sqrt(neighQuery.distanceSquared()) / rdfBinSize);
 					threadLocalRDF[rdfInterval]++;
@@ -176,7 +176,7 @@ void CoordinationNumberModifier::propertyChanged(const PropertyFieldDescriptor& 
 		invalidateCachedResults();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -298,6 +298,9 @@ void CoordinationNumberModifierEditor::onSaveData()
 	}
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

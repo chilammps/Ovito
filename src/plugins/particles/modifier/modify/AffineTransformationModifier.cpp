@@ -30,10 +30,10 @@
 
 #include <QtConcurrent>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Modify)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AffineTransformationModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, Internal::AffineTransformationModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, AffineTransformationModifierEditor);
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _transformationTM, "Transformation");
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToParticles, "ApplyToParticles");
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "SelectionOnly");
@@ -49,9 +49,9 @@ SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _targetCell, "Destination
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation");
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, AffineTransformationModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -160,7 +160,7 @@ PipelineStatus AffineTransformationModifier::modifyParticles(TimePoint time, Tim
 	return PipelineStatus::Success;
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -371,6 +371,9 @@ void AffineTransformationModifierEditor::onSpinnerDragAbort()
 	dataset()->undoStack().endCompoundOperation(false);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

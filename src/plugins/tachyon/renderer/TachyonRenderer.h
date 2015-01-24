@@ -172,6 +172,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_ambientOcclusionBrightness);
 };
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_TACHYON_RENDERER_H

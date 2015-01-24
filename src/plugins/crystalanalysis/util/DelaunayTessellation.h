@@ -186,6 +186,8 @@ private:
 	DT _dt;
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_DELAUNAY_TESSELLATION_H

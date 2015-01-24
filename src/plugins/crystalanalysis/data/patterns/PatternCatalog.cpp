@@ -128,4 +128,6 @@ void PatternCatalogEditor::onDoubleClickPattern(const QModelIndex& index)
 	});
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

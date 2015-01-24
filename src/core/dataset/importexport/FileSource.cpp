@@ -35,10 +35,10 @@
 #include "FileSource.h"
 #include "FileSourceEditor.h"
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileSource, CompoundObject);
-SET_OVITO_OBJECT_EDITOR(FileSource, Internal::FileSourceEditor);
+SET_OVITO_OBJECT_EDITOR(FileSource, FileSourceEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(FileSource, _importer, "Importer", FileSourceImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO);
 DEFINE_PROPERTY_FIELD(FileSource, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled");
 DEFINE_FLAGS_PROPERTY_FIELD(FileSource, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO);
@@ -608,4 +608,5 @@ void FileSource::showURLSelectionDialog(QWidget* parent)
 	}
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

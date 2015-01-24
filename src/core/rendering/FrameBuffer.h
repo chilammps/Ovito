@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /******************************************************************************
 * Stores information about the image in a FrameBuffer.
@@ -185,6 +185,7 @@ private:
 	Q_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FRAME_BUFFER_H

@@ -38,10 +38,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ColorCodingModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, Internal::ColorCodingModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor);
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", Controller);
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", Controller);
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient);
@@ -63,9 +63,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodi
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingImageGradient, ColorCodingGradient);
 DEFINE_PROPERTY_FIELD(ColorCodingImageGradient, _image, "Image");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -356,15 +356,13 @@ Color ColorCodingImageGradient::valueToColor(FloatType t)
 	return Color(image().pixel(p));
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
 void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	using namespace Particles::Util;
-
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Color coding"), rolloutParams, "particles.modifiers.color_coding.html");
 
@@ -648,6 +646,9 @@ QIcon ColorCodingModifierEditor::iconFromColorMap(ColorCodingGradient* map)
 	return QIcon(QPixmap::fromImage(image));
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

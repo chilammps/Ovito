@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Vector_3 class template.
+ * \brief Contains the definition of the Ovito::Vector_3 class template.
  */
 
 #ifndef __OVITO_VECTOR3_H
@@ -31,7 +31,7 @@
 #include <core/utilities/io/SaveStream.h>
 #include <core/utilities/io/LoadStream.h>
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A vector with three components.
@@ -91,21 +91,21 @@ public:
 	Vector_3() {}
 
 	/// Constructs a vector with all three components initialized to the given value.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR explicit Vector_3(T val) : std::array<T, 3>{{val,val,val}} {}
 #else
 	explicit Vector_3(T val) { this->fill(val); }
 #endif
 
 	/// Initializes the components of the vector with the given values.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Vector_3(T x, T y, T z) : std::array<T, 3>{{x, y, z}} {}
 #else
 	Vector_3(T x, T y, T z) { this->x() = x; this->y() = y; this->z() = z; }
 #endif
 
 	/// Initializes the vector to the null vector. All components are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Vector_3(Zero) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
 #else
 	Vector_3(Zero) { this->fill(T(0)); }
@@ -377,15 +377,17 @@ typedef Vector_3<int>			Vector3I;
 inline void glVertex(const Vector_3<GLdouble>& v) { glVertex3dv(v.data()); }
 inline void glVertex(const Vector_3<GLfloat>& v) { glVertex3fv(v.data()); }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector3);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector3I);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector3*);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector3I*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector3I, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector3*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector3I*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Vector3);
+Q_DECLARE_METATYPE(Ovito::Vector3I);
+Q_DECLARE_METATYPE(Ovito::Vector3*);
+Q_DECLARE_METATYPE(Ovito::Vector3I*);
+Q_DECLARE_TYPEINFO(Ovito::Vector3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector3I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector3I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR3_H

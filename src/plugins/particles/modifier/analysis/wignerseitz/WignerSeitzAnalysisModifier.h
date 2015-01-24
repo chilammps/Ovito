@@ -27,7 +27,7 @@
 #include <plugins/particles/util/NearestNeighborFinder.h>
 #include "../../AsynchronousParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 /**
  * \brief Performs the Wigner-Seitz cell analysis to identify point defects in crystals.
@@ -191,7 +191,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the WignerSeitzAnalysisModifier class.
@@ -214,8 +214,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_WIGNER_SEITZ_ANALYSIS_MODIFIER_H

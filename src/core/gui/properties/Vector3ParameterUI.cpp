@@ -24,7 +24,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Params {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Params)
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, Vector3ParameterUI, FloatParameterUI);
@@ -141,5 +141,7 @@ void Vector3ParameterUI::updateUI()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 

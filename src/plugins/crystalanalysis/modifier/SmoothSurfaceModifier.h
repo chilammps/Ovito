@@ -86,6 +86,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CA_SMOOTH_SURFACE_MODIFIER_H

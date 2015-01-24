@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/units/UnitsManager.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /**
  * \brief A spinner control for editing a numeric value.
@@ -111,13 +111,13 @@ public:
 	/// \return The parameter unit object that performs the conversion from native units
 	///         to user units and back.
 	/// \sa setUnit()
-	Ovito::ObjectSystem::Units::ParameterUnit* unit() const { return _unit; }
+	ParameterUnit* unit() const { return _unit; }
 
 	/// \brief Sets the units of this spinner's value.
 	/// \param unit The parameter unit object that performs the conversion from native units
 	///         to user units and back.
 	/// \sa unit()
-	void setUnit(Ovito::ObjectSystem::Units::ParameterUnit* unit);
+	void setUnit(ParameterUnit* unit);
 	
 	/// \brief Returns whether the user currently dragging the spinner and changing its value interactively.
 	/// \return \c true if the spinner is currently being dragged.
@@ -160,7 +160,7 @@ protected:
 
 	/// Returns the current formatting mode that is used to convert the spinner value 
 	/// to the string shown in the text box and vice versa.	
-	Ovito::ObjectSystem::Units::ParameterUnit* _unit;
+	ParameterUnit* _unit;
 
 	/// The current value of the spinner.
 	FloatType _value;
@@ -202,6 +202,8 @@ protected:
 	virtual void changeEvent(QEvent* event) override;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SPINNER_WIDGET_H

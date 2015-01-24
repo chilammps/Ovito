@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "CompressedTextReader.h"
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /******************************************************************************
 * Opens the stream for reading.
@@ -120,4 +120,6 @@ void CompressedTextReader::munmap()
 	_mmapPointer = nullptr;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

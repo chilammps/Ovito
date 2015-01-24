@@ -29,10 +29,10 @@
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "HistogramModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, HistogramModifier, ParticleModifier);
-SET_OVITO_OBJECT_EDITOR(HistogramModifier, Internal::HistogramModifierEditor);
+SET_OVITO_OBJECT_EDITOR(HistogramModifier, HistogramModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(HistogramModifier, _selectInRange, "SelectInRange");
 DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE);
@@ -56,9 +56,9 @@ SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeStart, "Y-axis range star
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeEnd, "Y-axis range end");
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _sourceProperty, "Source property");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, HistogramModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -234,15 +234,13 @@ PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& 
 	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
 void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	using namespace Particles::Util;
-
 	// Create a rollout.
 	QWidget* rollout = createRollout(tr("Histogram"), rolloutParams, "particles.modifiers.histogram.html");
 
@@ -484,6 +482,9 @@ void HistogramModifierEditor::onSaveData()
 	}
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

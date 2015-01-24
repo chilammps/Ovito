@@ -467,4 +467,6 @@ void ClusterItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* mode
 	else QStyledItemDelegate::setModelData(editor, model, index);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

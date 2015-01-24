@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief Abstract base class for particle drawing primitives.
@@ -120,13 +120,14 @@ private:
 	ParticleShape _particleShape;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Rendering::ParticlePrimitive::ShadingMode);
-Q_DECLARE_METATYPE(Ovito::Rendering::ParticlePrimitive::RenderingQuality);
-Q_DECLARE_METATYPE(Ovito::Rendering::ParticlePrimitive::ParticleShape);
-Q_DECLARE_TYPEINFO(Ovito::Rendering::ParticlePrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Rendering::ParticlePrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Rendering::ParticlePrimitive::ParticleShape, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ParticleShape);
+Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::ParticleShape, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PARTICLE_PRIMITIVE_H

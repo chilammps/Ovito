@@ -29,7 +29,7 @@
 #include <core/scene/SceneNode.h>
 #include "ModificationListItem.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * This Qt model class is used to populate the QListView widget.
@@ -159,6 +159,8 @@ private:
 	DataSetContainer& _datasetContainer;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_MODIFICATION_LIST_MODEL_H

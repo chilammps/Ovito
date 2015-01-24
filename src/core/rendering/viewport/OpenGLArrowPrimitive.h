@@ -26,7 +26,7 @@
 #include <core/rendering/ArrowPrimitive.h>
 #include "OpenGLBuffer.h"
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief Buffer object that stores a set of arrows to be rendered in the viewports.
@@ -150,6 +150,8 @@ private:
 	std::vector<GLsizei> _fanPrimitiveVertexCounts;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H

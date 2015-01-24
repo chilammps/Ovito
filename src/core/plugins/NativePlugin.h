@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "Plugin.h"
 
-namespace Ovito { inline namespace PluginSystem { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(PluginSystem) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A plugin that is implemented as a native shared library.
@@ -61,9 +61,11 @@ private:
 	/// The plugin library after it has been loaded.
 	QLibrary* _library;
 
-	friend class Ovito::PluginSystem::PluginManager;
+	friend class PluginManager;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_NATIVE_PLUGIN_H

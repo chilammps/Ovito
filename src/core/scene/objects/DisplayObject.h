@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Abstract base class for display object that are responsible
@@ -124,6 +124,8 @@ private:
 	std::tuple<Types...> _oldState;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_DISPLAY_OBJECT_H

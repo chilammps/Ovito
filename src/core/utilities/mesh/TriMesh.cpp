@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "TriMesh.h"
 
-namespace Ovito { inline namespace Util { inline namespace Mesh {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Mesh)
 
 /******************************************************************************
 * Clears all vertices and faces.
@@ -187,4 +187,6 @@ bool TriMesh::intersectRay(const Ray3& ray, FloatType& t, Vector3& normal, int& 
 	return false;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

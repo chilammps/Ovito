@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ViewportSettingsPage.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsDialogPage);
 
@@ -123,4 +123,6 @@ bool ViewportSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog,
 	return true;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

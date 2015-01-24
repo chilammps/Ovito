@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/SpinnerWidget.h>
 #include "../ParticleModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Modify {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Modify)
 
 /**
  * \brief This modifier applies an arbitrary affine transformation to the
@@ -132,7 +132,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_applyToSurfaceMesh);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * A properties editor for the AffineTransformationModifier class.
@@ -177,8 +177,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __AFFINE_TRANSFORMATION_MODIFIER_H

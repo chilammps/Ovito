@@ -91,4 +91,6 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(CrystalAnalysis);
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

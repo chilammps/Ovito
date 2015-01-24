@@ -31,7 +31,7 @@
 // QtNetwork module
 #include <QtNetwork>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 class ModificationListModel;	// defined in ModificationListModel.h
 class ModificationListItem;		// defined in ModificationListModel.h
@@ -117,6 +117,8 @@ private:
 	Rollout* _aboutRollout;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif	// __OVITO_MODIFY_COMMAND_PAGE_H

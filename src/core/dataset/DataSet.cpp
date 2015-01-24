@@ -35,9 +35,7 @@
 	#include <core/utilities/io/video/VideoEncoder.h>
 #endif
 
-namespace Ovito { inline namespace ObjectSystem {
-
-using namespace Util::IO::Internal;
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DataSet, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
@@ -506,4 +504,5 @@ void DataSet::saveToFile(const QString& filePath)
 	fileStream.close();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

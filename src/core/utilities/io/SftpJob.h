@@ -33,7 +33,7 @@
 #include <sshconnectionmanager.h>
 #include <sftpchannel.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief Base class for background jobs that access remote files and directories via SFTP.
@@ -178,6 +178,9 @@ private:
     QSsh::SftpJobId _listingJob;
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SFTP_JOB_H

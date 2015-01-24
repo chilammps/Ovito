@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "KeyframeController.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /**
  * \brief Base template class for animation keys used by spline interpolation controllers.
@@ -206,6 +206,7 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SPLINE_INTERPOLATION_CONTROLLERS_H

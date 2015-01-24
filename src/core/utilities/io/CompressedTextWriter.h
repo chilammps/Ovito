@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/io/gzdevice/qtiocompressor.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /**
  * \brief A helper class for writing text-based files that are compressed (gzip format).
@@ -110,6 +110,8 @@ private:
 	Q_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_COMPRESSED_TEXT_WRITER_H

@@ -23,7 +23,7 @@
 #include "IMDImporter.h"
 #include "../InputColumnMapping.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IMDImporter, ParticleImporter);
 
@@ -164,4 +164,7 @@ void IMDImporter::IMDImportTask::parseFile(CompressedTextReader& stream)
 	setStatus(tr("Number of particles: %1").arg(numAtoms));
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

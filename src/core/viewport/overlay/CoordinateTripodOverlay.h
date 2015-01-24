@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include "ViewportOverlay.h"
 
-namespace Ovito { inline namespace View { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A viewport overlay that displays the coordinate system orientation.
@@ -163,6 +163,8 @@ private:
 	OVITO_OBJECT
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_COORDINATE_TRIPOD_OVERLAY_H

@@ -23,7 +23,7 @@
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/dataset/UndoStack.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Constructs the panel.
@@ -83,4 +83,6 @@ RefTarget* PropertiesPanel::editObject() const
 	return editor()->editObject();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

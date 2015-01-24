@@ -26,7 +26,7 @@
 #include <core/scene/objects/CompoundObject.h>
 #include "FileSourceImporter.h"
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 /**
  * \brief A place holder object that feeds data read from an external file into the scene.
@@ -186,6 +186,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_playbackStartTime);
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FILE_SOURCE_H

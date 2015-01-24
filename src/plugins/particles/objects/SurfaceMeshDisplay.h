@@ -172,7 +172,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_capTransparency);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the SurfaceMeshDisplay class.
@@ -193,8 +193,9 @@ protected:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_SURFACE_MESH_DISPLAY_H

@@ -28,7 +28,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/objects/DisplayObject.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Abstract base class for all objects in the scene.
@@ -202,6 +202,8 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_DATA_OBJECT_H

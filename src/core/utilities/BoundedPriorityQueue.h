@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::BoundedPriorityQueue class template.
+ * \brief Contains the definition of the Ovito::BoundedPriorityQueue class template.
  */
 
 #ifndef __OVITO_BOUNDED_PRIORITY_QUEUE_H
@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 /**
  * \brief A container class implementing a priority queue with a fixed compile-time maximum capacity and a variable run-time capacity.
@@ -124,7 +124,8 @@ protected:
 	Compare _comp;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_BOUNDED_PRIORITY_QUEUE_H
 

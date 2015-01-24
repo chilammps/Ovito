@@ -26,7 +26,7 @@
 #include <core/gui/app/Application.h>
 #include <core/dataset/DataSetContainer.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /**
  * \brief The main window of the application.
@@ -139,6 +139,7 @@ private:
 	QPointer<QOpenGLContext> _glcontext;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_MAIN_WINDOW_H

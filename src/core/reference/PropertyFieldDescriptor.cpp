@@ -24,7 +24,7 @@
 #include <core/reference/RefMaker.h>
 #include "PropertyFieldDescriptor.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /******************************************************************************
 * Return the human readable and localized name of the parameter field.
@@ -67,4 +67,5 @@ bool PropertyFieldDescriptor::loadDefaultValue(RefMaker* object) const
 	return false;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

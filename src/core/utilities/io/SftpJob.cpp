@@ -27,7 +27,7 @@
 
 #include "SftpJob.h"
 
-namespace Ovito { inline namespace Util { inline namespace IO { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /// List SFTP jobs that are waiting to be executed.
 QQueue<SftpJob*> SftpJob::_queuedJobs;
@@ -404,4 +404,7 @@ void SftpListDirectoryJob::onFileInfoAvailable(QSsh::SftpJobId job, const QList<
 	}
 }
 
-}}}}
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

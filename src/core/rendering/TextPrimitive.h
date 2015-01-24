@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "PrimitiveBase.h"
 
-namespace Ovito { inline namespace Rendering {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering)
 
 /**
  * \brief Abstract base class rendering of text primitives.
@@ -85,6 +85,7 @@ private:
 	QFont _font;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_TEXT_PRIMITIVE_H

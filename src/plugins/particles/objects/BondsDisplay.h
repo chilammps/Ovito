@@ -84,8 +84,8 @@ public:
 
 public:
 
-    Q_PROPERTY(Ovito::Rendering::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
-    Q_PROPERTY(Ovito::Rendering::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+    Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+    Q_PROPERTY(Ovito::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
 
 protected:
 
@@ -144,7 +144,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_renderingQuality);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the BondsDisplay class.
@@ -167,8 +167,8 @@ private:
 	OVITO_OBJECT
 };
 
+OVITO_END_INLINE_NAMESPACE
 }	// End of namespace
-
-}}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_BONDS_DISPLAY_H

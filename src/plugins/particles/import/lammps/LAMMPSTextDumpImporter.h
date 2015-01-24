@@ -27,7 +27,7 @@
 #include <plugins/particles/import/InputColumnMapping.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 /**
  * \brief File parser for text-based LAMMPS dump simulation files.
@@ -87,7 +87,7 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::Particles::Import::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
+	Q_PROPERTY(Ovito::Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
 	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
 
 private:
@@ -154,7 +154,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_useCustomColumnMapping);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the LAMMPSTextDumpImporter class.
@@ -182,8 +182,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H

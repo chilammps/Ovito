@@ -218,4 +218,5 @@ ParticlePropertyObject* ParticlePropertyReference::findInState(const PipelineFlo
 	return nullptr;
 }
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

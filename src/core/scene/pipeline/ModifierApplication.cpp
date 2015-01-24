@@ -24,7 +24,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/ObjectNode.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ModifierApplication, RefTarget);
 DEFINE_REFERENCE_FIELD(ModifierApplication, _modifier, "Modifier", Modifier);
@@ -62,4 +62,6 @@ QSet<ObjectNode*> ModifierApplication::objectNodes() const
 	return findDependents<ObjectNode>();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

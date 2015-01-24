@@ -24,7 +24,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/viewport/input/ViewportInputManager.h>
 
-namespace Ovito { inline namespace Gui { inline namespace ViewportInput {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(ViewportInput)
 
 /******************************************************************************
 * Initializes the action object.
@@ -80,4 +80,6 @@ QPushButton* ViewportModeAction::createPushButton(QWidget* parent)
 	return button;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

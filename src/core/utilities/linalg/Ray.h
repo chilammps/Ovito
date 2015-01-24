@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Ray_3 class template.
+ * \brief Contains the definition of the Ovito::Ray_3 class template.
  */
 
 #ifndef __OVITO_RAY_H
@@ -34,7 +34,7 @@
 #include "Point3.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief An infinite ray in 3d space, defined by a base point and a direction vector.
@@ -169,11 +169,13 @@ inline QDataStream& operator>>(QDataStream& stream, Ray_3<T>& r) {
  */
 typedef Ray_3<FloatType> Ray3;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Ray3);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Ray3*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Ray3, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Ray3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Ray3);
+Q_DECLARE_METATYPE(Ovito::Ray3*);
+Q_DECLARE_TYPEINFO(Ovito::Ray3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Ray3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_RAY_H

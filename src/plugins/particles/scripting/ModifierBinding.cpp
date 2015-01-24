@@ -58,20 +58,13 @@
 #include <plugins/particles/modifier/analysis/voronoi/VoronoiAnalysisModifier.h>
 #include <plugins/particles/modifier/analysis/diamond/IdentifyDiamondModifier.h>
 
-namespace Ovito { namespace Particles { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 using namespace boost::python;
 using namespace PyScript;
 
 BOOST_PYTHON_MODULE(ParticlesModify)
 {
-	using namespace Modifiers;
-	using namespace Modifiers::Modify;
-	using namespace Modifiers::Selection;
-	using namespace Modifiers::Coloring;
-	using namespace Modifiers::Analysis;
-	using namespace Modifiers::Properties;
-
 	ovito_abstract_class<ParticleModifier, Modifier>()
 	;
 
@@ -911,4 +904,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesModify);
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * The command panel page lets user render the scene.
@@ -55,6 +55,8 @@ private:
 	QMetaObject::Connection _renderSettingsReplacedConnection;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_RENDER_COMMAND_PAGE_H

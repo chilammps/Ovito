@@ -26,7 +26,7 @@
 #include "OpenGLHelpers.h"
 #include "ViewportSceneRenderer.h"
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A wrapper for the QOpenGLBuffer class, which adds more features.
@@ -279,6 +279,8 @@ private:
 	int _verticesPerElement;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_OPENGL_BUFFER_H

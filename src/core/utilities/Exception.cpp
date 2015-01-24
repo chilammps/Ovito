@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "Exception.h"
 
-namespace Ovito { inline namespace Util {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 Exception::ExceptionHandler Exception::exceptionHandler = nullptr;
 
@@ -64,4 +64,5 @@ void Exception::showError() const
 	exceptionHandler(*this);
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

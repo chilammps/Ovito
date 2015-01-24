@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Matrix_4 class template.
+ * \brief Contains the definition of the Ovito::Matrix_4 class template.
  */
 
 #ifndef __OVITO_MATRIX4_H
@@ -36,7 +36,7 @@
 #include "Vector4.h"
 #include "AffineTransformation.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A 4x4 matrix.
@@ -75,7 +75,7 @@ public:
 
 	/// \brief Constructor that initializes 9 elements of the matrix to the given values. All other elements are set to zero.
 	/// \note Values are given in row-major order, i.e. row by row.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33)
@@ -93,7 +93,7 @@ public:
 	/// \brief Constructor that initializes the 12 elements of the 3x4 submatrix to the given values.
 	///        All other elements are set to zero.
 	/// \note Elements need to be specified in row-major order, i.e. row by row.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(
 						T m11, T m12, T m13, T m14,
 						T m21, T m22, T m23, T m24,
@@ -116,7 +116,7 @@ public:
 
 	/// \brief Constructor that initializes 16 elements of the matrix to the given values.
 	/// \note Elements need to be specified in row-major order, i.e. row by row.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(
 						T m11, T m12, T m13, T m14,
 						T m21, T m22, T m23, T m24,
@@ -140,7 +140,7 @@ public:
 #endif
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(const Vector_4<T>& c1, const Vector_4<T>& c2, const Vector_4<T>& c3, const Vector_4<T>& c4)
 		: std::array<Vector_4<T>,4>{{c1, c2, c3, c4}} {}
 #else
@@ -150,7 +150,7 @@ public:
 
 	/// \brief Initializes the 4x4 matrix from a 3x4 matrix.
 	/// The lower matrix row is initialized to (0,0,0,1).
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	explicit Q_DECL_CONSTEXPR Matrix_4(const AffineTransformationT<T>& tm)
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(tm(0,0),tm(1,0),tm(2,0),T(0)),
@@ -167,7 +167,7 @@ public:
 
 	/// \brief Constructor that initializes the top 3x4 submatrix from four column 3-vectors.
 	/// The lower matrix row is initialized to (0,0,0,1).
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4)
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(c1[0],c1[1],c1[2],T(0)),
@@ -184,7 +184,7 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(Zero)
 		: std::array<Vector_4<T>,4>{{
 			typename Vector_4<T>::Zero(),
@@ -198,7 +198,7 @@ public:
 
 		/// \brief Initializes the matrix to the identity matrix.
 		/// All diagonal elements are set to one, and all off-diagonal elements are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Matrix_4(Identity)
 		: std::array<Vector_4<T>,4>{{
 			Vector_4<T>(T(1),T(0),T(0),T(0)),
@@ -570,11 +570,13 @@ typedef Matrix_4<FloatType>		Matrix4;
 inline void glLoadMatrix(const Matrix_4<GLdouble>& tm) { glLoadMatrixd(tm.elements()); }
 inline void glLoadMatrix(const Matrix_4<GLfloat>& tm) { glLoadMatrixf(tm.elements()); }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Matrix4);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Matrix4*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Matrix4, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Matrix4*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Matrix4);
+Q_DECLARE_METATYPE(Ovito::Matrix4*);
+Q_DECLARE_TYPEINFO(Ovito::Matrix4, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Matrix4*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX4_H

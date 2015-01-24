@@ -43,8 +43,6 @@ extern "C" {
 
 namespace Ovito { namespace Tachyon {
 
-using namespace Internal;
-
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingEnabled, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE);
@@ -561,5 +559,6 @@ void* TachyonRenderer::getTachyonTexture(FloatType r, FloatType g, FloatType b, 
 	return rt_texture(_rtscene, &tex);
 }
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 

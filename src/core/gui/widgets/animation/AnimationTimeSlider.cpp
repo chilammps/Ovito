@@ -26,7 +26,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "AnimationTimeSlider.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 using namespace std;
 
@@ -297,4 +297,6 @@ void AnimationTimeSlider::onAutoKeyModeChanged(bool active)
 	update();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

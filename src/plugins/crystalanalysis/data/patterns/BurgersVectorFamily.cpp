@@ -74,4 +74,6 @@ void BurgersVectorFamilyEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->addWidget(colorPUI->colorPicker(), 1, 1);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

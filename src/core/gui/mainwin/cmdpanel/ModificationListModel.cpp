@@ -30,7 +30,7 @@
 #include "ModificationListModel.h"
 #include "ModifyCommandPage.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Constructor.
@@ -432,4 +432,6 @@ Qt::ItemFlags ModificationListModel::flags(const QModelIndex& index) const
 	return QAbstractListModel::flags(index);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

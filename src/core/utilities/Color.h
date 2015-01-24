@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definitions of the Ovito::Util::ColorT and Ovito::Util::ColorAT class templates.
+ * \brief Contains the definitions of the Ovito::ColorT and Ovito::ColorAT class templates.
  */
 
 #ifndef __OVITO_COLOR_H
@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include <core/utilities/io/SaveStream.h>
 
-namespace Ovito { inline namespace Util {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 /**
  * \brief A color value with red, blue, and green components.
@@ -58,7 +58,7 @@ public:
 	
 	/// Initializes the color with the given red, green and blue values (in the range 0 to 1).
 	Q_DECL_CONSTEXPR ColorT(T red, T green, T blue)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 3>{{red, green, blue}} {}
 #else
 		{ this->r() = red; this->g() = green; this->b() = blue; } 
@@ -67,7 +67,7 @@ public:
 	/// Converts a 3-vector to a color.
 	/// The X, Y and Z vector components are used to initialize the red, green and blue components respectively.
 	Q_DECL_CONSTEXPR explicit ColorT(const Vector_3<T>& v)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 3>{{v.x(), v.y(), v.z()}} {}
 #else
 		{ this->r() = v.x(); this->g() = v.y(); this->b() = v.z(); } 
@@ -78,7 +78,7 @@ public:
 
 	/// Conversion constructor from a Qt color.
 	Q_DECL_CONSTEXPR ColorT(const QColor& c)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}} {}
 #else
 		{ this->r() = T(c.redF()); this->g() = T(c.greenF()); this->b() = T(c.blueF()); } 
@@ -295,7 +295,7 @@ public:
 	ColorAT() {}
 
 	/// Initializes the color with the given red, green, blue, and alpha value.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR ColorAT(T red, T green, T blue, T alpha = T(1))
 		: std::array<T, 4>{{red, green, blue, alpha}} {}
 #else
@@ -307,7 +307,7 @@ public:
 	Q_DECL_CONSTEXPR explicit ColorAT(const Vector_4<T>& v) : std::array<T, 4>(v) {}
 
 	/// Conversion constructor from a Qt color value.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR ColorAT(const QColor& c)
 		: std::array<T, 4>{{T(c.redF()), T(c.greenF()), T(c.blueF()), T(c.alphaF())}} {}
 #else
@@ -315,7 +315,7 @@ public:
 		{ this->r() = T(c.redF()); this->g() = T(c.greenF()); this->b() = T(c.blueF()); this->a() = T(c.alphaF()); } 
 #endif
 	/// Converts a color without alpha component to a color with alpha component.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c, T alpha = T(1))
 		: std::array<T, 4>{{c.r(), c.g(), c.b(), alpha}} {}
 #else
@@ -504,15 +504,16 @@ inline void glColor3(const ColorT<GLfloat>& c) { glColor3fv(c.data()); }
 inline void glColor4(const ColorAT<GLdouble>& c) { glColor4dv(c.data()); }
 inline void glColor4(const ColorAT<GLfloat>& c) { glColor4fv(c.data()); }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Color);
-Q_DECLARE_METATYPE(Ovito::Util::ColorA);
-Q_DECLARE_METATYPE(Ovito::Util::Color*);
-Q_DECLARE_METATYPE(Ovito::Util::ColorA*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Color, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::ColorA, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Color*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::ColorA*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Color);
+Q_DECLARE_METATYPE(Ovito::ColorA);
+Q_DECLARE_METATYPE(Ovito::Color*);
+Q_DECLARE_METATYPE(Ovito::ColorA*);
+Q_DECLARE_TYPEINFO(Ovito::Color, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ColorA, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Color*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ColorA*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_COLOR_H

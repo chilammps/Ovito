@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "CFGImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CFGImporter, ParticleImporter);
 
@@ -323,4 +323,7 @@ void CFGImporter::generateAutomaticColumnMapping(InputColumnMapping& columnMappi
 	}
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

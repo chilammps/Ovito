@@ -34,12 +34,12 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, BondsDisplayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsDisplay, DisplayObject);
-SET_OVITO_OBJECT_EDITOR(BondsDisplay, Internal::BondsDisplayEditor);
+SET_OVITO_OBJECT_EDITOR(BondsDisplay, BondsDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _useParticleColors, "UseParticleColors", PROPERTY_FIELD_MEMORIZE);
@@ -185,7 +185,7 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -232,6 +232,7 @@ void BondsDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	layout->addWidget(useParticleColorsUI->checkBox(), 4, 0, 1, 2);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

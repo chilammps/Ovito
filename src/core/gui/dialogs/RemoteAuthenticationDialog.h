@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * This dialog asks the user for a username/password for a remote server.
@@ -60,6 +60,8 @@ private:
 	QLineEdit* _passwordEdit;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_REMOTE_AUTHENTICATION_DIALOG_H

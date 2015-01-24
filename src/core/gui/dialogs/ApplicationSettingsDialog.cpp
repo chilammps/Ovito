@@ -23,7 +23,7 @@
 #include <core/plugins/PluginManager.h>
 #include "ApplicationSettingsDialog.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Dialogs {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Dialogs)
 	
 IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsDialogPage, OvitoObject);
 
@@ -83,4 +83,6 @@ void ApplicationSettingsDialog::onOk()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

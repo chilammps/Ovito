@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/objects/DataObject.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief A DataObject that stores a collection of other \ref DataObject "DataObjects".
@@ -122,6 +122,8 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_dataObjects);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_COMPOUND_OBJECT_H

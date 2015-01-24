@@ -28,7 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /// The singleton instance of the manager class.
 ControllerManager* ControllerManager::_instance = nullptr;
@@ -151,4 +151,5 @@ OORef<Controller> ControllerManager::createTransformationController(DataSet* dat
 	return new PRSTransformationController(dataset);
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

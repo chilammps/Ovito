@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Vector_2 class template.
+ * \brief Contains the definition of the Ovito::Vector_2 class template.
  */
 
 #ifndef __OVITO_VECTOR2_H
@@ -31,7 +31,7 @@
 #include <core/utilities/io/SaveStream.h>
 #include <core/utilities/io/LoadStream.h>
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A vector with two components.
@@ -83,21 +83,21 @@ public:
 	Vector_2() {}
 
 	/// Constructs a vector with the two components initialized to the given value.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR explicit Vector_2(T val) : std::array<T, 2>{{val,val}} {}
 #else
 	explicit Vector_2(T val) { this->fill(val); }
 #endif
 
 		/// Initializes the components of the vector with the given values.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Vector_2(T x, T y) : std::array<T, 2>{{x, y}} {}
 #else
 	Vector_2(T x, T y) { this->x() = x; this->y() = y; }
 #endif
 
 	/// Initializes the vector to the null vector. All components are set to zero.
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	Q_DECL_CONSTEXPR Vector_2(Zero) : std::array<T, 2>{{T(0), T(0)}} {}
 #else
 	Vector_2(Zero) { this->fill(T(0)); }
@@ -353,15 +353,17 @@ typedef Vector_2<FloatType>		Vector2;
  */
 typedef Vector_2<int>			Vector2I;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector2);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector2I);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector2*);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Vector2I*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector2, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector2I, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector2*, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Vector2I*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Vector2);
+Q_DECLARE_METATYPE(Ovito::Vector2I);
+Q_DECLARE_METATYPE(Ovito::Vector2*);
+Q_DECLARE_METATYPE(Ovito::Vector2I*);
+Q_DECLARE_TYPEINFO(Ovito::Vector2, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR2_H

@@ -25,7 +25,7 @@
 #include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/NavigationModes.h>
 
-namespace Ovito { inline namespace Gui { inline namespace ViewportInput {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(ViewportInput)
 
 /******************************************************************************
 * Destructor.
@@ -177,4 +177,6 @@ Box3 ViewportInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* 
 	return bb;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

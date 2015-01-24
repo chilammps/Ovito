@@ -34,7 +34,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/plugins/PluginManager.h>
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor);
 
@@ -263,4 +263,6 @@ void RenderSettingsEditor::onChangeRenderer()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::IO::SaveStream class.
+ * \brief Contains the definition of the Ovito::IO::SaveStream class.
  */
 
 #ifndef __OVITO_SAVESTREAM_H
@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /**
  * \brief An output stream class that writes binary data to a file in a platform-independent way.
@@ -224,6 +224,8 @@ inline SaveStream& operator<<(SaveStream& stream, const QFlags<Enum>& a)
 	return stream << (typename QFlags<Enum>::enum_type)(typename QFlags<Enum>::Int)a;
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SAVESTREAM_H

@@ -27,7 +27,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Coloring {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Coloring)
 
 /**
  * \brief Calculates ambient occlusion lighting for particles.
@@ -138,7 +138,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_bufferResolution);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the AmbientOcclusionModifier class.
@@ -159,8 +159,11 @@ protected:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_AMBIENT_OCCLUSION_MODIFIER_H

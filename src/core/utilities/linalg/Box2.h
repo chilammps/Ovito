@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Box_2 class template.
+ * \brief Contains the definition of the Ovito::Box_2 class template.
  */
 
 #ifndef __OVITO_BOX2_H
@@ -33,7 +33,7 @@
 #include "Vector2.h"
 #include "Point2.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief An axis-aligned box in 2d space.
@@ -298,15 +298,17 @@ typedef Box_2<FloatType>	Box2;
  */
 typedef Box_2<int>			Box2I;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box2);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box2I);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box2*);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box2I*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box2, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box2I, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box2*, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box2I*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Box2);
+Q_DECLARE_METATYPE(Ovito::Box2I);
+Q_DECLARE_METATYPE(Ovito::Box2*);
+Q_DECLARE_METATYPE(Ovito::Box2I*);
+Q_DECLARE_TYPEINFO(Ovito::Box2, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box2I, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box2*, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box2I*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_BOX2_H

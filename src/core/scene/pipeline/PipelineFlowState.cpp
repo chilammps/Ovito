@@ -23,7 +23,7 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/objects/DataObject.h>
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /******************************************************************************
 * Tries to convert one of the to data objects stored in this flow state to
@@ -86,4 +86,6 @@ void PipelineFlowState::updateRevisionNumbers()
 		o.updateRevisionNumber();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

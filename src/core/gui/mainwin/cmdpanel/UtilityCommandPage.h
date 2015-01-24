@@ -26,7 +26,7 @@
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include <core/plugins/utility/UtilityApplet.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * The utility page lets the user invoke utility plugins.
@@ -74,6 +74,8 @@ private:
 	QButtonGroup* utilitiesButtonGroup;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_UTILITY_COMMAND_PAGE_H

@@ -24,7 +24,7 @@
 #include <plugins/particles/objects/ParticlePropertyObject.h>
 #include "ParticleSelectionSet.h"
 
-namespace Ovito { namespace Particles { namespace Util {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Util)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleSelectionSet, RefTarget);
 DEFINE_PROPERTY_FIELD(ParticleSelectionSet, _useIdentifiers, "UseIdentifiers");
@@ -334,4 +334,6 @@ PipelineStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* outp
 	return PipelineStatus(PipelineStatus::Success, tr("%1 particles selected").arg(nselected));
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

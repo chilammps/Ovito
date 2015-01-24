@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/scene/pipeline/PipelineStatus.h>
 
-namespace Ovito { inline namespace View {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(View)
 
 /**
  * \brief Abstract base class for all viewport overlays.
@@ -55,6 +55,7 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VIEWPORT_OVERLAY_H

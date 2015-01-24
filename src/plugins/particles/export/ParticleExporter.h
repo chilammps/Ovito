@@ -28,7 +28,7 @@
 #include <core/utilities/io/CompressedTextWriter.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
-namespace Ovito { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Export)
 
 /**
  * \brief Abstract base class for export services that write the particles to a file.
@@ -199,6 +199,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_everyNthFrame);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_PARTICLE_EXPORTER_H

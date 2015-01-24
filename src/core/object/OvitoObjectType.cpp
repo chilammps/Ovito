@@ -31,7 +31,7 @@
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/reference/RefTarget.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /******************************************************************************
 * Constructor of the object.
@@ -180,4 +180,5 @@ const PropertyFieldDescriptor* OvitoObjectType::findPropertyField(const char* id
 	return nullptr;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

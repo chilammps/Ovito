@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * This dialog lets the user select a remote file to be imported.
@@ -66,6 +66,8 @@ private:
 	QComboBox* _formatSelector;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_IMPORT_REMOTE_FILE_DIALOG_H

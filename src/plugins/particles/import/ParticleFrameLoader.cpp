@@ -34,7 +34,7 @@
 #include "ParticleFrameLoader.h"
 #include "ParticleImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import)
 
 /******************************************************************************
 * Reads the data from the input file(s).
@@ -244,4 +244,6 @@ void ParticleFrameLoader::insertParticleTypes(ParticlePropertyObject* propertyOb
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

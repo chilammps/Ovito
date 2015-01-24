@@ -23,7 +23,7 @@
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <plugins/netcdf/NetCDFImporter.h>
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 using namespace boost::python;
 using namespace PyScript;
@@ -40,4 +40,8 @@ BOOST_PYTHON_MODULE(NetCDFPlugin)
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(NetCDFPlugin);
 
-}}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

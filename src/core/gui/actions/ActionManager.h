@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/animation/TimeInterval.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 //////////////////////// Action identifiers ///////////////////////////
 
@@ -236,6 +236,7 @@ private:
 	friend class AnimationPlaybackViewportMode;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_ACTION_MANAGER_H

@@ -96,7 +96,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_script);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the PythonViewportOverlay class.
@@ -134,7 +134,7 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
 }	// End of namespace
 

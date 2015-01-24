@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "RefTarget.h"
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief A helper class that can be used to monitor notification events
@@ -215,7 +215,8 @@ public:
 
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_REFTARGET_LISTENER_H
 

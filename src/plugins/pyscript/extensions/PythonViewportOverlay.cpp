@@ -35,12 +35,12 @@
 
 namespace PyScript {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(PyScript, PythonViewportOverlayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(PyScript, PythonViewportOverlay, ViewportOverlay);
-SET_OVITO_OBJECT_EDITOR(PythonViewportOverlay, Internal::PythonViewportOverlayEditor);
+SET_OVITO_OBJECT_EDITOR(PythonViewportOverlay, PythonViewportOverlayEditor);
 DEFINE_PROPERTY_FIELD(PythonViewportOverlay, _script, "Script");
 SET_PROPERTY_FIELD_LABEL(PythonViewportOverlay, _script, "Script");
 
@@ -151,7 +151,7 @@ void PythonViewportOverlay::render(Viewport* viewport, QPainter& painter, const 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -245,6 +245,6 @@ bool PythonViewportOverlayEditor::referenceEvent(RefTarget* source, ReferenceEve
 	return PropertiesEditor::referenceEvent(source, event);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
 }	// End of namespace

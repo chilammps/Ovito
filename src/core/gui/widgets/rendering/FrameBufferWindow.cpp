@@ -23,7 +23,7 @@
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include "FrameBufferWindow.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Constructor.
@@ -176,4 +176,6 @@ void FrameBufferWindow::autoCrop()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

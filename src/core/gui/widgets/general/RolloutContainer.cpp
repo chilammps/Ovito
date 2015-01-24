@@ -23,7 +23,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include "RolloutContainer.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Widgets {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Widgets)
 
 /******************************************************************************
 * Constructs the container.
@@ -224,4 +224,6 @@ void Rollout::onHelpButton()
 		mainWindow->openHelpTopic(_helpPage);
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

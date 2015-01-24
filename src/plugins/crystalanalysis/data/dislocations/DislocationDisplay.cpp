@@ -313,4 +313,6 @@ void DislocationDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 	lineWidthUI->setMinValue(0);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

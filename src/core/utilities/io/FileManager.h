@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /**
  * \brief The file manager provides transparent access to remote files.
@@ -105,10 +105,12 @@ private:
 	/// The singleton instance of this class.
 	static FileManager* _instance;
 
-	friend class Ovito::Gui::Application;
-	friend class Ovito::Util::IO::Internal::SftpDownloadJob;
+	friend class Application;
+	friend class SftpDownloadJob;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FILE_MANAGER_H

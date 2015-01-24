@@ -28,14 +28,14 @@
 
 #include "BondAngleAnalysisModifier.h"
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier);
-SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, Internal::BondAngleAnalysisModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor);
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -74,7 +74,7 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::perform()
 	setProgressText(tr("Performing bond-angle analysis"));
 
 	// Prepare the neighbor list.
-	Util::NearestNeighborFinder neighborFinder(14);
+	NearestNeighborFinder neighborFinder(14);
 	if(!neighborFinder.prepare(positions(), cell(), this))
 		return;
 
@@ -91,10 +91,10 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::perform()
 * Determines the coordination structure of a single particle using the
 * bond-angle analysis method.
 ******************************************************************************/
-BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(Util::NearestNeighborFinder& neighFinder, size_t particleIndex)
+BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(NearestNeighborFinder& neighFinder, size_t particleIndex)
 {
 	// Find 14 nearest neighbors of current particle.
-	Util::NearestNeighborFinder::Query<14> neighborQuery(neighFinder);
+	NearestNeighborFinder::Query<14> neighborQuery(neighFinder);
 	neighborQuery.findNeighbors(neighFinder.particlePos(particleIndex));
 
 	// Reject under-coordinated particles.
@@ -166,7 +166,7 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 	else return HCP;
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -192,6 +192,9 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

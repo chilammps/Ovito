@@ -23,7 +23,7 @@
 #include <core/plugins/NativePlugin.h>
 #include <core/object/NativeOvitoObjectType.h>
 
-namespace Ovito { inline namespace PluginSystem { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(PluginSystem) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Constructor for the NativePlugin class.
@@ -56,8 +56,6 @@ NativePlugin::NativePlugin(const QString& manifestFile) :
 ******************************************************************************/
 void NativePlugin::loadPluginImpl()
 {
-	using namespace Ovito::ObjectSystem::Internal;
-
 	NativeOvitoObjectType* linkedListBefore = nullptr;
 	if(isCore() == false) {
 		linkedListBefore = NativeOvitoObjectType::_firstInfo;
@@ -85,4 +83,6 @@ void NativePlugin::loadPluginImpl()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

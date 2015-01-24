@@ -27,7 +27,7 @@
 #include "../ParticleExporterSettingsDialog.h"
 #include "../OutputColumnMapping.h"
 
-namespace Ovito { namespace Particles { namespace Export { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Export) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IMDExporter, ParticleExporter);
 
@@ -150,4 +150,7 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	return true;
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

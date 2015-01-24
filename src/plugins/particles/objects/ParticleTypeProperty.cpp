@@ -25,12 +25,12 @@
 
 namespace Ovito { namespace Particles {
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, ParticleTypePropertyEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleTypeProperty, ParticlePropertyObject);
-SET_OVITO_OBJECT_EDITOR(ParticleTypeProperty, Internal::ParticleTypePropertyEditor);
+SET_OVITO_OBJECT_EDITOR(ParticleTypeProperty, ParticleTypePropertyEditor);
 DEFINE_VECTOR_REFERENCE_FIELD(ParticleTypeProperty, _particleTypes, "ParticleTypes", ParticleType);
 SET_PROPERTY_FIELD_LABEL(ParticleTypeProperty, _particleTypes, "Particle Types");
 
@@ -82,7 +82,7 @@ Color ParticleTypeProperty::getDefaultParticleColorFromName(const QString& parti
 	return getDefaultParticleColorFromId(particleTypeId);
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -122,6 +122,7 @@ void ParticleTypePropertyEditor::createUI(const RolloutInsertionParameters& roll
 	layout->insertWidget(0, particleTypesListUI->listWidget());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

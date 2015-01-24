@@ -21,7 +21,7 @@
 
 /**
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::SymmetricTensor2T class template.
+ * \brief Contains the definition of the Ovito::SymmetricTensor2T class template.
  */
 
 #ifndef __OVITO_SYMMETRIC_TENSOR_H
@@ -32,7 +32,7 @@
 #include <core/utilities/io/LoadStream.h>
 #include "Matrix3.h"
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief A symmetric second order tensor (= symmetric 3x3 matrix).
@@ -61,7 +61,7 @@ public:
 
 	/// \brief Constructor that initializes all tensor components to the same value.
 	explicit SymmetricTensor2T(T val)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 6>{{val,val,val,val,val,val}} {}
 #else
 		{ this->fill(val); }
@@ -69,7 +69,7 @@ public:
 
 	/// \brief Constructor that initializes the six tensor components.
 	Q_DECL_CONSTEXPR SymmetricTensor2T(T xx, T yy, T zz, T xy, T xz, T yz)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 6>{{xx,yy,zz,xy,xz,yz}} {}
 #else
 		{ this->xx() = xx; this->yy() = yy; this->zz() = zz;
@@ -78,7 +78,7 @@ public:
 
 	/// \brief Initializes the tensor to the null tensor. All components are set to zero.
 	Q_DECL_CONSTEXPR SymmetricTensor2T(Zero)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 	: std::array<T, 6>{{T(0),T(0),T(0),T(0),T(0),T(0)}} {}
 #else
 		{ this->fill(T(0)); }
@@ -86,7 +86,7 @@ public:
 
 	/// \brief Initializes the tensor to the identity tensor.
 	Q_DECL_CONSTEXPR SymmetricTensor2T(Identity)
-#if !defined(Q_CC_MSVC) && !defined(DOXYGEN_SHOULD_SKIP_THIS) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
+#if !defined(Q_CC_MSVC) && !defined(ONLY_FOR_DOXYGEN) // The MSVC compiler and the Doxygen parser do not like C++11 array aggregate initializers.
 		: std::array<T, 6>{{T(1), T(1), T(1), T(0), T(0), T(0)}} {}
 #else
 		{ this->xx() = T(1); this->yy() = T(1); this->zz() = T(1);
@@ -314,11 +314,13 @@ inline LoadStream& operator>>(LoadStream& stream, SymmetricTensor2T<T>& m)
  */
 typedef SymmetricTensor2T<FloatType> SymmetricTensor2;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::SymmetricTensor2);
-Q_DECLARE_METATYPE(Ovito::Util::Math::SymmetricTensor2*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::SymmetricTensor2, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::SymmetricTensor2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::SymmetricTensor2);
+Q_DECLARE_METATYPE(Ovito::SymmetricTensor2*);
+Q_DECLARE_TYPEINFO(Ovito::SymmetricTensor2, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::SymmetricTensor2*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SYMMETRIC_TENSOR_H

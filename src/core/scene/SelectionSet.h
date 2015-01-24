@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "SceneNode.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Stores a selection of scene nodes.
@@ -154,6 +154,8 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_selection);
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_SELECTION_SET_H

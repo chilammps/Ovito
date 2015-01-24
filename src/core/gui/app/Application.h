@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/Exception.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /**
  * \brief The main application.
@@ -156,6 +156,7 @@ private:
 	static Application _instance;
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_APPLICATION_H

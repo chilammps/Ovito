@@ -26,7 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include "Controller.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /**
  * \brief Base class for animation keys.
@@ -137,7 +137,7 @@ private:
 /**
  * \brief Animation key class for Vector3 controllers.
  */
-class OVITO_CORE_EXPORT Vector3AnimationKey : public TypedAnimationKey<Ovito::Util::Math::Vector3, Ovito::Util::Math::Vector3::Zero>
+class OVITO_CORE_EXPORT Vector3AnimationKey : public TypedAnimationKey<Ovito::Vector3, Ovito::Vector3::Zero>
 {
 public:
 
@@ -157,7 +157,7 @@ private:
 /**
  * \brief Animation key class for position controllers.
  */
-class OVITO_CORE_EXPORT PositionAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Vector3, Ovito::Util::Math::Vector3::Zero>
+class OVITO_CORE_EXPORT PositionAnimationKey : public TypedAnimationKey<Ovito::Vector3, Ovito::Vector3::Zero>
 {
 public:
 
@@ -177,7 +177,7 @@ private:
 /**
  * \brief Animation key class for rotation controllers.
  */
-class OVITO_CORE_EXPORT RotationAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Rotation, Ovito::Util::Math::Rotation::Identity>
+class OVITO_CORE_EXPORT RotationAnimationKey : public TypedAnimationKey<Ovito::Rotation, Ovito::Rotation::Identity>
 {
 public:
 
@@ -197,7 +197,7 @@ private:
 /**
  * \brief Animation key class for scaling controllers.
  */
-class OVITO_CORE_EXPORT ScalingAnimationKey : public TypedAnimationKey<Ovito::Util::Math::Scaling, Ovito::Util::Math::Scaling::Identity>
+class OVITO_CORE_EXPORT ScalingAnimationKey : public TypedAnimationKey<Ovito::Scaling, Ovito::Scaling::Identity>
 {
 public:
 
@@ -393,6 +393,7 @@ struct SplineValueInterpolator<Scaling> {
 	}
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_KEYED_CONTROLLERS_H

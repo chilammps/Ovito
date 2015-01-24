@@ -25,7 +25,7 @@
 #include <core/dataset/importexport/FileSource.h>
 #include "POSCARImporter.h"
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, POSCARImporter, ParticleImporter);
 
@@ -194,4 +194,7 @@ void POSCARImporter::POSCARImportTask::parseFile(CompressedTextReader& stream)
 	setStatus(tr("%1 atoms").arg(totalAtomCount));
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

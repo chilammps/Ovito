@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "RemoteAuthenticationDialog.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Constructs the dialog window.
@@ -76,4 +76,6 @@ int RemoteAuthenticationDialog::exec()
 	return QDialog::exec();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

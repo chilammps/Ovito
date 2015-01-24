@@ -82,6 +82,7 @@ protected:
 	std::vector<Bond> _bonds;
 };
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_BONDS_STORAGE_H

@@ -27,7 +27,7 @@
 #include "PipelineFlowState.h"
 #include "PipelineStatus.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
 /**
  * \brief Base class for algorithms that modify an object or data in some way.
@@ -172,9 +172,11 @@ private:
 	friend class PipelineObject;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::ObjectSystem::Scene::Modifier*);
-Q_DECLARE_TYPEINFO(Ovito::ObjectSystem::Scene::Modifier*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Modifier*);
+Q_DECLARE_TYPEINFO(Ovito::Modifier*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_MODIFIER_H

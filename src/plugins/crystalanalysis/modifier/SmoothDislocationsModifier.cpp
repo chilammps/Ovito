@@ -236,4 +236,6 @@ void SmoothDislocationsModifierEditor::createUI(const RolloutInsertionParameters
 	linePointIntervalUI->setMinValue(0);
 }
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace

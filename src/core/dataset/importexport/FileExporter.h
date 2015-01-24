@@ -26,7 +26,7 @@
 #include <core/object/OvitoObject.h>
 #include <core/dataset/DataSet.h>
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 /**
  * \brief Abstract base class for file exporters that export data from OVITO to an external file.
@@ -74,6 +74,7 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FILE_EXPORTER_H

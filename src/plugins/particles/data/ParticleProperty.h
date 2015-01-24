@@ -570,7 +570,8 @@ protected:
 	std::unique_ptr<uint8_t[]> _data;
 };
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Particles::ParticleProperty::Type);
 Q_DECLARE_TYPEINFO(Ovito::Particles::ParticleProperty::Type, Q_PRIMITIVE_TYPE);

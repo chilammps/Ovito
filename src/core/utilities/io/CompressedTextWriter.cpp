@@ -24,7 +24,7 @@
 
 #include <boost/spirit/include/karma.hpp>
 
-namespace Ovito { inline namespace Util { inline namespace IO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO)
 
 /******************************************************************************
 * Opens the output file for writing.
@@ -168,4 +168,6 @@ void CompressedTextWriter::reportWriteError()
 	throw Exception(tr("Failed to write output file '%1': %2").arg(filename()).arg(_stream->errorString()));
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

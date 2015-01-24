@@ -58,16 +58,16 @@
 #define NCERR(x)  _ncerr(x, __FILE__, __LINE__)
 #define NCERRI(x, info)  _ncerr_with_info(x, __FILE__, __LINE__, info)
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDFPlugin, NetCDFImporter, ParticleImporter);
-SET_OVITO_OBJECT_EDITOR(NetCDFImporter, Internal::NetCDFImporterEditor);
+SET_OVITO_OBJECT_EDITOR(NetCDFImporter, NetCDFImporterEditor);
 DEFINE_PROPERTY_FIELD(NetCDFImporter, _useCustomColumnMapping, "UseCustomColumnMapping");
 SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file column mapping");
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(NetCDFPlugin, NetCDFImporterEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 
 // Convert full tensor to Voigt tensor
 template<typename T> void fullToVoigt(size_t particleCount, T *full, T *voigt) {
@@ -790,7 +790,7 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -830,6 +830,9 @@ void NetCDFImporterEditor::onEditColumnMapping()
 		importer->showEditColumnMappingDialog(mainWindow());
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include "KeyframeController.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /**
  * \brief Implementation of the key interpolator concept that performs linear interpolation.
@@ -235,6 +235,7 @@ private:
 	OVITO_OBJECT
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_LINEAR_INTERPOLATION_CONTROLLERS_H

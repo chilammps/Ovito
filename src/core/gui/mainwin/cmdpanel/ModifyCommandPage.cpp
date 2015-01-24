@@ -35,7 +35,7 @@
 #include "ModificationListModel.h"
 #include "ModifierListBox.h"
 
-namespace Ovito { inline namespace Gui { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Initializes the modify page.
@@ -454,4 +454,6 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 	reply->deleteLater();
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

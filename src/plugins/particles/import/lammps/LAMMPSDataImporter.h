@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <plugins/particles/import/ParticleImporter.h>
 
-namespace Ovito { namespace Particles { namespace Import { namespace Formats {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Import) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
 /**
  * \brief File parser for LAMMPS data files.
@@ -136,9 +136,12 @@ private:
 	DECLARE_PROPERTY_FIELD(_atomStyle);
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Particles::Import::Formats::LAMMPSDataImporter::LAMMPSAtomStyle);
-Q_DECLARE_TYPEINFO(Ovito::Particles::Import::Formats::LAMMPSDataImporter::LAMMPSAtomStyle, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Particles::LAMMPSDataImporter::LAMMPSAtomStyle);
+Q_DECLARE_TYPEINFO(Ovito::Particles::LAMMPSDataImporter::LAMMPSAtomStyle, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_LAMMPS_DATA_IMPORTER_H

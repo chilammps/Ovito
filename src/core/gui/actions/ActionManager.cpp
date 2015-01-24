@@ -32,7 +32,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/animation/AnimationSettings.h>
 
-namespace Ovito { inline namespace Gui {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /******************************************************************************
 * This viewport mode plays the animation while it is active.
@@ -258,4 +258,5 @@ void ActionManager::on_EditDelete_triggered()
 	});
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

@@ -34,7 +34,7 @@ extern "C" {
 	struct SwsContext;
 };
 
-namespace Ovito { inline namespace Util { inline namespace IO { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(IO) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief Wrapper class for the FFmpeg video encoding library.
@@ -98,6 +98,9 @@ private:
 	Q_OBJECT
 };
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VIDEO_ENCODER_H

@@ -26,7 +26,7 @@
 #include <core/rendering/ImagePrimitive.h>
 #include "OpenGLTexture.h"
 
-namespace Ovito { inline namespace Rendering { inline namespace Internal {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Rendering) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief Buffer object that stores an image to be rendered in the viewports.
@@ -71,6 +71,8 @@ private:
 	bool _needTextureUpdate;
 };
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_OPENGL_IMAGE_PRIMITIVE_H

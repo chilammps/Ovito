@@ -30,7 +30,7 @@
 #include <core/Core.h>
 #include "Controller.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 /**
  * \brief Standard implementation of a transformation controller.
@@ -188,6 +188,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_scaling);
 };
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_PRS_TRANSFORMATION_CONTROLLER_H

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "ConstantControllers.h"
 
-namespace Ovito { inline namespace Anim {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Anim)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstFloatController, Controller);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstIntegerController, Controller);
@@ -37,4 +37,5 @@ DEFINE_PROPERTY_FIELD(ConstPositionController, _value, "Value");
 DEFINE_PROPERTY_FIELD(ConstRotationController, _value, "Value");
 DEFINE_PROPERTY_FIELD(ConstScalingController, _value, "Value");
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

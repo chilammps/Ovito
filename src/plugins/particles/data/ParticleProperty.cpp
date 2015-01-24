@@ -582,4 +582,5 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	}
 }
 
-}}	// End of namespace
+}	// End of namespace
+}	// End of namespace

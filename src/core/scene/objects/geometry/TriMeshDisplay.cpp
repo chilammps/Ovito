@@ -26,14 +26,12 @@
 #include <core/scene/objects/geometry/TriMeshObject.h>
 #include "TriMeshDisplay.h"
 
-namespace Ovito { inline namespace ObjectSystem { inline namespace Scene { inline namespace StdObj {
-
-using namespace Internal;
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene) OVITO_BEGIN_INLINE_NAMESPACE(StdObj)
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshDisplay, DisplayObject);
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Core, TriMeshDisplayEditor, PropertiesEditor);
-}
+OVITO_END_INLINE_NAMESPACE
 SET_OVITO_OBJECT_EDITOR(TriMeshDisplay, TriMeshDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(TriMeshDisplay, _color, "Color", PROPERTY_FIELD_MEMORIZE);
 DEFINE_REFERENCE_FIELD(TriMeshDisplay, _transparency, "Transparency", Controller);
@@ -104,7 +102,7 @@ void TriMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pipeli
 	renderer->endPickObject();
 }
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -131,6 +129,9 @@ void TriMeshDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	transparencyUI->setMaxValue(1);
 }
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace

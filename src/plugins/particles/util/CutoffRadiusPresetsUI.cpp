@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include "CutoffRadiusPresetsUI.h"
 
-namespace Ovito { namespace Particles { namespace Util { namespace Internal {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 ChemicalElement ChemicalElements[] = { 
     { ChemicalElement::Unknown, 0, NULL}, // X
@@ -203,4 +203,7 @@ void CutoffRadiusPresetsUI::onSelect(int index)
 	comboBox()->setCurrentIndex(0);
 }
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

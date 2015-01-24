@@ -28,7 +28,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 
-namespace Ovito { inline namespace DataIO {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(DataIO)
 
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
@@ -195,6 +195,7 @@ inline LoadStream& operator>>(LoadStream& stream, FileSourceImporter::Frame& fra
 	return stream;
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_FILE_SOURCE_IMPORTER_H

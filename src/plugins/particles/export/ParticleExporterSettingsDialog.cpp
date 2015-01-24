@@ -24,7 +24,7 @@
 #include "ParticleExporterSettingsDialog.h"
 #include "OutputColumnMapping.h"
 
-namespace Ovito { namespace Particles { namespace Export {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Export)
 
 /******************************************************************************
 * Constructor.
@@ -269,4 +269,6 @@ void ParticleExporterSettingsDialog::onOk()
 	}
 }
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace

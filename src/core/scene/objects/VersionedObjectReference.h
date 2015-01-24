@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 
-namespace Ovito { inline namespace ObjectSystem {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem)
 
 /**
  * \brief A reference (a.k.a. smart pointer) that refers to a particular revision of an object.
@@ -184,6 +184,7 @@ template<class T> QDebug operator<<(QDebug debug, const VersionedOORef<T>& p) {
 	return debug << p.get();
 }
 
-}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
 #endif // __OVITO_VERSIONED_OBJECT_REFERENCE_H

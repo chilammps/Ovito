@@ -21,7 +21,7 @@
 
 /** 
  * \file
- * \brief Contains the definition of the Ovito::Util::Math::Box_3 class template.
+ * \brief Contains the definition of the Ovito::Box_3 class template.
  */
 
 #ifndef __OVITO_BOX3_H
@@ -35,7 +35,7 @@
 #include "AffineTransformation.h"
 
 
-namespace Ovito { inline namespace Util { inline namespace Math {
+namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Math)
 
 /**
  * \brief An axis-aligned box in 3d space.
@@ -342,15 +342,17 @@ typedef Box_3<FloatType> Box3;
  */
 typedef Box_3<int> Box3I;
 
-}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box3);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box3I);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box3*);
-Q_DECLARE_METATYPE(Ovito::Util::Math::Box3I*);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3I, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3*, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::Util::Math::Box3I*, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::Box3);
+Q_DECLARE_METATYPE(Ovito::Box3I);
+Q_DECLARE_METATYPE(Ovito::Box3*);
+Q_DECLARE_METATYPE(Ovito::Box3I*);
+Q_DECLARE_TYPEINFO(Ovito::Box3, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box3I, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box3*, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box3I*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_BOX3_H

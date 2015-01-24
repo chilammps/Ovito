@@ -140,6 +140,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_isVisible);
 };
 
-}}}	// End of namespace
+}	// End of namespace
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_CA_DISLOCATION_SEGMENT_H

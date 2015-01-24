@@ -25,7 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
-namespace Ovito { namespace Particles { namespace Modifiers { namespace Analysis {
+namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
 
 /**
  * \brief A modifier that performs the common neighbor analysis (CNA) to identify
@@ -168,10 +168,10 @@ private:
 	};
 
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
-	static StructureType determineStructureAdaptive(Util::NearestNeighborFinder& neighList, size_t particleIndex);
+	static StructureType determineStructureAdaptive(NearestNeighborFinder& neighList, size_t particleIndex);
 
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
-	static StructureType determineStructureFixed(Util::CutoffNeighborFinder& neighList, size_t particleIndex);
+	static StructureType determineStructureFixed(CutoffNeighborFinder& neighList, size_t particleIndex);
 
 	/// The cutoff radius for the CNA.
 	PropertyField<FloatType> _cutoff;
@@ -191,7 +191,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_adaptiveMode);
 };
 
-namespace Internal {
+OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
  * \brief A properties editor for the CommonNeighborAnalysisModifier class.
@@ -214,8 +214,11 @@ private:
 	OVITO_OBJECT
 };
 
-}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
 
-}}}}	// End of namespace
+OVITO_END_INLINE_NAMESPACE
+OVITO_END_INLINE_NAMESPACE
+}	// End of namespace
+}	// End of namespace
 
 #endif // __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
