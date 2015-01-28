@@ -46,6 +46,11 @@ void PickingSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParame
 	if(!context || !context->isValid())
 		throw Exception(tr("Viewport OpenGL context has not been created."));
 
+	// Before making our GL context current, remember the old context that
+	// is currently active so we can restore it when we are done.
+	_oldContext = QOpenGLContext::currentContext();
+	_oldSurface = _oldContext ? _oldContext->surface() : nullptr;
+
 	// Make GL context current.
 	if(!context->makeCurrent(vpWindow))
 		throw Exception(tr("Failed to make OpenGL context current."));
@@ -134,6 +139,16 @@ void PickingSceneRenderer::endFrame()
 	endPickObject();
 	_framebufferObject.reset();
 	ViewportSceneRenderer::endFrame();
+
+	// Reactivate old GL context.
+	if(_oldSurface && _oldContext)
+		_oldContext->makeCurrent(_oldSurface);
+	else {
+		QOpenGLContext* context = QOpenGLContext::currentContext();
+		if(context) context->doneCurrent();
+	}
+	_oldContext = nullptr;
+	_oldSurface = nullptr;
 }
 
 /******************************************************************************

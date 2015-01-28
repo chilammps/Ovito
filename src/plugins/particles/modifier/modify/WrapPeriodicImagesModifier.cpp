@@ -71,8 +71,8 @@ PipelineStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 				const Point3& p2 = posProperty->getPoint3(bond.index2);
 				for(size_t dim = 0; dim < 3; dim++) {
 					if(pbc[dim]) {
-						bond.pbcShift[dim] -= (int)floor(inverseSimCell.prodrow(p1, dim));
-						bond.pbcShift[dim] += (int)floor(inverseSimCell.prodrow(p2, dim));
+						bond.pbcShift[dim] -= (int8_t)floor(inverseSimCell.prodrow(p1, dim));
+						bond.pbcShift[dim] += (int8_t)floor(inverseSimCell.prodrow(p2, dim));
 					}
 				}
 			}
