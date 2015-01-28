@@ -103,6 +103,12 @@ private:
 	/// The number of depth buffer bits per pixel.
 	int _depthBufferBits;
 
+	/// Used to restore previous OpenGL context that was active.
+	QPointer<QOpenGLContext> _oldContext;
+
+	/// Used to restore previous OpenGL context that was active.
+	QSurface* _oldSurface;
+
 	Q_OBJECT
 	OVITO_OBJECT
 };
