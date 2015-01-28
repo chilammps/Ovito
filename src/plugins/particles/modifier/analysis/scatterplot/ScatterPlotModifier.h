@@ -57,11 +57,14 @@ public:
 	/// Returns the source particle property for which the scatter plot is computed.
 	const ParticlePropertyReference& yAxisProperty() const { return _yAxisProperty; }
 
+	/// Return the number of particle type ids.
+	int numberOfParticleTypeIds() const { return _xData.size(); }
+
 	/// Returns the stored scatter plot data (x-axis).
-	const QVector<double>& xData() const { return _xData; }
+	const QVector<double>& xData(int particleTypeId) const { return _xData[particleTypeId]; }
 
 	/// Returns the stored scatter plot data (y-axis).
-	const QVector<double>& yData() const { return _yData; }
+	const QVector<double>& yData(int particleTypeId) const { return _yData[particleTypeId]; }
 
 	/// Returns whether particles within the specified range should be selected (x-axis).
 	bool selectXAxisInRange() const { return _selectXAxisInRange; }
@@ -117,6 +120,12 @@ public:
 	/// Returns the end value of the y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
+	/// Check if particle id has a color assigned.
+	bool hasColor(int i) const { return _colorMap.find(i) != _colorMap.end(); }
+
+	/// Return the map from particle id to color.
+	const Color &color(int i) const { return _colorMap.at(i); }
+
 protected:
 
 	/// Modifies the particle object.
@@ -169,8 +178,11 @@ private:
 	/// Controls the end value of the y-axis.
 	PropertyField<FloatType> _yAxisRangeEnd;
 
-	/// Stores the scatter plot data.
-	QVector<double> _xData, _yData;
+	/// Stores the scatter plot data for each particle type separately.
+	QVector<QVector<double>> _xData, _yData;
+
+	/// Map from particle id to color.
+	std::map<int, Color> _colorMap;
 
 	Q_OBJECT
 	OVITO_OBJECT

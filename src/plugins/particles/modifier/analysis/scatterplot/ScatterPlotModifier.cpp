@@ -28,6 +28,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
+#include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "ScatterPlotModifier.h"
 
 namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) OVITO_BEGIN_INLINE_NAMESPACE(Analysis)
@@ -142,6 +143,17 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	size_t yVecComponent = std::max(0, yAxisProperty().vectorComponent());
 	size_t yVecComponentCount = yProperty->componentCount();
 
+	ParticleTypeProperty *typeProperty = static_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty));
+	if (!typeProperty)
+		throw Exception(tr("The standard ParticleTypeProperty does not exist."));
+	_colorMap = typeProperty->colorMap();
+
+	int numIds = 0;
+	for(const ParticleType *type: typeProperty->particleTypes()) {
+		numIds = std::max(numIds, type->id());
+	}
+	numIds++;
+
 	ParticlePropertyObject* selProperty = nullptr;
 	FloatType selectionXAxisRangeStart = _selectionXAxisRangeStart;
 	FloatType selectionXAxisRangeEnd = _selectionXAxisRangeEnd;
@@ -173,6 +185,8 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 
 	_xData.clear();
 	_yData.clear();
+	_xData.resize(numIds);
+	_yData.resize(numIds);
 
 	if(xProperty->size() > 0) {
 		if(xProperty->dataType() == qMetaTypeId<FloatType>()) {
@@ -186,8 +200,9 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(xIntervalEnd != xIntervalStart) {
-				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount) {
-					_xData.append(*vx);
+				const int *particleTypeId = typeProperty->constDataInt();
+				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, particleTypeId++) {
+					_xData[*particleTypeId].append(*vx);
 				}
 			}
 
@@ -214,8 +229,9 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(xIntervalEnd != xIntervalStart) {
-				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount) {
-					_xData.append(*vx);
+				const int *particleTypeId = typeProperty->constDataInt();
+				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, particleTypeId++) {
+					_xData[*particleTypeId].append(*vx);
 				}
 			}
 
@@ -244,8 +260,9 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(yIntervalEnd != yIntervalStart) {
-				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount) {
-					_yData.append(*vy);
+				const int *particleTypeId = typeProperty->constDataInt();
+				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, particleTypeId++) {
+					_yData[*particleTypeId].append(*vy);
 				}
 			}
 
@@ -274,8 +291,9 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(yIntervalEnd != yIntervalStart) {
-				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount) {
-					_yData.append(*vy);
+				const int *particleTypeId = typeProperty->constDataInt();
+				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, particleTypeId++) {
+					_yData[*particleTypeId].append(*vy);
 				}
 			}
 
@@ -343,9 +361,6 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_scatterPlot->axisRect()->setRangeDrag(Qt::Orientations(Qt::Horizontal | Qt::Vertical));
 	_scatterPlot->setInteraction(QCP::iRangeZoom, true);
 	_scatterPlot->axisRect()->setRangeZoom(Qt::Orientations(Qt::Horizontal | Qt::Vertical));
-	_scatterPlot->addGraph();
-	_scatterPlot->graph()->setLineStyle(QCPGraph::lsNone);
-	_scatterPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
 
 	QPen markerPen;
 	markerPen.setColor(QColor(255, 40, 30));
@@ -490,10 +505,28 @@ void ScatterPlotModifierEditor::plotScatterPlot()
 	_scatterPlot->xAxis->setLabel(modifier->xAxisProperty().name());
 	_scatterPlot->yAxis->setLabel(modifier->yAxisProperty().name());
 
-	if(modifier->xData().empty() || modifier->yData().empty())
+	if(modifier->numberOfParticleTypeIds() == 0)
 		return;
 
-	_scatterPlot->graph()->setData(modifier->xData(), modifier->yData());
+	// Make sure we have the correct number of graphs. (One graph per particle id.)
+	while (_scatterPlot->graphCount() > modifier->numberOfParticleTypeIds()) {
+		_scatterPlot->removeGraph(_scatterPlot->graph(0));
+	}
+	while (_scatterPlot->graphCount() < modifier->numberOfParticleTypeIds()) {
+		_scatterPlot->addGraph();
+		_scatterPlot->graph()->setLineStyle(QCPGraph::lsNone);
+	}
+
+	for (int i = 0; i < modifier->numberOfParticleTypeIds(); i++) {
+		if (modifier->hasColor(i)) {
+			_scatterPlot->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc,
+																	modifier->color(i), 5.0));
+		}
+		else {
+			_scatterPlot->graph(i)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5.0));
+		}
+		_scatterPlot->graph(i)->setData(modifier->xData(i), modifier->yData(i));
+	}
 
 	// Check if range is already correct, because setRange emits the rangeChanged signa
 	// which is to be avoided if the range is not determined automatically.
@@ -572,7 +605,7 @@ void ScatterPlotModifierEditor::onSaveData()
 	if(!modifier)
 		return;
 
-	if(modifier->xData().empty() || modifier->yData().empty())
+	if(modifier->numberOfParticleTypeIds() == 0)
 		return;
 
 	QString fileName = QFileDialog::getSaveFileName(mainWindow(),
@@ -589,8 +622,11 @@ void ScatterPlotModifierEditor::onSaveData()
 		QTextStream stream(&file);
 
 		stream << "# " << modifier->xAxisProperty().name() << " " << modifier->yAxisProperty().name() << endl;
-		for(int i = 0; i < modifier->xData().size(); i++) {
-			stream << modifier->xData()[i] << " " << modifier->yData()[i] << endl;
+		for(int typeId = 0; typeId < modifier->numberOfParticleTypeIds(); typeId++) {
+			stream << "# Data for particle type id " << typeId << " follow." << endl;
+			for(int i = 0; i < modifier->xData(typeId).size(); i++) {
+				stream << modifier->xData(typeId)[i] << " " << modifier->yData(typeId)[i] << endl;
+			}
 		}
 	}
 	catch(const Exception& ex) {
