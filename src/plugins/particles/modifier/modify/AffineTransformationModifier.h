@@ -166,6 +166,9 @@ private Q_SLOTS:
 	/// This method updates the displayed matrix values.
 	void updateUI();
 
+	/// Is called when the user presses the 'Enter rotation' button.
+	void onEnterRotation();
+
 private:
 
 	/// Takes the value entered by the user and stores it in transformation controller.
