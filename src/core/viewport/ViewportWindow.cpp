@@ -47,6 +47,9 @@ bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 			return userSetting.toBool();
 	}
 
+	if(_openGLVendor.isEmpty())
+		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+
 #if defined(Q_OS_OSX)
 	// On Mac OS X 10.9 with Intel graphics, using a single context for multiple viewports doesn't work very well.
 	return false;
@@ -71,6 +74,9 @@ bool ViewportWindow::pointSpritesEnabled(bool forceDefaultSetting)
 		if(userSetting.isValid())
 			return userSetting.toBool();
 	}
+
+	if(_openGLVendor.isEmpty())
+		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 
 #if defined(Q_OS_WIN)
 	// Point sprites don't seem to work well on Intel graphics under Windows.
@@ -97,7 +103,10 @@ bool ViewportWindow::geometryShadersEnabled(bool forceDefaultSetting)
 		if(userSetting.isValid())
 			return userSetting.toBool() && _openglSupportsGeomShaders;
 	}
-	return _openglSupportsGeomShaders;
+	if(Application::instance().guiMode())
+		return _openglSupportsGeomShaders;
+	else
+		return QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 }
 
 /******************************************************************************
