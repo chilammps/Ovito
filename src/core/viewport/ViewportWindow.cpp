@@ -47,7 +47,7 @@ bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 			return userSetting.toBool();
 	}
 
-	if(_openGLVendor.isEmpty())
+	if(_openGLVendor.isEmpty() && QOpenGLContext::currentContext())
 		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 
 #if defined(Q_OS_OSX)
@@ -75,7 +75,7 @@ bool ViewportWindow::pointSpritesEnabled(bool forceDefaultSetting)
 			return userSetting.toBool();
 	}
 
-	if(_openGLVendor.isEmpty())
+	if(_openGLVendor.isEmpty() && QOpenGLContext::currentContext())
 		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 
 #if defined(Q_OS_WIN)
@@ -105,8 +105,10 @@ bool ViewportWindow::geometryShadersEnabled(bool forceDefaultSetting)
 	}
 	if(Application::instance().guiMode())
 		return _openglSupportsGeomShaders;
-	else
+	else if(QOpenGLContext::currentContext())
 		return QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+	else
+		return false;
 }
 
 /******************************************************************************
