@@ -236,6 +236,7 @@ int ScriptEngine::execute(const QString& commands, const QStringList& scriptArgu
 			argList.append(a);
 		import("sys").attr("argv") = argList;
 
+		_mainNamespace["__file__"] = object();
 		exec(str(commands), _mainNamespace, _mainNamespace);
 	    _activeEngine = previousEngine;
 		return 0;
@@ -308,6 +309,9 @@ int ScriptEngine::executeFile(const QString& filename, const QStringList& script
 			argList.append(a);
 		import("sys").attr("argv") = argList;
 
+		str nativeFilename(QDir::toNativeSeparators(filename));
+		_mainNamespace["__file__"] = nativeFilename;
+
 		// The FILE structure for different C libraries can be different and incompatible.
 		// Under Windows (at least), it is possible for dynamically linked extensions to actually
 		// use different libraries, so care should be taken that FILE* parameters are only passed
@@ -316,7 +320,7 @@ int ScriptEngine::executeFile(const QString& filename, const QStringList& script
 		// In case of an incompatible runtime, we need to read the entire file into memory
 		// first before passing it to Python.
 #if PY_MAJOR_VERSION < 3
-		exec_file(str(QDir::toNativeSeparators(filename)), _mainNamespace, _mainNamespace);
+		exec_file(nativeFilename, _mainNamespace, _mainNamespace);
 #else
 		QFile file(filename);
 		if(!file.open(QIODevice::ReadOnly))

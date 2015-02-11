@@ -43,6 +43,19 @@ int main(int argc, char** argv)
 			argv += 2;
 			argc -= 2;
 		}
+		else if(strcmp(*argv, "-m") == 0) {
+			if(argc >= 2) {
+				newargv.push_back("--exec");
+				static std::string moduleCommand("import runpy; runpy.run_module('");
+				moduleCommand += argv[1];
+				moduleCommand += "', run_name='__main__');"; 
+				newargv.push_back(moduleCommand.c_str());
+			}
+			argv += 2;
+			argc -= 2;
+			execMode = true;
+			break;
+		}
 		else if(strcmp(*argv, "-c") == 0) {
 			if(argc >= 2) {
 				newargv.push_back("--exec");
@@ -55,7 +68,7 @@ int main(int argc, char** argv)
 		}
 		else if(strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			std::cout << "OVITO Script Interpreter" << std::endl << std::endl;
-			std::cout << "Usage: ovitos [-o FILE] [-g] [-v] [-c command | script] [arguments]" << std::endl;
+			std::cout << "Usage: ovitos [-o FILE] [-g] [-v] [-c command | -m module-name | script-file] [arguments]" << std::endl;
 			return 0;
 		}
 		else if(strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
