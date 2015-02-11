@@ -25,6 +25,8 @@
 #include <core/gui/app/Application.h>
 #include "ScriptEngine.h"
 
+#include <frameobject.h>
+
 namespace PyScript {
 
 using namespace boost::python;
@@ -44,7 +46,7 @@ PythonPluginRegistration* PythonPluginRegistration::linkedlist = nullptr;
 ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutputToConsole)
 	: QObject(parent), _dataset(dataset)
 {
-	// Initialize the underlying Python interpreter if it hasn't been already.
+	// Initialize the underlying Python interpreter if it isn't initialized already.
 	initializeInterpreter();
 
 	// Initialize state of the script engine.
@@ -167,7 +169,7 @@ void ScriptEngine::initializeInterpreter()
 		};
 		register_exception_translator<Exception>(toPythonExceptionTranslator);
 
-		// Add directories containing OVITO's Python modules to sys.path.
+		// Prepend directories containing OVITO's Python modules to sys.path.
 		list sys_path = extract<list>(sys_module.attr("path"));
 		
 #if 0
@@ -193,6 +195,9 @@ void ScriptEngine::initializeInterpreter()
 			PyList_Insert(sys_path.ptr(), 0, path2.ptr());
 #endif
 		}
+
+		// Prepend current directory to sys.path.
+		sys_path.insert(0, str());
 	}
 	catch(const Exception&) {
 		throw;
@@ -242,7 +247,26 @@ int ScriptEngine::execute(const QString& commands, const QStringList& scriptArgu
 				_activeEngine = previousEngine;
 				return handleSystemExit();
 			}
+#if 1
+			PyObject* ptype;
+			PyObject* pvalue;
+			PyObject* ptraceback;
+			PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+			handle<> type(allow_null<>(ptype));
+			handle<> value(allow_null<>(pvalue));
+			handle<> traceback(allow_null<>(ptraceback));
+
+			object tb_module = import("traceback");
+			object format_exception = tb_module.attr("format_exception");
+			list strings = extract<list>(format_exception(type, value, traceback));
+
+			ssize_t n = len(strings);
+			for(ssize_t i = 0; i < n; i++) {
+				std::cerr << extract<std::string>(strings[i])();
+			}
+#else
 			PyErr_Print();
+#endif
 		}
 	    _activeEngine = previousEngine;
 		throw Exception(tr("Python interpreter has exited with an error. See interpreter output for details."));
