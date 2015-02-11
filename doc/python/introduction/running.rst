@@ -18,7 +18,7 @@ You typically execute a Python script from the terminal using the :program:`ovit
 The :program:`ovitos` program is located in the :file:`bin/` subdirectory of OVITO for Linux, in the 
 :file:`Ovito.app/Contents/MacOS/` directory of OVITO for MacOS, and in the main program directory 
 on Windows systems. It should not be confused with :program:`ovito`, the main program, which
-has a graphical user interface.
+provides a graphical user interface.
 
 Let's assume we used a text editor to write a simple Python script file named :file:`hello.py`::
 
@@ -37,7 +37,7 @@ where the main window isn't shown. This allows running OVITO scripts on remote m
 computing clusters that don't possess a graphics terminal. In OVITO's console mode, scripts can read from and write
 to the terminal as if they were executed by a standard Python interpreter. Any command line arguments following the 
 script's name are passed to the script via the ``sys.argv`` variable. Furthermore, it is possible to start OVITO's 
-interpreter in interactive scripting mode by running :program:`ovitos` without specifying a script file.
+interpreter in interactive scripting mode by running :program:`ovitos` without any arguments.
 
 The :command:`-o` command line option loads an OVITO scene file before executing the
 script. This allows you to preload and use an existing visualization setup that has 
@@ -51,7 +51,16 @@ inspect the results of your script and check if everything is correctly set up d
 
 .. note::
 
-	With the current program version it is not possible to run OVITO scripts with 
-	a standard Python interpreter (usually named :program:`python`). OVITO scripts must be executed with OVITO's built-in interpreter. 
-	If you want to use a third-party Python package in your OVITO scripts, you can install it in OVITO's built-in interpreter as usual
-	(Use :program:`ovitos` instead of :program:`python` to run the package install script).
+	It is not possible to run scripts written for OVITO with a standard Python interpreter (usually named :program:`python`). 
+	They must always be executed with the launcher :program:`ovitos`. The Python interpreter shipping with OVITO
+	includes only the standard Python modules and `NumPy <http://www.numpy.org/>`_, a popular package for working with numeric data.
+	
+	If you want to use other third-party Python packages in your OVITO scripts, it might be possible to install them in the 
+	built-in interpreter using the normal *setuptools* mechanism. 
+	(Use :program:`ovitos` instead of :program:`python` to run the *setup.py* installation script).
+
+	Installing Python extension that include native code (e.g. `Scipy <http:://www.scipy.org>`_) in the interpreter that ships with OVITO is currently not possible.
+	In this case it is recommended to build OVITO from source. OVITO will then make use of the system's standard Python interpreter.	
+	All modules that are available in the standard Python interpreter will also be accessible within OVITO. (Note that you still need
+	to execute OVITO scripts with the :program:`ovitos` launcher.) How to build OVITO from source is explained `on this page <http://www.ovito.org/manual/development.html>`_.
+	

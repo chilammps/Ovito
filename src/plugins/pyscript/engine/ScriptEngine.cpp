@@ -25,8 +25,6 @@
 #include <core/gui/app/Application.h>
 #include "ScriptEngine.h"
 
-#include <frameobject.h>
-
 namespace PyScript {
 
 using namespace boost::python;

@@ -75,7 +75,6 @@ void ScriptAutostarter::applicationStarted()
 			}
 			catch(Exception& ex) {
 				ex.prependGeneralMessage(tr("Error during Python script execution."));
-				//ex.appendDetailMessage(tr("Python command: %1").arg(command));
 				throw;
 			}
 		}
