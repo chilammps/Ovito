@@ -50,15 +50,6 @@ OVITO_END_INLINE_NAMESPACE
 void XYZImporter::setColumnMapping(const InputColumnMapping& mapping)
 {
 	_columnMapping = mapping;
-
-	if(Application::instance().guiMode()) {
-		// Remember the mapping for the next time.
-		QSettings settings;
-		settings.beginGroup("viz/importer/xyz/");
-		settings.setValue("columnmapping", mapping.toByteArray());
-		settings.endGroup();
-	}
-
 	notifyDependents(ReferenceEvent::TargetChanged);
 }
 
@@ -131,15 +122,13 @@ bool XYZImporter::inspectNewFile(FileSource* obj)
 	mapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
 	if(_columnMapping.size() != mapping.size()) {
 		if(_columnMapping.empty()) {
-			size_t oldCount = 0;
-
 			// Load last mapping from settings store.
 			QSettings settings;
 			settings.beginGroup("viz/importer/xyz/");
 			if(settings.contains("columnmapping")) {
 				try {
 					mapping.fromByteArray(settings.value("columnmapping").toByteArray());
-					oldCount = mapping.size();
+
 				}
 				catch(Exception& ex) {
 					ex.prependGeneralMessage(tr("Failed to load last used column-to-property mapping from application settings store."));
@@ -148,11 +137,18 @@ bool XYZImporter::inspectNewFile(FileSource* obj)
 			}
 
 			mapping.resize(inspectionTask->columnMapping().size());
+			for(auto& column : mapping)
+				column.columnName.clear();
 		}
 
 		InputColumnMappingDialog dialog(mapping, dataset()->mainWindow());
 		if(dialog.exec() == QDialog::Accepted) {
 			setColumnMapping(dialog.mapping());
+			// Remember the user-defined mapping for the next time.
+			QSettings settings;
+			settings.beginGroup("viz/importer/xyz/");
+			settings.setValue("columnmapping", _columnMapping.toByteArray());
+			settings.endGroup();
 			return true;
 		}
 		return false;
@@ -566,6 +562,11 @@ void XYZImporter::showEditColumnMappingDialog(QWidget* parent)
 	InputColumnMappingDialog dialog(_columnMapping, parent);
 	if(dialog.exec() == QDialog::Accepted) {
 		setColumnMapping(dialog.mapping());
+		// Remember the user-defined mapping for the next time.
+		QSettings settings;
+		settings.beginGroup("viz/importer/xyz/");
+		settings.setValue("columnmapping", _columnMapping.toByteArray());
+		settings.endGroup();
 		requestReload();
 	}
 }

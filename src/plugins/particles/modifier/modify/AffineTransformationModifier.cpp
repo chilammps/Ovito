@@ -215,7 +215,21 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	layout->setVerticalSpacing(2);
 	topLayout->addLayout(layout);
 
-	layout->addWidget(new QLabel(tr("Rotate/Scale/Shear:")), 0, 0, 1, 8);
+	QGridLayout* sublayout = new QGridLayout();
+	sublayout->setContentsMargins(0,0,0,0);
+	sublayout->setSpacing(0);
+	sublayout->setColumnStretch(0, 1);
+	sublayout->addWidget(new QLabel(tr("Rotate/Scale/Shear:")), 0, 0, Qt::Alignment(Qt::AlignBottom | Qt::AlignLeft));
+	QAction* enterRotationAction = new QAction(tr("Enter rotation..."), this);
+	QToolButton* enterRotationButton = new QToolButton();
+	enterRotationButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+	enterRotationButton->setDefaultAction(enterRotationAction);
+	sublayout->addWidget(enterRotationButton, 0, 1, Qt::Alignment(Qt::AlignBottom | Qt::AlignRight));
+	enterRotationAction->setEnabled(false);
+	connect(relativeModeUI->buttonTrue(), &QRadioButton::toggled, enterRotationAction, &QAction::setEnabled);
+	connect(enterRotationAction, &QAction::triggered, this, &AffineTransformationModifierEditor::onEnterRotation);
+	layout->addLayout(sublayout, 0, 0, 1, 8);
+
 	for(int col = 0; col < 3; col++) {
 		layout->setColumnStretch(col*3 + 0, 1);
 		if(col < 2) layout->setColumnMinimumWidth(col*3 + 2, 4);
@@ -370,6 +384,116 @@ void AffineTransformationModifierEditor::onSpinnerDragAbort()
 	OVITO_ASSERT(dataset()->undoStack().isRecording());
 	dataset()->undoStack().endCompoundOperation(false);
 }
+
+/******************************************************************************
+* Is called when the user presses the 'Enter rotation' button.
+* Displays a dialog box, which lets the user enter a rotation axis and angle.
+* Computes the rotation matrix from these parameters.
+******************************************************************************/
+void AffineTransformationModifierEditor::onEnterRotation()
+{
+	AffineTransformationModifier* mod = static_object_cast<AffineTransformationModifier>(editObject());
+	if(!mod) return;
+
+	OVITO_ASSERT(!dataset()->undoStack().isRecording());
+	dataset()->undoStack().beginCompoundOperation(tr("Set transformation matrix"));
+
+	QDialog dlg(container()->window());
+	dlg.setWindowTitle(tr("Enter rotation"));
+	QVBoxLayout* mainLayout = new QVBoxLayout(&dlg);
+
+	QGridLayout* layout = new QGridLayout();
+	layout->setContentsMargins(0,0,0,0);
+	layout->addWidget(new QLabel(tr("Rotation axis:")), 0, 0, 1, 8);
+	layout->setColumnStretch(0, 1);
+	layout->setColumnStretch(3, 1);
+	layout->setColumnStretch(6, 1);
+	layout->setColumnMinimumWidth(2, 4);
+	layout->setColumnMinimumWidth(5, 4);
+	layout->setVerticalSpacing(2);
+	layout->setHorizontalSpacing(0);
+	QLineEdit* axisEditX = new QLineEdit();
+	QLineEdit* axisEditY = new QLineEdit();
+	QLineEdit* axisEditZ = new QLineEdit();
+	SpinnerWidget* axisSpinnerX = new SpinnerWidget();
+	SpinnerWidget* axisSpinnerY = new SpinnerWidget();
+	SpinnerWidget* axisSpinnerZ = new SpinnerWidget();
+	axisSpinnerX->setTextBox(axisEditX);
+	axisSpinnerY->setTextBox(axisEditY);
+	axisSpinnerZ->setTextBox(axisEditZ);
+	axisSpinnerX->setUnit(mod->dataset()->unitsManager().worldUnit());
+	axisSpinnerY->setUnit(mod->dataset()->unitsManager().worldUnit());
+	axisSpinnerZ->setUnit(mod->dataset()->unitsManager().worldUnit());
+	layout->addWidget(axisEditX, 1, 0);
+	layout->addWidget(axisSpinnerX, 1, 1);
+	layout->addWidget(axisEditY, 1, 3);
+	layout->addWidget(axisSpinnerY, 1, 4);
+	layout->addWidget(axisEditZ, 1, 6);
+	layout->addWidget(axisSpinnerZ, 1, 7);
+	layout->addWidget(new QLabel(tr("Angle:")), 2, 0, 1, 8);
+	QLineEdit* angleEdit = new QLineEdit();
+	SpinnerWidget* angleSpinner = new SpinnerWidget();
+	angleSpinner->setTextBox(angleEdit);
+	angleSpinner->setUnit(mod->dataset()->unitsManager().angleUnit());
+	layout->addWidget(angleEdit, 3, 0);
+	layout->addWidget(angleSpinner, 3, 1);
+	layout->addWidget(new QLabel(tr("Center of rotation:")), 4, 0, 1, 8);
+	QLineEdit* centerEditX = new QLineEdit();
+	QLineEdit* centerEditY = new QLineEdit();
+	QLineEdit* centerEditZ = new QLineEdit();
+	SpinnerWidget* centerSpinnerX = new SpinnerWidget();
+	SpinnerWidget* centerSpinnerY = new SpinnerWidget();
+	SpinnerWidget* centerSpinnerZ = new SpinnerWidget();
+	centerSpinnerX->setTextBox(centerEditX);
+	centerSpinnerY->setTextBox(centerEditY);
+	centerSpinnerZ->setTextBox(centerEditZ);
+	centerSpinnerX->setUnit(mod->dataset()->unitsManager().worldUnit());
+	centerSpinnerY->setUnit(mod->dataset()->unitsManager().worldUnit());
+	centerSpinnerZ->setUnit(mod->dataset()->unitsManager().worldUnit());
+	layout->addWidget(centerEditX, 5, 0);
+	layout->addWidget(centerSpinnerX, 5, 1);
+	layout->addWidget(centerEditY, 5, 3);
+	layout->addWidget(centerSpinnerY, 5, 4);
+	layout->addWidget(centerEditZ, 5, 6);
+	layout->addWidget(centerSpinnerZ, 5, 7);
+	mainLayout->addLayout(layout);
+
+	Rotation rot(mod->transformation());
+	angleSpinner->setFloatValue(rot.angle());
+	axisSpinnerX->setFloatValue(rot.axis().x());
+	axisSpinnerY->setFloatValue(rot.axis().y());
+	axisSpinnerZ->setFloatValue(rot.axis().z());
+
+	auto updateMatrix = [mod, angleSpinner, axisSpinnerX, axisSpinnerY, axisSpinnerZ, centerSpinnerX, centerSpinnerY, centerSpinnerZ]() {
+		Vector3 axis(axisSpinnerX->floatValue(), axisSpinnerY->floatValue(), axisSpinnerZ->floatValue());
+		if(axis == Vector3::Zero()) axis = Vector3(0,0,1);
+		Vector3 center(centerSpinnerX->floatValue(), centerSpinnerY->floatValue(), centerSpinnerZ->floatValue());
+		Rotation rot(axis, angleSpinner->floatValue());
+		AffineTransformation tm = AffineTransformation::translation(center) * AffineTransformation::rotation(rot) * AffineTransformation::translation(-center);
+		mod->dataset()->undoStack().resetCurrentCompoundOperation();
+		mod->setTransformation(tm);
+	};
+
+	connect(angleSpinner, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+	connect(axisSpinnerX, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+	connect(axisSpinnerY, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+	connect(axisSpinnerZ, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+	connect(centerSpinnerX, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+	connect(centerSpinnerY, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+	connect(centerSpinnerZ, &SpinnerWidget::spinnerValueChanged, updateMatrix);
+
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+	connect(buttonBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+	connect(buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+	mainLayout->addWidget(buttonBox);
+	if(dlg.exec() == QDialog::Accepted) {
+		dataset()->undoStack().endCompoundOperation();
+	}
+	else {
+		dataset()->undoStack().endCompoundOperation(false);
+	}
+}
+
 
 OVITO_END_INLINE_NAMESPACE
 
