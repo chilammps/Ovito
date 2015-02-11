@@ -607,7 +607,7 @@ void Viewport::render(QOpenGLContext* context)
 		else {
 
 			// Stereoscopic parameters
-			FloatType eyeSeparation = 10.0;
+			FloatType eyeSeparation = 16.0;
 			FloatType convergence = (orbitCenter() - Point3::Origin() - _projParams.inverseViewMatrix.translation()).length();
 			convergence = std::max(convergence, _projParams.znear);
 			ViewProjectionParameters params = _projParams;

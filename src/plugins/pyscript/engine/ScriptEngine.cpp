@@ -211,7 +211,7 @@ void ScriptEngine::initializeInterpreter()
 /******************************************************************************
 * Executes one or more Python statements.
 ******************************************************************************/
-int ScriptEngine::execute(const QString& commands)
+int ScriptEngine::execute(const QString& commands, const QStringList& scriptArguments)
 {
 	if(QThread::currentThread() != QApplication::instance()->thread())
 		throw Exception(tr("Can run Python scripts only from the main thread."));
@@ -224,17 +224,26 @@ int ScriptEngine::execute(const QString& commands)
 	_activeEngine = this;
 
 	try {
+		// Pass command line parameters to the script.
+		list argList;
+		argList.append("-c");
+		for(const QString& a : scriptArguments)
+			argList.append(a);
+		import("sys").attr("argv") = argList;
+
 		exec(str(commands), _mainNamespace, _mainNamespace);
 	    _activeEngine = previousEngine;
 		return 0;
 	}
 	catch(const error_already_set&) {
-		// Handle call to sys.exit()
-		if(PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
-		    _activeEngine = previousEngine;
-			return handleSystemExit();
+		if(PyErr_Occurred()) {
+			// Handle call to sys.exit()
+			if(PyErr_ExceptionMatches(PyExc_SystemExit)) {
+				_activeEngine = previousEngine;
+				return handleSystemExit();
+			}
+			PyErr_Print();
 		}
-		PyErr_Print();
 	    _activeEngine = previousEngine;
 		throw Exception(tr("Python interpreter has exited with an error. See interpreter output for details."));
 	}
@@ -255,7 +264,7 @@ int ScriptEngine::execute(const QString& commands)
 /******************************************************************************
 * Executes a Python program.
 ******************************************************************************/
-int ScriptEngine::executeFile(const QString& filename)
+int ScriptEngine::executeFile(const QString& filename, const QStringList& scriptArguments)
 {
 	if(QThread::currentThread() != QApplication::instance()->thread())
 		throw Exception(tr("Can run Python scripts only from the main thread."));
@@ -271,7 +280,6 @@ int ScriptEngine::executeFile(const QString& filename)
 		// Pass command line parameters to the script.
 		list argList;
 		argList.append(filename);
-		QStringList scriptArguments = Application::instance().cmdLineParser().values("scriptarg");
 		for(const QString& a : scriptArguments)
 			argList.append(a);
 		import("sys").attr("argv") = argList;

@@ -368,7 +368,7 @@ void ViewportWindow::renderNow()
 			errorMessageShown = true;
 			_viewport->dataset()->viewportConfig()->suspendViewportUpdates();
 			Exception ex(tr(
-					"The OpenGL graphics driver installed on this system does not support OpenGL version %4.%5 or newer.\n\n"
+					"The OpenGL graphics driver installed on this system does not support OpenGL version %6.%7 or newer.\n\n"
 					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
 					"To avoid this error, please install the newest graphics driver of the hardware vendor or, if necessary, consider replacing your graphics card with a newer model.\n\n"
 					"The installed OpenGL graphics driver reports the following information:\n\n"

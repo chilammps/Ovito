@@ -5,5 +5,8 @@
 #
 #    ovitos run_pip.py uninstall sphinx
 #
+import sys
+import os.path
 import pip
+sys.executable = os.path.join(os.path.dirname(sys.executable), "ovitos")
 pip.main()

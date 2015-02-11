@@ -51,15 +51,17 @@ public:
 
 	/// \brief Executes a Python script consisting of one or more statements.
 	/// \param script The script source code.
+	/// \param scriptArguments An optional list of command line arguments that will be passed to the script via sys.argv.
 	/// \return The exit code returned by the Python script.
 	/// \throw Exception on error.
-	int execute(const QString& commands);
+	int execute(const QString& commands, const QStringList& scriptArguments = QStringList());
 
 	/// \brief Executes a Python script file.
 	/// \param scriptFile The script file path.
+	/// \param scriptArguments An optional list of command line arguments that will be passed to the script via sys.argv.
 	/// \return The exit code returned by the Python script.
 	/// \throw Exception on error.
-	int executeFile(const QString& file);
+	int executeFile(const QString& file, const QStringList& scriptArguments = QStringList());
 
 	/// Provides access to the global namespace the script will be executed in by this script engine.
 	boost::python::dict& mainNamespace() { return _mainNamespace; }

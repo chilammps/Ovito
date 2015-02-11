@@ -23,20 +23,19 @@
 #include <core/gui/app/Application.h>
 
 /**
- * This is the main entry point for the Windows version of the "ovitos.exe" script launcher program.
+ * This is the main entry point for "ovitos" script launcher program.
  *
- * It is similar to the main "ovito.exe" program, but performs some preprocessing of the command
- * line parameters to give them the format expected by OVITO.
+ * It performs preprocessing of the command line arguments to convert them to the format expected by OVITO.
  */
 int main(int argc, char** argv)
 {
-	// Preprocess command line parameters in a similar manner as the "ovitos" Bash shell script on Linux does.
 	std::vector<const char*> newargv;
 	newargv.push_back(*argv++);
 	argc--;
 	
 	const char* loadFile = nullptr;
 	bool graphicalMode = false;
+	bool execMode = false;
 	while(argc > 0) {
 		if(strcmp(*argv, "-o") == 0) {
 			if(argc >= 2)
@@ -44,9 +43,19 @@ int main(int argc, char** argv)
 			argv += 2;
 			argc -= 2;
 		}
+		else if(strcmp(*argv, "-c") == 0) {
+			if(argc >= 2) {
+				newargv.push_back("--exec");
+				newargv.push_back(argv[1]);
+			}
+			argv += 2;
+			argc -= 2;
+			execMode = true;
+			break;
+		}
 		else if(strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			std::cout << "OVITO Script Interpreter" << std::endl << std::endl;
-			std::cout << "Usage: ovitos.exe [-o FILE] [-g] [-v] [script.py] [args...]" << std::endl;
+			std::cout << "Usage: ovitos [-o FILE] [-g] [-v] [-c command | script] [arguments]" << std::endl;
 			return 0;
 		}
 		else if(strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
@@ -63,22 +72,29 @@ int main(int argc, char** argv)
 	if(!graphicalMode)
 		newargv.insert(newargv.begin() + 1, "--nogui");
 	
-	if(argc >= 1) {
-		// Parse script name and any subsequent arguments.
-		newargv.push_back("--script");
-		newargv.push_back(*argv++);
-		argc--;
-		while(argc > 0) {
-			// Escape script arguments with --scriptarg option.
-			newargv.push_back("--scriptarg");
+	if(!execMode) {
+		if(argc >= 1) {
+			// Parse script name and any subsequent arguments.
+			newargv.push_back("--script");
 			newargv.push_back(*argv++);
 			argc--;
 		}
+		else {
+			// If no script file has been specified, activate interactive interpreter mode.
+			newargv.push_back("--exec");
+#if WIN32
+			newargv.push_back("import code; code.interact(banner=\"This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-Z to exit.\");");
+#else
+			newargv.push_back("import code; code.interact(banner=\"This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-D to exit.\");");
+#endif
+		}
 	}
-	else {
-		// If no script file has been specified, activate interactive interpreter mode.
-		newargv.push_back("--exec");
-		newargv.push_back("import code; code.interact(banner=\"This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-Z to exit.\");");
+
+	// Escape script arguments with --scriptarg option.
+	while(argc > 0) {
+		newargv.push_back("--scriptarg");
+		newargv.push_back(*argv++);
+		argc--;
 	}
 	
 	// The OVITO file to be loaded must come last in the parameter list passed to OVITO.

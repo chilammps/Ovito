@@ -64,21 +64,25 @@ void ScriptAutostarter::applicationStarted()
 		// Set up script engine.
 		ScriptEngine engine(dataset);
 
+		// Pass command line parameters to the script.
+		QStringList scriptArguments = Application::instance().cmdLineParser().values("scriptarg");
+
 		// Execute script commands.
 		for(int index = scriptCommands.size() - 1; index >= 0; index--) {
 			const QString& command = scriptCommands[index];
 			try {
-				engine.execute(command);
+				engine.execute(command, scriptArguments);
 			}
 			catch(Exception& ex) {
-				ex.prependGeneralMessage(tr("Error in --exec script command."));
+				ex.prependGeneralMessage(tr("Error during Python script execution."));
+				//ex.appendDetailMessage(tr("Python command: %1").arg(command));
 				throw;
 			}
 		}
 
 		// Execute script files.
 		for(int index = scriptFiles.size() - 1; index >= 0; index--) {
-			engine.executeFile(scriptFiles[index]);
+			engine.executeFile(scriptFiles[index], scriptArguments);
 		}
 	}
 }
