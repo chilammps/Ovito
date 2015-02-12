@@ -36,9 +36,7 @@ node.modifiers.append(VoronoiAnalysisModifier(
     compute_indices = True,
     use_radii = True,
     edge_count = 6,
-    edge_threshold = 0.1,
-    use_cutoff = True,
-    cutoff = 6.0
+    edge_threshold = 0.1
 ))
 
 # Let OVITO compute the results.

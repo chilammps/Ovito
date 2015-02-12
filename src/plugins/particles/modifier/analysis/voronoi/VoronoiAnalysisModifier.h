@@ -38,18 +38,6 @@ public:
 	/// Constructor.
 	Q_INVOKABLE VoronoiAnalysisModifier(DataSet* dataset);
 
-	/// Returns whether the modifier uses a distance cutoff to speed up the Voronoi cell calculation.
-	bool useCutoff() const { return _useCutoff; }
-
-	/// Sets whether the modifier uses a distance cutoff to speed up the Voronoi cell calculation.
-	void setUseCutoff(bool useCutoff) { _useCutoff = useCutoff; }
-
-	/// Returns the cutoff radius used to build the neighbor lists for the analysis.
-	FloatType cutoff() const { return _cutoff; }
-
-	/// \brief Sets the cutoff radius used to build the neighbor lists for the analysis.
-	void setCutoff(FloatType newCutoff) { _cutoff = newCutoff; }
-
 	/// Returns whether the modifier takes into account only selected particles.
 	bool onlySelected() const { return _onlySelected; }
 
@@ -115,14 +103,13 @@ private:
 
 		/// Constructor.
 		VoronoiAnalysisEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* selection, std::vector<FloatType>&& radii,
-							const SimulationCell& simCell, FloatType cutoff,
+							const SimulationCell& simCell,
 							int edgeCount, bool computeIndices, FloatType edgeThreshold, FloatType faceThreshold) :
 			ComputeEngine(validityInterval),
 			_positions(positions),
 			_selection(selection),
-			_squaredRadii(radii),
+			_radii(std::move(radii)),
 			_simCell(simCell),
-			_cutoff(cutoff),
 			_edgeThreshold(edgeThreshold),
 			_faceThreshold(faceThreshold),
 			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty, 0, true)),
@@ -149,13 +136,12 @@ private:
 
 	private:
 
-		FloatType _cutoff;
 		FloatType _edgeThreshold;
 		FloatType _faceThreshold;
 		double _simulationBoxVolume;
 		double _voronoiVolumeSum;
 		SimulationCell _simCell;
-		std::vector<FloatType> _squaredRadii;
+		std::vector<FloatType> _radii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;
 		QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;
@@ -171,12 +157,6 @@ private:
 
 	/// This stores the cached Voronoi indices computed by the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _voronoiIndices;
-
-	/// Controls whether the modifier uses a distance cutoff to speed up the Voronoi cell calculation.
-	PropertyField<bool> _useCutoff;
-
-	/// Controls the cutoff radius for Voronoi cell generation.
-	PropertyField<FloatType> _cutoff;
 
 	/// Controls whether the modifier takes into account only selected particles.
 	PropertyField<bool> _onlySelected;
@@ -210,8 +190,6 @@ private:
 	Q_CLASSINFO("DisplayName", "Voronoi analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
-	DECLARE_PROPERTY_FIELD(_useCutoff);
-	DECLARE_PROPERTY_FIELD(_cutoff);
 	DECLARE_PROPERTY_FIELD(_onlySelected);
 	DECLARE_PROPERTY_FIELD(_useRadii);
 	DECLARE_PROPERTY_FIELD(_computeIndices);

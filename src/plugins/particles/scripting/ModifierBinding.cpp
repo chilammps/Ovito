@@ -889,15 +889,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"\n\n"
 			"The modifier stores the computed per-particle volume in the ``\"Atomic Volume\"`` particle property and the number of neighbors "
 			"of each particle in the ``\"Coordination\"`` property.")
-		.add_property("use_cutoff", &VoronoiAnalysisModifier::useCutoff, &VoronoiAnalysisModifier::setUseCutoff,
-				"Activates the cutoff-based scheme to construct Voronoi cells (fast method)."
-				"\n\n"
-				":Default: ``False``\n")
-		.add_property("cutoff", &VoronoiAnalysisModifier::cutoff, &VoronoiAnalysisModifier::setCutoff,
-				"Controls the cutoff distance for neighboring particle which are taken into account when computing the Voronoi cells using the cutoff-based method. "
-				"This parameter is only used if :py:attr:`.use_cutoff` == ``True``."
-				"\n\n"
-				":Default: 6.0\n")
 		.add_property("only_selected", &VoronoiAnalysisModifier::onlySelected, &VoronoiAnalysisModifier::setOnlySelected,
 				"Lets the modifier perform the analysis only for selected particles. Particles that are not selected will be treated as if they did not exist."
 				"\n\n"

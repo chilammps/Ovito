@@ -41,31 +41,6 @@
     No computation will be performed for particles located outside the simulation box boundaries (but they will be considered in the 
     calculation of Voronoi cells of particles inside the box). 
   </para>
-        
-  <para>
-     The modifier supports two different ways of computing a particle's Voronoi cell. 
-     The first method, which is the default, is a general method that always yields the correct
-	 Voronoi cell shape even if the particle is located at the surface of a structure.
-	 The second method uses a distance-based cutoff scheme and is usually considerable faster than the general method.
-     However, this method will only yield correct results for particles that are located in the interior of a structure and whose Voronoi cell is therefore smaller than the
-     selected cutoff distance. The Voronoi cells of particles at the surface will be truncated at the selected cutoff distance. Accordingly, the computed  
-     numbers will be incorrect for these particles.
-  </para>
-  
-  <para>
-     That means you have to choose the calculation method with care and according to the system to be analyzed.
-     The good news is: When using the fast, cutoff-based method OVITO will warn you in cases where this method yields incorrect results. 
-     You can then switch back to the slower method. 
-  </para>
-  
-  <para>
-     OVITO checks the tessellation results in the following way: The sum of volumes of all Voronoi cells must exactly match the volume of the entire simulation box.
-     OVITO issues a warning in case of a deviation. There can be two reasons for this: When using the cutoff-based method to
-     construct the Voronoi cells, large cells may get truncated at the cutoff distance. You can fix this by increasing the cutoff distance parameter
-     (which slows down the calculation) or switch to the more general construction method, which can deal with arbitrary systems.
-     Another reason for a deviation in the calculated volume sum can be the fact that particles are located outside the simulation box (this applies only 
-     to non-periodic boundaries). 
-  </para>
   
   <simplesect> 
     <title>Parameters</title>
@@ -78,24 +53,6 @@
           <para>
              Specifies a minimum area for faces of a Voronoi cell. The modifier will ignore any Voronoi cell faces with an area smaller than this
              threshold when computing the coordination number and the Voronoi index of particles.
-          </para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Use cutoff</term>
-        <listitem>
-          <para>
-             Activates the cutoff-based scheme to construct Voronoi cells (fast method). 
-          </para>
-        </listitem>
-      </varlistentry>
-    
-      <varlistentry>
-        <term>Cutoff distance</term>
-        <listitem>
-          <para>
-             Only neighbor particles that are within this cutoff distance are taken into account when computing the Voronoi cell of a particle using the cutoff-based method.
           </para>
         </listitem>
       </varlistentry>

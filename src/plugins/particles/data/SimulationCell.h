@@ -70,6 +70,15 @@ public:
 		return std::abs(_simulationCell.determinant());
 	}
 
+	/// Returns true if the three edges of the cell are parallel to the three
+	/// coordinates axes.
+	bool isAxisAligned() const {
+		if(matrix()(1,0) != 0 || matrix()(2,0) != 0) return false;
+		if(matrix()(0,1) != 0 || matrix()(2,1) != 0) return false;
+		if(matrix()(0,2) != 0 || matrix()(1,2) != 0) return false;
+		return true;
+	}
+
 	/// Checks if two simulation cells are identical.
 	bool operator==(const SimulationCell& other) const {
 		return (_simulationCell == other._simulationCell && _pbcFlags == other._pbcFlags);

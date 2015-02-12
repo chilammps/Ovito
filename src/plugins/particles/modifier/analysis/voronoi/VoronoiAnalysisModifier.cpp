@@ -25,7 +25,6 @@
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <plugins/particles/util/CutoffNeighborFinder.h>
 #include <plugins/particles/util/NearestNeighborFinder.h>
 #include "VoronoiAnalysisModifier.h"
 
@@ -35,23 +34,18 @@ namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Modifiers) 
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, VoronoiAnalysisModifier, AsynchronousParticleModifier);
 SET_OVITO_OBJECT_EDITOR(VoronoiAnalysisModifier, VoronoiAnalysisModifierEditor);
-DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _useCutoff, "UseCutoff");
-DEFINE_FLAGS_PROPERTY_FIELD(VoronoiAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _onlySelected, "OnlySelected");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _useRadii, "UseRadii");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _computeIndices, "ComputeIndices");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _edgeCount, "EdgeCount");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _edgeThreshold, "EdgeThreshold");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _faceThreshold, "FaceThreshold");
-SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _useCutoff, "Use cutoff");
-SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _cutoff, "Cutoff distance");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _onlySelected, "Use only selected particles");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _useRadii, "Use particle radii");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _computeIndices, "Compute Voronoi indices");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _edgeCount, "Maximum edge count");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _edgeThreshold, "Edge length threshold");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _faceThreshold, "Face area threshold");
-SET_PROPERTY_FIELD_UNITS(VoronoiAnalysisModifier, _cutoff, WorldParameterUnit);
 SET_PROPERTY_FIELD_UNITS(VoronoiAnalysisModifier, _edgeThreshold, WorldParameterUnit);
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)
@@ -62,12 +56,10 @@ OVITO_END_INLINE_NAMESPACE
 * Constructs the modifier object.
 ******************************************************************************/
 VoronoiAnalysisModifier::VoronoiAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
-	_useCutoff(false), _cutoff(6.0), _onlySelected(false), _computeIndices(false), _edgeCount(6),
+	_onlySelected(false), _computeIndices(false), _edgeCount(6),
 	_useRadii(false), _edgeThreshold(0), _faceThreshold(0),
 	_simulationBoxVolume(0), _voronoiVolumeSum(0)
 {
-	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_useCutoff);
-	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_cutoff);
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_onlySelected);
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_useRadii);
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_computeIndices);
@@ -104,7 +96,6 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> VoronoiAnalysisModi
 			selectionProperty ? selectionProperty->storage() : nullptr,
 			std::move(radii),
 			inputCell->data(),
-			useCutoff() ? cutoff() : 0,
 			qMax(1, edgeCount()),
 			computeIndices(),
 			edgeThreshold(),
@@ -118,133 +109,26 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 {
 	setProgressText(tr("Computing Voronoi cells"));
 
-	if(_positions->size() == 0)
-		return;	// Nothing to do
-
 	// Compute the total simulation cell volume.
 	_simulationBoxVolume = _simCell.volume();
 	_voronoiVolumeSum = 0;
 
-	// Compute squared particle radii (input was just particle radii).
-	FloatType maxRadius = 0;
-	for(auto& r : _squaredRadii) {
-		if(r > maxRadius) maxRadius = r;
-		r = r*r;
-	}
-
-	CutoffNeighborFinder cutoffNeighborFinder;
-	NearestNeighborFinder nearestNeighborFinder;
-
-	double boxDiameter;
-	if(_cutoff > 0) {
-		// Prepare the cutoff-based neighbor list generator.
-		if(!cutoffNeighborFinder.prepare(_cutoff, _positions.data(), _simCell, this))
-			return;
-	}
-	else {
-		// Prepare the nearest neighbor list generator.
-		if(!nearestNeighborFinder.prepare(_positions.data(), _simCell, this))
-			return;
-	}
-
-	// This is the size we use to initialize Voronoi cells. Must be larger than the simulation box.
-	boxDiameter = sqrt(
-			  _simCell.matrix().column(0).squaredLength()
-			+ _simCell.matrix().column(1).squaredLength()
-			+ _simCell.matrix().column(2).squaredLength());
+	if(_positions->size() == 0 || _simulationBoxVolume == 0)
+		return;	// Nothing to do
 
 	// The squared edge length threshold.
 	// Add additional factor of 4 because Voronoi cell vertex coordinates are all scaled by factor of 2.
 	FloatType sqEdgeThreshold = _edgeThreshold * _edgeThreshold * 4;
 
-	// The normal vectors of the three cell planes.
-	std::array<Vector3,3> planeNormals;
-	planeNormals[0] = _simCell.cellNormalVector(0);
-	planeNormals[1] = _simCell.cellNormalVector(1);
-	planeNormals[2] = _simCell.cellNormalVector(2);
-
-	Point3 corner1 = Point3::Origin() + _simCell.matrix().column(3);
-	Point3 corner2 = corner1 + _simCell.matrix().column(0) + _simCell.matrix().column(1) + _simCell.matrix().column(2);
-
-	// Perform analysis, particle-wise parallel.
 	std::mutex mutex;
-	parallelFor(_positions->size(), *this,
-			[&cutoffNeighborFinder, &nearestNeighborFinder, this, sqEdgeThreshold, &mutex, boxDiameter,
-			 planeNormals, corner1, corner2](size_t index) {
-
-		// Skip unselected particles (if requested).
-		if(_selection && _selection->getInt(index) == 0)
-			return;
-
-		// Build Voronoi cell.
-		voro::voronoicell v;
-
-		// Initialize the Voronoi cell to be a cube larger than the simulation cell, centered at the origin.
-		v.init(-boxDiameter, boxDiameter, -boxDiameter, boxDiameter, -boxDiameter, boxDiameter);
-
-		// Cut Voronoi cell at simulation cell boundaries in non-periodic directions.
-		bool skipParticle = false;
-		for(size_t dim = 0; dim < 3; dim++) {
-			if(!_simCell.pbcFlags()[dim]) {
-				double r;
-				r = 2 * planeNormals[dim].dot(corner2 - _positions->getPoint3(index));
-				if(r <= 0) skipParticle = true;
-				v.plane(planeNormals[dim].x() * r, planeNormals[dim].y() * r, planeNormals[dim].z() * r, r*r);
-				r = 2 * planeNormals[dim].dot(_positions->getPoint3(index) - corner1);
-				if(r <= 0) skipParticle = true;
-				v.plane(-planeNormals[dim].x() * r, -planeNormals[dim].y() * r, -planeNormals[dim].z() * r, r*r);
-			}
-		}
-		// Skip particles that are located outside of non-periodic box boundaries.
-		if(skipParticle)
-			return;
-
-		if(_cutoff > 0) {
-			for(CutoffNeighborFinder::Query neighQuery(cutoffNeighborFinder, index); !neighQuery.atEnd(); neighQuery.next()) {
-				// Skip unselected particles (if requested).
-				if(_selection && _selection->getInt(neighQuery.current()) == 0)
-					continue;
-
-				// Take into account particle radii.
-				FloatType rs = neighQuery.distanceSquared();
-				if(!_squaredRadii.empty())
-					 rs += _squaredRadii[index] - _squaredRadii[neighQuery.current()];
-
-				// Cut cell with bisecting plane.
-				v.plane(neighQuery.delta().x(), neighQuery.delta().y(), neighQuery.delta().z(), rs);
-			}
-		}
-		else {
-			// This function will be called for every neighbor particle.
-			int nvisits = 0;
-			auto visitFunc = [this, &v, &nvisits, index](const NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
-				// Skip unselected particles (if requested).
-				if(!_selection || _selection->getInt(n.index)) {
-					FloatType rs = n.distanceSq;
-					if(!_squaredRadii.empty())
-						 rs += _squaredRadii[index] - _squaredRadii[n.index];
-					v.plane(n.delta.x(), n.delta.y(), n.delta.z(), rs);
-				}
-				if(nvisits == 0) {
-					mrs = v.max_radius_squared();
-					nvisits = 100;
-				}
-				nvisits--;
-			};
-
-			// Visit all neighbors of the current particles.
-			nearestNeighborFinder.visitNeighbors(nearestNeighborFinder.particlePos(index), visitFunc);
-		}
-
+	auto processCell = [this, sqEdgeThreshold, &mutex](voro::voronoicell& v, size_t index) {
 		// Compute cell volume.
 		double vol = v.volume();
 		_atomicVolumes->setFloat(index, (FloatType)vol);
 
 		// Compute total volume of Voronoi cells.
-		{
-			std::lock_guard<std::mutex> lock(mutex);
-			_voronoiVolumeSum += vol;
-		}
+		std::lock_guard<std::mutex> lock(mutex);
+		_voronoiVolumeSum += vol;
 
 		// Iterate over the Voronoi faces and their edges.
 		int coordNumber = 0;
@@ -291,7 +175,175 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 
 		// Store computed result.
 		_coordinationNumbers->setInt(index, coordNumber);
-	});
+	};
+
+	// Decide whether to use Voro++ container class or our own implementation.
+	if(_simCell.isAxisAligned()) {
+		// Use Voro++ container.
+		double ax = _simCell.matrix()(0,3);
+		double ay = _simCell.matrix()(1,3);
+		double az = _simCell.matrix()(2,3);
+		double bx = ax + _simCell.matrix()(0,0);
+		double by = ay + _simCell.matrix()(1,1);
+		double bz = az + _simCell.matrix()(2,2);
+		if(ax > bx) std::swap(ax,bx);
+		if(ay > by) std::swap(ay,by);
+		if(az > bz) std::swap(az,bz);
+		double volumePerCell = (bx - ax) * (by - ay) * (bz - az) * voro::optimal_particles / _positions->size();
+		double cellSize = pow(volumePerCell, 1.0/3.0);
+		int nx = (int)std::ceil((bx - ax) / cellSize);
+		int ny = (int)std::ceil((by - ay) / cellSize);
+		int nz = (int)std::ceil((bz - az) / cellSize);
+
+		if(_radii.empty()) {
+			voro::container voroContainer(ax, bx, ay, by, az, bz, nx, ny, nz,
+					_simCell.pbcFlags()[0], _simCell.pbcFlags()[1], _simCell.pbcFlags()[2], (int)std::ceil(voro::optimal_particles));
+
+			// Insert particles into Voro++ container.
+			size_t count = 0;
+			for(size_t index = 0; index < _positions->size(); index++) {
+				// Skip unselected particles (if requested).
+				if(_selection && _selection->getInt(index) == 0)
+					continue;
+				const Point3& p = _positions->getPoint3(index);
+				voroContainer.put(index, p.x(), p.y(), p.z());
+				count++;
+			}
+			if(!count) return;
+
+			setProgressRange(count);
+			setProgressValue(0);
+			voro::c_loop_all cl(voroContainer);
+			voro::voronoicell v;
+			if(cl.start()) {
+				do {
+					incrementProgressValue();
+					if(isCanceled()) return;
+					if(!voroContainer.compute_cell(v,cl))
+						continue;
+					processCell(v, cl.pid());
+					count--;
+				}
+				while(cl.inc());
+			}
+			if(count)
+				throw Exception(tr("Could not compute Voronoi cell for some particles."));
+		}
+		else {
+			voro::container_poly voroContainer(ax, bx, ay, by, az, bz, nx, ny, nz,
+					_simCell.pbcFlags()[0], _simCell.pbcFlags()[1], _simCell.pbcFlags()[2], (int)std::ceil(voro::optimal_particles));
+
+			// Insert particles into Voro++ container.
+			size_t count = 0;
+			for(size_t index = 0; index < _positions->size(); index++) {
+				// Skip unselected particles (if requested).
+				if(_selection && _selection->getInt(index) == 0)
+					continue;
+				const Point3& p = _positions->getPoint3(index);
+				voroContainer.put(index, p.x(), p.y(), p.z(), _radii[index]);
+				count++;
+			}
+
+			if(!count) return;
+			setProgressRange(count);
+			setProgressValue(0);
+			voro::c_loop_all cl(voroContainer);
+			voro::voronoicell v;
+			if(cl.start()) {
+				do {
+					incrementProgressValue();
+					if(isCanceled()) return;
+					if(!voroContainer.compute_cell(v,cl))
+						continue;
+					processCell(v, cl.pid());
+					count--;
+				}
+				while(cl.inc());
+			}
+			if(count)
+				throw Exception(tr("Could not compute Voronoi cell for some particles."));
+		}
+	}
+	else {
+		// Prepare the nearest neighbor list generator.
+		NearestNeighborFinder nearestNeighborFinder;
+		if(!nearestNeighborFinder.prepare(_positions.data(), _simCell, this))
+			return;
+
+		// Squared particle radii (input was just radii).
+		for(auto& r : _radii)
+			r = r*r;
+
+		// This is the size we use to initialize Voronoi cells. Must be larger than the simulation box.
+		double boxDiameter = sqrt(
+				  _simCell.matrix().column(0).squaredLength()
+				+ _simCell.matrix().column(1).squaredLength()
+				+ _simCell.matrix().column(2).squaredLength());
+
+		// The normal vectors of the three cell planes.
+		std::array<Vector3,3> planeNormals;
+		planeNormals[0] = _simCell.cellNormalVector(0);
+		planeNormals[1] = _simCell.cellNormalVector(1);
+		planeNormals[2] = _simCell.cellNormalVector(2);
+
+		Point3 corner1 = Point3::Origin() + _simCell.matrix().column(3);
+		Point3 corner2 = corner1 + _simCell.matrix().column(0) + _simCell.matrix().column(1) + _simCell.matrix().column(2);
+
+		// Perform analysis, particle-wise parallel.
+		parallelFor(_positions->size(), *this,
+				[&nearestNeighborFinder, this, sqEdgeThreshold, boxDiameter,
+				 planeNormals, corner1, corner2, &processCell](size_t index) {
+
+			// Skip unselected particles (if requested).
+			if(_selection && _selection->getInt(index) == 0)
+				return;
+
+			// Build Voronoi cell.
+			voro::voronoicell v;
+
+			// Initialize the Voronoi cell to be a cube larger than the simulation cell, centered at the origin.
+			v.init(-boxDiameter, boxDiameter, -boxDiameter, boxDiameter, -boxDiameter, boxDiameter);
+
+			// Cut Voronoi cell at simulation cell boundaries in non-periodic directions.
+			bool skipParticle = false;
+			for(size_t dim = 0; dim < 3; dim++) {
+				if(!_simCell.pbcFlags()[dim]) {
+					double r;
+					r = 2 * planeNormals[dim].dot(corner2 - _positions->getPoint3(index));
+					if(r <= 0) skipParticle = true;
+					v.plane(planeNormals[dim].x() * r, planeNormals[dim].y() * r, planeNormals[dim].z() * r, r*r);
+					r = 2 * planeNormals[dim].dot(_positions->getPoint3(index) - corner1);
+					if(r <= 0) skipParticle = true;
+					v.plane(-planeNormals[dim].x() * r, -planeNormals[dim].y() * r, -planeNormals[dim].z() * r, r*r);
+				}
+			}
+			// Skip particles that are located outside of non-periodic box boundaries.
+			if(skipParticle)
+				return;
+
+			// This function will be called for every neighbor particle.
+			int nvisits = 0;
+			auto visitFunc = [this, &v, &nvisits, index](const NearestNeighborFinder::Neighbor& n, FloatType& mrs) {
+				// Skip unselected particles (if requested).
+				if(!_selection || _selection->getInt(n.index)) {
+					FloatType rs = n.distanceSq;
+					if(!_radii.empty())
+						 rs += _radii[index] - _radii[n.index];
+					v.plane(n.delta.x(), n.delta.y(), n.delta.z(), rs);
+				}
+				if(nvisits == 0) {
+					mrs = v.max_radius_squared();
+					nvisits = 100;
+				}
+				nvisits--;
+			};
+
+			// Visit all neighbors of the current particles.
+			nearestNeighborFinder.visitNeighbors(nearestNeighborFinder.particlePos(index), visitFunc);
+
+			processCell(v,index);
+		});
+	}
 }
 
 /******************************************************************************
@@ -325,24 +377,13 @@ PipelineStatus VoronoiAnalysisModifier::applyComputationResults(TimePoint time, 
 		outputCustomProperty(_voronoiIndices.data());
 
 	// Check computed Voronoi cell volume sum.
-	if(std::abs(_voronoiVolumeSum - _simulationBoxVolume) > 1e-10 * inputParticleCount() * _simulationBoxVolume) {
-		if(useCutoff()) {
-			return PipelineStatus(PipelineStatus::Warning,
-					tr("The volume sum of all Voronoi cells does not match the simulation box volume. "
-							"This may be a result of some Voronoi cells being larger than the selected cutoff distance. "
-							"Increase the cutoff parameter or disable the cutoff completely to avoid this warning. "
-							"See user manual for more information.\n"
-							"Simulation box volume: %1\n"
-							"Voronoi cell volume sum: %2").arg(_simulationBoxVolume).arg(_voronoiVolumeSum));
-		}
-		else {
-			return PipelineStatus(PipelineStatus::Warning,
-					tr("The volume sum of all Voronoi cells does not match the simulation box volume. "
-							"This may be a result of particles positioned outside the simulation box boundaries. "
-							"See user manual for more information.\n"
-							"Simulation box volume: %1\n"
-							"Voronoi cell volume sum: %2").arg(_simulationBoxVolume).arg(_voronoiVolumeSum));
-		}
+	if(std::abs(_voronoiVolumeSum - _simulationBoxVolume) > 1e-9 * inputParticleCount() * _simulationBoxVolume) {
+		return PipelineStatus(PipelineStatus::Warning,
+				tr("The volume sum of all Voronoi cells does not match the simulation box volume. "
+						"This may be a result of particles being located outside of the simulation box boundaries. "
+						"See user manual for more information.\n"
+						"Simulation box volume: %1\n"
+						"Voronoi cell volume sum: %2").arg(_simulationBoxVolume).arg(_voronoiVolumeSum));
 	}
 
 	return PipelineStatus::Success;
@@ -375,33 +416,21 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->setSpacing(4);
 
 	QGridLayout* gridlayout = new QGridLayout();
+	QGridLayout* sublayout;
 	gridlayout->setContentsMargins(4,4,4,4);
 	gridlayout->setSpacing(4);
 	gridlayout->setColumnStretch(1, 1);
+	int row = 0;
 
 	// Face threshold.
 	FloatParameterUI* faceThresholdPUI = new FloatParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_faceThreshold));
-	gridlayout->addWidget(faceThresholdPUI->label(), 0, 0);
-	gridlayout->addLayout(faceThresholdPUI->createFieldLayout(), 0, 1);
+	gridlayout->addWidget(faceThresholdPUI->label(), row, 0);
+	gridlayout->addLayout(faceThresholdPUI->createFieldLayout(), row++, 1);
 	faceThresholdPUI->setMinValue(0);
-
-	// Use cutoff.
-	BooleanGroupBoxParameterUI* useCutoffPUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_useCutoff));
-	gridlayout->addWidget(useCutoffPUI->groupBox(), 1, 0, 1, 2);
-	QGridLayout* sublayout = new QGridLayout(useCutoffPUI->childContainer());
-	sublayout->setContentsMargins(4,4,4,4);
-	sublayout->setSpacing(4);
-	sublayout->setColumnStretch(1, 1);
-
-	// Cutoff parameter.
-	FloatParameterUI* cutoffRadiusPUI = new FloatParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_cutoff));
-	sublayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
-	sublayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
-	cutoffRadiusPUI->setMinValue(0);
 
 	// Compute indices.
 	BooleanGroupBoxParameterUI* computeIndicesPUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_computeIndices));
-	gridlayout->addWidget(computeIndicesPUI->groupBox(), 2, 0, 1, 2);
+	gridlayout->addWidget(computeIndicesPUI->groupBox(), row++, 0, 1, 2);
 	sublayout = new QGridLayout(computeIndicesPUI->childContainer());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(4);
@@ -422,11 +451,11 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 
 	// Atomic radii.
 	BooleanParameterUI* useRadiiPUI = new BooleanParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_useRadii));
-	gridlayout->addWidget(useRadiiPUI->checkBox(), 3, 0, 1, 2);
+	gridlayout->addWidget(useRadiiPUI->checkBox(), row++, 0, 1, 2);
 
 	// Only selected particles.
 	BooleanParameterUI* onlySelectedPUI = new BooleanParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_onlySelected));
-	gridlayout->addWidget(onlySelectedPUI->checkBox(), 4, 0, 1, 2);
+	gridlayout->addWidget(onlySelectedPUI->checkBox(), row++, 0, 1, 2);
 
 	layout->addLayout(gridlayout);
 

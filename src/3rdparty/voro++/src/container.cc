@@ -150,7 +150,9 @@ void container_poly::put(particle_order &vo,int n,double x,double y,double z,dou
  * false otherwise. */
 bool container_base::put_locate_block(int &ijk,double &x,double &y,double &z) {
 	if(put_remap(ijk,x,y,z)) {
-		if(co[ijk]==mem[ijk]) add_particle_memory(ijk);
+		if(co[ijk]==mem[ijk]) {
+			add_particle_memory(ijk);
+		}
 		return true;
 	}
 #if VOROPP_REPORT_OUT_OF_BOUNDS ==1
