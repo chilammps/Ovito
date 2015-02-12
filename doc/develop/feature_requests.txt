@@ -23,6 +23,8 @@ Unresolved OpenGL problems:
 - Shader compilation error (:/core/glsl/lines/line.vs):
     (chen.qwj@gmail.com, NVIDIA Quadro FX 4600, Linux, OpenGL 2.1)
     (Group laptop, Intel 965/963 Graphics, GLSL 110, Windows, OpenGL 2.0)
+- System crash with NVidia GT 630 and Noveau graphics driver on Ubuntu 14.04. 
+    Installing the propriatry Nvidia driver solves the issue.
 
 Unresolved bugs:
 

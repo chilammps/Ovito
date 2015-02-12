@@ -463,6 +463,36 @@ void AffineTransformationModifierEditor::onEnterRotation()
 	axisSpinnerX->setFloatValue(rot.axis().x());
 	axisSpinnerY->setFloatValue(rot.axis().y());
 	axisSpinnerZ->setFloatValue(rot.axis().z());
+	Matrix3 r = mod->transformation().linear();
+	r(0,0) -= 1;
+	r(1,1) -= 1;
+	r(2,2) -= 1;
+	Plane3 p1, p2;
+	size_t i = 0;
+	for(i = 0; i < 3; i++)
+		if(!r.row(i).isZero()) {
+			p1 = Plane3(r.row(i), -mod->transformation()(i, 3));
+			break;
+		}
+	for(i++; i < 3; i++)
+		if(!r.row(i).isZero()) {
+			p2 = Plane3(r.row(i), -mod->transformation()(i, 3));
+			break;
+		}
+	if(i != 3) {
+		p1.normalizePlane();
+		p2.normalizePlane();
+		FloatType d = p1.normal.dot(p2.normal);
+		FloatType denom = (1.0f - d*d);
+		if(fabs(denom) > FLOATTYPE_EPSILON) {
+			FloatType c1 = (p1.dist  - p2.dist * d) / denom;
+			FloatType c2 = (p2.dist  - p1.dist * d) / denom;
+			Vector3 center = c1 * p1.normal + c2 * p2.normal;
+			centerSpinnerX->setFloatValue(center.x());
+			centerSpinnerY->setFloatValue(center.y());
+			centerSpinnerZ->setFloatValue(center.z());
+		}
+	}
 
 	auto updateMatrix = [mod, angleSpinner, axisSpinnerX, axisSpinnerY, axisSpinnerZ, centerSpinnerX, centerSpinnerY, centerSpinnerZ]() {
 		Vector3 axis(axisSpinnerX->floatValue(), axisSpinnerY->floatValue(), axisSpinnerZ->floatValue());

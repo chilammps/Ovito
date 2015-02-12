@@ -126,11 +126,10 @@ public:
 	}
 
 	/// \brief Rescales the normal vector of the plane to make it a unit vector.
-	/// The distance parameter is rescaled accordingly.
 	void normalizePlane() {
 		T len = normal.length();
 		OVITO_ASSERT_MSG(len != T(0), "Plane_3::normalizePlane()", "The normal vector of the plane must not be the null vector.");
-		dist *= len;
+		dist /= len;
 		normal /= len;
 		OVITO_ASSERT(std::abs(normal.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON));
 	}
@@ -242,6 +241,14 @@ inline Plane_3<T> operator*(const AffineTransformationT<T>& tm, const Plane_3<T>
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const Plane_3<T>& p) {
 	return os << '[' << p.normal.x() << ' ' << p.normal.y()  << ' ' << p.normal.z() << "], " << p.dist;
+}
+
+/// \brief Prints a plane to a Qt debug stream.
+/// \relates Plane_3
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Plane_3<T>& p) {
+    dbg.nospace() << '[' << p.normal.x() << ' ' << p.normal.y()  << ' ' << p.normal.z() << "], " << p.dist;
+    return dbg.space();
 }
 
 /// \brief Writes a plane to a binary output stream.
