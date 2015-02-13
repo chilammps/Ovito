@@ -228,6 +228,7 @@ BOOST_PYTHON_MODULE(Particles)
 					"``ParticleProperty.Type.VelocityMagnitude``             :guilabel:`Velocity Magnitude`\n"
 					"``ParticleProperty.Type.NonaffineSquaredDisplacement``  :guilabel:`Nonaffine Squared Displacement`\n"
 					"``ParticleProperty.Type.Molecule``                      :guilabel:`Molecule Identifier`\n"
+					"``ParticleProperty.Type.AsphericalShape``               :guilabel:`Aspherical Shape`\n"
 					"======================================================= ===================================================\n"
 					)
 			.add_property("dataType", &ParticlePropertyObject::dataType)
@@ -274,6 +275,7 @@ BOOST_PYTHON_MODULE(Particles)
 			.value("VelocityMagnitude", ParticleProperty::VelocityMagnitudeProperty)
 			.value("NonaffineSquaredDisplacement", ParticleProperty::NonaffineSquaredDisplacementProperty)
 			.value("Molecule", ParticleProperty::MoleculeProperty)
+			.value("AsphericalShape", ParticleProperty::AsphericalShapeProperty)
 		;
 	}
 

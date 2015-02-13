@@ -107,9 +107,9 @@ void box_normal(const box * bx, const vector * pnt, const ray * incident, vector
   VSub((vector *) pnt, &c, N);
   b=(*N);
 
-  a.x=FABS(N->x);
-  a.y=FABS(N->y);
-  a.z=FABS(N->z);
+  a.x=FABS(N->x/(bx->max.x - bx->min.x));
+  a.y=FABS(N->y/(bx->max.y - bx->min.y));
+  a.z=FABS(N->z/(bx->max.z - bx->min.z));
  
   N->x=0.0;  N->y=0.0;  N->z=0.0;
 

@@ -210,6 +210,16 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 							":/core/glsl/particles/geometry/cube/picking/cube.fs",
 							":/core/glsl/particles/geometry/cube/picking/cube.gs");
 				}
+				else if(shape == BoxShape) {
+					_shader = renderer->loadShaderProgram("particle_geomshader_box",
+							":/core/glsl/particles/geometry/cube/box.vs",
+							":/core/glsl/particles/geometry/cube/cube.fs",
+							":/core/glsl/particles/geometry/cube/box.gs");
+					_pickingShader = renderer->loadShaderProgram("particle_geomshader_box_picking",
+							":/core/glsl/particles/geometry/cube/picking/box.vs",
+							":/core/glsl/particles/geometry/cube/picking/cube.fs",
+							":/core/glsl/particles/geometry/cube/picking/box.gs");
+				}
 			}
 			else {
 				if(shape == SphericalShape && renderingQuality == HighQuality) {
@@ -226,6 +236,14 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 							":/core/glsl/particles/geometry/cube/cube.fs");
 					_pickingShader = renderer->loadShaderProgram("particle_tristrip_cube_picking",
 							":/core/glsl/particles/geometry/cube/picking/cube_tristrip.vs",
+							":/core/glsl/particles/geometry/cube/picking/cube.fs");
+				}
+				else if(shape == BoxShape) {
+					_shader = renderer->loadShaderProgram("particle_tristrip_box",
+							":/core/glsl/particles/geometry/cube/box_tristrip.vs",
+							":/core/glsl/particles/geometry/cube/cube.fs");
+					_pickingShader = renderer->loadShaderProgram("particle_tristrip_box_picking",
+							":/core/glsl/particles/geometry/cube/picking/box_tristrip.vs",
 							":/core/glsl/particles/geometry/cube/picking/cube.fs");
 				}
 			}
@@ -267,6 +285,8 @@ void OpenGLParticlePrimitive::setSize(int particleCount)
 
 	_positionsBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
 	_radiiBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
+	if(particleShape() == BoxShape)
+		_shapeBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
 	_particleCoordinates.clear();
 }
 
@@ -351,6 +371,25 @@ void OpenGLParticlePrimitive::setParticleColorWithAlpha(const ColorA color, cons
 		std::copy(positions, positions + _positionsBuffer.elementCount(), _particleCoordinates.begin());
 	}
 	else _particleCoordinates.clear();
+}
+
+
+/******************************************************************************
+* Sets the aspherical shapes of the particles.
+******************************************************************************/
+void OpenGLParticlePrimitive::setParticleShapes(const Vector3* shapes)
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	if(_shapeBuffer.isCreated())
+		_shapeBuffer.fill(shapes);
+	else {
+		std::vector<FloatType> radii(particleCount());
+		for(FloatType& r : radii) {
+			r = (shapes->x() + shapes->y() + shapes->z()) / 3.0;
+			shapes++;
+		}
+		setParticleRadii(radii.data());
+	}
 }
 
 /******************************************************************************
@@ -574,7 +613,12 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 	shader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
 
 	_positionsBuffer.bindPositions(renderer, shader);
-	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
+	if(particleShape() == BoxShape) {
+		_shapeBuffer.bind(renderer, shader, "shape", GL_FLOAT, 0, 3);
+	}
+	else {
+		_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
+	}
 	if(!renderer->isPicking()) {
 		if(_colorsAndAlphaBuffer.isCreated()) {
 			glEnable(GL_BLEND);
@@ -643,8 +687,14 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 		renderer->deactivateVertexIDs(shader, renderer->isPicking());
 	}
 
+	if(particleShape() == BoxShape) {
+		_shapeBuffer.detach(renderer, shader, "shape");
+	}
+	else {
+		_radiiBuffer.detach(renderer, shader, "particle_radius");
+	}
+
 	_positionsBuffer.detachPositions(renderer, shader);
-	_radiiBuffer.detach(renderer, shader, "particle_radius");
 	if(!renderer->isPicking()) {
 		if(_colorsAndAlphaBuffer.isCreated()) {
 			_colorsAndAlphaBuffer.detachColors(renderer, shader);

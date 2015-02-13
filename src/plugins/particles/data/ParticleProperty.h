@@ -69,7 +69,8 @@ public:
 		CentroSymmetryProperty,
 		VelocityMagnitudeProperty,
         NonaffineSquaredDisplacementProperty,
-		MoleculeProperty
+		MoleculeProperty,
+		AsphericalShapeProperty
 	};
 	Q_ENUMS(Type);
 

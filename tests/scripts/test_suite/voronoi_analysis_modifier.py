@@ -13,9 +13,6 @@ print("Parameter defaults:")
 print("  compute_indices: {}".format(modifier.compute_indices))
 modifier.compute_indices = True
 
-print("  cutoff: {}".format(modifier.cutoff))
-modifier.cutoff = 8.0
-
 print("  edge_count: {}".format(modifier.edge_count))
 modifier.edge_count = 5
 
@@ -27,9 +24,6 @@ modifier.face_threshold = 0.04
 
 print("  only_selected: {}".format(modifier.only_selected))
 modifier.only_selected = False
-
-print("  use_cutoff: {}".format(modifier.use_cutoff))
-modifier.use_cutoff = True
 
 print("  use_radii: {}".format(modifier.use_radii))
 modifier.use_radii = True

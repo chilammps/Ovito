@@ -50,7 +50,8 @@ public:
 
 	enum ParticleShape {
 		SphericalShape,
-		SquareShape
+		SquareShape,
+		BoxShape
 	};
 	Q_ENUMS(ParticleShape);
 
@@ -86,6 +87,9 @@ public:
 
 	/// \brief Sets the color and alpha value of all particles to the given value.
 	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) = 0;
+
+	/// \brief Sets the aspherical shape of the particles.
+	virtual void setParticleShapes(const Vector3* shapes) = 0;
 
 	/// \brief Returns the shading mode for particles.
 	ShadingMode shadingMode() const { return _shadingMode; }

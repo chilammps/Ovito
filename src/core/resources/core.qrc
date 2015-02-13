@@ -145,10 +145,16 @@
 	<file>glsl/particles/geometry/cube/cube.vs</file>
 	<file>glsl/particles/geometry/cube/cube.gs</file>
 	<file>glsl/particles/geometry/cube/cube_tristrip.vs</file>
+	<file>glsl/particles/geometry/cube/box.vs</file>
+	<file>glsl/particles/geometry/cube/box.gs</file>
+	<file>glsl/particles/geometry/cube/box_tristrip.vs</file>
 	<file>glsl/particles/geometry/cube/picking/cube.fs</file>
 	<file>glsl/particles/geometry/cube/picking/cube.vs</file>
 	<file>glsl/particles/geometry/cube/picking/cube.gs</file>
 	<file>glsl/particles/geometry/cube/picking/cube_tristrip.vs</file>
+	<file>glsl/particles/geometry/cube/picking/box.vs</file>
+	<file>glsl/particles/geometry/cube/picking/box.gs</file>
+	<file>glsl/particles/geometry/cube/picking/box_tristrip.vs</file>
 	
 	<file>glsl/arrows/flat.fs</file>
 	<file>glsl/arrows/flat.vs</file>

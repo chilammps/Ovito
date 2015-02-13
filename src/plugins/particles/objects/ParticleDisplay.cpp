@@ -70,15 +70,17 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, DataObject* dataObject, Object
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(dataObject);
 	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
+	ParticlePropertyObject* shapeProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::AsphericalShapeProperty);
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
 			positionProperty,
 			radiusProperty,
 			typeProperty,
+			shapeProperty,
 			defaultParticleRadius()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
-		_cachedBoundingBox = particleBoundingBox(positionProperty, typeProperty, radiusProperty);
+		_cachedBoundingBox = particleBoundingBox(positionProperty, typeProperty, radiusProperty, shapeProperty);
 	}
 	return _cachedBoundingBox;
 }
@@ -86,11 +88,14 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, DataObject* dataObject, Object
 /******************************************************************************
 * Computes the bounding box of the particles.
 ******************************************************************************/
-Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, bool includeParticleRadius)
+Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, ParticlePropertyObject* shapeProperty, bool includeParticleRadius)
 {
 	OVITO_ASSERT(positionProperty == nullptr || positionProperty->type() == ParticleProperty::PositionProperty);
 	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
 	OVITO_ASSERT(radiusProperty == nullptr || radiusProperty->type() == ParticleProperty::RadiusProperty);
+	OVITO_ASSERT(shapeProperty == nullptr || shapeProperty->type() == ParticleProperty::AsphericalShapeProperty);
+	if(shadingMode() != ParticlePrimitive::NormalShading || particleShape() != ParticlePrimitive::SquareShape)
+		shapeProperty = nullptr;
 
 	Box3 bbox;
 	if(positionProperty) {
@@ -99,15 +104,23 @@ Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProper
 	if(!includeParticleRadius)
 		return bbox;
 
-	// Extend box to account for radii of particles.
-	FloatType maxAtomRadius = defaultParticleRadius();
-	if(radiusProperty && radiusProperty->size() > 0) {
-		maxAtomRadius = *std::max_element(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + radiusProperty->size());
+	// Extend box to account for radii/shape of particles.
+	FloatType maxAtomRadius = 0;
+	if(!shapeProperty) {
+		maxAtomRadius = defaultParticleRadius();
+		if(radiusProperty && radiusProperty->size() > 0) {
+			maxAtomRadius = *std::max_element(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + radiusProperty->size());
+		}
+		else if(typeProperty) {
+			for(const auto& it : typeProperty->radiusMap())
+				maxAtomRadius = std::max(maxAtomRadius, it.second);
+		}
 	}
-	else if(typeProperty) {
-		for(const auto& it : typeProperty->radiusMap())
-			maxAtomRadius = std::max(maxAtomRadius, it.second);
+	else {
+		for(const Vector3& s : shapeProperty->constVector3Range())
+			maxAtomRadius = std::max(maxAtomRadius, std::max(s.x(), std::max(s.y(), s.z())));
 	}
+
 	// Extend the bounding box by the largest particle radius.
 	return bbox.padBox(std::max(maxAtomRadius, FloatType(0)));
 }
@@ -305,6 +318,9 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
 	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? ParticlePropertyObject::findInState(flowState, ParticleProperty::SelectionProperty) : nullptr;
 	ParticlePropertyObject* transparencyProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::TransparencyProperty);
+	ParticlePropertyObject* shapeProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::AsphericalShapeProperty);
+	if(shadingMode() != ParticlePrimitive::NormalShading)
+		shapeProperty = nullptr;
 
 	// Get number of particles.
 	int particleCount = positionProperty ? (int)positionProperty->size() : 0;
@@ -315,11 +331,18 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 	// If rendering quality is set to automatic, pick quality level based on number of particles.
 	ParticlePrimitive::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
 
+	// Determine effective particle shape.
+	ParticlePrimitive::ParticleShape effectiveParticleShape = particleShape();
+	if(effectiveParticleShape == ParticlePrimitive::SquareShape && shapeProperty != nullptr)
+		effectiveParticleShape = ParticlePrimitive::BoxShape;
+	else
+		shapeProperty = nullptr;
+
 	// Set shading mode and rendering quality.
 	if(!recreateBuffer) {
 		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
 		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderQuality));
-		recreateBuffer |= !(_particleBuffer->setParticleShape(particleShape()));
+		recreateBuffer |= !(_particleBuffer->setParticleShape(effectiveParticleShape));
 	}
 
 	// Do we have to resize the render buffer?
@@ -345,9 +368,13 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 			positionProperty)
 			|| resizeBuffer;
 
+	// Do we have to update the particle shapes in the geometry buffer?
+	bool updateShapes = _shapesCacheHelper.updateState(
+			shapeProperty) || resizeBuffer;
+
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, particleShape());
+		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, effectiveParticleShape);
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -418,6 +445,14 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 			for(int i = 0; i < particleCount; i++)
 				colorsWithAlpha[i] = ColorA(colors[i], FloatType(1) - transparencyProperty->getFloat(i));
 			_particleBuffer->setParticleColorsWithAlpha(colorsWithAlpha.data(), positionProperty ? positionProperty->constDataPoint3() : nullptr);
+		}
+	}
+
+	// Update shapes buffer.
+	if(updateShapes && particleCount) {
+		if(shapeProperty) {
+			OVITO_ASSERT(shapeProperty->size() == particleCount);
+			_particleBuffer->setParticleShapes(shapeProperty->constDataVector3());
 		}
 	}
 

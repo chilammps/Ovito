@@ -79,6 +79,7 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 	case AngularVelocityProperty:
 	case AngularMomentumProperty:
 	case TorqueProperty:
+	case AsphericalShapeProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 3;
@@ -354,6 +355,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case VelocityMagnitudeProperty: return ParticlePropertyObject::tr("Velocity Magnitude");
 	case NonaffineSquaredDisplacementProperty: return ParticlePropertyObject::tr("Nonaffine Squared Displacement");
 	case MoleculeProperty: return ParticlePropertyObject::tr("Molecule Identifier");
+	case AsphericalShapeProperty: return ParticlePropertyObject::tr("Aspherical Shape");
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
@@ -420,6 +422,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case CentroSymmetryProperty:
 	case VelocityMagnitudeProperty:
 	case NonaffineSquaredDisplacementProperty:
+	case AsphericalShapeProperty:
 		return qMetaTypeId<FloatType>();
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyDataType", "Invalid standard particle property type");
@@ -468,6 +471,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(VelocityMagnitudeProperty), VelocityMagnitudeProperty);
 		table.insert(standardPropertyName(NonaffineSquaredDisplacementProperty), NonaffineSquaredDisplacementProperty);
 		table.insert(standardPropertyName(MoleculeProperty), MoleculeProperty);
+		table.insert(standardPropertyName(AsphericalShapeProperty), AsphericalShapeProperty);
 	}
 	return table;
 }
@@ -509,6 +513,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case AngularVelocityProperty:
 	case AngularMomentumProperty:
 	case TorqueProperty:
+	case AsphericalShapeProperty:
 		return 3;
 	case StressTensorProperty:
 	case StrainTensorProperty:
@@ -566,6 +571,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case AngularVelocityProperty:
 	case AngularMomentumProperty:
 	case TorqueProperty:
+	case AsphericalShapeProperty:
 		return xyzList;
 	case ColorProperty:
 		return rgbList;

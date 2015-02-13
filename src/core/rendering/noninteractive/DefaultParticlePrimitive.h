@@ -84,6 +84,12 @@ public:
 		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 
+	/// \brief Sets the aspherical shapes of the particles.
+	virtual void setParticleShapes(const Vector3* shapes) override {
+		_shapesBuffer.resize(particleCount());
+		std::copy(shapes, shapes + _shapesBuffer.size(), _shapesBuffer.begin());
+	}
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
@@ -99,6 +105,9 @@ public:
 	/// Returns a reference to the internal buffer that stores the particle colors.
 	const std::vector<ColorA>& colors() const { return _colorsBuffer; }
 
+	/// Returns a reference to the internal buffer that stores the shapes of aspherical particles.
+	const std::vector<Vector3>& shapes() const { return _shapesBuffer; }
+
 private:
 
 	/// The internal buffer that stores the particle positions.
@@ -109,6 +118,9 @@ private:
 
 	/// The internal buffer that stores the particle colors and alpha values.
 	std::vector<ColorA> _colorsBuffer;
+
+	/// The internal buffer that stores the shapes of aspherical particles.
+	std::vector<Vector3> _shapesBuffer;
 };
 
 OVITO_END_INLINE_NAMESPACE

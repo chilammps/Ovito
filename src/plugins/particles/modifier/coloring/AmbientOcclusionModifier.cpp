@@ -70,12 +70,13 @@ std::shared_ptr<AsynchronousParticleModifier::ComputeEngine> AmbientOcclusionMod
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::PositionProperty));
 	ParticlePropertyObject* radiusProperty = inputStandardProperty(ParticleProperty::RadiusProperty);
+	ParticlePropertyObject* shapeProperty = inputStandardProperty(ParticleProperty::AsphericalShapeProperty);
 
 	// Compute bounding box of input particles.
 	Box3 boundingBox;
 	for(DisplayObject* displayObj : posProperty->displayObjects()) {
 		if(ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) {
-			boundingBox.addBox(particleDisplay->particleBoundingBox(posProperty, typeProperty, radiusProperty));
+			boundingBox.addBox(particleDisplay->particleBoundingBox(posProperty, typeProperty, radiusProperty, shapeProperty));
 		}
 	}
 

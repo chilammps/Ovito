@@ -98,7 +98,7 @@ public:
 	Color particleColor(size_t particleIndex, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty);
 
 	/// \brief Computes the bounding box of the particles.
-	Box3 particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, bool includeParticleRadius = true);
+	Box3 particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, ParticlePropertyObject* shapeProperty, bool includeParticleRadius = true);
 
 public:
 
@@ -137,6 +137,12 @@ protected:
 		FloatType										// Default radius
 		> _radiiCacheHelper;
 
+	/// This helper structure is used to detect any changes in the particle shapes
+	/// that require updating the particle shape buffer.
+	SceneObjectCacheHelper<
+		WeakVersionedOORef<ParticlePropertyObject>		// Shape property + revision number
+		> _shapesCacheHelper;
+
 	/// This helper structure is used to detect any changes in the particle colors
 	/// that require updating the particle color buffer.
 	SceneObjectCacheHelper<
@@ -156,6 +162,7 @@ protected:
 		WeakVersionedOORef<ParticlePropertyObject>,	// Position property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,	// Radius property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,	// Type property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,	// Asperical shape property + revision number
 		FloatType> 									// Default particle radius
 		_boundingBoxCacheHelper;
 

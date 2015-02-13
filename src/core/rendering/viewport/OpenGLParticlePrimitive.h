@@ -67,6 +67,9 @@ public:
 	/// \brief Sets the color and alpha value of all particles to the given value.
 	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) override;
 
+	/// \brief Sets the aspherical shapes of the particles.
+	virtual void setParticleShapes(const Vector3* shapes) override;
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
@@ -125,6 +128,9 @@ private:
 
 	/// The internal OpenGL vertex buffer that stores the particle colors and particle transparencies.
 	OpenGLBuffer<ColorA> _colorsAndAlphaBuffer;
+
+	/// The internal OpenGL vertex buffer that stores the shape of aspherical particles.
+	OpenGLBuffer<Vector3> _shapeBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
