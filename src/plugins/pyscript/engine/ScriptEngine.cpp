@@ -259,8 +259,8 @@ int ScriptEngine::execute(const QString& commands, const QStringList& scriptArgu
 			object format_exception = tb_module.attr("format_exception");
 			list strings = extract<list>(format_exception(type, value, traceback));
 
-			ssize_t n = len(strings);
-			for(ssize_t i = 0; i < n; i++) {
+			int n = len(strings);
+			for(int i = 0; i < n; i++) {
 				std::cerr << extract<std::string>(strings[i])();
 			}
 #else
