@@ -246,7 +246,7 @@ int ScriptEngine::execute(const QString& commands, const QStringList& scriptArgu
 				_activeEngine = previousEngine;
 				return handleSystemExit();
 			}
-#if 1
+#if 0
 			PyObject* ptype;
 			PyObject* pvalue;
 			PyObject* ptraceback;

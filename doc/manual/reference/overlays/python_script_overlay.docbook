@@ -15,9 +15,9 @@
     <informalfigure><screenshot><mediaobject><imageobject>
        <imagedata fileref="images/viewport_overlays/python_script_overlay_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
-    This <link linkend="viewport_overlays">viewport overlay</link> type allows you to write a custom Python function that can paint arbitrary
-    text and graphics on top of an image rendered by OVITO. This makes it possible to enrich a figure or a movie with
-    additional information.
+    This <link linkend="viewport_overlays">viewport overlay</link> type allows you to write a custom Python script that can paint arbitrary
+    text and graphics on top of the image rendered by OVITO. This makes it possible to enrich a figure or a movie with
+    additional information (e.g. a scale bar, see example below).
   </para>
   <para>  
     The <guibutton>Apply changes</guibutton> button saves the entered Python script and runs it once.
@@ -35,12 +35,55 @@
     which is passed in by the system and which allows <literal>render()</literal> to paint over the three-dimensional picture rendered by OVITO 
     by issuing arbitrary drawing commands.
     The second function parameter, <literal>args</literal>, is a dictionary object that contains additional arguments
-    such as the viewport being rendered, the render settings, and the projection parameters.
+    such as the viewport being rendered, the general ender settings, and the viewport's projection parameters.
   </para>
   <para>
     The user-defined script has full access to OVITO's data model and can access viewport properties,
     camera and animation settings, modifiers, and data pipeline results. 
     For more information on OVITO's Python interface and the object model, see the <link xlink:href="python/index.html">Scripting Reference</link>.
   </para>
+    
+  <simplesect>
+    <title>Example</title>
+
+    <para>
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/viewport_overlays/python_script_scale_bar_example.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+    The following script renders a scale bar into the viewport (with a fixed length of 4 nm, as shown in the example picture). You can copy/paste the source code into the
+    script input field and adjust the parameters in the code as needed.</para>
+    <para><programlisting>from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+
+# Parameters:
+bar_length = 40   # Simulation units (e.g. Angstroms)
+bar_color = QColor(0,0,0)
+label_text = "{} nm".format(bar_length/10)
+label_color = QColor(255,255,255)
+
+# This function is called by OVITO on every viewport update.
+def render(painter, **args):
+	if args['is_perspective']: 
+		raise Exception("This only works with non-perspective viewports.")
+		
+	# Compute length of bar in screen space
+	screen_length = 0.5 * bar_length * painter.window().height() / args['fov']
+
+	# Define geometry of bar in screen space
+	height = 0.07 * painter.window().height()
+	margin = 0.02 * painter.window().height()
+	rect = QRectF(margin, margin, screen_length, height)
+
+	# Render bar
+	painter.fillRect(rect, bar_color)
+
+	# Render text label
+	font = painter.font()
+	font.setPixelSize(height)
+	painter.setFont(font)
+	painter.setPen(QPen(label_color))
+	painter.drawText(rect, Qt.AlignCenter, label_text)
+    </programlisting></para>
+  </simplesect>
     
 </section>

@@ -14,7 +14,6 @@ Work-flow improvements:
 
 New visualization features:
 
-- Option to include a length scale bar in a rendered image.
 - More particle representations (e.g. open circles/rectangles)
 - Test OpenGL rendering support for more than 12 million particles.
 
