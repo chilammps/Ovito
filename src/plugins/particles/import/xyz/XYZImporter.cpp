@@ -515,7 +515,10 @@ void XYZImporter::XYZImportTask::parseFile(CompressedTextReader& stream)
 		}
 	}
 
-	setStatus(tr("%1 particles").arg(numParticles));
+	if(commentLine.isEmpty())
+		setStatus(tr("%1 particles").arg(numParticles));
+	else
+		setStatus(tr("%1 particles\n%2").arg(numParticles).arg(commentLine));
 }
 
 /******************************************************************************
