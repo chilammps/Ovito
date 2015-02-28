@@ -58,7 +58,7 @@ OVITO_END_INLINE_NAMESPACE
 VoronoiAnalysisModifier::VoronoiAnalysisModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_onlySelected(false), _computeIndices(false), _edgeCount(6),
 	_useRadii(false), _edgeThreshold(0), _faceThreshold(0),
-	_simulationBoxVolume(0), _voronoiVolumeSum(0)
+	_simulationBoxVolume(0), _voronoiVolumeSum(0), _maxFaceOrder(0)
 {
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_onlySelected);
 	INIT_PROPERTY_FIELD(VoronoiAnalysisModifier::_useRadii);
@@ -111,7 +111,6 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 
 	// Compute the total simulation cell volume.
 	_simulationBoxVolume = _simCell.volume();
-	_voronoiVolumeSum = 0;
 
 	if(_positions->size() == 0 || _simulationBoxVolume == 0)
 		return;	// Nothing to do
@@ -120,16 +119,17 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 	// Add additional factor of 4 because Voronoi cell vertex coordinates are all scaled by factor of 2.
 	FloatType sqEdgeThreshold = _edgeThreshold * _edgeThreshold * 4;
 
-	std::mutex mutex;
-	auto processCell = [this, sqEdgeThreshold, &mutex](voro::voronoicell& v, size_t index) {
+	auto processCell = [this, sqEdgeThreshold](voro::voronoicell& v, size_t index) {
 		// Compute cell volume.
 		double vol = v.volume();
 		_atomicVolumes->setFloat(index, (FloatType)vol);
 
 		// Compute total volume of Voronoi cells.
-		std::lock_guard<std::mutex> lock(mutex);
-		_voronoiVolumeSum += vol;
+		// Loop is for lock-free write access to shared max counter.
+		double prevVolumeSum = _voronoiVolumeSum;
+		while(!_voronoiVolumeSum.compare_exchange_weak(prevVolumeSum, prevVolumeSum + vol));
 
+		int localMaxFaceOrder = 0;
 		// Iterate over the Voronoi faces and their edges.
 		int coordNumber = 0;
 		for(int i = 1; i < v.p; i++) {
@@ -165,6 +165,8 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 					while(k != i);
 					if((_faceThreshold == 0 || area > _faceThreshold) && faceOrder >= 3) {
 						coordNumber++;
+						if(faceOrder > localMaxFaceOrder)
+							localMaxFaceOrder = faceOrder;
 						faceOrder--;
 						if(_voronoiIndices && faceOrder < (int)_voronoiIndices->componentCount())
 							_voronoiIndices->setIntComponent(index, faceOrder, _voronoiIndices->getIntComponent(index, faceOrder) + 1);
@@ -175,6 +177,11 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::perform()
 
 		// Store computed result.
 		_coordinationNumbers->setInt(index, coordNumber);
+
+		// Keep track of the maximum number of edges per face.
+		// Loop is for lock-free write access to shared max counter.
+		int prevMaxFaceOrder = _maxFaceOrder;
+		while(localMaxFaceOrder > prevMaxFaceOrder && !_maxFaceOrder.compare_exchange_weak(prevMaxFaceOrder, localMaxFaceOrder));
 	};
 
 	// Decide whether to use Voro++ container class or our own implementation.
@@ -357,6 +364,7 @@ void VoronoiAnalysisModifier::transferComputationResults(ComputeEngine* engine)
 	_voronoiIndices = eng->voronoiIndices();
 	_simulationBoxVolume = eng->simulationBoxVolume();
 	_voronoiVolumeSum = eng->voronoiVolumeSum();
+	_maxFaceOrder = eng->maxFaceOrder();
 }
 
 /******************************************************************************
@@ -384,6 +392,17 @@ PipelineStatus VoronoiAnalysisModifier::applyComputationResults(TimePoint time, 
 						"See user manual for more information.\n"
 						"Simulation box volume: %1\n"
 						"Voronoi cell volume sum: %2").arg(_simulationBoxVolume).arg(_voronoiVolumeSum));
+	}
+
+	if(_voronoiIndices && _maxFaceOrder > _voronoiIndices->componentCount()) {
+		return PipelineStatus(PipelineStatus::Warning,
+				tr("The Voronoi tessellation contains faces with up to %1 edges "
+						"(ignoring edges below the length threshold). "
+						"The current maximum edge count parameter is less than this "
+						"value, and the computed Voronoi index vectors are therefore truncated. "
+						"You should consider increasing the maximum edge count parameter to %1 edges "
+						"to not truncate the Voronoi index vectors and avoid this message."
+						).arg(_maxFaceOrder));
 	}
 
 	return PipelineStatus::Success;

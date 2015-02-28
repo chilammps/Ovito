@@ -917,10 +917,26 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				":Default: ``False``\n")
 		.add_property("edge_count", &VoronoiAnalysisModifier::edgeCount, &VoronoiAnalysisModifier::setEdgeCount,
 				"Integer parameter controlling the order up to which Voronoi indices are computed by the modifier. "
-				"Note that Voronoi faces with more edges than this maximum will be ignored when calculating the index vector. "
-				"Must be at least 3."
+				"Any Voronoi face with more edges than this maximum value will not be counted! Computed Voronoi index vectors are truncated at the index specified by :py:attr:`.edge_count`. "
 				"\n\n"
+				"See the :py:attr:`.max_face_order` output property on how to avoid truncated Voronoi index vectors."
+				"\n\n"
+				"This parameter is ignored if :py:attr:`.compute_indices` is false."
+				"\n\n"
+				":Minimum: 3\n"
 				":Default: 6\n")
+		.add_property("max_face_order", &VoronoiAnalysisModifier::maxFaceOrder,
+				"This is an output value computed by the modifier, which reports the maximum number of edges of any face in the computed Voronoi tessellation "
+				"(ignoring edges and faces that are below the area and length thresholds)."
+				"\n\n"
+				"Note that accessing this property is only possible after the modifier has computed the Voronoi tessellation, i.e. after "
+				"the modification pipeline has been evaluated. "
+				"That means you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date."
+				"\n\n"
+				"Note that, if calculation of Voronoi indices is enabled (:py:attr:`.compute_indices` == true), and :py:attr:`.edge_count` < :py:attr:`.max_face_order`, then "
+				"the computed Voronoi index vectors will be truncated because there exists at least one Voronoi face having more edges than "
+				"the maximum Voronoi vector length specified by :py:attr:`.edge_count`. In such a case you should consider increasing "
+				":py:attr:`.edge_count` (to at least :py:attr:`.max_face_order`) to not lose information because of truncated index vectors.")
 	;
 }
 

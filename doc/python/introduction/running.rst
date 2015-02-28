@@ -62,5 +62,5 @@ inspect the results of your script and check if everything is correctly set up d
 	Installing Python extension that include native code (e.g. `Scipy <http:://www.scipy.org>`_) in the interpreter that ships with OVITO is currently not possible.
 	In this case it is recommended to build OVITO from source. OVITO will then make use of the system's standard Python interpreter.	
 	All modules that are available in the standard Python interpreter will also be accessible within OVITO. (Note that you still need
-	to execute OVITO scripts with the :program:`ovitos` launcher.) How to build OVITO from source is explained `on this page <http://www.ovito.org/manual/development.html>`_.
+	to execute OVITO scripts with the :program:`ovitos` launcher.) How to build OVITO from source is described `on this page <http://www.ovito.org/manual/development.html>`_.
 	

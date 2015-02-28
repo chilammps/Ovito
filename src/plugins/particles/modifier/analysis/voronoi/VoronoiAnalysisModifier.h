@@ -80,6 +80,9 @@ public:
 	/// Returns the volume sum of all Voronoi cells computed by the modifier.
 	double voronoiVolumeSum() const { return _voronoiVolumeSum; }
 
+	/// Returns the maximum number of edges of any Voronoi face.
+	int maxFaceOrder() const { return _maxFaceOrder; }
+
 protected:
 
 	/// Is called when the value of a property of this object has changed.
@@ -110,8 +113,11 @@ private:
 			_selection(selection),
 			_radii(std::move(radii)),
 			_simCell(simCell),
+			_maxFaceOrder(0),
 			_edgeThreshold(edgeThreshold),
 			_faceThreshold(faceThreshold),
+			_voronoiVolumeSum(0),
+			_simulationBoxVolume(0),
 			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty, 0, true)),
 			_atomicVolumes(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, sizeof(FloatType), QStringLiteral("Atomic Volume"), true)),
 			_voronoiIndices(computeIndices ? new ParticleProperty(positions->size(), qMetaTypeId<int>(), sizeof(int), edgeCount, sizeof(int) * edgeCount, QStringLiteral("Voronoi Index"), true) : nullptr) {}
@@ -134,12 +140,16 @@ private:
 		/// Returns the volume sum of all Voronoi cells.
 		double voronoiVolumeSum() const { return _voronoiVolumeSum; }
 
+		/// Returns the maximum number of edges of a Voronoi face.
+		int maxFaceOrder() const { return _maxFaceOrder; }
+
 	private:
 
 		FloatType _edgeThreshold;
 		FloatType _faceThreshold;
 		double _simulationBoxVolume;
-		double _voronoiVolumeSum;
+		std::atomic<double> _voronoiVolumeSum;
+		std::atomic<int> _maxFaceOrder;
 		SimulationCell _simCell;
 		std::vector<FloatType> _radii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
@@ -181,6 +191,9 @@ private:
 
 	/// The volume sum of all Voronoi cells.
 	double _voronoiVolumeSum;
+
+	/// The maximum number of edges of a Voronoi face.
+	int _maxFaceOrder;
 
 private:
 
