@@ -72,21 +72,35 @@
   <simplesect xml:id="usage.viewports.menu">
   <title>Viewport menu</title>
    <para>
+     Each viewport in OVITO's main window has a caption in its upper left corner, e.g. <emphasis>Perspective</emphasis>, <emphasis>Top</emphasis>, etc.
+     Clicking on the caption opens the viewport context menu as shown in the screenshot. 
+     The menu allows you to switch between the standard view types.
+   </para>
+   <para>
      <figure>
       <title>The viewport menu.</title>
       <screenshot><mediaobject><imageobject>
             <imagedata fileref="images/viewport_control_toolbar/viewport_menu_screenshot.png" format="png" scale="50" />
        </imageobject></mediaobject></screenshot>
      </figure> 
-     Clicking on the caption text in a viewport's upper left corner opens the viewport context menu. Here you can switch between the standard view types
-     such as <emphasis>Top</emphasis>, <emphasis>Left</emphasis>, <emphasis>Front</emphasis> etc. 
+     <menuchoice><guimenuitem>Adjust View</guimenuitem></menuchoice> opens a dialog box that lets you adjust the camera's location and orientation 
+     numerically.
    </para>
    <para>
-     <menuchoice><guimenuitem>Adjust View</guimenuitem></menuchoice> opens a dialog box that lets you adjust the camera's position and orientation numerically.
+     The <menuchoice><guimenuitem>Create Camera</guimenuitem></menuchoice> function creates a camera object in the three-dimensional
+     scene. The camera is linked to the viewport, and moving the camera object will automatically update the viewport's 
+     view accordingly. It is even possible to animate the camera object to create movies with
+     a moving camera. Creating a camera object is also useful to fix the current viewport view and protect it against
+     inadvertent or automatic changes, e.g. the automatic adjustment that is performed by OVITO when loading a new simulation dataset.
    </para>
    <para>
-     The <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> option activates a visual clue to indicate the area of the viewport that will be visible 
-     in the final output picture. The aspect ratio of the rendered image can be adjusted in the <link linkend="core.render_settings">Render Settings</link> panel. 
+     The <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> option activates a frame around the viewport to
+     indicate the visible area of the final output picture. The aspect ratio can be 
+     adjusted in the <link linkend="core.render_settings">Render Settings</link> panel by changing the width and height
+     of the output image or movie. 
+     When the <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice>
+     option is activate for a viewport, everything (including the background and <link linkend="viewport_overlays">overlays</link>) will 
+     be rendered like in the final output image.
    </para>
   </simplesect>     
 

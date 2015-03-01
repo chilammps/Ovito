@@ -11,11 +11,21 @@
   <title>Viewport overlays</title>
 
   <para>
-  Viewport overlays render two-dimensional graphics or text on top of an image of the three-dimensional scene.
-  They can be added to a viewport by the user. Viewport overlays are managed on the "Overlays" tab of OVITO's command panel.
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/viewport_overlays/viewport_overlay_command_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  Viewport overlays render two-dimensional graphics or text on top of the three-dimensional scene in a viewport 
+  or a rendered image. OVITO provides different overlay types (see table below), which you can add to a specific viewport.
+  Viewport overlays are managed on the "Overlays" tab of OVITO's command panel as shown in the screenshot on the 
+  right.
+  </para>
+  <para>Note that overlays added to a viewport will only be visible in the interactive viewport display
+  if the <link linkend="usage.viewports.menu">Render Preview</link> option is enabled for that viewport.
+  OVITO activates the preview option automatically whenever you add a new overlay to a viewport.
+  Irrespective of that preview setting, the overlay graphics will always be included in the final image or movie.
   </para>
   <para>
-  The following types of viewport overlays exist: 
+  The following types of viewport overlays exist in OVITO: 
   
   <informaltable>
         <tgroup cols="2">
@@ -30,15 +40,15 @@
           <tbody>          
             <row>
               <entry>Coordinate tripod</entry>
-              <entry>Renders an axes tripod into the image to indicate the view orientation.</entry>
+              <entry>Renders an axes tripod to indicate the view orientation.</entry>
             </row>
             <row>
               <entry>Color legend</entry>
-              <entry>Renders the color map of a <link linkend="particles.modifiers.color_coding">Color coding</link> modifier into the image as a legend.</entry>
+              <entry>Displays the color map of a <link linkend="particles.modifiers.color_coding">Color coding</link> modifier as a legend.</entry>
             </row>
             <row>
               <entry><link linkend="viewport_overlays.python_script">Python script</link></entry>
-              <entry>Use a Python script to draw arbitrary graphics on top of the rendered image.</entry>
+              <entry>Allows you to enter a Python script to draw arbitrary graphics on top of the rendered image.</entry>
             </row>
           </tbody>
         </tgroup>

@@ -41,11 +41,11 @@
     <simplesect xml:id="installation.runovito.macos">
       <title>Mac OS X</title>
 
-      <para>Extract the <filename>.zip</filename> archive to a 
-      directory of your choice. Then start OVITO by double-clicking the
-      extracted application. To run multiple instances of OVITO simultaneously, you can
+      <para>Extract the <filename>.zip</filename> archive in a location of your choice. 
+      Then start OVITO by double-clicking the extracted application. 
+      To run multiple instances of OVITO simultaneously, you can
       invoke the command <command>open -n ./Ovito.app/</command> from the
-      Terminal.</para>
+      terminal.</para>
     </simplesect>
 
 </chapter>

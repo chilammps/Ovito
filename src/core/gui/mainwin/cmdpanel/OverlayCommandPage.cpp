@@ -82,6 +82,13 @@ OverlayCommandPage::OverlayCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	connect(_deleteOverlayAction, &QAction::triggered, this, &OverlayCommandPage::onDeleteOverlay);
 	editToolbar->addAction(_deleteOverlayAction);
 
+	editToolbar->addSeparator();
+	QAction* overlayHelpAction = new QAction(QIcon(":/core/mainwin/command_panel/help.png"), tr("Open Online Help"), this);
+	connect(overlayHelpAction, &QAction::triggered, [mainWindow] {
+		mainWindow->openHelpTopic("viewport_overlays.html");
+	});
+	editToolbar->addAction(overlayHelpAction);
+
 	layout->addWidget(splitter, 1);
 
 	// Create the properties panel.

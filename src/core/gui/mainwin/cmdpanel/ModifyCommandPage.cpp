@@ -105,6 +105,13 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	toggleModifierStateAction->setIcon(toggleStateActionIcon);
 	connect(toggleModifierStateAction, &QAction::triggered, this, &ModifyCommandPage::onModifierToggleState);
 
+	editToolbar->addSeparator();
+	QAction* helpAction = new QAction(QIcon(":/core/mainwin/command_panel/help.png"), tr("Open Online Help"), this);
+	connect(helpAction, &QAction::triggered, [mainWindow] {
+		mainWindow->openHelpTopic("usage.modification_pipeline.html");
+	});
+	editToolbar->addAction(helpAction);
+
 	layout->addWidget(splitter, 2, 0, 1, 2);
 	layout->setRowStretch(2, 1);
 

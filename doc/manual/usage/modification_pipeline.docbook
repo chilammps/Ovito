@@ -16,9 +16,9 @@
             <imagedata fileref="images/modifiers/pipeline_example.png" format="png" />
        </imageobject></mediaobject></screenshot>
     </figure> 
-    The central concept in OVITO is the so-called <emphasis>modification pipeline</emphasis>. It refers to a user-defined sequence of data operations (<emphasis>modifiers</emphasis>)
+    A central concept of OVITO is the so-called <emphasis>modification pipeline</emphasis>. It refers to a user-defined sequence of data operations (<emphasis>modifiers</emphasis>)
     that are applied to the input simulation data before it gets displayed on screen. 
-    OVITO provides a <link linkend="particles.modifiers">set of modifiers</link>, each performing a different basic task such as selecting certain particles, coloring particles, or removing particles.
+    OVITO provides <link linkend="particles.modifiers">many different modifier types</link>, each performing a different basic task such as selecting particles, coloring particles, or deleting particles.
     By combining these simple building blocks and arranging them in a modification pipeline the user can control the visualization and analysis of the simulation data in a 
     very flexible manner.
   </para> 

@@ -16,8 +16,14 @@ If you want to build OVITO from source, see http://www.ovito.org/manual/developm
 Change Log 
 ****************************************************************************************
 
-Development version:
+Release 2.4.x ():
 
+ - Added a dialog box to Affine Transformation modifier, which lets the user enter a rotation axis, angle, and center.
+ - Removed cutoff option from Voronoi Analysis modifier in favor of a faster algorithm for orthogonal simulation cells, which is based on Voro++'s container classes.
+ - OVITO can now load bonds from LAMMPS data files.
+ - The Atomic Strain analysis can now be performed even when the number of particles changes with time (but only for the particles that are present in both the reference and the current configuration).
+ - The Freeze Property modifier now works when particles are lost during the simulation.
+ - The Wrap at Periodic Boundaries modifier now wraps bonds crossing a periodic boundary too.
  - The Show Periodic Images modifier now replicates bonds too.
  - Changed integrated script interpreter from Python 2.7 to Python 3.4.
  - Switched from MinGW to Visual C++ 2013 compiler for Windows builds. 

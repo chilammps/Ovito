@@ -18,17 +18,17 @@
   </para>
   
   <para>
-  The first publicly available version of OVITO was released in December 2009, after one and a half years of development.
-  Today OVITO's user base comprises several thousand researchers from the computational materials science field.
+  The first publicly available version of OVITO was released in December 2009.
+  Today OVITO's user base comprises more than ten thousand researchers from the computational materials science field.
   To introduce the software package to the community, a <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">journal article about OVITO</link> was published in 2010.
-  In 2013, OVITO's source code was rewritten from the ground up, and version 2.0 of the software was released.
   </para>
   
   <simplesect>
   <title>Program features</title>
 
   <para>OVITO is a software for visualizing and analyzing data from atomistic simulations of particles, in particular molecular dynamics (MD) simulations of 
-  solid-state materials. Its main application area are large-scale simulations using classical interaction potentials (10<superscript>4</superscript> - 10<superscript>8</superscript> particles). 
+  solid-state materials. Its main application area are large-scale simulations based on interaction potentials 
+  (10<superscript>3</superscript> - 10<superscript>8</superscript> particles). 
   Some noteworthy program features are: <itemizedlist>
 
       <listitem>

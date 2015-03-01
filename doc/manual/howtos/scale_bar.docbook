@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="howto.scale_bar" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Add a scale bar to a viewport</title>
+
+  <para>
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/viewport_overlays/python_script_scale_bar_example.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+     OVITO currently has no built-in function to add a scale to an image, but it is possible to
+     use an OVITO Python script to paint a custom scale bar on top of a viewport or a rendered image.
+  </para>
+  
+  <para>
+     For this you have to add a <link linkend="viewport_overlays.python_script">Python script overlay</link> to 
+     the viewport where you want to display a scale bar. You can then copy/paste the example Python script 
+     from <link linkend="viewport_overlays.python_script">this page</link> into the script field
+     of the viewport overlay.
+  </para>
+
+</section>

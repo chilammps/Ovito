@@ -70,6 +70,7 @@
 	<file>mainwin/command_panel/tab_render.png</file>
 	<file>mainwin/command_panel/tab_overlays.png</file>
 	<file>mainwin/command_panel/tab_utilities.png</file>
+	<file>mainwin/command_panel/help.png</file>
 	<file>mainwin/status/status_error.png</file>
 	<file>mainwin/status/status_info.png</file>
 	<file>mainwin/status/status_warning.png</file>
