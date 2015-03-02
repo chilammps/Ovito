@@ -16,7 +16,7 @@ If you want to build OVITO from source, see http://www.ovito.org/manual/developm
 Change Log 
 ****************************************************************************************
 
-Release 2.4.x ():
+Release 2.4.3 (02-Mar-15):
 
  - Added a dialog box to Affine Transformation modifier, which lets the user enter a rotation axis, angle, and center.
  - Removed cutoff option from Voronoi Analysis modifier in favor of a faster algorithm for orthogonal simulation cells, which is based on Voro++'s container classes.
