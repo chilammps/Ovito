@@ -1,0 +1,26 @@
+# vtk DataFile Version 3.1
+# created by ThomsonTetrahedron_v2.py (@author: A. Prakash). Rotation Matrices File: rotmat.dat
+ASCII
+DATASET POLYDATA
+POINTS 4 FLOAT
+	 0.000000 	 0.000000 	 0.000000
+	 -0.154652 	 0.330196 	 1.366402
+	 -0.749193 	 -0.845026 	 0.851258
+	 -1.258433 	 0.423090 	 0.487176
+POLYGONS 4 16
+3 0 1 2
+3 1 2 3
+3 3 2 0
+3 0 3 1
+CELL_DATA 4
+SCALARS faceColor FLOAT 1
+LOOKUP_TABLE myLookupTable
+2.0
+1.0
+2.0
+1.0
+LOOKUP_TABLE myLookupTable 4
+1.0 0.0 0.0 1.0
+0.0 1.0 0.0 1.0
+0.0 0.0 1.0 1.0
+1.0 1.0 1.0 1.0

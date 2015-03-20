@@ -25,6 +25,13 @@
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Mesh)
 
 /******************************************************************************
+* Constructs an empty mesh.
+******************************************************************************/
+TriMesh::TriMesh() : _hasVertexColors(false), _hasFaceColors(false)
+{
+}
+
+/******************************************************************************
 * Clears all vertices and faces.
 ******************************************************************************/
 void TriMesh::clear()
@@ -32,8 +39,10 @@ void TriMesh::clear()
 	_vertices.clear();
 	_faces.clear();
 	_vertexColors.clear();
+	_faceColors.clear();
 	_boundingBox.setEmpty();
 	_hasVertexColors = false;
+	_hasFaceColors = false;
 }
 
 /******************************************************************************
@@ -52,6 +61,8 @@ void TriMesh::setVertexCount(int n)
 void TriMesh::setFaceCount(int n)
 {
 	_faces.resize(n);
+	if(_hasFaceColors)
+		_faceColors.resize(n);
 }
 
 /******************************************************************************
@@ -69,7 +80,7 @@ TriMeshFace& TriMesh::addFace()
 ******************************************************************************/
 void TriMesh::saveToStream(SaveStream& stream)
 {
-	stream.beginChunk(0x01);
+	stream.beginChunk(0x02);
 
 	// Save vertices.
 	stream << _vertices;
@@ -77,6 +88,10 @@ void TriMesh::saveToStream(SaveStream& stream)
 	// Save vertex colors.
 	stream << _hasVertexColors;
 	stream << _vertexColors;
+
+	// Save face colors.
+	stream << _hasFaceColors;
+	stream << _faceColors;
 
 	// Save faces.
 	stream << (int)faceCount();
@@ -97,7 +112,7 @@ void TriMesh::saveToStream(SaveStream& stream)
 ******************************************************************************/
 void TriMesh::loadFromStream(LoadStream& stream)
 {
-	stream.expectChunk(0x01);
+	int formatVersion = stream.expectChunkRange(0x00, 0x02);
 
 	// Reset mesh.
 	clear();
@@ -109,6 +124,12 @@ void TriMesh::loadFromStream(LoadStream& stream)
 	stream >> _hasVertexColors;
 	stream >> _vertexColors;
 	OVITO_ASSERT(_vertexColors.size() == _vertices.size() || !_hasVertexColors);
+
+	if(formatVersion >= 2) {
+		// Load face colors.
+		stream >> _hasFaceColors;
+		stream >> _faceColors;
+	}
 
 	// Load faces.
 	int nFaces;

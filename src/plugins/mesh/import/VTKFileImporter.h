@@ -24,7 +24,7 @@
 
 #include <core/dataset/importexport/FileSourceImporter.h>
 #include <plugins/mesh/Mesh.h>
-#include "TriMeshImportData.h"
+#include "TriMeshLoader.h"
 
 namespace Mesh {
 
@@ -62,12 +62,12 @@ public:
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class VTKFileImportTask : public TriMeshImportData
+	class VTKFileImportTask : public TriMeshLoader
 	{
 	public:
 
 		/// Constructor.
-		VTKFileImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame) : TriMeshImportData(container, frame) {}
+		VTKFileImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame) : TriMeshLoader(container, frame) {}
 
 	protected:
 

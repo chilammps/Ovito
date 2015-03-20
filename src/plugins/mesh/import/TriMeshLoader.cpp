@@ -24,14 +24,14 @@
 #include <core/scene/objects/geometry/TriMeshObject.h>
 #include <core/scene/objects/geometry/TriMeshDisplay.h>
 #include <core/utilities/io/FileManager.h>
-#include "TriMeshImportData.h"
+#include "TriMeshLoader.h"
 
 namespace Mesh {
 
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void TriMeshImportData::perform()
+void TriMeshLoader::perform()
 {
 	setProgressText(QString("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
@@ -57,7 +57,7 @@ void TriMeshImportData::perform()
 * This function is called by the system from the main thread after the
 * asynchronous loading task has finished.
 ******************************************************************************/
-void TriMeshImportData::handOver(CompoundObject* container)
+void TriMeshLoader::handOver(CompoundObject* container)
 {
 	OORef<TriMeshObject> triMeshObj = container->findDataObject<TriMeshObject>();
 	if(!triMeshObj) {

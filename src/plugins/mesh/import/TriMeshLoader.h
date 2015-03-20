@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_TRIMESH_IMPORT_DATA_H
-#define __OVITO_TRIMESH_IMPORT_DATA_H
+#ifndef __OVITO_TRIMESH_LOADER_H
+#define __OVITO_TRIMESH_LOADER_H
 
 #include <core/dataset/importexport/FileSourceImporter.h>
 #include <core/utilities/io/CompressedTextReader.h>
@@ -32,14 +32,14 @@ namespace Mesh {
 using namespace Ovito;
 
 /**
- * Container structure for triangle mesh data imported by a parser class.
+ * \brief Base class for file loader reading a triangle mesh from a file.
  */
-class TriMeshImportData : public FileSourceImporter::FrameLoader
+class TriMeshLoader : public FileSourceImporter::FrameLoader
 {
 public:
 
 	/// Constructor.
-	TriMeshImportData(DataSetContainer* container, const FileSourceImporter::Frame& frame)
+	TriMeshLoader(DataSetContainer* container, const FileSourceImporter::Frame& frame)
 		: FileSourceImporter::FrameLoader(container, frame) {}
 
 	/// Loads the requested frame data from the external file.
@@ -68,4 +68,4 @@ private:
 
 };
 
-#endif // __OVITO_TRIMESH_IMPORT_DATA_H
+#endif // __OVITO_TRIMESH_LOADER_H

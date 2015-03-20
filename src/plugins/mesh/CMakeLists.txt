@@ -20,7 +20,7 @@
 ###############################################################################
 
 SET(SourceFiles 
-	import/TriMeshImportData.cpp
+	import/TriMeshLoader.cpp
 	import/VTKFileImporter.cpp
 )
 

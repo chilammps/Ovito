@@ -47,7 +47,7 @@ void OpenGLMeshPrimitive::setMesh(const TriMesh& mesh, const ColorA& meshColor)
 
 	// Allocate render vertex buffer.
 	_vertexBuffer.create(QOpenGLBuffer::StaticDraw, mesh.faceCount(), 3);
-	if(mesh.hasVertexColors())
+	if(mesh.hasVertexColors() || mesh.hasFaceColors())
 		_hasAlpha = false;
 	else
 		_hasAlpha = (meshColor.a() != 1);
@@ -86,11 +86,16 @@ void OpenGLMeshPrimitive::setMesh(const TriMesh& mesh, const ColorA& meshColor)
 			else
 				rv->normal = *faceNormal;
 			rv->pos = mesh.vertex(face->vertex(v));
-			if(mesh.hasVertexColors() == false)
-				rv->color = defaultVertexColor;
-			else {
+			if(mesh.hasVertexColors()) {
 				rv->color = mesh.vertexColor(face->vertex(v));
 				_hasAlpha |= (rv->color.a() != 1);
+			}
+			else if(mesh.hasFaceColors()) {
+				rv->color = mesh.faceColor(face - mesh.faces().constBegin());
+				_hasAlpha |= (rv->color.a() != 1);
+			}
+			else {
+				rv->color = defaultVertexColor;
 			}
 		}
 	}

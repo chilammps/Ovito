@@ -105,6 +105,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	rt_resolution(_rtscene, renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight());
 	if(antialiasingEnabled())
 		rt_aa_maxsamples(_rtscene, antialiasingSamples());
+	//rt_normal_fixup_mode(_rtscene, 2);
 
 	// Create Tachyon frame buffer.
 	QImage img(renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight(), QImage::Format_RGB888);
@@ -492,10 +493,12 @@ void TachyonRenderer::renderMesh(const DefaultMeshPrimitive& meshBuffer)
 			else
 				rv->normal = *faceNormal;
 			rv->pos = tm * mesh.vertex(face->vertex(v));
-			if(mesh.hasVertexColors() == false)
-				rv->color = defaultVertexColor;
-			else
+			if(mesh.hasVertexColors())
 				rv->color = ColorAT<float>(mesh.vertexColor(face->vertex(v)));
+			else if(mesh.hasFaceColors())
+				rv->color = ColorAT<float>(mesh.faceColor(face - mesh.faces().constBegin()));
+			else
+				rv->color = defaultVertexColor;
 		}
 	}
 
@@ -537,6 +540,9 @@ void TachyonRenderer::renderMesh(const DefaultMeshPrimitive& meshBuffer)
 		auto rv0 = rv++;
 		auto rv1 = rv++;
 		auto rv2 = rv++;
+
+		if(mesh.hasVertexColors() || mesh.hasFaceColors())
+			tex = getTachyonTexture(1.0f, 1.0f, 1.0f, defaultVertexColor.a());
 
 		rt_vcstri(_rtscene, tex,
 				rt_vector(rv0->pos.x(), rv0->pos.y(), -rv0->pos.z()),
