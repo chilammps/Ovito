@@ -24,6 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include "../ParticleExporter.h"
+#include "../OutputColumnMapping.h"
 
 namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Export) OVITO_BEGIN_INLINE_NAMESPACE(Formats)
 
@@ -46,12 +47,25 @@ public:
 	/// \brief Opens the export settings dialog for this exporter service.
 	virtual bool showSettingsDialog(const PipelineFlowState& state, QWidget* parent) override;
 
+	/// \brief Returns the mapping of particle properties to output file columns.
+	const OutputColumnMapping& columnMapping() const { return _columnMapping; }
+
+	/// \brief Sets the mapping of particle properties to output file columns.
+	void setColumnMapping(const OutputColumnMapping& mapping) { _columnMapping = mapping; }
+
+public:
+
+	Q_PROPERTY(Ovito::Particles::OutputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
+
 protected:
 
 	/// \brief Writes the particles of one animation frame to the current output file.
 	virtual bool exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress) override;
 
 private:
+
+	/// The mapping particle properties to output file columns.
+	OutputColumnMapping _columnMapping;
 
 	Q_OBJECT
 	OVITO_OBJECT

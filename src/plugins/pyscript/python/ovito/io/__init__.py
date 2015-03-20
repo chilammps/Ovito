@@ -175,12 +175,15 @@ def export_file(node, file, format, **params):
        
         **File columns**
         
-        When writing files in the ``"lammps_dump"`` or ``"xyz"`` format, you must specify the particle properties to be exported 
+        When writing files in the ``"lammps_dump"`` or ``"xyz"`` formats, you must specify the particle properties to be exported 
         using the ``columns`` keyword parameter::
         
             export_file(node, "output.xyz", "xyz", columns = 
               ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"]
             )
+            
+        When exporting to a ``imd`` file, the ``columns`` keyword is optional and can be used to export extra particle properties
+        in addition to the standard columns defined by the IMD file format (e.g. positions, mass, etc.)
     """
     
     # Look up the exporter class for the selected format.

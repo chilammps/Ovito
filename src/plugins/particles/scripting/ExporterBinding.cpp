@@ -59,6 +59,7 @@ BOOST_PYTHON_MODULE(ParticlesExporter)
 	;
 
 	ovito_class<IMDExporter, ParticleExporter>()
+		.add_property("columns", make_function(&IMDExporter::columnMapping, return_value_policy<copy_const_reference>()), &IMDExporter::setColumnMapping)
 	;
 
 	ovito_class<POSCARExporter, ParticleExporter>()

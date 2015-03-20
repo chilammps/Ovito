@@ -36,8 +36,47 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IMDExporter, ParticleExporter);
 ******************************************************************************/
 bool IMDExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
-	ParticleExporterSettingsDialog dialog(parent, this, state);
-	return (dialog.exec() == QDialog::Accepted);
+	// Load last mapping if no new one has been set already.
+	if(_columnMapping.empty()) {
+		QSettings settings;
+		settings.beginGroup("viz/exporter/imd/");
+		if(settings.contains("columnmapping")) {
+			try {
+				_columnMapping.fromByteArray(settings.value("columnmapping").toByteArray());
+			}
+			catch(Exception& ex) {
+				ex.prependGeneralMessage(tr("Failed to load last output column mapping from application settings store."));
+				ex.logError();
+			}
+		}
+		settings.endGroup();
+	}
+
+	// Remove particle properties from state that are always exported.
+	PipelineFlowState filteredState = state;
+	if(ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty))
+		filteredState.removeObject(posProperty);
+	if(ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(state, ParticleProperty::ParticleTypeProperty)))
+		filteredState.removeObject(typeProperty);
+	if(ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty))
+		filteredState.removeObject(identifierProperty);
+	if(ParticlePropertyObject* velocityProperty = ParticlePropertyObject::findInState(state, ParticleProperty::VelocityProperty))
+		filteredState.removeObject(velocityProperty);
+	if(ParticlePropertyObject* massProperty = ParticlePropertyObject::findInState(state, ParticleProperty::MassProperty))
+		filteredState.removeObject(massProperty);
+
+	ParticleExporterSettingsDialog dialog(parent, this, filteredState, &_columnMapping);
+	if(dialog.exec() == QDialog::Accepted) {
+
+		// Remember the output column mapping for the next time.
+		QSettings settings;
+		settings.beginGroup("viz/exporter/imd/");
+		settings.setValue("columnmapping", _columnMapping.toByteArray());
+		settings.endGroup();
+
+		return true;
+	}
+	return false;
 }
 
 /******************************************************************************
@@ -63,32 +102,32 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	AffineTransformation simCell = simulationCell->cellMatrix();
 	size_t atomsCount = posProperty->size();
 
-	OutputColumnMapping columnMapping;
+	OutputColumnMapping colMapping;
 	QVector<QString> columnNames;
 	textStream() << "#F A ";
 	if(identifierProperty) {
 		textStream() << "1 ";
-		columnMapping.emplace_back(identifierProperty->type(), identifierProperty->name());
+		colMapping.emplace_back(identifierProperty->type(), identifierProperty->name());
 		columnNames.push_back("number");
 	}
 	else textStream() << "0 ";
 	if(typeProperty) {
 		textStream() << "1 ";
-		columnMapping.emplace_back(typeProperty->type(), typeProperty->name());
+		colMapping.emplace_back(typeProperty->type(), typeProperty->name());
 		columnNames.push_back("type");
 	}
 	else textStream() << "0 ";
 	if(massProperty) {
 		textStream() << "1 ";
-		columnMapping.emplace_back(massProperty->type(), massProperty->name());
+		colMapping.emplace_back(massProperty->type(), massProperty->name());
 		columnNames.push_back("mass");
 	}
 	else textStream() << "0 ";
 	if(posProperty) {
 		textStream() << "3 ";
-		columnMapping.emplace_back(posProperty->type(), posProperty->name(), 0);
-		columnMapping.emplace_back(posProperty->type(), posProperty->name(), 1);
-		columnMapping.emplace_back(posProperty->type(), posProperty->name(), 2);
+		colMapping.emplace_back(posProperty->type(), posProperty->name(), 0);
+		colMapping.emplace_back(posProperty->type(), posProperty->name(), 1);
+		colMapping.emplace_back(posProperty->type(), posProperty->name(), 2);
 		columnNames.push_back("x");
 		columnNames.push_back("y");
 		columnNames.push_back("z");
@@ -96,32 +135,23 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	else textStream() << "0 ";
 	if(velocityProperty) {
 		textStream() << "3 ";
-		columnMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 0);
-		columnMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 1);
-		columnMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 2);
+		colMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 0);
+		colMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 1);
+		colMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 2);
 		columnNames.push_back("vx");
 		columnNames.push_back("vy");
 		columnNames.push_back("vz");
 	}
 	else textStream() << "0 ";
 
-	int otherColumnsCount = 0;
-	for(DataObject* o : state.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
-		if(!property) continue;
-		if(property == posProperty || property == typeProperty || property == identifierProperty || property == massProperty || property == velocityProperty)
-			continue;
-		if(property->type() == ParticleProperty::ColorProperty || property->type() == ParticleProperty::SelectionProperty)
-			continue;
-		for(size_t component = 0; component < property->componentCount(); component++) {
-			columnMapping.emplace_back(property->type(), property->name(), component);
-			otherColumnsCount += 1;
-			QString columnName = property->nameWithComponent(component);
-			columnName.remove(QRegExp("[^A-Za-z\\d_.]"));
-			columnNames.push_back(columnName);
-		}
+	for(int i = 0; i < (int)columnMapping().size(); i++) {
+		const ParticlePropertyReference& pref = columnMapping()[i];
+		QString columnName = pref.nameWithComponent();
+		columnName.remove(QRegExp("[^A-Za-z\\d_.]"));
+		columnNames.push_back(columnName);
+		colMapping.push_back(pref);
 	}
-	textStream() << otherColumnsCount << "\n";
+	textStream() << columnMapping().size() << "\n";
 
 	textStream() << "#C";
 	Q_FOREACH(const QString& cname, columnNames)
@@ -136,7 +166,7 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	textStream() << "## IMD file written by " << QCoreApplication::applicationName() << "\n";
 	textStream() << "#E\n";
 
-	OutputColumnWriter columnWriter(columnMapping, state);
+	OutputColumnWriter columnWriter(colMapping, state);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
 

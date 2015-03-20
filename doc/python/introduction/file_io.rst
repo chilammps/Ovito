@@ -100,7 +100,7 @@ will be exported.
 The second function parameter specifies the the output filename, and the third parameter selects the 
 output format. For a list of supported file formats, see :py:func:`~ovito.io.export_file`.
 Depending on the output format, additional keyword arguments must be specified. For instance,
-in the example above the ``columns`` parameter was used to list the particle properties to be exported.
+in the example above the ``columns`` parameter lists the particle properties to be exported.
  
 .. _standard-property-list:
 
@@ -116,6 +116,7 @@ Property name                         Components                             Dat
 ===================================== ====================================== ==============
 ``"Angular Momentum"``                X, Y, Z                                float
 ``"Angular Velocity"``                X, Y, Z                                float
+``"Aspherical Shape"``                X, Y, Z                                float
 ``"Centrosymmetry"``                                                         float
 ``"Charge"``                                                                 float
 ``"Cluster"``                                                                integer
