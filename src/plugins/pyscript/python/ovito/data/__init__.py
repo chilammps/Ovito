@@ -52,7 +52,7 @@ def _DataCollection__getattr__(self, name):
     raise AttributeError("DataCollection does not have an attribute named '%s'." % name)
 DataCollection.__getattr__ = _DataCollection__getattr__
 def _DataCollection__str__(self):
-    return "DataCollection(" + str(self.keys()) + ")"
+    return "DataCollection(" + str(list(self.keys())) + ")"
 DataCollection.__str__ = _DataCollection__str__
 # Mix in base class collections.Mapping:
 DataCollection.__bases__ = DataCollection.__bases__ + (collections.Mapping, )

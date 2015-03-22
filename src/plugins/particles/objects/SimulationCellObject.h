@@ -178,6 +178,15 @@ public:
 	/// \brief Returns whether periodic boundary conditions are enabled in the X direction.
 	bool pbcZ() const { return _pbcZ; }
 
+	/// \brief Sets periodic boundary flag for the X direction.
+	void setPbcX(bool enable) { _pbcX = enable; }
+
+	/// \brief Sets periodic boundary flag for the Y direction.
+	void setPbcY(bool enable) { _pbcY = enable; }
+
+	/// \brief Sets periodic boundary flag for the Z direction.
+	void setPbcZ(bool enable) { _pbcZ = enable; }
+
 	/// \brief Computes the axis-aligned bounding box of the simulation cell.
 	/// \return An axis-aligned box that completely covers the simulation cell.
 	Box3 boundingBox() const {

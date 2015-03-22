@@ -309,9 +309,9 @@ BOOST_PYTHON_MODULE(Particles)
 			"the :py:attr:`~DataObject.display` attribute of the :py:class:`~DataObject` base class.",
 			// Python class name:
 			"SimulationCell")
-		.add_property("pbc_x", &SimulationCellObject::pbcX)
-		.add_property("pbc_y", &SimulationCellObject::pbcY)
-		.add_property("pbc_z", &SimulationCellObject::pbcZ)
+		.add_property("pbc_x", &SimulationCellObject::pbcX, &SimulationCellObject::setPbcX)
+		.add_property("pbc_y", &SimulationCellObject::pbcY, &SimulationCellObject::setPbcY)
+		.add_property("pbc_z", &SimulationCellObject::pbcZ, &SimulationCellObject::setPbcZ)
 		.add_property("matrix", &SimulationCellObject::cellMatrix, &SimulationCellObject::setCellMatrix,
 				"A 3x4 matrix containing the three edge vectors of the cell (matrix columns 0-2) "
 				"and the cell origin (matrix column 3).")

@@ -64,8 +64,12 @@ def _Bonds_array(self):
 Particles.Bonds.array = property(_Bonds_array)
 
 # Implement 'pbc' property of SimulationCell class.
-def _SimulationCell_pbc(self):
-    """ A 3-tuple with the periodic boundary flags. """
+def _get_SimulationCell_pbc(self):
+    """ A tuple of length 3 with the periodic boundary flags (bool). """
     return (self.pbc_x, self.pbc_y, self.pbc_z)
-Particles.SimulationCell.pbc = property(_SimulationCell_pbc)
-
+def _set_SimulationCell_pbc(self, flags):
+    assert(len(flags) == 3) # Expect tuple of three Boolean flags
+    self.pbc_x = flags[0]
+    self.pbc_y = flags[1]
+    self.pbc_z = flags[2]
+Particles.SimulationCell.pbc = property(_get_SimulationCell_pbc, _set_SimulationCell_pbc)
