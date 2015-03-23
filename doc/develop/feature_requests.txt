@@ -57,7 +57,6 @@ Scripting features:
 Other:
 
 - Update VideoEncoder class to avoid use of deprecated Libav functions.
-- Fix video output error for resolutions >1000 pixels.
 
 Documentation:
 

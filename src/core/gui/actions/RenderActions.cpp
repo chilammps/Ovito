@@ -50,6 +50,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 		_dataset->renderScene(settings, viewport);
 	}
 	catch(const Exception& ex) {
+		ex.logError();
 		ex.showError();
 	}
 }

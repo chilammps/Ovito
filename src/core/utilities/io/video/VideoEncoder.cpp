@@ -101,16 +101,12 @@ QList<VideoEncoder::Format> VideoEncoder::supportedFormats()
 /******************************************************************************
 * Opens a video file for writing.
 ******************************************************************************/
-void VideoEncoder::openFile(const QString& filename, int width, int height, int fps, VideoEncoder::Format* format, int bitrate)
+void VideoEncoder::openFile(const QString& filename, int width, int height, int fps, VideoEncoder::Format* format)
 {
 	int errCode;
 
 	// Make sure previous file is closed.
 	closeFile();
-
-	// Choose a reasonable bitrate.
-	if(bitrate == 0)
-		bitrate = width * height * fps * 4;
 
 	AVOutputFormat* outputFormat;
 	if(format == nullptr) {
@@ -140,7 +136,9 @@ void VideoEncoder::openFile(const QString& filename, int width, int height, int 
 	_codecContext = _videoStream->codec;
 	_codecContext->codec_id = outputFormat->video_codec;
 	_codecContext->codec_type = AVMEDIA_TYPE_VIDEO;
-	_codecContext->bit_rate = bitrate;
+	_codecContext->qmin = 4;
+	_codecContext->qmax = 4;
+	_codecContext->bit_rate = 0;
 	_codecContext->width = width;
 	_codecContext->height = height;
 	_codecContext->time_base.den = fps;
@@ -151,7 +149,7 @@ void VideoEncoder::openFile(const QString& filename, int width, int height, int 
 	else
 		_codecContext->pix_fmt = PIX_FMT_RGB24;
 
-	/// Some formats want stream headers to be separate.
+	// Some formats want stream headers to be separate.
 	if(_formatContext->oformat->flags & AVFMT_GLOBALHEADER)
 		_codecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
@@ -160,7 +158,7 @@ void VideoEncoder::openFile(const QString& filename, int width, int height, int 
 	if(!codec)
 		throw Exception(tr("Video codec not found."));
 
-	//av_dump_format(_formatContext.get(), 0, filename.toLocal8Bit().constData(), 1);
+	av_dump_format(_formatContext.get(), 0, filename.toLocal8Bit().constData(), 1);
 
 	// Open the codec.
 	if((errCode = avcodec_open2(_codecContext, codec, NULL)) < 0)
