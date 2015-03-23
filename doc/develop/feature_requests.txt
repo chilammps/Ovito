@@ -52,7 +52,6 @@ Scripting features:
 
 - Scripting interface for viewport overlays.
 - Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
-- Python access to neighbor lists.
 
 Other:
 

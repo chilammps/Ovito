@@ -486,7 +486,10 @@ BOOST_PYTHON_MODULE(Particles)
 
 	{
 		scope s = class_<CutoffNeighborFinder>("CutoffNeighborFinder", init<>())
-			.def("prepare", &CutoffNeighborFinder::prepare)
+			.def("prepare", static_cast<void (*)(CutoffNeighborFinder&,FloatType,ParticlePropertyObject&,SimulationCellObject&)>(
+					[](CutoffNeighborFinder& finder, FloatType cutoff, ParticlePropertyObject& positions, SimulationCellObject& cell) {
+				finder.prepare(cutoff, positions.storage(), cell.data());
+			}))
 		;
 
 		class_<CutoffNeighborFinder::Query>("Query", init<const CutoffNeighborFinder&, size_t>())
@@ -495,7 +498,8 @@ BOOST_PYTHON_MODULE(Particles)
 			.add_property("current", &CutoffNeighborFinder::Query::current)
 			.add_property("distanceSquared", &CutoffNeighborFinder::Query::distanceSquared)
 			.add_property("delta", make_function(&CutoffNeighborFinder::Query::delta, return_value_policy<copy_const_reference>()))
-			.add_property("pbcShift", make_function(&CutoffNeighborFinder::Query::pbcShift, return_value_policy<copy_const_reference>()))
+			.add_property("pbcShift", static_cast<Vector3 (*)(CutoffNeighborFinder::Query&)>(
+					[](CutoffNeighborFinder::Query& query) { return Vector3(query.pbcShift()); }))
 		;
 	}
 }

@@ -1,5 +1,6 @@
 import re
 import numpy
+import math
 
 # Load dependencies
 import ovito.data
@@ -14,7 +15,6 @@ ovito.data.Bonds = Particles.Bonds
 ovito.data.SurfaceMesh = Particles.SurfaceMesh
 ovito.data.ParticleTypeProperty = Particles.ParticleTypeProperty
 ovito.data.ParticleType = Particles.ParticleType
-ovito.data.CutoffNeighborFinder = Particles.CutoffNeighborFinder
 
 # Register attribute keys by which data objects in a DataCollection can be accessed.
 Particles.SimulationCell._data_attribute_name = "cell"
@@ -75,9 +75,69 @@ def _set_SimulationCell_pbc(self, flags):
     self.pbc_z = flags[2]
 Particles.SimulationCell.pbc = property(_get_SimulationCell_pbc, _set_SimulationCell_pbc)
 
-def _CutoffNeighborFinder_find(self, particle_index):
-    """ """
-    if particle_index < 0 or particle_index >= self.particle_count:
-        raise IndexError("Particle index is out of range.")
-    query = Particles.CutoffNeighborFinder.Query(self, particle_index)
-Particles.CutoffNeighborFinder.find = _CutoffNeighborFinder_find
+class CutoffNeighborFinder(Particles.CutoffNeighborFinder):
+    """ 
+    A utility class that computes particle neighbor lists.
+    
+    This class allows a Python script to iterate over the neighbors of each particles within a given cutoff distance.
+    You can use it to build neighbors lists or perform other kinds of analyses that require neighbor information.
+    
+    The constructor takes a positive cutoff radius and a :py:class:`DataCollection <ovito.data.DataCollection>` 
+    containing the input particle positions and the cell geometry (including periodic boundary flags).
+    
+    Once the utility class has been constructed, you can call :py:meth:`.find` to iterate over the neighbors of a selected particle,    
+    for example::
+    
+        from ovito.io import *
+        from ovito.data import *
+
+        node = import_file("simulation.dump")
+        data = node.source.data
+        num_particles = data.position.size
+
+        cutoff = 3.5
+        finder = CutoffNeighborFinder(cutoff, data)
+
+        for index in range(num_particles):
+            print("Neighbors of particle {}:".format(index))
+            for neigh in finder.find(index):
+                print(neigh)
+    """
+        
+    def __init__(self, cutoff, data_collection):
+        """ This is the constructor. """
+        super(self.__class__, self).__init__()        
+        if not hasattr(data_collection, 'position'):
+            raise KeyError("Data collection does not contain particle positions.")
+        if not hasattr(data_collection, 'cell'):
+            raise KeyError("Data collection does not contain simulation cell information.")
+        self.particle_count = data_collection.position.size
+        self.prepare(cutoff, data_collection.position, data_collection.cell)
+        
+    def find(self, index):
+        """ 
+        Returns an iterator over all neighbors of the given particle.
+         
+        :param int index: The index of the central particle whose neighbors should be iterated. Particle indices start at 0.
+        :returns: A Python iterator that visits all neighbors of the central particle within the cutoff distance. 
+                  For each neighbor the iterator returns a tuple containing four entries:
+                  
+                      1. The index of current neighbor particle (starting at 0).
+                      2. The distance of the current neighbor from the central particle.
+                      3. The three-dimensional vector connecting the central particle with the current neighbor (taking into account periodic images).
+                      4. The periodic shift vector, which specifies how often the vector has crossed each periodic boundary of the simulation cell.
+        
+        Note that all periodic images of particles are visited. Thus, the same particle index (1st item above) may appear multiple times in the neighbor
+        list of one central particle. In fact, the central particle may be among its own neighbors in a sufficiently small periodic simulation cell.
+        However, the computed vector (3rd item above) will be unique for each visited image of a neighbor particle.
+        """
+        if index < 0 or index >= self.particle_count:
+            raise IndexError("Particle index is out of range.")
+        # Construct the C++ neighbor query. 
+        query = Particles.CutoffNeighborFinder.Query(self, index)
+        # Iterate over neighbors.
+        while not query.atEnd:
+            yield (query.current, math.sqrt(query.distanceSquared), tuple(query.delta), tuple(query.pbcShift))
+            query.next()
+            
+ovito.data.CutoffNeighborFinder = CutoffNeighborFinder

@@ -16,6 +16,7 @@ This module contains data container classes that are used by OVITO's modificatio
 **Helper classes:**
 
   * :py:class:`ParticleType`
+  * :py:class:`CutoffNeighborFinder`
 
 """
 
