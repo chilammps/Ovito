@@ -14,6 +14,7 @@ ovito.data.Bonds = Particles.Bonds
 ovito.data.SurfaceMesh = Particles.SurfaceMesh
 ovito.data.ParticleTypeProperty = Particles.ParticleTypeProperty
 ovito.data.ParticleType = Particles.ParticleType
+ovito.data.CutoffNeighborFinder = Particles.CutoffNeighborFinder
 
 # Register attribute keys by which data objects in a DataCollection can be accessed.
 Particles.SimulationCell._data_attribute_name = "cell"
@@ -73,3 +74,10 @@ def _set_SimulationCell_pbc(self, flags):
     self.pbc_y = flags[1]
     self.pbc_z = flags[2]
 Particles.SimulationCell.pbc = property(_get_SimulationCell_pbc, _set_SimulationCell_pbc)
+
+def _CutoffNeighborFinder_find(self, particle_index):
+    """ """
+    if particle_index < 0 or particle_index >= self.particle_count:
+        raise IndexError("Particle index is out of range.")
+    query = Particles.CutoffNeighborFinder.Query(self, particle_index)
+Particles.CutoffNeighborFinder.find = _CutoffNeighborFinder_find

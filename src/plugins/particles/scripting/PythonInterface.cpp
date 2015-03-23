@@ -32,6 +32,7 @@
 #include <plugins/particles/objects/BondsDisplay.h>
 #include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/objects/SurfaceMesh.h>
+#include <plugins/particles/util/CutoffNeighborFinder.h>
 
 namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
@@ -482,6 +483,21 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
 		.def("clearMesh", &SurfaceMesh::clearMesh)
 	;
+
+	{
+		scope s = class_<CutoffNeighborFinder>("CutoffNeighborFinder", init<>())
+			.def("prepare", &CutoffNeighborFinder::prepare)
+		;
+
+		class_<CutoffNeighborFinder::Query>("Query", init<const CutoffNeighborFinder&, size_t>())
+			.def("next", &CutoffNeighborFinder::Query::next)
+			.add_property("atEnd", &CutoffNeighborFinder::Query::atEnd)
+			.add_property("current", &CutoffNeighborFinder::Query::current)
+			.add_property("distanceSquared", &CutoffNeighborFinder::Query::distanceSquared)
+			.add_property("delta", make_function(&CutoffNeighborFinder::Query::delta, return_value_policy<copy_const_reference>()))
+			.add_property("pbcShift", make_function(&CutoffNeighborFinder::Query::pbcShift, return_value_policy<copy_const_reference>()))
+		;
+	}
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);
