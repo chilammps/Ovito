@@ -172,15 +172,15 @@ void VectorDisplay::render(TimePoint time, DataObject* dataObject, const Pipelin
 			FloatType width = arrowWidth();
 			ArrowPrimitive* buffer = _buffer.get();
 			if(!reverseArrowDirection()) {
-				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
+				for(int index = 0; index < vectorCount; index++) {
 					buffer->setElement(index, p_begin[index], v_begin[index] * scalingFac, color, width);
-				});
+				}
 			}
 			else {
-				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
+				for(int index = 0; index < vectorCount; index++) {
 					Vector3 v = v_begin[index] * scalingFac;
 					buffer->setElement(index, p_begin[index] - v, v, color, width);
-				});
+				}
 			}
 		}
 		_buffer->endSetElements();

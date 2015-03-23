@@ -102,8 +102,8 @@ private:
 
 private:
 
-	/// The internal OpenGL vertex buffer that stores the vertices and colors.
-	QOpenGLBuffer _glGeometryBuffer;
+	/// The internal OpenGL vertex buffers that store the vertices and colors.
+	std::vector<QOpenGLBuffer> _glGeometryBuffers;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
@@ -111,14 +111,23 @@ private:
 	/// The number of elements stored in the buffer.
 	int _elementCount;
 
-	/// The maximum number of elements we can render. This may be less then the above number.
-	int _elementRenderCount;
-
 	/// The number of cylinder segments to generate.
 	int _cylinderSegments;
 
 	/// The number of mesh vertices generated per element.
 	int _verticesPerElement;
+
+	/// Pointer to the memory-mapped VBO buffer.
+	void* _mappedBuffer;
+
+	/// The index of the VBO buffer currently mapped to memory.
+	int _mappedBufferIndex;
+
+	/// The maximum size (in bytes) of a single VBO buffer.
+	int _maxVBOSize;
+
+	/// The maximum number of render elements per VBO buffer.
+	int _maxVBOElements;
 
 	// The OpenGL shader programs that are used to render the arrows.
 	QOpenGLShaderProgram* _flatShader;
@@ -127,9 +136,6 @@ private:
 	QOpenGLShaderProgram* _flatPickingShader;
 	QOpenGLShaderProgram* _shadedPickingShader;
 	QOpenGLShaderProgram* _raytracedCylinderPickingShader;
-
-	/// Pointer to the memory-mapped geometry buffer.
-	void* _mappedBuffer;
 
 	/// Lookup table for fast cylinder geometry generation.
 	std::vector<float> _cosTable;
