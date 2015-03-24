@@ -162,6 +162,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	ParticlePropertyObject* radiusProperty = nullptr;
 	ParticlePropertyObject* colorProperty = nullptr;
 	ParticlePropertyObject* selectionProperty = nullptr;
+	ParticlePropertyObject* transparencyProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
 	for(DataObject* dataObj : flowState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
@@ -176,6 +177,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 			colorProperty = property;
 		else if(property->type() == ParticleProperty::SelectionProperty && property->size() >= particleIndex)
 			selectionProperty = property;
+		else if(property->type() == ParticleProperty::TransparencyProperty && property->size() >= particleIndex)
+			transparencyProperty = property;
 	}
 	if(!posProperty)
 		return;
@@ -198,8 +201,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 		return;
 
 	// Determine the display color of selected particle.
-	Color color = particleDisplay->particleColor(particleIndex, colorProperty, typeProperty, selectionProperty);
-	Color highlightColor = particleDisplay->selectionParticleColor();
+	ColorA color = particleDisplay->particleColor(particleIndex, colorProperty, typeProperty, selectionProperty, transparencyProperty);
+	ColorA highlightColor = particleDisplay->selectionParticleColor();
 
 	// Determine rendering quality used to render the particles.
 	ParticlePrimitive::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
@@ -213,7 +216,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 		_particleBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
-				particleDisplay->particleShape());
+				particleDisplay->particleShape(),
+				false);
 		_particleBuffer->setSize(1);
 	}
 	_particleBuffer->setParticleColor(color * 0.5f + highlightColor * 0.5f);
@@ -227,7 +231,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 		_highlightBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
-				particleDisplay->particleShape());
+				particleDisplay->particleShape(),
+				false);
 		_highlightBuffer->setSize(1);
 		_highlightBuffer->setParticleColor(highlightColor);
 	}

@@ -35,8 +35,8 @@ class OVITO_CORE_EXPORT DefaultParticlePrimitive : public ParticlePrimitive
 public:
 
 	/// Constructor.
-	DefaultParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
-		ParticlePrimitive(shadingMode, renderingQuality, shape) {}
+	DefaultParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape, bool translucentParticles) :
+		ParticlePrimitive(shadingMode, renderingQuality, shape, translucentParticles) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) override {
@@ -65,22 +65,17 @@ public:
 	}
 
 	/// \brief Sets the colors of the particles.
+	virtual void setParticleColors(const ColorA* colors) override {
+		std::copy(colors, colors + _colorsBuffer.size(), _colorsBuffer.begin());
+	}
+
+	/// \brief Sets the colors of the particles.
 	virtual void setParticleColors(const Color* colors) override {
 		std::copy(colors, colors + _colorsBuffer.size(), _colorsBuffer.begin());
 	}
 
 	/// \brief Sets the color of all particles to the given value.
-	virtual void setParticleColor(const Color color) override {
-		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
-	}
-
-	/// \brief Sets the colors and alpha values of the particles.
-	virtual void setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions) override {
-		std::copy(colors, colors + _colorsBuffer.size(), _colorsBuffer.begin());
-	}
-
-	/// \brief Sets the color and alpha values of all particles to the given value.
-	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) override {
+	virtual void setParticleColor(const ColorA color) override {
 		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 

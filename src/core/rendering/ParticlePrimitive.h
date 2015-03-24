@@ -58,8 +58,8 @@ public:
 public:
 
 	/// Constructor.
-	ParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape = SphericalShape)
-		: _shadingMode(shadingMode), _renderingQuality(renderingQuality), _particleShape(shape) {}
+	ParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape, bool translucentParticles)
+		: _shadingMode(shadingMode), _renderingQuality(renderingQuality), _particleShape(shape), _translucentParticles(translucentParticles) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
@@ -77,16 +77,13 @@ public:
 	virtual void setParticleRadius(FloatType radius) = 0;
 
 	/// \brief Sets the colors of the particles.
+	virtual void setParticleColors(const ColorA* colors) = 0;
+
+	/// \brief Sets the colors of the particles.
 	virtual void setParticleColors(const Color* colors) = 0;
 
 	/// \brief Sets the color of all particles to the given value.
-	virtual void setParticleColor(const Color color) = 0;
-
-	/// \brief Sets the colors and alpha values of the particles.
-	virtual void setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions) = 0;
-
-	/// \brief Sets the color and alpha value of all particles to the given value.
-	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) = 0;
+	virtual void setParticleColor(const ColorA color) = 0;
 
 	/// \brief Sets the aspherical shape of the particles.
 	virtual void setParticleShapes(const Vector3* shapes) = 0;
@@ -112,6 +109,9 @@ public:
 	/// \return false if the shape cannot be changed after the buffer has been created; true otherwise.
 	virtual bool setParticleShape(ParticleShape shape) { _particleShape = shape; return true; }
 
+	/// \brief Returns whether particles are displayed as semi-transparent if their alpha color value is smaller than one.
+	bool translucentParticles() const { return _translucentParticles; }
+
 private:
 
 	/// Controls the shading of particles.
@@ -122,6 +122,10 @@ private:
 
 	/// Controls the shape of particles.
 	ParticleShape _particleShape;
+
+	/// Determines whether particles may be semi-transparent.
+	/// If false, the alpha color value is ignored.
+	bool _translucentParticles;
 };
 
 OVITO_END_INLINE_NAMESPACE

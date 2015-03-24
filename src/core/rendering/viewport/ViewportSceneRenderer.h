@@ -79,7 +79,8 @@ public:
 
 	/// Requests a new particle geometry buffer from the renderer.
 	virtual std::shared_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
-			ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) override;
+			ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape,
+			bool translucentParticles) override;
 
 	/// Requests a new text geometry buffer from the renderer.
 	virtual std::shared_ptr<TextPrimitive> createTextPrimitive() override;

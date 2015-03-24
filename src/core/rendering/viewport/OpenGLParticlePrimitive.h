@@ -38,13 +38,13 @@ public:
 
 	/// Constructor.
 	OpenGLParticlePrimitive(ViewportSceneRenderer* renderer,
-			ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape);
+			ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape, bool translucentParticles);
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) override;
 
 	/// \brief Returns the number of particles stored in the buffer.
-	virtual int particleCount() const override { return _positionsBuffer.elementCount(); }
+	virtual int particleCount() const override { return _particleCount; }
 
 	/// \brief Sets the coordinates of the particles.
 	virtual void setParticlePositions(const Point3* positions) override;
@@ -56,16 +56,13 @@ public:
 	virtual void setParticleRadius(FloatType radius) override;
 
 	/// \brief Sets the colors of the particles.
+	virtual void setParticleColors(const ColorA* colors) override;
+
+	/// \brief Sets the colors of the particles.
 	virtual void setParticleColors(const Color* colors) override;
 
 	/// \brief Sets the color of all particles to the given value.
-	virtual void setParticleColor(const Color color) override;
-
-	/// \brief Sets the colors and alpha values of the particles.
-	virtual void setParticleColorsWithAlpha(const ColorA* colors, const Point3* positions) override;
-
-	/// \brief Sets the color and alpha value of all particles to the given value.
-	virtual void setParticleColorWithAlpha(const ColorA color, const Point3* positions) override;
+	virtual void setParticleColor(const ColorA color) override;
 
 	/// \brief Sets the aspherical shapes of the particles.
 	virtual void setParticleShapes(const Vector3* shapes) override;
@@ -117,20 +114,26 @@ private:
 		CUBE_GEOMETRY	///< Render a cube for each particle (possibly using a raytracing fragment shader to make it look spherical).
 	};
 
+	/// The maximum size (in bytes) of a single VBO buffer.
+	int _maxVBOSize;
+
+	/// The maximum number of render elements per VBO buffer.
+	int _chunkSize;
+
+	/// The number of particles stored in the class.
+	int _particleCount;
+
 	/// The internal OpenGL vertex buffer that stores the particle positions.
-	OpenGLBuffer<Point3> _positionsBuffer;
+	std::vector<OpenGLBuffer<Point3>> _positionsBuffers;
 
 	/// The internal OpenGL vertex buffer that stores the particle radii.
-	OpenGLBuffer<FloatType> _radiiBuffer;
+	std::vector<OpenGLBuffer<FloatType>> _radiiBuffers;
 
 	/// The internal OpenGL vertex buffer that stores the particle colors.
-	OpenGLBuffer<Color> _colorsBuffer;
-
-	/// The internal OpenGL vertex buffer that stores the particle colors and particle transparencies.
-	OpenGLBuffer<ColorA> _colorsAndAlphaBuffer;
+	std::vector<OpenGLBuffer<ColorA>> _colorsBuffers;
 
 	/// The internal OpenGL vertex buffer that stores the shape of aspherical particles.
-	OpenGLBuffer<Vector3> _shapeBuffer;
+	std::vector<OpenGLBuffer<Vector3>> _shapeBuffers;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;

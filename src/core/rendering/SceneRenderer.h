@@ -138,7 +138,8 @@ public:
 	/// Requests a new particle geometry buffer from the renderer.
 	virtual std::shared_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode = ParticlePrimitive::NormalShading,
 			ParticlePrimitive::RenderingQuality renderingQuality = ParticlePrimitive::MediumQuality,
-			ParticlePrimitive::ParticleShape shape = ParticlePrimitive::SphericalShape) = 0;
+			ParticlePrimitive::ParticleShape shape = ParticlePrimitive::SphericalShape,
+			bool translucentParticles = false) = 0;
 
 	/// Requests a new text geometry buffer from the renderer.
 	virtual std::shared_ptr<TextPrimitive> createTextPrimitive() = 0;

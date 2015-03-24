@@ -64,46 +64,35 @@ public:
 
 private:
 
-	struct ColoredVertexWithNormal {
-		Point_3<float> pos;
-		Vector_3<float> normal;
-		ColorAT<float> color;
-	};
-
-	struct ColoredVertexWithVector {
-		Point_3<float> pos;
-		Point_3<float> base;
-		Vector_3<float> dir;
-		ColorAT<float> color;
-	};
-
-	struct ColoredVertexWithElementInfo {
-		Point_3<float> pos;
-		Point_3<float> base;
-		Vector_3<float> dir;
-		ColorAT<float> color;
-		float radius;
-	};
-
 	/// \brief Creates the geometry for a single cylinder element.
 	void createCylinderElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width);
 
 	/// \brief Creates the geometry for a single arrow element.
 	void createArrowElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width);
 
-	/// \brief Renders the elements in shaded mode.
-	void renderShadedTriangles(ViewportSceneRenderer* renderer);
+	/// Renders the geometry as triangle mesh with normals.
+	void renderWithNormals(ViewportSceneRenderer* renderer);
 
-	/// \brief Renders the cylinder elements in using a raytracing hardware shader.
-	void renderRaytracedCylinders(ViewportSceneRenderer* renderer);
-
-	/// \brief Renders the arrows in flat mode.
-	void renderFlat(ViewportSceneRenderer* renderer);
+	/// Renders the geometry as with extra information passed to the vertex shader.
+	void renderWithElementInfo(ViewportSceneRenderer* renderer);
 
 private:
 
-	/// The internal OpenGL vertex buffers that store the vertices and colors.
-	std::vector<QOpenGLBuffer> _glGeometryBuffers;
+	/// Per-vertex data stored in VBOs when rendering triangle geometry.
+	struct VertexWithNormal {
+		Point_3<float> pos;
+		Vector_3<float> normal;
+		ColorAT<float> color;
+	};
+
+	/// Per-vertex data stored in VBOs when rendering raytraced cylinders.
+	struct VertexWithElementInfo {
+		Point_3<float> pos;
+		Point_3<float> base;
+		Vector_3<float> dir;
+		ColorAT<float> color;
+		float radius;
+	};
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
@@ -117,17 +106,26 @@ private:
 	/// The number of mesh vertices generated per element.
 	int _verticesPerElement;
 
-	/// Pointer to the memory-mapped VBO buffer.
-	void* _mappedBuffer;
+	/// The OpenGL vertex buffer objects that store the vertices with normal vectors for polygon rendering.
+	std::vector<OpenGLBuffer<VertexWithNormal>> _verticesWithNormals;
 
-	/// The index of the VBO buffer currently mapped to memory.
-	int _mappedBufferIndex;
+	/// The OpenGL vertex buffer objects that store the vertices with full element info for raytraced shader rendering.
+	std::vector<OpenGLBuffer<VertexWithElementInfo>> _verticesWithElementInfo;
+
+	/// The index of the VBO chunk currently mapped to memory.
+	int _mappedChunkIndex;
+
+	/// Pointer to the memory-mapped VBO buffer.
+	VertexWithNormal* _mappedVerticesWithNormals;
+
+	/// Pointer to the memory-mapped VBO buffer.
+	VertexWithElementInfo* _mappedVerticesWithElementInfo;
 
 	/// The maximum size (in bytes) of a single VBO buffer.
 	int _maxVBOSize;
 
 	/// The maximum number of render elements per VBO buffer.
-	int _maxVBOElements;
+	int _chunkSize;
 
 	// The OpenGL shader programs that are used to render the arrows.
 	QOpenGLShaderProgram* _flatShader;

@@ -32,7 +32,8 @@ OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, Arro
 	ArrowPrimitive(shape, shadingMode, renderingQuality),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_elementCount(-1), _cylinderSegments(16), _verticesPerElement(0),
-	_mappedBuffer(nullptr), _maxVBOSize(32*1024*1024), _mappedBufferIndex(-1)
+	_mappedVerticesWithNormals(nullptr), _mappedVerticesWithElementInfo(nullptr),
+	_maxVBOSize(4*1024*1024), _mappedChunkIndex(-1)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
@@ -76,84 +77,79 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 {
 	OVITO_ASSERT(elementCount >= 0);
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	OVITO_ASSERT(_mappedBuffer == nullptr);
-	OVITO_ASSERT(_mappedBufferIndex == -1);
-	_glGeometryBuffers.clear();
+	OVITO_ASSERT(_mappedChunkIndex == -1);
+	_verticesWithNormals.clear();
+	_verticesWithElementInfo.clear();
 
 	_elementCount = elementCount;
-	size_t bytesPerVertex = 0;
+	bool renderMesh = true;
+	int stripsPerElement;
+	int fansPerElement;
+	int verticesPerStrip;
+	int verticesPerFan;
 	if(shadingMode() == NormalShading) {
-		int cylinderVertexCount = _cylinderSegments * 2 + 2;
-		int discVertexCount = _cylinderSegments;
-		int cylinderCount, discCount;
-		bytesPerVertex = sizeof(ColoredVertexWithNormal);
+		verticesPerStrip = _cylinderSegments * 2 + 2;
+		verticesPerFan = _cylinderSegments;
 		if(shape() == ArrowShape) {
-			cylinderCount = 2;
-			discCount = 2;
+			stripsPerElement = 2;
+			fansPerElement = 2;
 		}
 		else {
-			cylinderCount = 1;
-			discCount = 2;
+			stripsPerElement = 1;
+			fansPerElement = 2;
 			if(renderingQuality() == HighQuality) {
-				cylinderVertexCount = 14;
-				discCount = discVertexCount = 0;
-				bytesPerVertex = sizeof(ColoredVertexWithElementInfo);
+				verticesPerStrip = 14;
+				fansPerElement = verticesPerFan = 0;
+				renderMesh = false;
 			}
-		}
-		_verticesPerElement = cylinderCount * cylinderVertexCount + discCount * discVertexCount;
-		_maxVBOElements = std::min(_maxVBOSize / _verticesPerElement / (int)bytesPerVertex, _elementCount);
-
-		// Prepare arrays to be passed to the glMultiDrawArrays() function.
-		_stripPrimitiveVertexStarts.resize(_maxVBOElements * cylinderCount);
-		_stripPrimitiveVertexCounts.resize(_maxVBOElements * cylinderCount);
-		_fanPrimitiveVertexStarts.resize(_maxVBOElements * discCount);
-		_fanPrimitiveVertexCounts.resize(_maxVBOElements * discCount);
-		std::fill(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.end(), cylinderVertexCount);
-		std::fill(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.end(), discVertexCount);
-		auto ps_strip = _stripPrimitiveVertexStarts.begin();
-		auto ps_fan = _fanPrimitiveVertexStarts.begin();
-		GLint baseIndex = 0;
-		for(GLint index = 0; index < _maxVBOElements; index++) {
-			for(int p = 0; p < cylinderCount; p++, baseIndex += cylinderVertexCount)
-				*ps_strip++ = baseIndex;
-			for(int p = 0; p < discCount; p++, baseIndex += discVertexCount)
-				*ps_fan++ = baseIndex;
 		}
 	}
 	else if(shadingMode() == FlatShading) {
+		fansPerElement = 1;
+		stripsPerElement = 0;
+		verticesPerStrip = 0;
 		if(shape() == ArrowShape)
-			_verticesPerElement = 7;
+			verticesPerFan = 7;
 		else
-			_verticesPerElement = 4;
-		bytesPerVertex = sizeof(ColoredVertexWithVector);
-		_maxVBOElements = std::min(_maxVBOSize / _verticesPerElement / (int)bytesPerVertex, _elementCount);
-
-		// Prepare arrays to be passed to the glMultiDrawArrays() function.
-		_fanPrimitiveVertexStarts.resize(_maxVBOElements);
-		GLint startIndex = 0;
-		for(auto& i : _fanPrimitiveVertexStarts) {
-			i = startIndex;
-			startIndex += _verticesPerElement;
-		}
-		_fanPrimitiveVertexCounts.resize(_maxVBOElements);
-		std::fill(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.end(), _verticesPerElement);
-		_stripPrimitiveVertexStarts.clear();
-		_stripPrimitiveVertexCounts.clear();
+			verticesPerFan = 4;
+		renderMesh = false;
 	}
 	else OVITO_ASSERT(false);
 
-	// Allocate vertex buffer objects.
-	for(int i = _elementCount; i > 0; i -= _maxVBOElements) {
-		int chunkSize = std::min(i, _maxVBOElements);
-		QOpenGLBuffer vbo(QOpenGLBuffer::VertexBuffer);
-		if(!vbo.create())
-			throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
-		vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-		if(!vbo.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-		vbo.allocate(chunkSize * _verticesPerElement * bytesPerVertex);
-		vbo.release();
-		_glGeometryBuffers.push_back(vbo);
+	// Determine the VBO chunk size.
+	_verticesPerElement = stripsPerElement * verticesPerStrip + fansPerElement * verticesPerFan;
+	int bytesPerVertex = renderMesh ? sizeof(VertexWithNormal) : sizeof(VertexWithElementInfo);
+	_chunkSize = std::min(_maxVBOSize / _verticesPerElement / bytesPerVertex, _elementCount);
+
+	// Allocate VBOs.
+	for(int i = _elementCount; i > 0; i -= _chunkSize) {
+		if(renderMesh) {
+			OpenGLBuffer<VertexWithNormal> buffer;
+			buffer.create(QOpenGLBuffer::StaticDraw, std::min(i, _chunkSize), _verticesPerElement);
+			_verticesWithNormals.push_back(buffer);
+		}
+		else {
+			OpenGLBuffer<VertexWithElementInfo> buffer;
+			buffer.create(QOpenGLBuffer::StaticDraw, std::min(i, _chunkSize), _verticesPerElement);
+			_verticesWithElementInfo.push_back(buffer);
+		}
+	}
+	OVITO_REPORT_OPENGL_ERRORS();
+
+	// Prepare arrays to be passed to the glMultiDrawArrays() function.
+	_stripPrimitiveVertexStarts.resize(_chunkSize * stripsPerElement);
+	_stripPrimitiveVertexCounts.resize(_chunkSize * stripsPerElement);
+	_fanPrimitiveVertexStarts.resize(_chunkSize * fansPerElement);
+	_fanPrimitiveVertexCounts.resize(_chunkSize * fansPerElement);
+	std::fill(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.end(), verticesPerStrip);
+	std::fill(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.end(), verticesPerFan);
+	auto ps_strip = _stripPrimitiveVertexStarts.begin();
+	auto ps_fan = _fanPrimitiveVertexStarts.begin();
+	for(GLint index = 0, baseIndex = 0; index < _chunkSize; index++) {
+		for(int p = 0; p < stripsPerElement; p++, baseIndex += verticesPerStrip)
+			*ps_strip++ = baseIndex;
+		for(int p = 0; p < fansPerElement; p++, baseIndex += verticesPerFan)
+			*ps_fan++ = baseIndex;
 	}
 
 	// Precompute cos() and sin() functions.
@@ -166,7 +162,6 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 			_sinTable[i] = std::sin(angle);
 		}
 	}
-	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 /******************************************************************************
@@ -176,29 +171,26 @@ void OpenGLArrowPrimitive::setElement(int index, const Point3& pos, const Vector
 {
 	OVITO_ASSERT(index >= 0 && index < _elementCount);
 
-	int bufferIndex = index / _maxVBOElements;
-	OVITO_ASSERT(bufferIndex >= 0 && bufferIndex < _glGeometryBuffers.size());
-	if(bufferIndex != _mappedBufferIndex) {
-		if(_mappedBufferIndex != -1) {
-			_glGeometryBuffers[_mappedBufferIndex].unmap();
-			_glGeometryBuffers[_mappedBufferIndex].release();
+	int chunkIndex = index / _chunkSize;
+	if(chunkIndex != _mappedChunkIndex) {
+		if(!_verticesWithNormals.empty()) {
+			if(_mappedChunkIndex != -1)
+				_verticesWithNormals[_mappedChunkIndex].unmap();
+			_mappedVerticesWithNormals = _verticesWithNormals[chunkIndex].map(QOpenGLBuffer::WriteOnly);
 		}
-		if(!_glGeometryBuffers[bufferIndex].bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-		_mappedBuffer = _glGeometryBuffers[bufferIndex].map(QOpenGLBuffer::WriteOnly);
-		OVITO_CHECK_POINTER(_mappedBuffer);
-		if(!_mappedBuffer)
-			throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
-		_mappedBufferIndex = bufferIndex;
+		else if(!_verticesWithElementInfo.empty()) {
+			if(_mappedChunkIndex != -1)
+				_verticesWithElementInfo[_mappedChunkIndex].unmap();
+			_mappedVerticesWithElementInfo = _verticesWithElementInfo[chunkIndex].map(QOpenGLBuffer::WriteOnly);
+		}
+		_mappedChunkIndex = chunkIndex;
 	}
 
-	OVITO_ASSERT(_mappedBuffer != nullptr);
-	int elementIndex = index - _mappedBufferIndex * _maxVBOElements;
-
+	int relativeIndex = index - _mappedChunkIndex * _chunkSize;
 	if(shape() == ArrowShape)
-		createArrowElement(elementIndex, pos, dir, color, width);
+		createArrowElement(relativeIndex, pos, dir, color, width);
 	else
-		createCylinderElement(elementIndex, pos, dir, color, width);
+		createCylinderElement(relativeIndex, pos, dir, color, width);
 }
 
 /******************************************************************************
@@ -231,7 +223,8 @@ void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, c
 		Point_3<float> v2 = v1 + dir;
 
 		if(renderingQuality() != HighQuality) {
-			ColoredVertexWithNormal* vertex = static_cast<ColoredVertexWithNormal*>(_mappedBuffer) + (index * _verticesPerElement);
+			OVITO_ASSERT(_mappedVerticesWithNormals);
+			VertexWithNormal* vertex = _mappedVerticesWithNormals + (index * _verticesPerElement);
 
 			// Generate vertices for cylinder mantle.
 			for(int i = 0; i <= _cylinderSegments; i++) {
@@ -269,7 +262,8 @@ void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, c
 		}
 		else {
 			// Create bounding box geometry around cylinder for raytracing.
-			ColoredVertexWithElementInfo* vertex = static_cast<ColoredVertexWithElementInfo*>(_mappedBuffer) + (index * _verticesPerElement);
+			OVITO_ASSERT(_mappedVerticesWithElementInfo);
+			VertexWithElementInfo* vertex = _mappedVerticesWithElementInfo + (index * _verticesPerElement);
 			u *= width;
 			v *= width;
 			Point3 corners[8] = {
@@ -304,7 +298,8 @@ void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, c
 		ColorAT<float> c = color;
 		Point_3<float> base = pos;
 
-		ColoredVertexWithVector* vertices = static_cast<ColoredVertexWithVector*>(_mappedBuffer) + (index * _verticesPerElement);
+		OVITO_ASSERT(_mappedVerticesWithElementInfo);
+		VertexWithElementInfo* vertices = _mappedVerticesWithElementInfo + (index * _verticesPerElement);
 		vertices[0].pos = Point_3<float>(0, width, 0);
 		vertices[1].pos = Point_3<float>(0, -width, 0);
 		vertices[2].pos = Point_3<float>(length, -width, 0);
@@ -359,7 +354,8 @@ void OpenGLArrowPrimitive::createArrowElement(int index, const Point3& pos, cons
 			r = arrowHeadRadius * length / arrowHeadLength;
 		}
 
-		ColoredVertexWithNormal* vertex = static_cast<ColoredVertexWithNormal*>(_mappedBuffer) + (index * _verticesPerElement);
+		OVITO_ASSERT(_mappedVerticesWithNormals);
+		VertexWithNormal* vertex = _mappedVerticesWithNormals + (index * _verticesPerElement);
 
 		// Generate vertices for cylinder.
 		for(int i = 0; i <= _cylinderSegments; i++) {
@@ -421,7 +417,9 @@ void OpenGLArrowPrimitive::createArrowElement(int index, const Point3& pos, cons
 		ColorAT<float> c = color;
 		Point_3<float> base = pos;
 
-		ColoredVertexWithVector* vertices = static_cast<ColoredVertexWithVector*>(_mappedBuffer) + (index * _verticesPerElement);
+		OVITO_ASSERT(_mappedVerticesWithElementInfo);
+		VertexWithElementInfo* vertices = _mappedVerticesWithElementInfo + (index * _verticesPerElement);
+
 		if(length > arrowHeadLength) {
 			vertices[0].pos = Point_3<float>(length, 0, 0);
 			vertices[1].pos = Point_3<float>(length - arrowHeadLength, arrowHeadRadius, 0);
@@ -457,12 +455,15 @@ void OpenGLArrowPrimitive::endSetElements()
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_elementCount >= 0);
 
-	if(_mappedBufferIndex != -1) {
-		_glGeometryBuffers[_mappedBufferIndex].unmap();
-		_glGeometryBuffers[_mappedBufferIndex].release();
+	if(_mappedChunkIndex != -1) {
+		if(!_verticesWithNormals.empty())
+			_verticesWithNormals[_mappedChunkIndex].unmap();
+		if(!_verticesWithElementInfo.empty())
+			_verticesWithElementInfo[_mappedChunkIndex].unmap();
 	}
-	_mappedBuffer = nullptr;
-	_mappedBufferIndex = -1;
+	_mappedVerticesWithNormals = nullptr;
+	_mappedVerticesWithElementInfo = nullptr;
+	_mappedChunkIndex = -1;
 	OVITO_REPORT_OPENGL_ERRORS();
 }
 
@@ -484,7 +485,7 @@ void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 	OVITO_REPORT_OPENGL_ERRORS();
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_elementCount >= 0);
-	OVITO_ASSERT(_mappedBuffer == nullptr);
+	OVITO_ASSERT(_mappedChunkIndex == -1);
 
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
@@ -495,20 +496,20 @@ void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 
 	if(shadingMode() == NormalShading) {
 		if(renderingQuality() == HighQuality && shape() == CylinderShape)
-			renderRaytracedCylinders(vpRenderer);
+			renderWithElementInfo(vpRenderer);
 		else
-			renderShadedTriangles(vpRenderer);
+			renderWithNormals(vpRenderer);
 	}
 	else if(shadingMode() == FlatShading) {
-		renderFlat(vpRenderer);
+		renderWithElementInfo(vpRenderer);
 	}
 	OVITO_REPORT_OPENGL_ERRORS();
 }
 
 /******************************************************************************
-* Renders the arrows in shaded mode.
+* Renders the geometry as triangle mesh with normals.
 ******************************************************************************/
-void OpenGLArrowPrimitive::renderShadedTriangles(ViewportSceneRenderer* renderer)
+void OpenGLArrowPrimitive::renderWithNormals(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -521,80 +522,70 @@ void OpenGLArrowPrimitive::renderShadedTriangles(ViewportSceneRenderer* renderer
 	if(!shader->bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
-	shader->setUniformValue("modelview_projection_matrix",
-			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
+	shader->setUniformValue("modelview_projection_matrix", (QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
 	if(!renderer->isPicking())
 		shader->setUniformValue("normal_matrix", (QMatrix3x3)(renderer->modelViewTM().linear().inverse().transposed()));
 
 	GLint pickingBaseID;
 	if(renderer->isPicking()) {
 		pickingBaseID = renderer->registerSubObjectIDs(elementCount());
-		renderer->activateVertexIDs(shader, _maxVBOElements * _verticesPerElement, true);
+		renderer->activateVertexIDs(shader, _chunkSize * _verticesPerElement, true);
 	}
 
-	shader->enableAttributeArray("vertex_pos");
-	if(!renderer->isPicking()) {
-		shader->enableAttributeArray("vertex_normal");
-		shader->enableAttributeArray("vertex_color");
-	}
-
-	for(int chunkIndex = 0; chunkIndex < _glGeometryBuffers.size(); chunkIndex++, pickingBaseID += _maxVBOElements) {
-		int chunkStart = chunkIndex * _maxVBOElements;
-		int chunkSize = std::min(_elementCount - chunkStart, _maxVBOElements);
+	for(int chunkIndex = 0; chunkIndex < _verticesWithNormals.size(); chunkIndex++, pickingBaseID += _chunkSize) {
+		int chunkStart = chunkIndex * _chunkSize;
+		int chunkSize = std::min(_elementCount - chunkStart, _chunkSize);
 
 		if(renderer->isPicking())
 			shader->setUniformValue("pickingBaseID", pickingBaseID);
 
-		_glGeometryBuffers[chunkIndex].bind();
-		if(renderer->glformat().majorVersion() < 3) {
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-			OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithVector), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithVector, pos))));
-		}
-		shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal));
+		_verticesWithNormals[chunkIndex].bindPositions(renderer, shader, offsetof(VertexWithNormal, pos));
 		if(!renderer->isPicking()) {
-			shader->setAttributeBuffer("vertex_normal", GL_FLOAT, offsetof(ColoredVertexWithNormal, normal), 3, sizeof(ColoredVertexWithNormal));
-			shader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithNormal, color), 4, sizeof(ColoredVertexWithNormal));
+			_verticesWithNormals[chunkIndex].bindNormals(renderer, shader, offsetof(VertexWithNormal, normal));
+			_verticesWithNormals[chunkIndex].bindColors(renderer, shader, 4, offsetof(VertexWithNormal, color));
 		}
-		_glGeometryBuffers[chunkIndex].release();
 
-		int stripPrimitivesPerElement = _stripPrimitiveVertexCounts.size() / _maxVBOElements;
-		if(renderer->isPicking()) {
-			int stripVerticesPerElement = std::accumulate(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.begin() + stripPrimitivesPerElement, 0);
-			OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)stripVerticesPerElement));
-		}
+		int stripPrimitivesPerElement = _stripPrimitiveVertexCounts.size() / _chunkSize;
+		int stripVerticesPerElement = std::accumulate(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.begin() + stripPrimitivesPerElement, 0);
+		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)stripVerticesPerElement));
 		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), stripPrimitivesPerElement * chunkSize));
 
-		int fanPrimitivesPerElement = _fanPrimitiveVertexCounts.size() / _maxVBOElements;
-		if(renderer->isPicking()) {
-			int fanVerticesPerElement = std::accumulate(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.begin() + fanPrimitivesPerElement, 0);
-			OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)fanVerticesPerElement));
-		}
+		int fanPrimitivesPerElement = _fanPrimitiveVertexCounts.size() / _chunkSize;
+		int fanVerticesPerElement = std::accumulate(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.begin() + fanPrimitivesPerElement, 0);
+		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)fanVerticesPerElement));
 		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), fanPrimitivesPerElement * chunkSize));
+
+		_verticesWithNormals[chunkIndex].detachPositions(renderer, shader);
+		if(!renderer->isPicking()) {
+			_verticesWithNormals[chunkIndex].detachNormals(renderer, shader);
+			_verticesWithNormals[chunkIndex].detachColors(renderer, shader);
+		}
 	}
-	shader->disableAttributeArray("vertex_pos");
-	if(!renderer->isPicking()) {
-		shader->disableAttributeArray("vertex_normal");
-		shader->disableAttributeArray("vertex_color");
-	}
-	else {
+	if(renderer->isPicking())
 		renderer->deactivateVertexIDs(shader, true);
-	}
-	if(renderer->glformat().majorVersion() < 3)
-		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 
 	shader->release();
 }
 
 /******************************************************************************
-* Renders the cylinder elements in using a raytracing hardware shader.
+* Renders the geometry as with extra information passed to the vertex shader.
 ******************************************************************************/
-void OpenGLArrowPrimitive::renderRaytracedCylinders(ViewportSceneRenderer* renderer)
+void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
-	if(!renderer->isPicking())
-		shader = _raytracedCylinderShader;
-	else
-		shader = _raytracedCylinderPickingShader;
+	if(shadingMode() == NormalShading) {
+		if(!renderer->isPicking())
+			shader = _raytracedCylinderShader;
+		else
+			shader = _raytracedCylinderPickingShader;
+	}
+	else if(shadingMode() == FlatShading) {
+		if(!renderer->isPicking())
+			shader = _flatShader;
+		else
+			shader = _flatPickingShader;
+	}
+	else return;
 
 	glEnable(GL_CULL_FACE);
 
@@ -610,6 +601,12 @@ void OpenGLArrowPrimitive::renderRaytracedCylinders(ViewportSceneRenderer* rende
 	shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer->projParams().inverseProjectionMatrix);
 	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
 
+	AffineTransformation viewModelTM = renderer->modelViewTM().inverse();
+	Vector3 eye_pos = viewModelTM.translation();
+	shader->setUniformValue("eye_pos", eye_pos.x(), eye_pos.y(), eye_pos.z());
+	Vector3 viewDir = viewModelTM * Vector3(0,0,1);
+	shader->setUniformValue("parallel_view_dir", viewDir.x(), viewDir.y(), viewDir.z());
+
 	GLint viewportCoords[4];
 	glGetIntegerv(GL_VIEWPORT, viewportCoords);
 	shader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
@@ -618,132 +615,44 @@ void OpenGLArrowPrimitive::renderRaytracedCylinders(ViewportSceneRenderer* rende
 	GLint pickingBaseID;
 	if(renderer->isPicking()) {
 		pickingBaseID = renderer->registerSubObjectIDs(elementCount());
-		renderer->activateVertexIDs(shader, _maxVBOElements * _verticesPerElement, true);
+		renderer->activateVertexIDs(shader, _chunkSize * _verticesPerElement, true);
 		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
 	}
 
-	shader->enableAttributeArray("vertex_pos");
-	if(!renderer->isPicking()) {
-		shader->enableAttributeArray("cylinder_color");
+	for(int chunkIndex = 0; chunkIndex < _verticesWithElementInfo.size(); chunkIndex++, pickingBaseID += _chunkSize) {
+		int chunkStart = chunkIndex * _chunkSize;
+		int chunkSize = std::min(_elementCount - chunkStart, _chunkSize);
+
+		if(renderer->isPicking())
+			shader->setUniformValue("pickingBaseID", pickingBaseID);
+
+		_verticesWithElementInfo[chunkIndex].bindPositions(renderer, shader, offsetof(VertexWithElementInfo, pos));
+		_verticesWithElementInfo[chunkIndex].bind(renderer, shader, "cylinder_base", GL_FLOAT, offsetof(VertexWithElementInfo, base), 3, sizeof(VertexWithElementInfo));
+		_verticesWithElementInfo[chunkIndex].bind(renderer, shader, "cylinder_axis", GL_FLOAT, offsetof(VertexWithElementInfo, dir), 3, sizeof(VertexWithElementInfo));
+		_verticesWithElementInfo[chunkIndex].bind(renderer, shader, "cylinder_radius", GL_FLOAT, offsetof(VertexWithElementInfo, radius), 1, sizeof(VertexWithElementInfo));
+		if(!renderer->isPicking())
+			_verticesWithElementInfo[chunkIndex].bindColors(renderer, shader, 4, offsetof(VertexWithElementInfo, color));
+
+		int stripPrimitivesPerElement = _stripPrimitiveVertexCounts.size() / _chunkSize;
+		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), stripPrimitivesPerElement * chunkSize));
+
+		int fanPrimitivesPerElement = _fanPrimitiveVertexCounts.size() / _chunkSize;
+		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), fanPrimitivesPerElement * chunkSize));
+
+		_verticesWithElementInfo[chunkIndex].detachPositions(renderer, shader);
+		_verticesWithElementInfo[chunkIndex].detach(renderer, shader, "cylinder_base");
+		_verticesWithElementInfo[chunkIndex].detach(renderer, shader, "cylinder_axis");
+		_verticesWithElementInfo[chunkIndex].detach(renderer, shader, "cylinder_radius");
+		if(!renderer->isPicking())
+			_verticesWithElementInfo[chunkIndex].detachColors(renderer, shader);
 	}
 	shader->enableAttributeArray("cylinder_base");
 	shader->enableAttributeArray("cylinder_axis");
 	shader->enableAttributeArray("cylinder_radius");
 
-	for(int chunkIndex = 0; chunkIndex < _glGeometryBuffers.size(); chunkIndex++, pickingBaseID += _maxVBOElements) {
-		int chunkStart = chunkIndex * _maxVBOElements;
-		int chunkSize = std::min(_elementCount - chunkStart, _maxVBOElements);
 
-		if(renderer->isPicking())
-			shader->setUniformValue("pickingBaseID", pickingBaseID);
-
-		_glGeometryBuffers[chunkIndex].bind();
-		if(renderer->glformat().majorVersion() < 3) {
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-			OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithElementInfo), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithElementInfo, pos))));
-		}
-		shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, pos), 3, sizeof(ColoredVertexWithElementInfo));
-		if(!renderer->isPicking()) {
-			shader->setAttributeBuffer("cylinder_color", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, color), 4, sizeof(ColoredVertexWithElementInfo));
-		}
-		shader->setAttributeBuffer("cylinder_base", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, base), 3, sizeof(ColoredVertexWithElementInfo));
-		shader->setAttributeBuffer("cylinder_axis", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, dir), 3, sizeof(ColoredVertexWithElementInfo));
-		shader->setAttributeBuffer("cylinder_radius", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, radius), 1, sizeof(ColoredVertexWithElementInfo));
-		_glGeometryBuffers[chunkIndex].release();
-
-		int stripPrimitivesPerElement = _stripPrimitiveVertexCounts.size() / _maxVBOElements;
-		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), stripPrimitivesPerElement * chunkSize));
-	}
-
-	shader->disableAttributeArray("vertex_pos");
-	if(!renderer->isPicking())
-		shader->disableAttributeArray("cylinder_color");
-	else
+	if(renderer->isPicking())
 		renderer->deactivateVertexIDs(shader, true);
-	shader->disableAttributeArray("cylinder_base");
-	shader->disableAttributeArray("cylinder_axis");
-	shader->disableAttributeArray("cylinder_radius");
-	if(renderer->glformat().majorVersion() < 3)
-		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
-
-	shader->release();
-}
-
-/******************************************************************************
-* Renders the arrows in flat mode.
-******************************************************************************/
-void OpenGLArrowPrimitive::renderFlat(ViewportSceneRenderer* renderer)
-{
-	QOpenGLShaderProgram* shader;
-	if(!renderer->isPicking())
-		shader = _flatShader;
-	else
-		shader = _flatPickingShader;
-
-	if(!shader->bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
-
-	shader->setUniformValue("modelview_projection_matrix",
-			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
-	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
-	AffineTransformation viewModelTM = renderer->modelViewTM().inverse();
-	Vector3 eye_pos = viewModelTM.translation();
-	shader->setUniformValue("eye_pos", eye_pos.x(), eye_pos.y(), eye_pos.z());
-	Vector3 viewDir = viewModelTM * Vector3(0,0,1);
-	shader->setUniformValue("parallel_view_dir", viewDir.x(), viewDir.y(), viewDir.z());
-
-	if(renderer->isPicking()) {
-		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(elementCount())));
-		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
-	}
-
-	GLint pickingBaseID;
-	if(renderer->isPicking()) {
-		pickingBaseID = renderer->registerSubObjectIDs(elementCount());
-		renderer->activateVertexIDs(shader, _maxVBOElements * _verticesPerElement, true);
-		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
-	}
-
-	shader->enableAttributeArray("vertex_pos");
-	shader->enableAttributeArray("vector_base");
-	shader->enableAttributeArray("vector_dir");
-	if(!renderer->isPicking()) {
-		shader->enableAttributeArray("vertex_color");
-	}
-
-	for(int chunkIndex = 0; chunkIndex < _glGeometryBuffers.size(); chunkIndex++, pickingBaseID += _maxVBOElements) {
-		int chunkStart = chunkIndex * _maxVBOElements;
-		int chunkSize = std::min(_elementCount - chunkStart, _maxVBOElements);
-
-		if(renderer->isPicking())
-			shader->setUniformValue("pickingBaseID", pickingBaseID);
-
-		_glGeometryBuffers[chunkIndex].bind();
-		if(renderer->glformat().majorVersion() < 3) {
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-			OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithVector), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithVector, pos))));
-		}
-		shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithVector, pos), 3, sizeof(ColoredVertexWithVector));
-		shader->setAttributeBuffer("vector_base", GL_FLOAT, offsetof(ColoredVertexWithVector, base), 3, sizeof(ColoredVertexWithVector));
-		shader->setAttributeBuffer("vector_dir", GL_FLOAT, offsetof(ColoredVertexWithVector, dir), 3, sizeof(ColoredVertexWithVector));
-		if(!renderer->isPicking()) {
-			shader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithVector, color), 4, sizeof(ColoredVertexWithVector));
-		}
-		_glGeometryBuffers[chunkIndex].release();
-
-		int fanPrimitivesPerElement = _fanPrimitiveVertexCounts.size() / _maxVBOElements;
-		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), fanPrimitivesPerElement * chunkSize));
-	}
-
-	shader->disableAttributeArray("vertex_pos");
-	shader->disableAttributeArray("vector_base");
-	shader->disableAttributeArray("vector_dir");
-	if(!renderer->isPicking())
-		shader->disableAttributeArray("vertex_color");
-	else
-		renderer->deactivateVertexIDs(shader);
-	if(renderer->glformat().majorVersion() < 3)
-		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 
 	shader->release();
 }

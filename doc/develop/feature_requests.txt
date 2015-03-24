@@ -24,7 +24,7 @@ Unresolved OpenGL problems:
     (Group laptop, Intel 965/963 Graphics, GLSL 110, Windows, OpenGL 2.0)
 - System crash with NVidia GT 630 and Noveau graphics driver on Ubuntu 14.04. 
     Installing the propriatry Nvidia driver solves the issue.
-- Bonds displays doesn't work correctly on Farid's computer.
+- Bonds display doesn't work correctly on Farid's computer.
 
 Unresolved bugs:
 

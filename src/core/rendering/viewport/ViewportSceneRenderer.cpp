@@ -290,8 +290,9 @@ std::shared_ptr<LinePrimitive> ViewportSceneRenderer::createLinePrimitive()
 * Requests a new particle geometry buffer from the renderer.
 ******************************************************************************/
 std::shared_ptr<ParticlePrimitive> ViewportSceneRenderer::createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
-		ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) {
-	return std::make_shared<OpenGLParticlePrimitive>(this, shadingMode, renderingQuality, shape);
+		ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape,
+		bool translucentParticles) {
+	return std::make_shared<OpenGLParticlePrimitive>(this, shadingMode, renderingQuality, shape, translucentParticles);
 }
 
 /******************************************************************************

@@ -26,14 +26,15 @@ uniform float modelview_uniform_scale;
 uniform int pickingBaseID;
 uniform int verticesPerElement;
 
-#if __VERSION__ < 130
+#if __VERSION__ >= 130
+	in vec3 position;
+#else
 	#define in attribute
 	#define out varying
 	#define flat
 #endif
 
 // The vertex data
-in vec3 vertex_pos;
 in float vertexID;
 
 // The cylinder data:
@@ -50,21 +51,32 @@ flat out float cylinder_length;			// The length of the cylinder
 
 void main()
 {
-	// Compute color from object ID.
 #if __VERSION__ >= 130
+
+	// Compute color from object ID.
 	int objectID = pickingBaseID + (int(vertexID) / verticesPerElement);
 	cylinder_color_in = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);
+		
+	// Transform and project vertex position.
+	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
+
 #else
+
+	// Compute color from object ID.
 	float objectID = pickingBaseID + floor(vertexID / verticesPerElement);
 	cylinder_color_in = vec4(
 		floor(mod(objectID, 256.0)) / 255.0,
 		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
 		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
-		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);				
+		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);
+						
+	// Transform and project vertex position.
+	gl_Position = modelview_projection_matrix * gl_Vertex;
+
 #endif
 	
 	// Pass radius to fragment shader.
@@ -76,7 +88,4 @@ void main()
 
 	// Pass length to fragment shader.
 	cylinder_length = length(cylinder_view_axis);
-
-	// Transform and project vertex position.
-	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
 }

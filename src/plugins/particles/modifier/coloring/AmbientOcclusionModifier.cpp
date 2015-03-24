@@ -143,7 +143,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::perform()
 			try {
 				// Create particle buffer.
 				if(!particleBuffer || !particleBuffer->isValid(renderer)) {
-					particleBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::LowQuality, ParticlePrimitive::SphericalShape);
+					particleBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::LowQuality, ParticlePrimitive::SphericalShape, false);
 					particleBuffer->setSize(positions()->size());
 					particleBuffer->setParticlePositions(positions()->constDataPoint3());
 					particleBuffer->setParticleRadii(_particleRadii.data());

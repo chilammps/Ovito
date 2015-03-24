@@ -258,11 +258,12 @@ FloatType ParticleDisplay::particleRadius(size_t particleIndex, ParticleProperty
 /******************************************************************************
 * Determines the display color of a single particle.
 ******************************************************************************/
-Color ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty)
+ColorA ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty, ParticlePropertyObject* transparencyProperty)
 {
 	OVITO_ASSERT(colorProperty == nullptr || colorProperty->type() == ParticleProperty::ColorProperty);
 	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
 	OVITO_ASSERT(selectionProperty == nullptr || selectionProperty->type() == ParticleProperty::SelectionProperty);
+	OVITO_ASSERT(transparencyProperty == nullptr || transparencyProperty->type() == ParticleProperty::TransparencyProperty);
 
 	// Check if particle is selected.
 	if(selectionProperty) {
@@ -271,20 +272,27 @@ Color ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObjec
 			return selectionParticleColor();
 	}
 
+	ColorA c = defaultParticleColor();
 	if(colorProperty) {
 		// Take particle color directly from the color property.
 		OVITO_ASSERT(particleIndex < colorProperty->size());
-		return colorProperty->getColor(particleIndex);
+		c = colorProperty->getColor(particleIndex);
 	}
 	else if(typeProperty) {
 		// Return color based on particle types.
 		OVITO_ASSERT(particleIndex < typeProperty->size());
 		ParticleType* ptype = typeProperty->particleType(typeProperty->getInt(particleIndex));
 		if(ptype)
-			return ptype->color();
+			c = ptype->color();
 	}
 
-	return defaultParticleColor();
+	// Apply alpha component.
+	if(transparencyProperty) {
+		OVITO_ASSERT(particleIndex < transparencyProperty->size());
+		c.a() = FloatType(1) - transparencyProperty->getFloat(particleIndex);
+	}
+
+	return c;
 }
 
 /******************************************************************************
@@ -343,6 +351,7 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
 		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderQuality));
 		recreateBuffer |= !(_particleBuffer->setParticleShape(effectiveParticleShape));
+		recreateBuffer |= ((transparencyProperty != nullptr) != _particleBuffer->translucentParticles());
 	}
 
 	// Do we have to resize the render buffer?
@@ -374,7 +383,7 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, effectiveParticleShape);
+		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, effectiveParticleShape, transparencyProperty != nullptr);
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -425,26 +434,30 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 
 	// Update color buffer.
 	if(updateColors && particleCount) {
-		if(!transparencyProperty) {
-			// Fully opaque particles.
-			if(colorProperty && !selectionProperty) {
-				OVITO_ASSERT(colorProperty->size() == particleCount);
-				_particleBuffer->setParticleColors(colorProperty->constDataColor());
-			}
-			else {
-				std::vector<Color> colors(particleCount);
-				particleColors(colors, colorProperty, typeProperty, selectionProperty);
-				_particleBuffer->setParticleColors(colors.data());
-			}
+		if(colorProperty && !selectionProperty && !transparencyProperty) {
+			// Direct particle colors.
+			OVITO_ASSERT(colorProperty->size() == particleCount);
+			_particleBuffer->setParticleColors(colorProperty->constDataColor());
 		}
 		else {
-			// Translucent particles.
 			std::vector<Color> colors(particleCount);
 			particleColors(colors, colorProperty, typeProperty, selectionProperty);
-			std::vector<ColorA> colorsWithAlpha(particleCount);
-			for(int i = 0; i < particleCount; i++)
-				colorsWithAlpha[i] = ColorA(colors[i], FloatType(1) - transparencyProperty->getFloat(i));
-			_particleBuffer->setParticleColorsWithAlpha(colorsWithAlpha.data(), positionProperty ? positionProperty->constDataPoint3() : nullptr);
+			if(!transparencyProperty) {
+				_particleBuffer->setParticleColors(colors.data());
+			}
+			else {
+				// Add alpha channel based on transparency particle property.
+				std::vector<ColorA> colorsWithAlpha(particleCount);
+				const FloatType* t = transparencyProperty->constDataFloat();
+				auto c_in = colors.cbegin();
+				for(auto c_out = colorsWithAlpha.begin(); c_out != colorsWithAlpha.end(); ++c_out, ++c_in, ++t) {
+					c_out->r() = c_in->r();
+					c_out->g() = c_in->g();
+					c_out->b() = c_in->b();
+					c_out->a() = FloatType(1) - (*t);
+				}
+				_particleBuffer->setParticleColors(colorsWithAlpha.data());
+			}
 		}
 	}
 

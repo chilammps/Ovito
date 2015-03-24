@@ -24,20 +24,26 @@ uniform mat4 modelview_matrix;
 uniform mat4 modelview_projection_matrix;
 uniform float modelview_uniform_scale;
 
-#if __VERSION__ < 130
+#if __VERSION__ >= 130
+
+	in vec3 position;
+	in vec3 normal;
+	in vec4 color;
+
+#else
+
 	#define in attribute
 	#define out varying
 	#define flat
+	
+	#define color gl_Color
+	
 #endif
-
-// The vertex data
-in vec3 vertex_pos;
 
 // The cylinder data:
 in vec3 cylinder_base;				// The position of the cylinder in model coordinates.
 in vec3 cylinder_axis;				// The axis of the cylinder in model coordinates.
 in float cylinder_radius;			// The radius of the cylinder in model coordinates.
-in vec4 cylinder_color;
 
 // Outputs to fragment shader
 flat out vec4 cylinder_color_in;		// The base color of the cylinder.
@@ -49,7 +55,7 @@ flat out float cylinder_length;			// The length of the cylinder
 void main()
 {
 	// Pass color to fragment shader.
-	cylinder_color_in = cylinder_color;
+	cylinder_color_in = color;
 	
 	// Pass radius to fragment shader.
 	cylinder_radius_in = cylinder_radius * modelview_uniform_scale;
@@ -61,6 +67,11 @@ void main()
 	// Pass length to fragment shader.
 	cylinder_length = length(cylinder_view_axis);
 
+#if __VERSION__ >= 130
 	// Transform and project vertex position.
-	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
+	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
+#else
+	// Transform and project vertex position.
+	gl_Position = modelview_projection_matrix * gl_Vertex;
+#endif
 }
