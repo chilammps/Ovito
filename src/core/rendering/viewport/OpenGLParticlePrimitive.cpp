@@ -533,11 +533,10 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 
 		// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
 		if(!renderer->isPicking() && translucentParticles() && !_particleCoordinates.empty()) {
-			Vector3 direction = renderer->modelViewTM().inverse().column(2);
-			// Create OpenGL index buffer which can be used with glDrawElements.
+			// Create temporary OpenGL index buffer which can be used with glDrawElements to draw particles in desired order.
 			OpenGLBuffer<GLuint> primitiveIndices(QOpenGLBuffer::IndexBuffer);
 			primitiveIndices.create(QOpenGLBuffer::StaticDraw, particleCount());
-			primitiveIndices.fill(determineRenderingOrder(direction).data());
+			primitiveIndices.fill(determineRenderingOrder(renderer).data());
 			primitiveIndices.oglBuffer().bind();
 			OVITO_CHECK_OPENGL(glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
 			primitiveIndices.oglBuffer().release();
@@ -677,11 +676,10 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 		if(_usingGeometryShader) {
 			// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
 			if(!renderer->isPicking() && translucentParticles() && !_particleCoordinates.empty()) {
-				Vector3 direction = renderer->modelViewTM().inverse().column(2);
 				// Create OpenGL index buffer which can be used with glDrawElements.
 				OpenGLBuffer<GLuint> primitiveIndices(QOpenGLBuffer::IndexBuffer);
 				primitiveIndices.create(QOpenGLBuffer::StaticDraw, particleCount());
-				primitiveIndices.fill(determineRenderingOrder(direction).data());
+				primitiveIndices.fill(determineRenderingOrder(renderer).data());
 				primitiveIndices.oglBuffer().bind();
 				OVITO_CHECK_OPENGL(glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
 				primitiveIndices.oglBuffer().release();
@@ -696,8 +694,7 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 
 			// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
 			if(!renderer->isPicking() && translucentParticles() && !_particleCoordinates.empty()) {
-				Vector3 direction = renderer->modelViewTM().inverse().column(2);
-				auto indices = determineRenderingOrder(direction);
+				auto indices = determineRenderingOrder(renderer);
 				_primitiveStartIndices.resize(particleCount());
 				std::transform(indices.begin(), indices.end(), _primitiveStartIndices.begin(), [verticesPerElement](GLuint i) { return i*verticesPerElement; });
 				if(_primitiveVertexCounts.size() != particleCount()) {
@@ -808,11 +805,10 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 			OVITO_ASSERT(verticesPerElement == 1);
 			// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
 			if(!renderer->isPicking() && translucentParticles() && !_particleCoordinates.empty()) {
-				Vector3 direction = renderer->modelViewTM().inverse().column(2);
 				// Create OpenGL index buffer which can be used with glDrawElements.
 				OpenGLBuffer<GLuint> primitiveIndices(QOpenGLBuffer::IndexBuffer);
 				primitiveIndices.create(QOpenGLBuffer::StaticDraw, particleCount());
-				primitiveIndices.fill(determineRenderingOrder(direction).data());
+				primitiveIndices.fill(determineRenderingOrder(renderer).data());
 				primitiveIndices.oglBuffer().bind();
 				OVITO_CHECK_OPENGL(glDrawElements(GL_POINTS, particleCount(), GL_UNSIGNED_INT, nullptr));
 				primitiveIndices.oglBuffer().release();
@@ -826,8 +822,7 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 			OVITO_ASSERT(verticesPerElement == 6);
 			// Are we rendering translucent particles? If yes, render them in back to front order to avoid visual artifacts at overlapping particles.
 			if(!renderer->isPicking() && translucentParticles() && !_particleCoordinates.empty()) {
-				Vector3 direction = renderer->modelViewTM().inverse().column(2);
-				auto indices = determineRenderingOrder(direction);
+				auto indices = determineRenderingOrder(renderer);
 				// Create OpenGL index buffer which can be used with glDrawElements.
 				OpenGLBuffer<GLuint> primitiveIndices(QOpenGLBuffer::IndexBuffer);
 				primitiveIndices.create(QOpenGLBuffer::StaticDraw, verticesPerElement * particleCount());
@@ -956,12 +951,15 @@ void OpenGLParticlePrimitive::deactivateBillboardTexture(ViewportSceneRenderer* 
 * Returns an array of particle indices, sorted back-to-front, which is used
 * to render translucent particles.
 ******************************************************************************/
-std::vector<GLuint> OpenGLParticlePrimitive::determineRenderingOrder(const Vector3& direction)
+std::vector<GLuint> OpenGLParticlePrimitive::determineRenderingOrder(ViewportSceneRenderer* renderer)
 {
 	// Create array of particle indices.
 	std::vector<GLuint> indices(particleCount());
 	std::iota(indices.begin(), indices.end(), 0);
 	if(!_particleCoordinates.empty()) {
+		// Viewing direction in object space:
+		Vector3 direction = renderer->modelViewTM().inverse().column(2);
+
 		OVITO_ASSERT(_particleCoordinates.size() == particleCount());
 		// First compute distance of each particle from the camera along viewing direction (=camera z-axis).
 		std::vector<FloatType> distances(particleCount());

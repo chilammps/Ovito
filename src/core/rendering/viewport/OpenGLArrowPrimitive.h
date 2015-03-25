@@ -127,13 +127,14 @@ private:
 	/// The maximum number of render elements per VBO buffer.
 	int _chunkSize;
 
-	// The OpenGL shader programs that are used to render the arrows.
-	QOpenGLShaderProgram* _flatShader;
-	QOpenGLShaderProgram* _shadedShader;
-	QOpenGLShaderProgram* _raytracedCylinderShader;
-	QOpenGLShaderProgram* _flatPickingShader;
-	QOpenGLShaderProgram* _shadedPickingShader;
-	QOpenGLShaderProgram* _raytracedCylinderPickingShader;
+	/// Indicates that an OpenGL geometry shader is being used.
+	bool _usingGeometryShader;
+
+	/// The OpenGL shader program that is used for rendering.
+	QOpenGLShaderProgram* _shader;
+
+	/// The OpenGL shader program that is used for picking primitives.
+	QOpenGLShaderProgram* _pickingShader;
 
 	/// Lookup table for fast cylinder geometry generation.
 	std::vector<float> _cosTable;

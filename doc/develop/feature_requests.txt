@@ -24,6 +24,10 @@ Unresolved OpenGL problems:
     (Group laptop, Intel 965/963 Graphics, GLSL 110, Windows, OpenGL 2.0)
 - System crash with NVidia GT 630 and Noveau graphics driver on Ubuntu 14.04. 
     Installing the propriatry Nvidia driver solves the issue.
+- Ovito crashes when displaying particles on Linux system:
+    OpenGL vendor string: Intel Open Source Technology Center
+    OpenGL renderer string: Mesa DRI Intel(R) Ivybridge Server 
+    OpenGL version string: 2.1 Mesa 10.1.2
 - Bonds display doesn't work correctly on Farid's computer.
 
 Unresolved bugs:

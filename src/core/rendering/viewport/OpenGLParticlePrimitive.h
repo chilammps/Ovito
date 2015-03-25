@@ -103,7 +103,7 @@ protected:
 	void renderImposters(ViewportSceneRenderer* renderer);
 
 	/// Returns an array of particle indices, sorted back-to-front, which is used to render translucent particles.
-	std::vector<GLuint> determineRenderingOrder(const Vector3& direction);
+	std::vector<GLuint> determineRenderingOrder(ViewportSceneRenderer* renderer);
 
 private:
 

@@ -33,41 +33,48 @@ OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, Arro
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_elementCount(-1), _cylinderSegments(16), _verticesPerElement(0),
 	_mappedVerticesWithNormals(nullptr), _mappedVerticesWithElementInfo(nullptr),
-	_maxVBOSize(4*1024*1024), _mappedChunkIndex(-1)
+	_maxVBOSize(4*1024*1024), _mappedChunkIndex(-1),
+	_shader(nullptr), _pickingShader(nullptr),
+	_usingGeometryShader(renderer->useGeometryShaders())
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
 	// Initialize OpenGL shaders.
+	if(shadingMode == NormalShading) {
+		if(renderingQuality == HighQuality && shape == CylinderShape) {
+			_shader = renderer->loadShaderProgram(
+					"cylinder_raytraced",
+					":/core/glsl/cylinder/cylinder_raytraced.vs",
+					":/core/glsl/cylinder/cylinder_raytraced.fs");
+			_pickingShader = renderer->loadShaderProgram(
+					"cylinder_raytraced_picking",
+					":/core/glsl/cylinder/picking/cylinder_raytraced.vs",
+					":/core/glsl/cylinder/picking/cylinder_raytraced.fs");
+		}
+		else {
+			_shader = renderer->loadShaderProgram(
+					"arrow_shaded",
+					":/core/glsl/arrows/shaded.vs",
+					":/core/glsl/arrows/shaded.fs");
+			_pickingShader = renderer->loadShaderProgram(
+					"arrow_shaded_picking",
+					":/core/glsl/arrows/picking/shaded.vs",
+					":/core/glsl/arrows/picking/shaded.fs");
+		}
+	}
+	else if(shadingMode == FlatShading) {
+		_shader = renderer->loadShaderProgram(
+				"arrow_flat",
+				":/core/glsl/arrows/flat.vs",
+				":/core/glsl/arrows/flat.fs");
+		_pickingShader = renderer->loadShaderProgram(
+				"arrow_flat_picking",
+				":/core/glsl/arrows/picking/flat.vs",
+				":/core/glsl/arrows/picking/flat.fs");
+	}
 
-	_shadedShader = renderer->loadShaderProgram(
-			"arrow_shaded",
-			":/core/glsl/arrows/shaded.vs",
-			":/core/glsl/arrows/shaded.fs");
-
-	_shadedPickingShader = renderer->loadShaderProgram(
-			"arrow_shaded_picking",
-			":/core/glsl/arrows/picking/shaded.vs",
-			":/core/glsl/arrows/picking/shaded.fs");
-
-	_flatShader = renderer->loadShaderProgram(
-			"arrow_flat",
-			":/core/glsl/arrows/flat.vs",
-			":/core/glsl/arrows/flat.fs");
-
-	_flatPickingShader = renderer->loadShaderProgram(
-			"arrow_flat_picking",
-			":/core/glsl/arrows/picking/flat.vs",
-			":/core/glsl/arrows/picking/flat.fs");
-
-	_raytracedCylinderShader = renderer->loadShaderProgram(
-			"cylinder_raytraced",
-			":/core/glsl/cylinder/cylinder_raytraced.vs",
-			":/core/glsl/cylinder/cylinder_raytraced.fs");
-
-	_raytracedCylinderPickingShader = renderer->loadShaderProgram(
-			"cylinder_raytraced_picking",
-			":/core/glsl/cylinder/picking/cylinder_raytraced.vs",
-			":/core/glsl/cylinder/picking/cylinder_raytraced.fs");
+	OVITO_ASSERT(_shader != nullptr);
+	OVITO_ASSERT(_pickingShader != nullptr);
 }
 
 /******************************************************************************
@@ -511,16 +518,11 @@ void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 ******************************************************************************/
 void OpenGLArrowPrimitive::renderWithNormals(ViewportSceneRenderer* renderer)
 {
-	QOpenGLShaderProgram* shader;
-	if(!renderer->isPicking())
-		shader = _shadedShader;
-	else
-		shader = _shadedPickingShader;
-
-	glEnable(GL_CULL_FACE);
-
+	QOpenGLShaderProgram* shader = renderer->isPicking() ? _pickingShader : _shader;
 	if(!shader->bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
+
+	glEnable(GL_CULL_FACE);
 
 	shader->setUniformValue("modelview_projection_matrix", (QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
 	if(!renderer->isPicking())
@@ -572,25 +574,11 @@ void OpenGLArrowPrimitive::renderWithNormals(ViewportSceneRenderer* renderer)
 ******************************************************************************/
 void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer)
 {
-	QOpenGLShaderProgram* shader;
-	if(shadingMode() == NormalShading) {
-		if(!renderer->isPicking())
-			shader = _raytracedCylinderShader;
-		else
-			shader = _raytracedCylinderPickingShader;
-	}
-	else if(shadingMode() == FlatShading) {
-		if(!renderer->isPicking())
-			shader = _flatShader;
-		else
-			shader = _flatPickingShader;
-	}
-	else return;
-
-	glEnable(GL_CULL_FACE);
-
+	QOpenGLShaderProgram* shader = renderer->isPicking() ? _pickingShader : _shader;
 	if(!shader->bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
+
+	glEnable(GL_CULL_FACE);
 
 	shader->setUniformValue("modelview_matrix",
 			(QMatrix4x4)renderer->modelViewTM());
@@ -649,7 +637,6 @@ void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer
 	shader->enableAttributeArray("cylinder_base");
 	shader->enableAttributeArray("cylinder_axis");
 	shader->enableAttributeArray("cylinder_radius");
-
 
 	if(renderer->isPicking())
 		renderer->deactivateVertexIDs(shader, true);
