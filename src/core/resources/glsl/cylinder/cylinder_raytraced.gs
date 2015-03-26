@@ -35,7 +35,7 @@ in vec4 cylinder_view_axis_gs[1];	// Transformed cylinder axis in view coordinat
 flat out vec4 cylinder_color_fs;		// The base color of the cylinder.
 flat out vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
 flat out vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
-flat out float cylinder_radius_fs;		// The radius of the cylinder
+flat out float cylinder_radius_sq_fs;	// The squared radius of the cylinder
 flat out float cylinder_length;			// The length of the cylinder
 
 void main()
@@ -53,7 +53,7 @@ void main()
 	vec4 v = vec4(normalize(cross(cylinder_view_axis_gs[0].xyz, u.xyz)), 0.0) * cylinder_radius_gs[0];
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -61,7 +61,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -69,7 +69,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -77,7 +77,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -85,7 +85,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -93,7 +93,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -101,7 +101,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -109,7 +109,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -117,7 +117,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -125,7 +125,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -133,7 +133,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -141,7 +141,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -149,7 +149,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;
@@ -157,7 +157,7 @@ void main()
 	EmitVertex();
 
 	cylinder_color_fs = cylinder_color_gs[0];
-	cylinder_radius_fs = cylinder_radius_gs[0];
+	cylinder_radius_sq_fs = cylinder_radius_gs[0]*cylinder_radius_gs[0];
 	cylinder_view_base = cylinder_view_base_gs[0];
 	cylinder_view_axis = cylinder_view_axis_gs[0].xyz;
 	cylinder_length = clen;

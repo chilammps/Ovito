@@ -19,68 +19,40 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform mat4 modelview_projection_matrix;
-uniform bool is_perspective;
-uniform vec3 parallel_view_dir;
-uniform vec3 eye_pos;
 uniform int pickingBaseID;
-uniform int verticesPerElement;
 
 #if __VERSION__ >= 130
 	in vec3 position;
-	in vec4 color;
 #else
 	#define in attribute
 	#define out varying
 	#define flat
+	#define color gl_Color
 	#define position gl_Vertex
-	attribute float vertexID;
 #endif
 
-in vec3 cylinder_base;
 in vec3 cylinder_axis;
+in float cylinder_radius;
 
-out vec4 vertex_color_out;
+out vec4 color_gs;
+out vec3 cylinder_axis_gs;
+out float cylinder_radius_gs;
 
 void main()
 {
 #if __VERSION__ >= 130
 
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
-	vertex_color_out = vec4(
+	int objectID = pickingBaseID + gl_VertexID;
+	color_gs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);
-		
-#else
-
-	// Compute color from object ID.
-	float objectID = pickingBaseID + floor(vertexID / verticesPerElement);
-	vertex_color_out = vec4(
-		floor(mod(objectID, 256.0)) / 255.0,
-		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
-		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
-		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);
+		float((objectID >> 24) & 0xFF) / 255.0)
 						
 #endif
 	
-	if(cylinder_axis != vec3(0)) {
-	
-		// Get view direction.
-		vec3 view_dir;
-		if(!is_perspective)
-			view_dir = parallel_view_dir;
-		else
-			view_dir = eye_pos - cylinder_base;
-	
-		// Build local coordinate system.
-		vec3 u = normalize(cross(view_dir, cylinder_axis));
-		vec3 rotated_pos = cylinder_axis * position.x + u * position.y + cylinder_base;
-		gl_Position = modelview_projection_matrix * vec4(rotated_pos, 1.0);
-	}
-	else {
-		gl_Position = vec4(0);
-	}	
+	cylinder_axis_gs = cylinder_axis;
+	cylinder_radius_gs = cylinder_radius;
+	gl_Position = vec4(position, 1);	
 }

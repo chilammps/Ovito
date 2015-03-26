@@ -77,18 +77,32 @@ OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, Arro
 		}
 	}
 	else if(shadingMode == FlatShading) {
-		_shader = renderer->loadShaderProgram(
-				"arrow_flat",
-				":/core/glsl/arrows/flat.vs",
-				":/core/glsl/arrows/flat.fs");
-		_pickingShader = renderer->loadShaderProgram(
-				"arrow_flat_picking",
-				":/core/glsl/arrows/picking/flat.vs",
-				":/core/glsl/arrows/picking/flat.fs");
+		if(!_usingGeometryShader || shape != CylinderShape) {
+			_shader = renderer->loadShaderProgram(
+					"arrow_flat",
+					":/core/glsl/arrows/flat_tri.vs",
+					":/core/glsl/arrows/flat.fs");
+			_pickingShader = renderer->loadShaderProgram(
+					"arrow_flat_picking",
+					":/core/glsl/arrows/picking/flat_tri.vs",
+					":/core/glsl/arrows/picking/flat.fs");
+		}
+		else {
+			_shader = renderer->loadShaderProgram(
+					"cylinder_geomshader_flat",
+					":/core/glsl/arrows/flat.vs",
+					":/core/glsl/arrows/flat.fs",
+					":/core/glsl/cylinder/flat.gs");
+			_pickingShader = renderer->loadShaderProgram(
+					"cylinder_geomshader_flat_picking",
+					":/core/glsl/arrows/picking/flat.vs",
+					":/core/glsl/arrows/picking/flat.fs",
+					":/core/glsl/cylinder/picking/flat.gs");
+		}
 	}
 
 	OVITO_ASSERT(_shader != nullptr);
-	OVITO_ASSERT(_pickingShader != nullptr);
+	//OVITO_ASSERT(_pickingShader != nullptr);
 }
 
 /******************************************************************************
@@ -139,6 +153,9 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 			verticesPerFan = 7;
 		else
 			verticesPerFan = 4;
+		if(_usingGeometryShader && shape() == CylinderShape) {
+			verticesPerFan = 1;
+		}
 		renderMesh = false;
 	}
 	else OVITO_ASSERT(false);
@@ -225,7 +242,7 @@ void OpenGLArrowPrimitive::setElement(int index, const Point3& pos, const Vector
 ******************************************************************************/
 void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
-	if(_usingGeometryShader && shadingMode() == NormalShading && renderingQuality() == HighQuality) {
+	if(_usingGeometryShader && (shadingMode() == FlatShading || renderingQuality() == HighQuality)) {
 		OVITO_ASSERT(_mappedVerticesWithElementInfo);
 		OVITO_ASSERT(_verticesPerElement == 1);
 		VertexWithElementInfo* vertex = _mappedVerticesWithElementInfo + index;
@@ -608,6 +625,8 @@ void OpenGLArrowPrimitive::renderWithNormals(ViewportSceneRenderer* renderer)
 void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader = renderer->isPicking() ? _pickingShader : _shader;
+	if(!shader)
+		return;
 	if(!shader->bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
@@ -655,7 +674,7 @@ void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer
 		if(!renderer->isPicking())
 			_verticesWithElementInfo[chunkIndex].bindColors(renderer, shader, 4, offsetof(VertexWithElementInfo, color));
 
-		if(_usingGeometryShader && shadingMode() == NormalShading && renderingQuality() == HighQuality) {
+		if(_usingGeometryShader && (shadingMode() == FlatShading || renderingQuality() == HighQuality)) {
 			OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, chunkSize));
 		}
 		else {

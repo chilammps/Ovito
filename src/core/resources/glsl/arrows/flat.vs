@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform mat4 modelview_projection_matrix;
-uniform bool is_perspective;
-uniform vec3 parallel_view_dir;
-uniform vec3 eye_pos;
-
 #if __VERSION__ >= 130
 	in vec3 position;
 	in vec4 color;
@@ -35,31 +30,17 @@ uniform vec3 eye_pos;
 	#define position gl_Vertex
 #endif
 
-in vec3 cylinder_base;
 in vec3 cylinder_axis;
+in float cylinder_radius;
 
-out vec4 vertex_color_out;
+out vec4 color_gs;
+out vec3 cylinder_axis_gs;
+out float cylinder_radius_gs;
 
 void main()
 {
-	vertex_color_out = color;
-	
-	if(cylinder_axis != vec3(0)) {
-	
-		// Get view direction.
-		vec3 view_dir;
-		if(!is_perspective)
-			view_dir = parallel_view_dir;
-		else
-			view_dir = eye_pos - cylinder_base;
-	
-		// Build local coordinate system.
-		vec3 u = normalize(cross(view_dir, cylinder_axis));
-		vec3 rotated_pos = cylinder_axis * position.x + u * position.y + cylinder_base;
-		gl_Position = modelview_projection_matrix * vec4(rotated_pos, 1.0);
-	}
-	else {
-		gl_Position = vec4(0);
-	}
-	
+	color_gs = color;
+	cylinder_axis_gs = cylinder_axis;
+	cylinder_radius_gs = cylinder_radius;
+	gl_Position = vec4(position, 1);	
 }

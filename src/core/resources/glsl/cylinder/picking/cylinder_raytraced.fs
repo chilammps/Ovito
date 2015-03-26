@@ -38,7 +38,7 @@ uniform vec2 inverse_viewport_size;		// Specifies the transformation from screen
 flat in vec4 cylinder_color_fs;			// The base color of the cylinder.
 flat in vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
 flat in vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
-flat in float cylinder_radius_fs;		// The radius of the cylinder
+flat in float cylinder_radius_sq_fs;	// The squared radius of the cylinder
 flat in float cylinder_length;			// The length of the cylinder
 
 void main() 
@@ -58,69 +58,67 @@ void main()
 		ray_dir = vec3(0.0, 0.0, -1.0);
 	}
 
-	vec3 RC = ray_origin - cylinder_view_base;
-	
 	// Perform ray-cylinder intersection test.
 	vec3 n = cross(ray_dir, cylinder_view_axis);
-	
 	float ln = length(n);
-	bool hitCylinder = false;
-	vec3 view_intersection_pnt;
+	vec3 RC = ray_origin - cylinder_view_base;
 	
-	n /= ln;
-	float d = abs(dot(RC,n));
+	vec3 view_intersection_pnt = ray_origin;
 	
-	// Check if ray missed cylinder.
-	if(d > cylinder_radius_fs) {
-		discard;
-		return;
-	}
-		
-	// Calculate closest intersection position.
-	vec3 O = cross(RC, cylinder_view_axis);
-	float t = -dot(O, n) / ln;
-	O = cross(n, cylinder_view_axis);
-	float s = abs(sqrt(cylinder_radius_fs*cylinder_radius_fs - d*d) / dot(ray_dir, O) * cylinder_length);
-	float tnear = t - s;
-
-	// Ignore intersections behind the view point.
-	if(!is_perspective || tnear > 0.0) {
-
-		// Calculate intersection point in view coordinate system.
-		view_intersection_pnt = ray_origin + tnear * ray_dir;
-		
-		// Find intersection position along cylinder axis.
-		float a = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
-
-		if(a >= 0 && a <= 1.0 && ln != 0.0) {
-			hitCylinder = true;
+	if(ln < 1e-7) {
+		float t = dot(RC, ray_dir);
+		float v = dot(RC, RC);
+		if(v-t*t > cylinder_radius_sq_fs) {
+			discard;
+			return;
+		}
+		view_intersection_pnt -= t * ray_dir;		
+		float tfar = dot(cylinder_view_axis, ray_dir);
+		if(tfar < 0.0) {
+			view_intersection_pnt += tfar * ray_dir;
 		}
 	}
+	else {
 	
-	// Test for intersection with cylinder caps.
-	if(!hitCylinder) {
-
-		// Compute intersection of ray with first cap plane.
- 		float d = dot(cylinder_view_axis, ray_dir);
- 		if(abs(d) < 1e-8)
-	 		discard;
-		float t1 = dot(cylinder_view_base - ray_origin, cylinder_view_axis) / d;
-
-		// Compute intersection of ray with second cap plane.
-		float t2 = t1 + cylinder_length * cylinder_length / d;
- 
- 		if(t1 < t2) {
-			if(length(ray_origin + t1 * ray_dir - cylinder_view_base) >= cylinder_radius_fs)
+		n /= ln;
+		float d = dot(RC,n);
+		d *= d;
+		
+		// Test if ray missed the cylinder.
+		if(d > cylinder_radius_sq_fs) {
+			discard;
+			return;
+		}
+			
+		// Calculate closest intersection position.
+		float t = dot(cross(cylinder_view_axis, RC), n) / ln;
+		float s = abs(sqrt(cylinder_radius_sq_fs - d) / dot(cross(n, cylinder_view_axis),ray_dir) * cylinder_length);
+		float tnear = t - s;
+	
+		// Calculate intersection point in view coordinate system.
+		view_intersection_pnt += tnear * ray_dir;
+	
+		// Find intersection position along cylinder axis.
+		float anear = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
+		if(anear >= 0 && anear <= 1.0) {
+		}
+		else {
+			// Calculate second intersection point.
+			float tfar = t + s;
+			vec3 far_view_intersection_pnt = ray_origin + tfar * ray_dir;
+			float afar = dot(far_view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
+			
+			if(anear < 0 && afar >= 0) {
+				view_intersection_pnt += (anear / (anear - afar) * 2.0 * s) * ray_dir;
+			}
+			else if(anear > 1.0 && afar < 1.0) {
+				view_intersection_pnt += ((anear - 1.0) / (anear - afar) * 2.0 * s) * ray_dir;
+			}
+			else {
 				discard;
- 			t1 += 3e-3;
-			view_intersection_pnt = ray_origin + t1 * ray_dir;
-	 	}
-	 	else {
-			if(length(ray_origin + t2 * ray_dir - cylinder_view_base - cylinder_view_axis) >= cylinder_radius_fs)
-				discard;
- 			t2 += 3e-3;
-			view_intersection_pnt = ray_origin + t2 * ray_dir;
-	 	}
+				return;
+			}
+		}
 	}
 		
 	// Output the ray-cylinder intersection point as the fragment depth 

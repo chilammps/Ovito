@@ -19,19 +19,46 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+uniform mat4 modelview_projection_matrix;
+uniform bool is_perspective;
+uniform vec3 parallel_view_dir;
+uniform vec3 eye_pos;
+
 #if __VERSION__ >= 130
-
-flat in vec4 vertex_color_out;
-out vec4 FragColor;
-
+	in vec3 position;
+	in vec4 color;
 #else
-
-varying vec4 vertex_color_out;
-#define FragColor gl_FragColor
-
+	#define in attribute
+	#define out varying
+	#define flat
+	#define color gl_Color
+	#define position gl_Vertex
 #endif
 
-void main() 
+in vec3 cylinder_base;
+in vec3 cylinder_axis;
+
+flat out vec4 vertex_color_out;
+
+void main()
 {
-	FragColor = vertex_color_out;
+	vertex_color_out = color;
+	
+	if(cylinder_axis != vec3(0)) {
+	
+		// Get view direction.
+		vec3 view_dir;
+		if(!is_perspective)
+			view_dir = parallel_view_dir;
+		else
+			view_dir = eye_pos - cylinder_base;
+	
+		// Build local coordinate system.
+		vec3 u = normalize(cross(view_dir, cylinder_axis));
+		vec3 rotated_pos = cylinder_axis * position.x + u * position.y + cylinder_base;
+		gl_Position = modelview_projection_matrix * vec4(rotated_pos, 1.0);
+	}
+	else {
+		gl_Position = vec4(0);
+	}	
 }

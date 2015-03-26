@@ -49,7 +49,7 @@ in float cylinder_radius;			// The radius of the cylinder in model coordinates.
 flat out vec4 cylinder_color_fs;		// The base color of the cylinder.
 flat out vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
 flat out vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
-flat out float cylinder_radius_fs;		// The radius of the cylinder
+flat out float cylinder_radius_sq_fs;	// The squared radius of the cylinder
 flat out float cylinder_length;			// The length of the cylinder
 
 void main()
@@ -58,7 +58,8 @@ void main()
 	cylinder_color_fs = color;
 	
 	// Pass radius to fragment shader.
-	cylinder_radius_fs = cylinder_radius * modelview_uniform_scale;
+	cylinder_radius_sq_fs = cylinder_radius * modelview_uniform_scale;
+	cylinder_radius_sq_fs *= cylinder_radius_sq_fs;
 
 	// Transform cylinder to eye coordinates.
 	cylinder_view_base = vec3(modelview_matrix * vec4(cylinder_base, 1));

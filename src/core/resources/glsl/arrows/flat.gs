@@ -19,19 +19,40 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __VERSION__ >= 130
+layout(points) in;
+layout(triangle_fan, max_vertices=7) out;
 
-flat in vec4 vertex_color_out;
-out vec4 FragColor;
+// Inputs from calling program:
+uniform mat4 modelview_projection_matrix;
+uniform bool is_perspective;
+uniform vec3 parallel_view_dir;
+uniform vec3 eye_pos;
 
-#else
+// Inputs from vertex shader
+in vec4 color_gs[1];
+in vec3 cylinder_axis_gs[1];
+in float cylinder_radius_gs[1];
 
-varying vec4 vertex_color_out;
-#define FragColor gl_FragColor
+// Outputs to fragment shader
+flat out vec4 vertex_color_out;	
 
-#endif
-
-void main() 
+void main()
 {
-	FragColor = vertex_color_out;
+	
+	if(cylinder_axis_gs[0] != vec3(0)) {	
+		// Get view direction.
+		vec3 view_dir;
+		if(!is_perspective)
+			view_dir = parallel_view_dir;
+		else
+			view_dir = eye_pos - gl_in[0].gl_Position.xyz;
+	
+		// Build local coordinate system.
+		vec3 u = normalize(cross(view_dir, cylinder_axis_gs[0]));
+		vec3 v = cylinder_axis_gs[0];
+		
+		gl_Position = modelview_projection_matrix * vec4(v * position.x + u * position.y + gl_in[0].gl_Position.xyz, 1.0);
+		vertex_color_out = color_gs[0];
+		EmitVertex();
+	}
 }
