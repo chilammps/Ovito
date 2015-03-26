@@ -42,14 +42,28 @@ OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, Arro
 	// Initialize OpenGL shaders.
 	if(shadingMode == NormalShading) {
 		if(renderingQuality == HighQuality && shape == CylinderShape) {
-			_shader = renderer->loadShaderProgram(
-					"cylinder_raytraced",
-					":/core/glsl/cylinder/cylinder_raytraced.vs",
-					":/core/glsl/cylinder/cylinder_raytraced.fs");
-			_pickingShader = renderer->loadShaderProgram(
-					"cylinder_raytraced_picking",
-					":/core/glsl/cylinder/picking/cylinder_raytraced.vs",
-					":/core/glsl/cylinder/picking/cylinder_raytraced.fs");
+			if(!_usingGeometryShader) {
+				_shader = renderer->loadShaderProgram(
+						"cylinder_raytraced",
+						":/core/glsl/cylinder/cylinder_raytraced_tri.vs",
+						":/core/glsl/cylinder/cylinder_raytraced.fs");
+				_pickingShader = renderer->loadShaderProgram(
+						"cylinder_raytraced_picking",
+						":/core/glsl/cylinder/picking/cylinder_raytraced_tri.vs",
+						":/core/glsl/cylinder/picking/cylinder_raytraced.fs");
+			}
+			else {
+				_shader = renderer->loadShaderProgram(
+						"cylinder_geomshader_raytraced",
+						":/core/glsl/cylinder/cylinder_raytraced.vs",
+						":/core/glsl/cylinder/cylinder_raytraced.fs",
+						":/core/glsl/cylinder/cylinder_raytraced.gs");
+				_pickingShader = renderer->loadShaderProgram(
+						"cylinder_geomshader_raytraced_picking",
+						":/core/glsl/cylinder/picking/cylinder_raytraced.vs",
+						":/core/glsl/cylinder/picking/cylinder_raytraced.fs",
+						":/core/glsl/cylinder/picking/cylinder_raytraced.gs");
+			}
 		}
 		else {
 			_shader = renderer->loadShaderProgram(
@@ -105,7 +119,13 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 			stripsPerElement = 1;
 			fansPerElement = 2;
 			if(renderingQuality() == HighQuality) {
-				verticesPerStrip = 14;
+				if(_usingGeometryShader) {
+					verticesPerStrip = 1;
+					stripsPerElement = 1;
+				}
+				else {
+					verticesPerStrip = 14;
+				}
 				fansPerElement = verticesPerFan = 0;
 				renderMesh = false;
 			}
@@ -205,6 +225,17 @@ void OpenGLArrowPrimitive::setElement(int index, const Point3& pos, const Vector
 ******************************************************************************/
 void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
+	if(_usingGeometryShader && shadingMode() == NormalShading && renderingQuality() == HighQuality) {
+		OVITO_ASSERT(_mappedVerticesWithElementInfo);
+		OVITO_ASSERT(_verticesPerElement == 1);
+		VertexWithElementInfo* vertex = _mappedVerticesWithElementInfo + index;
+		vertex->pos = vertex->base = pos;
+		vertex->dir = dir;
+		vertex->color = color;
+		vertex->radius = width;
+		return;
+	}
+
 	if(shadingMode() == NormalShading) {
 
 		// Build local coordinate system.
@@ -271,6 +302,7 @@ void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, c
 			// Create bounding box geometry around cylinder for raytracing.
 			OVITO_ASSERT(_mappedVerticesWithElementInfo);
 			VertexWithElementInfo* vertex = _mappedVerticesWithElementInfo + (index * _verticesPerElement);
+			OVITO_ASSERT(_verticesPerElement == 14);
 			u *= width;
 			v *= width;
 			Point3 corners[8] = {
@@ -523,6 +555,7 @@ void OpenGLArrowPrimitive::renderWithNormals(ViewportSceneRenderer* renderer)
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	shader->setUniformValue("modelview_projection_matrix", (QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
 	if(!renderer->isPicking())
@@ -579,6 +612,7 @@ void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	shader->setUniformValue("modelview_matrix",
 			(QMatrix4x4)renderer->modelViewTM());
@@ -621,11 +655,16 @@ void OpenGLArrowPrimitive::renderWithElementInfo(ViewportSceneRenderer* renderer
 		if(!renderer->isPicking())
 			_verticesWithElementInfo[chunkIndex].bindColors(renderer, shader, 4, offsetof(VertexWithElementInfo, color));
 
-		int stripPrimitivesPerElement = _stripPrimitiveVertexCounts.size() / _chunkSize;
-		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), stripPrimitivesPerElement * chunkSize));
+		if(_usingGeometryShader && shadingMode() == NormalShading && renderingQuality() == HighQuality) {
+			OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, chunkSize));
+		}
+		else {
+			int stripPrimitivesPerElement = _stripPrimitiveVertexCounts.size() / _chunkSize;
+			OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), stripPrimitivesPerElement * chunkSize));
 
-		int fanPrimitivesPerElement = _fanPrimitiveVertexCounts.size() / _chunkSize;
-		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), fanPrimitivesPerElement * chunkSize));
+			int fanPrimitivesPerElement = _fanPrimitiveVertexCounts.size() / _chunkSize;
+			OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), fanPrimitivesPerElement * chunkSize));
+		}
 
 		_verticesWithElementInfo[chunkIndex].detachPositions(renderer, shader);
 		_verticesWithElementInfo[chunkIndex].detach(renderer, shader, "cylinder_base");

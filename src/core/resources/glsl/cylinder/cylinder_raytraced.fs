@@ -35,10 +35,10 @@ uniform vec2 inverse_viewport_size;		// Specifies the transformation from screen
 #endif
 
 // Inputs from vertex shader
-flat in vec4 cylinder_color_in;			// The base color of the cylinder.
+flat in vec4 cylinder_color_fs;			// The base color of the cylinder.
 flat in vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
 flat in vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
-flat in float cylinder_radius_in;		// The radius of the cylinder
+flat in float cylinder_radius_fs;		// The radius of the cylinder
 flat in float cylinder_length;			// The length of the cylinder
 
 const float ambient = 0.4;
@@ -77,7 +77,7 @@ void main()
 	float d = abs(dot(RC,n));
 	
 	// Check if ray missed cylinder.
-	if(d > cylinder_radius_in) {
+	if(d > cylinder_radius_fs) {
 		discard;
 		return;
 	}
@@ -86,7 +86,7 @@ void main()
 	vec3 O = cross(RC, cylinder_view_axis);
 	float t = -dot(O, n) / ln;
 	O = cross(n, cylinder_view_axis);
-	float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * cylinder_length);
+	float s = abs(sqrt(cylinder_radius_fs*cylinder_radius_fs - d*d) / dot(ray_dir, O) * cylinder_length);
 	float tnear = t - s;
 
 	// Ignore intersections behind the view point.
@@ -101,7 +101,7 @@ void main()
 		if(a >= 0 && a <= 1.0 && ln != 0.0) {
 	
 			// Calculate surface normal in view coordinate system.
-			surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;			
+			surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_fs;			
 
 			hitCylinder = true;
 		}
@@ -120,14 +120,14 @@ void main()
 		float t2 = t1 + cylinder_length * cylinder_length / d;
  
  		if(t1 < t2) {
-			if(length(ray_origin + t1 * ray_dir - cylinder_view_base) >= cylinder_radius_in)
+			if(length(ray_origin + t1 * ray_dir - cylinder_view_base) >= cylinder_radius_fs)
 				discard;
 			surface_normal = -cylinder_view_axis / cylinder_length;
  			t1 += 3e-3;
 			view_intersection_pnt = ray_origin + t1 * ray_dir;
 	 	}
 	 	else {
-			if(length(ray_origin + t2 * ray_dir - cylinder_view_base - cylinder_view_axis) >= cylinder_radius_in)
+			if(length(ray_origin + t2 * ray_dir - cylinder_view_base - cylinder_view_axis) >= cylinder_radius_fs)
 				discard;
 			surface_normal = cylinder_view_axis / cylinder_length;
  			t2 += 3e-3;
@@ -145,5 +145,5 @@ void main()
 	float diffuse = abs(surface_normal.z) * diffuse_strength;
 	float specular = pow(max(0.0, dot(reflect(specular_lightdir, surface_normal), ray_dir)), shininess) * 0.25;
 	
-	FragColor = vec4(cylinder_color_in.rgb * (diffuse + ambient) + vec3(specular), cylinder_color_in.a);
+	FragColor = vec4(cylinder_color_fs.rgb * (diffuse + ambient) + vec3(specular), cylinder_color_fs.a);
 }

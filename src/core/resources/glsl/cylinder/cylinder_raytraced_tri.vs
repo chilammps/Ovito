@@ -21,8 +21,8 @@
 
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
+uniform mat4 modelview_projection_matrix;
 uniform float modelview_uniform_scale;
-uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
@@ -45,31 +45,33 @@ in vec3 cylinder_base;				// The position of the cylinder in model coordinates.
 in vec3 cylinder_axis;				// The axis of the cylinder in model coordinates.
 in float cylinder_radius;			// The radius of the cylinder in model coordinates.
 
-// Outputs to geometry shader
-out vec4 cylinder_color_gs;			// The base color of the cylinder.
-out float cylinder_radius_gs;		// The radius of the cylinder
-out vec3 cylinder_view_base_gs;		// Transformed cylinder position in view coordinates
-out vec4 cylinder_view_axis_gs;		// Transformed cylinder axis in view coordinates
+// Outputs to fragment shader
+flat out vec4 cylinder_color_fs;		// The base color of the cylinder.
+flat out vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
+flat out vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
+flat out float cylinder_radius_fs;		// The radius of the cylinder
+flat out float cylinder_length;			// The length of the cylinder
 
 void main()
 {
-#if __VERSION__ >= 130
-
-	// Compute color from object ID.
-	int objectID = pickingBaseID + gl_VertexID;
-	cylinder_color_gs = vec4(
-		float(objectID & 0xFF) / 255.0, 
-		float((objectID >> 8) & 0xFF) / 255.0, 
-		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);
-
-#endif
+	// Pass color to fragment shader.
+	cylinder_color_fs = color;
 	
-	// Pass radius to geometry shader.
-	cylinder_radius_gs = cylinder_radius * modelview_uniform_scale;
+	// Pass radius to fragment shader.
+	cylinder_radius_fs = cylinder_radius * modelview_uniform_scale;
 
 	// Transform cylinder to eye coordinates.
-	gl_Position = modelview_matrix * vec4(position, 1);
-	cylinder_view_base_gs = gl_Position.xyz;
-	cylinder_view_axis_gs = modelview_matrix * vec4(cylinder_axis, 0);
+	cylinder_view_base = vec3(modelview_matrix * vec4(cylinder_base, 1));
+	cylinder_view_axis = vec3(modelview_matrix * vec4(cylinder_axis, 0));
+
+	// Pass length to fragment shader.
+	cylinder_length = length(cylinder_view_axis);
+
+#if __VERSION__ >= 130
+	// Transform and project vertex position.
+	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
+#else
+	// Transform and project vertex position.
+	gl_Position = modelview_projection_matrix * gl_Vertex;
+#endif
 }
