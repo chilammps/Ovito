@@ -419,6 +419,9 @@ public:
     /// \param stream The source stream.
 	void loadFromStream(LoadStream& stream);
 
+	/// \brief Exports the triangle mesh to a VTK file.
+	void saveToVTK(CompressedTextWriter& stream);
+
 private:
 
 	/// The cached bounding box of the mesh computed from the vertices.

@@ -33,6 +33,7 @@
 #include <plugins/particles/objects/BondsDisplay.h>
 #include <plugins/particles/objects/SimulationCellObject.h>
 #include <plugins/particles/util/CutoffNeighborFinder.h>
+#include <core/utilities/io/CompressedTextWriter.h>
 
 namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
@@ -483,28 +484,46 @@ BOOST_PYTHON_MODULE(Particles)
 			":Base: :py:class:`ovito.data.DataObject`\n\n"
 			"This data object stores the surface mesh computed by a :py:class:`~ovito.modifiers.ConstructSurfaceModifier`. "
 			"\n\n"
-			"Currently, no direct script access to the vertices and faces of the mesh is supported. But you can export the mesh to a VTK text file, "
+			"Currently, no direct script access to the vertices and faces of the mesh is possible. But you can export the mesh to a VTK text file, "
 			"which can be further processed by external tools such as ParaView. "
 			"\n\n"
 			"The visual appearance of the surface mesh within Ovito is controlled by its attached :py:class:`~ovito.vis.SurfaceMeshDisplay` instance, which is "
 			"accessible through the :py:attr:`~DataObject.display` attribute of the :py:class:`DataObject` base class or through the :py:attr:`~ovito.modifiers.ConstructSurfaceModifier.mesh_display` attribute "
 			"of the :py:class:`~ovito.modifiers.ConstructSurfaceModifier` that created the surface mesh from the input particle data."
 			"\n\n"
-			"Usage example::\n\n"
-			"    from ovito import *\n"
-			"    from ovito.io import *\n"
-			"    from ovito.modifiers import *\n"
-			"    \n"
-			"    # Load a particle structure and construct its surface mesh:\n"
-			"    node = import_file(\"simulation.data\")\n"
-			"    node.modifiers.append(ConstructSurfaceModifier(radius = 2.8))\n"
-			"    node.compute()\n"
-			"    \n"
-			"    # Access the computed surface mesh:\n"
-			"    mesh = node.output['Surface mesh']\n"
-			)
+			"Example:\n\n"
+			".. literalinclude:: ../example_snippets/surface_mesh.py"
+		)
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
 		.def("clearMesh", &SurfaceMesh::clearMesh)
+		.def("export_vtk", static_cast<void (*)(SurfaceMesh&,const QString&,SimulationCellObject*)>(
+				[](SurfaceMesh& mesh, const QString& filename, SimulationCellObject* simCellObj) {
+			if(!simCellObj)
+				throw Exception("A simulation cell is required to generate non-periodic mesh for export.");
+			TriMesh output;
+			if(!SurfaceMeshDisplay::buildSurfaceMesh(mesh.mesh(), simCellObj->data(), output))
+				throw Exception("Failed to generate non-periodic mesh for export. Simulation cell might be too small.");
+			QFile file(filename);
+			CompressedTextWriter writer(file);
+			output.saveToVTK(writer);
+		}),
+		"Writes the surface mesh to a VTK file, which is a simple text-based format and which can be opened with the software ParaView. "
+		"The method takes the output filename and a :py:class:`SimulationCell` object as input. The simulation cell information "
+		"is needed by the method to generate a non-periodic version of the mesh, which is truncated at the periodic boundaries "
+		"of the simulation cell (if it has any).")
+		.def("export_cap_vtk", static_cast<void (*)(SurfaceMesh&,const QString&,SimulationCellObject*)>(
+				[](SurfaceMesh& mesh, const QString& filename, SimulationCellObject* simCellObj) {
+			if(!simCellObj)
+				throw Exception("A simulation cell is required to generate cap mesh for export.");
+			TriMesh output;
+			SurfaceMeshDisplay::buildCapMesh(mesh.mesh(), simCellObj->data(), mesh.isCompletelySolid(), output);
+			QFile file(filename);
+			CompressedTextWriter writer(file);
+			output.saveToVTK(writer);
+		}),
+		"If the surface mesh has been generated from a simulation cell with periodic boundary conditions, then this "
+		"method computes the cap polygons from the intersection of the surface mesh with the periodic cell boundaries. "
+		"The cap polygons are written to a VTK file, which is a simple text-based format and which can be opened with the software ParaView.")
 	;
 
 	{

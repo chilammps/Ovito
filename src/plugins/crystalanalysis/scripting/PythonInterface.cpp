@@ -38,13 +38,28 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 
 	ovito_class<ConstructSurfaceModifier, AsynchronousParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
-			"Constructs the geometric surface from a set of point-like particles.")
+			"Constructs the geometric surface of a solid made of point-like particles. The modifier generates "
+			"a :py:class:`~ovito.data.SurfaceMesh`, which is a closed manifold consisting of triangles. It also computes the total "
+			"surface area and the volume of the region enclosed by the surface mesh."
+			"\n\n"
+			"The :py:attr:`.radius` parameter controls how many details of the solid shape are resolved during surface construction. "
+			"A larger radius leads to a surface with fewer details, reflecting only coarse features of the surface topology. "
+			"A small radius, on the other hand, will resolve finer surface features and small pores inside a solid, for example. "
+			"\n\n"
+			"See `this article <http://dx.doi.org/10.1007/s11837-013-0827-5>`_ for a description of the surface construction algorithm."
+			"\n\n"
+			"Example:\n\n"
+			".. literalinclude:: ../example_snippets/construct_surface_modifier.py"
+			)
 		.add_property("radius", &ConstructSurfaceModifier::radius, &ConstructSurfaceModifier::setRadius,
 				"The radius of the probe sphere used in the surface construction algorithm."
 				"\n\n"
+				"A rule of thumb is that the radius parameter should be slightly larger than the typical distance between "
+				"nearest neighbor particles."
+				"\n\n"
 				":Default: 4.0\n")
 		.add_property("smoothing_level", &ConstructSurfaceModifier::smoothingLevel, &ConstructSurfaceModifier::setSmoothingLevel,
-				"The number of iterations of the smoothing algorithm to perform."
+				"The number of smoothing iterations applied to the computed surface mesh."
 				"\n\n"
 				":Default: 8\n")
 		.add_property("only_selected", &ConstructSurfaceModifier::onlySelectedParticles, &ConstructSurfaceModifier::setOnlySelectedParticles,
@@ -59,7 +74,9 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 				"Note that this value is only available after the modifier has computed its results. "
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 		.add_property("total_volume", &ConstructSurfaceModifier::totalVolume,
-				"After the modifier has computed the surface, this field contains the volume of the simulation cell.")
+				"This field reports the volume of the input simulation cell, which can be used "
+				"to calculate the solid volume fraction or porosity of a system (in conjunction with the "
+				":py:attr:`.solid_volume` computed by the modifier). ")
 		.add_property("surface_area", &ConstructSurfaceModifier::surfaceArea,
 				"After the modifier has computed the surface, this field contains the area of the surface."
 				"\n\n"
@@ -67,7 +84,7 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 		.add_property("surfaceMesh", make_function(&ConstructSurfaceModifier::surfaceMesh, return_value_policy<ovito_object_reference>()))
 		.add_property("mesh_display", make_function(&ConstructSurfaceModifier::surfaceMeshDisplay, return_value_policy<ovito_object_reference>()),
-				"A :py:class:`~ovito.vis.SurfaceMeshDisplay` instance controlling the visual representation of the computed surface.\n")
+				"The :py:class:`~ovito.vis.SurfaceMeshDisplay` controlling the visual representation of the computed surface.\n")
 	;
 
 	ovito_class<ShiftModifier, Modifier>()

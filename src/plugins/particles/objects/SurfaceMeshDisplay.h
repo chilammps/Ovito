@@ -89,31 +89,31 @@ public:
 	/// Sets the transparency of the surface cap mesh.
 	void setCapTransparency(FloatType transparency) { if(_capTransparency) _capTransparency->setCurrentFloatValue(transparency); }
 
-protected:
-
 	/// Generates the final triangle mesh, which will be rendered.
-	bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output);
-
-	/// Splits a triangle face at a periodic boundary.
-	bool splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCell& cell, size_t dim);
+	static bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output);
 
 	/// Generates the triangle mesh for the PBC cap.
-	void buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output);
+	static void buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output);
+
+protected:
+
+	/// Splits a triangle face at a periodic boundary.
+	static bool splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCell& cell, size_t dim);
 
 	/// Traces the closed contour of the surface-boundary intersection.
-	std::vector<Point2> traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCell& cell, size_t dim);
+	static std::vector<Point2> traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCell& cell, size_t dim);
 
 	/// Clips a 2d contour at a periodic boundary.
-	void clipContour(std::vector<Point2>& input, std::array<bool,2> periodic, std::vector<std::vector<Point2>>& openContours, std::vector<std::vector<Point2>>& closedContours);
+	static void clipContour(std::vector<Point2>& input, std::array<bool,2> periodic, std::vector<std::vector<Point2>>& openContours, std::vector<std::vector<Point2>>& closedContours);
 
 	/// Computes the intersection point of a 2d contour segment crossing a periodic boundary.
-	void computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours);
+	static void computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours);
 
 	/// Determines if the 2D box corner (0,0) is inside the closed region described by the 2d polygon.
-	bool isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours);
+	static bool isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours);
 
 	/// Determines if the 3D box corner (0,0,0) is inside the region described by the half-edge polyhedron.
-	bool isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags, bool isCompletelySolid);
+	static bool isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags, bool isCompletelySolid);
 
 	/// Controls the display color of the surface mesh.
 	PropertyField<Color, QColor> _surfaceColor;

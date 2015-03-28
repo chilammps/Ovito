@@ -38,6 +38,8 @@ namespace Ovito {
 		OVITO_BEGIN_INLINE_NAMESPACE(IO)
 			class ObjectSaveStream;
 			class ObjectLoadStream;
+			class CompressedTextReader;
+			class CompressedTextWriter;
 			OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 				class VideoEncoder;
 				class SftpDownloadJob;

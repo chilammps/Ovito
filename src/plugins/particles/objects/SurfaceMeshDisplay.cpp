@@ -131,6 +131,11 @@ void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 			TriMesh surfaceMesh;
 			TriMesh capMesh;
 			if(buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh)) {
+				// Assign smoothing group to faces to interpolate normals.
+				if(_smoothShading) {
+					for(auto& face : surfaceMesh.faces())
+						face.setSmoothingGroups(1);
+				}
 				_surfaceBuffer->setMesh(surfaceMesh, color_surface);
 				if(_showCap) {
 					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), defectSurfaceObj->isCompletelySolid(), capMesh);
@@ -202,12 +207,6 @@ bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 	AffineTransformation cellMatrix = cell.matrix();
 	for(Point3& p : output.vertices())
 		p = cellMatrix * p;
-
-	// Assign smoothing group to faces to interpolate normals.
-	if(_smoothShading) {
-		for(auto& face : output.faces())
-			face.setSmoothingGroups(1);
-	}
 
 	output.invalidateVertices();
 	output.invalidateFaces();

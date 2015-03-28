@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/utilities/io/CompressedTextWriter.h>
 #include "TriMesh.h"
 
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPACE(Mesh)
@@ -207,6 +208,31 @@ bool TriMesh::intersectRay(const Ray3& ray, FloatType& t, Vector3& normal, int& 
 
 	return false;
 }
+
+/******************************************************************************
+* Exports the triangle mesh to a VTK file.
+******************************************************************************/
+void TriMesh::saveToVTK(CompressedTextWriter& stream)
+{
+	stream << "# vtk DataFile Version 3.0\n";
+	stream << "# Triangle mesh\n";
+	stream << "ASCII\n";
+	stream << "DATASET UNSTRUCTURED_GRID\n";
+	stream << "POINTS " << vertexCount() << " double\n";
+	for(const Point3& p : vertices())
+		stream << p.x() << " " << p.y() << " " << p.z() << "\n";
+	stream << "\nCELLS " << faceCount() << " " << (faceCount() * 4) << "\n";
+	for(const TriMeshFace& f : faces()) {
+		stream << "3";
+		for(size_t i = 0; i < 3; i++)
+			stream << " " << f.vertex(i);
+		stream << "\n";
+	}
+	stream << "\nCELL_TYPES " << faceCount() << "\n";
+	for(size_t i = 0; i < faceCount(); i++)
+		stream << "5\n";	// Triangle
+}
+
 
 OVITO_END_INLINE_NAMESPACE
 OVITO_END_INLINE_NAMESPACE

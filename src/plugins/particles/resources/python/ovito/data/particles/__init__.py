@@ -86,22 +86,9 @@ class CutoffNeighborFinder(Particles.CutoffNeighborFinder):
     containing the input particle positions and the cell geometry (including periodic boundary flags).
     
     Once the utility class has been constructed, you can call :py:meth:`.find` to iterate over the neighbors of a selected particle,    
-    for example::
+    for example:
     
-        from ovito.io import *
-        from ovito.data import *
-
-        node = import_file("simulation.dump")
-        data = node.source.data
-        num_particles = data.position.size
-
-        cutoff = 3.5
-        finder = CutoffNeighborFinder(cutoff, data)
-
-        for index in range(num_particles):
-            print("Neighbors of particle {}:".format(index))
-            for neigh in finder.find(index):
-                print(neigh)
+    .. literalinclude:: ../example_snippets/cutoff_neighbor_finder.py
     """
         
     def __init__(self, cutoff, data_collection):
