@@ -12,6 +12,7 @@ This module contains data container classes that are used by OVITO's modificatio
   * :py:class:`ParticleProperty`
   * :py:class:`ParticleTypeProperty`
   * :py:class:`SimulationCell`
+  * :py:class:`SurfaceMesh`
 
 **Helper classes:**
 

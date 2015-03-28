@@ -27,11 +27,11 @@
 #include <plugins/particles/objects/ParticleDisplay.h>
 #include <plugins/particles/objects/VectorDisplay.h>
 #include <plugins/particles/objects/SimulationCellDisplay.h>
+#include <plugins/particles/objects/SurfaceMesh.h>
 #include <plugins/particles/objects/SurfaceMeshDisplay.h>
 #include <plugins/particles/objects/BondsObject.h>
 #include <plugins/particles/objects/BondsDisplay.h>
 #include <plugins/particles/objects/SimulationCellObject.h>
-#include <plugins/particles/objects/SurfaceMesh.h>
 #include <plugins/particles/util/CutoffNeighborFinder.h>
 
 namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
@@ -479,7 +479,30 @@ BOOST_PYTHON_MODULE(Particles)
 				":Default: ``True``\n")
 	;
 
-	ovito_class<SurfaceMesh, DataObject>()
+	ovito_class<SurfaceMesh, DataObject>(
+			":Base: :py:class:`ovito.data.DataObject`\n\n"
+			"This data object stores the surface mesh computed by a :py:class:`~ovito.modifiers.ConstructSurfaceModifier`. "
+			"\n\n"
+			"Currently, no direct script access to the vertices and faces of the mesh is supported. But you can export the mesh to a VTK text file, "
+			"which can be further processed by external tools such as ParaView. "
+			"\n\n"
+			"The visual appearance of the surface mesh within Ovito is controlled by its attached :py:class:`~ovito.vis.SurfaceMeshDisplay` instance, which is "
+			"accessible through the :py:attr:`~DataObject.display` attribute of the :py:class:`DataObject` base class or through the :py:attr:`~ovito.modifiers.ConstructSurfaceModifier.mesh_display` attribute "
+			"of the :py:class:`~ovito.modifiers.ConstructSurfaceModifier` that created the surface mesh from the input particle data."
+			"\n\n"
+			"Usage example::\n\n"
+			"    from ovito import *\n"
+			"    from ovito.io import *\n"
+			"    from ovito.modifiers import *\n"
+			"    \n"
+			"    # Load a particle structure and construct its surface mesh:\n"
+			"    node = import_file(\"simulation.data\")\n"
+			"    node.modifiers.append(ConstructSurfaceModifier(radius = 2.8))\n"
+			"    node.compute()\n"
+			"    \n"
+			"    # Access the computed surface mesh:\n"
+			"    mesh = node.output['Surface mesh']\n"
+			)
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
 		.def("clearMesh", &SurfaceMesh::clearMesh)
 	;
