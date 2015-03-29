@@ -16,6 +16,17 @@ If you want to build OVITO from source, see http://www.ovito.org/manual/developm
 Change Log 
 ****************************************************************************************
 
+Release 2.4.4 (29-Mar-15):
+
+ - Fixed error when rendering and encoding high-resolution videos.
+ - Surface geometry computed by ConstructSurfaceModifier can now be exported to a VTK file from Python.
+ - Added Python class ovito.data.CutoffNeighborFinder, which enables access to particle neighbor lists from Python.
+ - Particles and bonds are now rendered in chunks in the OpenGL viewports to workaround a memory limit on
+   some graphics hardware.
+ - Bond cylinders will now be rendered using a geometry shader if supported by graphics card.
+ - The IMD file exporter now lets the user select the particle properties to export (instead of exporting all).
+ - The VTK triangle mesh importer now reads per-face color information.
+
 Release 2.4.3 (02-Mar-15):
 
  - Added a dialog box to Affine Transformation modifier, which lets the user enter a rotation axis, angle, and center.
