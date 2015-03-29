@@ -73,7 +73,8 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_cameraTM(AffineTransformation::Identity()),
 		_gridMatrix(AffineTransformation::Identity()),
 		_showGrid(false),
-		_stereoscopicMode(false)
+		_stereoscopicMode(false),
+		_cursorInContextMenuArea(false)
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
@@ -726,6 +727,17 @@ void Viewport::renderViewportTitle()
 	if(!_captionBuffer || !_captionBuffer->isValid(renderer)) {
 		_captionBuffer = renderer->createTextPrimitive();
 		_captionBuffer->setFont(ViewportSettings::getSettings().viewportFont());
+	}
+
+	if(_cursorInContextMenuArea && !_captionBuffer->font().underline()) {
+		QFont font = _captionBuffer->font();
+		font.setUnderline(true);
+		_captionBuffer->setFont(font);
+	}
+	else if(!_cursorInContextMenuArea && _captionBuffer->font().underline()) {
+		QFont font = _captionBuffer->font();
+		font.setUnderline(false);
+		_captionBuffer->setFont(font);
 	}
 
 	QString str = viewportTitle();

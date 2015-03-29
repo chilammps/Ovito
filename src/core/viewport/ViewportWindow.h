@@ -87,6 +87,9 @@ protected:
 	/// This internal method receives events to the viewport window.
 	virtual bool event(QEvent* event) override;
 
+	/// Is called in periodic intervals.
+	virtual void timerEvent(QTimerEvent* event) override;
+
 private:
 
 	/// The owning viewport of this window.

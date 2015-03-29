@@ -276,6 +276,16 @@ void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
 ******************************************************************************/
 void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
 {
+	if(_viewport->_contextMenuArea.contains(event->pos()) && !_viewport->_cursorInContextMenuArea) {
+		_viewport->_cursorInContextMenuArea = true;
+		_viewport->updateViewport();
+		startTimer(0);
+	}
+	else if(!_viewport->_contextMenuArea.contains(event->pos()) && _viewport->_cursorInContextMenuArea) {
+		_viewport->_cursorInContextMenuArea = false;
+		_viewport->updateViewport();
+	}
+
 	ViewportInputMode* mode = _mainWindow->viewportInputManager()->activeMode();
 	if(mode) {
 		try {
@@ -303,6 +313,21 @@ void ViewportWindow::wheelEvent(QWheelEvent* event)
 			ex.logError();
 		}
 	}
+}
+
+/******************************************************************************
+* Is called in periodic intervals.
+******************************************************************************/
+void ViewportWindow::timerEvent(QTimerEvent* event)
+{
+	if(_viewport->_contextMenuArea.contains(mapFromGlobal(QCursor::pos())))
+		return;
+
+	if(_viewport->_cursorInContextMenuArea) {
+		_viewport->_cursorInContextMenuArea = false;
+		_viewport->updateViewport();
+	}
+	killTimer(event->timerId());
 }
 
 /******************************************************************************

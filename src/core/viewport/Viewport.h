@@ -472,6 +472,10 @@ private:
 	/// the context menu can be activated by the user.
 	QRect _contextMenuArea;
 
+	/// Indicates that the mouse cursor is currently positioned inside the
+	/// viewport area that activates the viewport context menu.
+	bool _cursorInContextMenuArea;
+
 	/// This flag is true during the rendering phase.
 	bool _isRendering;
 
