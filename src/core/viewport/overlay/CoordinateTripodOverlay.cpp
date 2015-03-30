@@ -172,20 +172,25 @@ void CoordinateTripodOverlay::render(Viewport* viewport, QPainter& painter, cons
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.setRenderHint(QPainter::TextAntialiasing);
 	for(int axis : orderedAxes) {
+		QBrush brush(axisColors[axis]);
 		QPen pen(axisColors[axis]);
 		pen.setWidthF(lineWidth);
 		pen.setJoinStyle(Qt::MiterJoin);
-		pen.setCapStyle(Qt::RoundCap);
+		pen.setCapStyle(Qt::FlatCap);
 		painter.setPen(pen);
+		painter.setBrush(brush);
 		Vector3 dir = tripodSize * axisDirs[axis];
-		if(dir.squaredLength() > FLOATTYPE_EPSILON) {
-			painter.drawLine(origin, origin + QPointF(dir.x(), -dir.y()));
-			Vector3 ndir = dir.resized(tripodSize);
+		Vector2 dir2(dir.x(), dir.y());
+		if(dir2.squaredLength() > FLOATTYPE_EPSILON) {
+			painter.drawLine(origin, origin + QPointF(dir2.x(), -dir2.y()));
+			Vector2 ndir = dir2;
+			if(ndir.length() > arrowSize * tripodSize)
+				ndir.resize(arrowSize * tripodSize);
 			QPointF head[3];
-			head[1] = origin + QPointF(dir.x(), -dir.y());
-			head[0] = head[1] + QPointF(arrowSize * (ndir.y() - ndir.x()), -arrowSize * (-ndir.x() - ndir.y()));
-			head[2] = head[1] + QPointF(arrowSize * (-ndir.y() - ndir.x()), -arrowSize * (ndir.x() - ndir.y()));
-			painter.drawPolyline(head, 3);
+			head[1] = origin + QPointF(dir2.x(), -dir2.y());
+			head[0] = head[1] + QPointF(0.5 *  ndir.y() - ndir.x(), -(0.5 * -ndir.x() - ndir.y()));
+			head[2] = head[1] + QPointF(0.5 * -ndir.y() - ndir.x(), -(0.5 *  ndir.x() - ndir.y()));
+			painter.drawConvexPolygon(head, 3);
 		}
 
 		if(fontSize != 0) {

@@ -26,6 +26,7 @@
 #include <core/scene/objects/DisplayObject.h>
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ArrowPrimitive.h>
+#include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "BondsObject.h"
 #include "ParticlePropertyObject.h"
@@ -142,6 +143,32 @@ private:
 	DECLARE_PROPERTY_FIELD(_useParticleColors);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
 	DECLARE_PROPERTY_FIELD(_renderingQuality);
+};
+
+/**
+ * \brief This information record is attached to the particles by the BondsDisplay when rendering
+ * them in the viewports. It facilitates the picking of particles with the mouse.
+ */
+class OVITO_PARTICLES_EXPORT BondPickInfo : public ObjectPickInfo
+{
+public:
+
+	/// Constructor.
+	BondPickInfo(const PipelineFlowState& pipelineState) : _pipelineState(pipelineState) {}
+
+	/// The pipeline flow state containing the bonds.
+	const PipelineFlowState& pipelineState() const { return _pipelineState; }
+
+	/// Returns a human-readable string describing the picked object, which will be displayed in the status bar by OVITO.
+	virtual QString infoString(ObjectNode* objectNode, quint32 subobjectId) override;
+
+private:
+
+	/// The pipeline flow state containing the bonds.
+	PipelineFlowState _pipelineState;
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)

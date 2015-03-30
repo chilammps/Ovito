@@ -178,7 +178,8 @@ private:
 };
 
 /**
- * An information record used for particle picking in the viewports.
+ * \brief This information record is attached to the particles by the ParticleDisplay when rendering
+ * them in the viewports. It facilitates the picking of particles with the mouse.
  */
 class OVITO_PARTICLES_EXPORT ParticlePickInfo : public ObjectPickInfo
 {

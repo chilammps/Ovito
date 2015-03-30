@@ -104,7 +104,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	}
 
 	{
-		QGroupBox* sizeGroupBox = new QGroupBox(tr("Size"), rollout);
+		QGroupBox* sizeGroupBox = new QGroupBox(tr("Box size"), rollout);
 		layout1->addWidget(sizeGroupBox);
 
 		QGridLayout* layout2 = new QGridLayout(sizeGroupBox);

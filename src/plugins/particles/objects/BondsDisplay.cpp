@@ -39,6 +39,7 @@ OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 OVITO_END_INLINE_NAMESPACE
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, BondPickInfo, ObjectPickInfo);
 SET_OVITO_OBJECT_EDITOR(BondsDisplay, BondsDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor", PROPERTY_FIELD_MEMORIZE);
@@ -178,12 +179,58 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 		else _buffer.reset();
 	}
 
-	if(_buffer) {
-		renderer->beginPickObject(contextNode);
-		_buffer->render(renderer);
+	if(!_buffer)
+		return;
+
+	if(renderer->isPicking()) {
+		OORef<BondPickInfo> pickInfo(new BondPickInfo(flowState));
+		renderer->beginPickObject(contextNode, pickInfo);
+	}
+
+	_buffer->render(renderer);
+
+	if(renderer->isPicking()) {
 		renderer->endPickObject();
 	}
 }
+
+/******************************************************************************
+* Returns a human-readable string describing the picked object,
+* which will be displayed in the status bar by OVITO.
+******************************************************************************/
+QString BondPickInfo::infoString(ObjectNode* objectNode, quint32 subobjectId)
+{
+	QString str;
+	BondsObject* bondsObj = pipelineState().findObject<BondsObject>();
+	if(bondsObj && bondsObj->bonds().size() > subobjectId) {
+		str = tr("Bond");
+		const BondsStorage::Bond& bond = bondsObj->bonds()[subobjectId];
+
+		// Bond length
+		ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(pipelineState(), ParticleProperty::PositionProperty);
+		if(posProperty && posProperty->size() > bond.index1 && posProperty->size() > bond.index2) {
+			const Point3& p1 = posProperty->getPoint3(bond.index1);
+			const Point3& p2 = posProperty->getPoint3(bond.index2);
+			Vector3 delta = p2 - p1;
+			if(SimulationCellObject* simCell = pipelineState().findObject<SimulationCellObject>()) {
+				delta += simCell->cellMatrix() * Vector3(bond.pbcShift);
+			}
+			str += QString(" | Length: %1 | Delta: (%2 %3 %4)").arg(delta.length()).arg(delta.x()).arg(delta.y()).arg(delta.z());
+		}
+
+		// Pair type info.
+		ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(pipelineState(), ParticleProperty::ParticleTypeProperty));
+		if(typeProperty && typeProperty->size() > bond.index1 && typeProperty->size() > bond.index2) {
+			ParticleType* type1 = typeProperty->particleType(typeProperty->getInt(bond.index1));
+			ParticleType* type2 = typeProperty->particleType(typeProperty->getInt(bond.index2));
+			if(type1 && type2) {
+				str += QString(" | %1 - %2").arg(type1->name(), type2->name());
+			}
+		}
+	}
+	return str;
+}
+
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
