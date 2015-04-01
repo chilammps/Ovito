@@ -162,7 +162,7 @@ protected:
 		WeakVersionedOORef<ParticlePropertyObject>,	// Position property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,	// Radius property + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,	// Type property + revision number
-		WeakVersionedOORef<ParticlePropertyObject>,	// Asperical shape property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,	// Aspherical shape property + revision number
 		FloatType> 									// Default particle radius
 		_boundingBoxCacheHelper;
 

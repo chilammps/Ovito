@@ -5,6 +5,7 @@ User interface improvements:
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
 - Extend spinner widget with "Animation" dialog, which can be opened for animatable parameters.
+- Pointing the mouse cursor on a bond should show bond info in status bar.
  
 Work-flow improvements:
 

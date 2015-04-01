@@ -45,7 +45,7 @@ struct Bond {
 };
 
 /**
- * \brief Memory storage for bonds between particles.
+ * \brief List of bonds, which connect pairs of particles.
  */
 class OVITO_PARTICLES_EXPORT BondsStorage : public std::vector<Bond>, public QSharedData
 {
