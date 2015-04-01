@@ -48,10 +48,10 @@ void main()
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0)
-						
+		float((objectID >> 24) & 0xFF) / 255.0);
+
 #endif
-	
+
 	cylinder_axis_gs = cylinder_axis;
 	cylinder_radius_gs = cylinder_radius;
 	gl_Position = vec4(position, 1);	
