@@ -127,7 +127,7 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 #define ACTION_XFORM_ROTATE_MODE			"XFormRotateMode"
 
 /**
- * \brief Manages the application's actions.
+ * \brief Manages all available user interface actions.
  */
 class OVITO_CORE_EXPORT ActionManager : public QObject
 {
@@ -138,7 +138,7 @@ public:
 	/// Constructor.
 	ActionManager(MainWindow* mainWindow);
 
-	/// Returns the associated main window.
+	/// Returns the main window this action manager belongs to.
 	MainWindow* mainWindow() const { return reinterpret_cast<MainWindow*>(parent()); }
 
 	/// \brief Returns the action with the given ID or NULL.

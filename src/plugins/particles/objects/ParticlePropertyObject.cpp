@@ -33,7 +33,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, DataObjec
 * Constructor.
 ******************************************************************************/
 ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticleProperty* storage)
-	: DataObject(dataset), _storage(storage ? storage : new ParticleProperty())
+	: DataObjectWithSharedStorage(dataset, storage ? storage : new ParticleProperty())
 {
 }
 
@@ -84,34 +84,23 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::createFromStorage(DataSet*
 }
 
 /******************************************************************************
-* Replaces the internal storage object with the given one.
-******************************************************************************/
-void ParticlePropertyObject::setStorage(ParticleProperty* storage)
-{
-	OVITO_CHECK_POINTER(storage);
-	_storage = storage;
-	changed();
-}
-
-/******************************************************************************
 * Resizes the property storage.
 ******************************************************************************/
 void ParticlePropertyObject::resize(size_t newSize, bool preserveData)
 {
 	if(preserveData) {
 		// If existing data should be preserved, resize existing storage.
-		_storage.detach();
-		_storage->resize(newSize, true);
+		modifiableStorage()->resize(newSize, true);
+		changed();
 	}
 	else {
 		// If data should not be preserved, allocate new storage to replace old one.
 		// This avoids calling the ParticleProperty copy constructor unnecessarily.
 		if(type() != ParticleProperty::UserProperty)
-			_storage = new ParticleProperty(newSize, type(), componentCount(), false);
+			setStorage(new ParticleProperty(newSize, type(), componentCount(), false));
 		else
-			_storage = new ParticleProperty(newSize, dataType(), dataTypeSize(), componentCount(), stride(), name(), false);
+			setStorage(new ParticleProperty(newSize, dataType(), dataTypeSize(), componentCount(), stride(), name(), false));
 	}
-	changed();
 }
 
 /******************************************************************************
@@ -126,9 +115,8 @@ void ParticlePropertyObject::setName(const QString& newName)
 	if(dataset()->undoStack().isRecording())
 		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "name"));
 
-	_storage.detach();
-	_storage->setName(newName);
-	notifyDependents(ReferenceEvent::TargetChanged);
+	modifiableStorage()->setName(newName);
+	changed();
 	notifyDependents(ReferenceEvent::TitleChanged);
 }
 
@@ -140,7 +128,7 @@ void ParticlePropertyObject::saveToStream(ObjectSaveStream& stream)
 	DataObject::saveToStream(stream);
 
 	stream.beginChunk(0x01);
-	_storage.constData()->saveToStream(stream, !saveWithScene());
+	storage()->saveToStream(stream, !saveWithScene());
 	stream.endChunk();
 }
 
@@ -152,22 +140,8 @@ void ParticlePropertyObject::loadFromStream(ObjectLoadStream& stream)
 	DataObject::loadFromStream(stream);
 
 	stream.expectChunk(0x01);
-	_storage->loadFromStream(stream);
+	modifiableStorage()->loadFromStream(stream);
 	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<ParticlePropertyObject> clone = static_object_cast<ParticlePropertyObject>(DataObject::clone(deepCopy, cloneHelper));
-
-	// Shallow copy storage.
-	clone->_storage = this->_storage;
-
-	return clone;
 }
 
 /******************************************************************************

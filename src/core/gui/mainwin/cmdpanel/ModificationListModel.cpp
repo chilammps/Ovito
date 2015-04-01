@@ -310,7 +310,7 @@ void ModificationListModel::iconAnimationFrameChanged()
 {
 	bool stopMovie = true;
 	for(int i = 0; i < _items.size(); i++) {
-		if(_items[i]->status() == ModificationListItem::Pending) {
+		if(_items[i]->status().type() == PipelineStatus::Pending) {
 			dataChanged(index(i), index(i), { Qt::DecorationRole });
 			stopMovie = false;
 		}
@@ -343,24 +343,23 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	}
 	else if(role == Qt::DecorationRole) {
 		if(item->object()) {
-			switch(item->status()) {
-			case ModificationListItem::Info: return qVariantFromValue(_statusInfoIcon);
-			case ModificationListItem::Warning: return qVariantFromValue(_statusWarningIcon);
-			case ModificationListItem::Error: return qVariantFromValue(_statusErrorIcon);
-			case ModificationListItem::Pending:
+			switch(item->status().type()) {
+			case PipelineStatus::Warning: return qVariantFromValue(_statusWarningIcon);
+			case PipelineStatus::Error: return qVariantFromValue(_statusErrorIcon);
+			case PipelineStatus::Pending:
 				const_cast<QMovie&>(_statusPendingIcon).start();
 				return qVariantFromValue(_statusPendingIcon.currentPixmap());
-			case ModificationListItem::None: return qVariantFromValue(_statusNoneIcon);
-			default: OVITO_ASSERT(false);
+			default: return qVariantFromValue(_statusNoneIcon);
 			}
 		}
 	}
+	else if(role == Qt::ToolTipRole) {
+		return qVariantFromValue(item->status().text());
+	}
 	else if(role == Qt::CheckStateRole) {
-		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());
-		if(displayObj)
+		if(DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object()))
 			return displayObj->isEnabled() ? Qt::Checked : Qt::Unchecked;
-		Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
-		if(modifier)
+		else if(Modifier* modifier = dynamic_object_cast<Modifier>(item->object()))
 			return modifier->isEnabled() ? Qt::Checked : Qt::Unchecked;
 	}
 	else if(role == Qt::TextAlignmentRole) {

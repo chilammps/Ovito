@@ -47,56 +47,64 @@ ObjectNode::ObjectNode(DataSet* dataset) : SceneNode(dataset)
 ******************************************************************************/
 const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 {
-	// Check if the cache needs to be updated.
-	if(_pipelineCache.stateValidity().contains(time) == false) {
-		if(dataProvider()) {
+	// Check if the caches need to be updated.
+	if(_displayCache.stateValidity().contains(time) == false) {
+		if(_pipelineCache.stateValidity().contains(time) == false) {
+			if(dataProvider()) {
 
-			// Avoid recording the creation of transient objects on the undo stack
-			// while evaluating the pipeline.
-			UndoSuspender suspendUndo(dataset()->undoStack());
+				// Avoid recording the creation of transient objects on the undo stack
+				// while evaluating the pipeline.
+				UndoSuspender suspendUndo(dataset()->undoStack());
 
-			// Evaluate data flow pipeline and store result in local cache.
-			_pipelineCache = dataProvider()->evaluate(time);
+				// Evaluate data flow pipeline and store results in local cache.
+				_pipelineCache = dataProvider()->evaluate(time);
 
-			// Update list of display objects.
+				// Update list of active display objects.
 
-			// First discard those display objects which are no longer needed.
-			for(int i = displayObjects().size() - 1; i >= 0; i--) {
-				DisplayObject* displayObj = displayObjects()[i];
-				// Check if the display object is still being referenced by any of the objects
-				// that left the pipeline.
-				if(std::none_of(_pipelineCache.objects().begin(), _pipelineCache.objects().end(),
-						[displayObj](DataObject* obj) { return obj->displayObjects().contains(displayObj); })) {
-					_displayObjects.remove(i);
-				}
-			}
-
-			// Now add any new display objects to this node.
-			for(const auto& dataObj : _pipelineCache.objects()) {
-				for(DisplayObject* displayObj : dataObj->displayObjects()) {
-					OVITO_CHECK_OBJECT_POINTER(displayObj);
-					if(displayObjects().contains(displayObj) == false)
-						_displayObjects.push_back(displayObj);
-				}
-			}
-
-			// Let display objects prepare the data for rendering.
-			for(const auto& dataObj : _pipelineCache.objects()) {
-				for(DisplayObject* displayObj : dataObj->displayObjects()) {
-					if(displayObj && displayObj->isEnabled()) {
-						displayObj->prepare(time, dataObj, _pipelineCache);
+				// First discard those display objects which are no longer needed.
+				for(int i = displayObjects().size() - 1; i >= 0; i--) {
+					DisplayObject* displayObj = displayObjects()[i];
+					// Check if the display object is still being referenced by any of the objects
+					// that left the pipeline.
+					if(std::none_of(_pipelineCache.objects().begin(), _pipelineCache.objects().end(),
+							[displayObj](DataObject* obj) { return obj->displayObjects().contains(displayObj); })) {
+						_displayObjects.remove(i);
 					}
 				}
+
+				// Now add any new display objects.
+				for(const auto& dataObj : _pipelineCache.objects()) {
+					for(DisplayObject* displayObj : dataObj->displayObjects()) {
+						OVITO_CHECK_OBJECT_POINTER(displayObj);
+						if(displayObjects().contains(displayObj) == false)
+							_displayObjects.push_back(displayObj);
+					}
+				}
+
+				OVITO_ASSERT(_pipelineCache.stateValidity().contains(time));
+			}
+			else {
+				// Reset cache if this node doesn't have a data source.
+				invalidatePipelineCache();
+				// Discard any display objects as well.
+				_displayObjects.clear();
 			}
 		}
-		else {
-			// Reset cache if this node doesn't have a data source.
-			invalidatePipelineCache();
-			// Discard any display objects as well.
-			_displayObjects.clear();
+
+		// Let display objects prepare the data for rendering.
+		_displayCache = _pipelineCache;
+		for(const auto& dataObj : _displayCache.objects()) {
+			for(DisplayObject* displayObj : dataObj->displayObjects()) {
+				if(displayObj && displayObj->isEnabled()) {
+					displayObj->prepare(time, dataObj, _displayCache);
+				}
+			}
 		}
 	}
-	return _pipelineCache;
+	else {
+		OVITO_ASSERT(_pipelineCache.stateValidity().contains(time));
+	}
+	return _displayCache;
 }
 
 /******************************************************************************
@@ -130,6 +138,14 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 		}
 		else if(event->type() == ReferenceEvent::TitleChanged) {
 			notifyDependents(ReferenceEvent::TitleChanged);
+		}
+	}
+	else if(_displayObjects.contains(source)) {
+		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
+			// Refresh display cache.
+			_displayCache.clear();
+			// Update cached bounding box when display settings change.
+			invalidateBoundingBox();
 		}
 	}
 	return SceneNode::referenceEvent(source, event);

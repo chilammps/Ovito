@@ -27,28 +27,17 @@
 namespace Ovito { namespace Particles {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMesh, DataObject);
+DEFINE_PROPERTY_FIELD(SurfaceMesh, _isCompletelySolid, "IsCompletelySolid");
 
 /******************************************************************************
 * Constructs an empty surface mesh object.
 ******************************************************************************/
-SurfaceMesh::SurfaceMesh(DataSet* dataset) : DataObject(dataset), _isCompletelySolid(false)
+SurfaceMesh::SurfaceMesh(DataSet* dataset) : DataObjectWithSharedStorage(dataset, new HalfEdgeMesh()),
+		_isCompletelySolid(false)
 {
+	INIT_PROPERTY_FIELD(SurfaceMesh::_isCompletelySolid);
+
 	addDisplayObject(new SurfaceMeshDisplay(dataset));
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> SurfaceMesh::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<SurfaceMesh> clone = static_object_cast<SurfaceMesh>(DataObject::clone(deepCopy, cloneHelper));
-
-	// Copy the internal mesh.
-	clone->_mesh = this->_mesh;
-	clone->_isCompletelySolid = this->_isCompletelySolid;
-
-	return clone;
 }
 
 /******************************************************************************

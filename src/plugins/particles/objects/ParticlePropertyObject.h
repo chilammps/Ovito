@@ -28,7 +28,7 @@
 #define __OVITO_PARTICLE_PROPERTY_OBJECT_H
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/DataObject.h>
+#include <core/scene/objects/DataObjectWithSharedStorage.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <plugins/particles/data/ParticleProperty.h>
 
@@ -51,7 +51,7 @@ namespace Ovito { namespace Particles {
  * too (e.g. when loading data from a file).
  *
  */
-class OVITO_PARTICLES_EXPORT ParticlePropertyObject : public DataObject
+class OVITO_PARTICLES_EXPORT ParticlePropertyObject : public DataObjectWithSharedStorage<ParticleProperty>
 {
 public:
 
@@ -87,27 +87,17 @@ public:
 
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.
-	const QString& name() const { return _storage->name(); }
+	const QString& name() const { return storage()->name(); }
 
 	/// \brief Sets the property's name.
 	/// \param name The new name string.
 	/// \undoable
 	void setName(const QString& name);
 
-	/// \brief Replaces the internal storage object with the given one.
-	void setStorage(ParticleProperty* storage);
-
-	/// \brief Returns the internal storage object.
-	ParticleProperty* storage() const { return _storage.data(); }
-
-	/// \brief This must be called every time the contents of the property are changed.
-	///        It generates a ReferenceEvent::TargetChanged event.
-	void changed() { notifyDependents(ReferenceEvent::TargetChanged); }
-
 	/// \brief Returns the number of particles for which this object stores the properties.
 	/// \return The total number of data elements in this channel divided by the
 	///         number of elements per particle.
-	size_t size() const { return _storage->size(); }
+	size_t size() const { return storage()->size(); }
 
 	/// \brief Resizes the property storage.
 	/// \param newSize The new number of particles.
@@ -116,40 +106,39 @@ public:
 	void resize(size_t newSize, bool preserveData);
 
 	/// \brief Returns the type of this property.
-	ParticleProperty::Type type() const { return _storage->type(); }
+	ParticleProperty::Type type() const { return storage()->type(); }
 
 	/// \brief Changes the type of this property.
 	/// \note The type may only be changed if the new property has the same
 	///       data type and component count as the old one.
 	void setType(ParticleProperty::Type newType) {
 		if(newType == type()) return;
-		_storage.detach();
-		_storage->setType(newType);
+		modifiableStorage()->setType(newType);
 		changed();
 	}
 
 	/// \brief Returns the data type of the property.
 	/// \return The identifier of the data type used for the elements stored in
 	///         this property storage according to the Qt meta type system.
-	int dataType() const { return _storage->dataType(); }
+	int dataType() const { return storage()->dataType(); }
 
 	/// \brief Returns the number of bytes per value.
 	/// \return Number of bytes used to store a single value of the data type
 	///         specified by type().
-	size_t dataTypeSize() const { return _storage->dataTypeSize(); }
+	size_t dataTypeSize() const { return storage()->dataTypeSize(); }
 
 	/// \brief Returns the number of bytes used per particle.
-	size_t stride() const { return _storage->stride(); }
+	size_t stride() const { return storage()->stride(); }
 
 	/// \brief Returns the number of array elements per particle.
 	/// \return The number of data values stored per particle in this storage object.
-	size_t componentCount() const { return _storage->componentCount(); }
+	size_t componentCount() const { return storage()->componentCount(); }
 
 	/// \brief Returns the human-readable names for the components stored per atom.
 	/// \return The names of the vector components if this channel contains more than one value per atom.
 	///         If this is only a single valued channel then an empty list is returned by this method because
 	///         then no naming is necessary.
-	const QStringList& componentNames() const { return _storage->componentNames(); }
+	const QStringList& componentNames() const { return storage()->componentNames(); }
 
 	/// \brief Returns the display name of the property including the name of the given
 	///        vector component.
@@ -165,322 +154,294 @@ public:
 	/// Copies the contents from the given source into this storage.
 	/// Particles for which the bit in the given mask is set are skipped.
 	void filterCopy(ParticlePropertyObject* source, const boost::dynamic_bitset<>& mask) {
-		_storage.detach();
-		_storage->filterCopy(*source->_storage.constData(), mask);
+		modifiableStorage()->filterCopy(*source->storage(), mask);
 		changed();
 	}
 
 	/// \brief Returns a read-only pointer to the raw elements stored in this property object.
 	const void* constData() const {
-		return _storage->constData();
+		return storage()->constData();
 	}
 
 	/// \brief Returns a read-only pointer to the first integer element stored in this object..
 	/// \note This method may only be used if this property is of data type integer.
 	const int* constDataInt() const {
-		return _storage->constDataInt();
+		return storage()->constDataInt();
 	}
 
 	/// \brief Returns a read-only pointer to the first float element in the property storage.
 	/// \note This method may only be used if this property is of data type float.
 	const FloatType* constDataFloat() const {
-		return _storage->constDataFloat();
+		return storage()->constDataFloat();
 	}
 
 	/// \brief Returns a read-only pointer to the first vector element in the property storage.
 	/// \note This method may only be used if this property is of data type Vector3 or a FloatType channel with 3 components.
 	const Vector3* constDataVector3() const {
-		return _storage->constDataVector3();
+		return storage()->constDataVector3();
 	}
 
 	/// \brief Returns a read-only pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3 or a FloatType channel with 3 components.
 	const Point3* constDataPoint3() const {
-		return _storage->constDataPoint3();
+		return storage()->constDataPoint3();
 	}
 
 	/// \brief Returns a read-only pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3I or an integer channel with 3 components.
 	const Point3I* constDataPoint3I() const {
-		return _storage->constDataPoint3I();
+		return storage()->constDataPoint3I();
 	}
 
 	/// \brief Returns a read-only pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
 	const Color* constDataColor() const {
-		return _storage->constDataColor();
+		return storage()->constDataColor();
 	}
 
 	/// \brief Returns a read-only pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	const SymmetricTensor2* constDataSymmetricTensor2() const {
-		return _storage->constDataSymmetricTensor2();
+		return storage()->constDataSymmetricTensor2();
 	}
 
 	/// \brief Returns a read-only pointer to the first quaternion element in the property storage.
 	/// \note This method may only be used if this property is of data type Quaternion or a FloatType channel with 4 components.
 	const Quaternion* constDataQuaternion() const {
-		return _storage->constDataQuaternion();
+		return storage()->constDataQuaternion();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const int*> constIntRange() const {
-		return _storage->constIntRange();
+		return storage()->constIntRange();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const FloatType*> constFloatRange() const {
-		return _storage->constFloatRange();
+		return storage()->constFloatRange();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const Point3*> constPoint3Range() const {
-		return _storage->constPoint3Range();
+		return storage()->constPoint3Range();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const Vector3*> constVector3Range() const {
-		return _storage->constVector3Range();
+		return storage()->constVector3Range();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const Color*> constColorRange() const {
-		return _storage->constColorRange();
+		return storage()->constColorRange();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const Point3I*> constPoint3IRange() const {
-		return _storage->constPoint3IRange();
+		return storage()->constPoint3IRange();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const SymmetricTensor2*> constSymmetricTensor2Range() const {
-		return _storage->constSymmetricTensor2Range();
+		return storage()->constSymmetricTensor2Range();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<const Quaternion*> constQuaternionRange() const {
-		return _storage->constQuaternionRange();
+		return storage()->constQuaternionRange();
 	}
 
 	/// Returns a read-write pointer to the raw elements in the property storage.
 	void* data() {
-		_storage.detach();
-		return _storage->data();
+		return modifiableStorage()->data();
 	}
 
 	/// \brief Returns a read-write pointer to the first integer element stored in this object..
 	/// \note This method may only be used if this property is of data type integer.
 	int* dataInt() {
-		_storage.detach();
-		return _storage->dataInt();
+		return modifiableStorage()->dataInt();
 	}
 
 	/// \brief Returns a read-only pointer to the first float element in the property storage.
 	/// \note This method may only be used if this property is of data type float.
 	FloatType* dataFloat() {
-		_storage.detach();
-		return _storage->dataFloat();
+		return modifiableStorage()->dataFloat();
 	}
 
 	/// \brief Returns a read-write pointer to the first vector element in the property storage.
 	/// \note This method may only be used if this property is of data type Vector3 or a FloatType channel with 3 components.
 	Vector3* dataVector3() {
-		_storage.detach();
-		return _storage->dataVector3();
+		return modifiableStorage()->dataVector3();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3 or a FloatType channel with 3 components.
 	Point3* dataPoint3() {
-		_storage.detach();
-		return _storage->dataPoint3();
+		return modifiableStorage()->dataPoint3();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3I or an integer channel with 3 components.
 	Point3I* dataPoint3I() {
-		_storage.detach();
-		return _storage->dataPoint3I();
+		return modifiableStorage()->dataPoint3I();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
 	Color* dataColor() {
-		_storage.detach();
-		return _storage->dataColor();
+		return modifiableStorage()->dataColor();
 	}
 
 	/// \brief Returns a read-write pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	SymmetricTensor2* dataSymmetricTensor2() {
-		_storage.detach();
-		return _storage->dataSymmetricTensor2();
+		return modifiableStorage()->dataSymmetricTensor2();
 	}
 
 	/// \brief Returns a read-write pointer to the first quaternion element in the property storage.
 	/// \note This method may only be used if this property is of data type Quaternion or a FloatType channel with 4 components.
 	Quaternion* dataQuaternion() {
-		_storage.detach();
-		return _storage->dataQuaternion();
+		return modifiableStorage()->dataQuaternion();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<int*> intRange() {
-		_storage.detach();
-		return _storage->intRange();
+		return modifiableStorage()->intRange();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<FloatType*> floatRange() {
-		_storage.detach();
-		return _storage->floatRange();
+		return modifiableStorage()->floatRange();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<Point3*> point3Range() {
-		_storage.detach();
-		return _storage->point3Range();
+		return modifiableStorage()->point3Range();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<Vector3*> vector3Range() {
-		_storage.detach();
-		return _storage->vector3Range();
+		return modifiableStorage()->vector3Range();
 	}
 
 	/// \brief Returns a range of const iterators over the elements stored in this object.
 	ParticleProperty::Range<Color*> colorRange() {
-		_storage.detach();
-		return _storage->colorRange();
+		return modifiableStorage()->colorRange();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<Point3I*> point3IRange() {
-		_storage.detach();
-		return _storage->point3IRange();
+		return modifiableStorage()->point3IRange();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<SymmetricTensor2*> symmetricTensor2Range() {
-		_storage.detach();
-		return _storage->symmetricTensor2Range();
+		return modifiableStorage()->symmetricTensor2Range();
 	}
 
 	/// \brief Returns a range of iterators over the elements stored in this object.
 	ParticleProperty::Range<Quaternion*> quaternionRange() {
-		_storage.detach();
-		return _storage->quaternionRange();
+		return modifiableStorage()->quaternionRange();
 	}
 
 	/// \brief Returns an integer element at the given index (if this is an integer property).
 	int getInt(size_t particleIndex) const {
-		return _storage->getInt(particleIndex);
+		return storage()->getInt(particleIndex);
 	}
 
 	/// Returns a float element at the given index (if this is a float property).
 	FloatType getFloat(size_t particleIndex) const {
-		return _storage->getFloat(particleIndex);
+		return storage()->getFloat(particleIndex);
 	}
 
 	/// Returns an integer element at the given index (if this is an integer property).
 	int getIntComponent(size_t particleIndex, size_t componentIndex) const {
-		return _storage->getIntComponent(particleIndex, componentIndex);
+		return storage()->getIntComponent(particleIndex, componentIndex);
 	}
 
 	/// Returns a float element at the given index (if this is a float property).
 	FloatType getFloatComponent(size_t particleIndex, size_t componentIndex) const {
-		return _storage->getFloatComponent(particleIndex, componentIndex);
+		return storage()->getFloatComponent(particleIndex, componentIndex);
 	}
 
 	/// Returns a Vector3 element at the given index (if this is a vector property).
 	const Vector3& getVector3(size_t particleIndex) const {
-		return _storage->getVector3(particleIndex);
+		return storage()->getVector3(particleIndex);
 	}
 
 	/// Returns a Point3 element at the given index (if this is a point property).
 	const Point3& getPoint3(size_t particleIndex) const {
-		return _storage->getPoint3(particleIndex);
+		return storage()->getPoint3(particleIndex);
 	}
 
 	/// Returns a Point3I element at the given index (if this is a point property).
 	const Point3I& getPoint3I(size_t particleIndex) const {
-		return _storage->getPoint3I(particleIndex);
+		return storage()->getPoint3I(particleIndex);
 	}
 
 	/// Returns a Color element at the given index (if this is a point property).
 	const Color& getColor(size_t particleIndex) const {
-		return _storage->getColor(particleIndex);
+		return storage()->getColor(particleIndex);
 	}
 
 	/// Returns a SymmetricTensor2 element stored for the given particle.
 	const SymmetricTensor2& getSymmetricTensor2(size_t particleIndex) const {
-		return _storage->getSymmetricTensor2(particleIndex);
+		return storage()->getSymmetricTensor2(particleIndex);
 	}
 
 	/// Returns a Quaternion element stored for the given particle.
 	const Quaternion& getQuaternion(size_t particleIndex) const {
-		return _storage->getQuaternion(particleIndex);
+		return storage()->getQuaternion(particleIndex);
 	}
 
 	/// Sets the value of an integer element at the given index (if this is an integer property).
 	void setInt(size_t particleIndex, int newValue) {
-		_storage.detach();
-		_storage->setInt(particleIndex, newValue);
+		modifiableStorage()->setInt(particleIndex, newValue);
 	}
 
 	/// Sets the value of a float element at the given index (if this is a float property).
 	void setFloat(size_t particleIndex, FloatType newValue) {
-		_storage.detach();
-		_storage->setFloat(particleIndex, newValue);
+		modifiableStorage()->setFloat(particleIndex, newValue);
 	}
 
 	/// Sets the value of an integer element at the given index (if this is an integer property).
 	void setIntComponent(size_t particleIndex, size_t componentIndex, int newValue) {
-		_storage.detach();
-		_storage->setIntComponent(particleIndex, componentIndex, newValue);
+		modifiableStorage()->setIntComponent(particleIndex, componentIndex, newValue);
 	}
 
 	/// Sets the value of a float element at the given index (if this is a float property).
 	void setFloatComponent(size_t particleIndex, size_t componentIndex, FloatType newValue) {
-		_storage.detach();
-		_storage->setFloatComponent(particleIndex, componentIndex, newValue);
+		modifiableStorage()->setFloatComponent(particleIndex, componentIndex, newValue);
 	}
 
 	/// Sets the value of a Vector3 element at the given index (if this is a vector property).
 	void setVector3(size_t particleIndex, const Vector3& newValue) {
-		_storage.detach();
-		_storage->setVector3(particleIndex, newValue);
+		modifiableStorage()->setVector3(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Point3 element at the given index (if this is a point property).
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
-		_storage.detach();
-		_storage->setPoint3(particleIndex, newValue);
+		modifiableStorage()->setPoint3(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Point3I element at the given index (if this is a point property).
 	void setPoint3I(size_t particleIndex, const Point3I& newValue) {
-		_storage.detach();
-		_storage->setPoint3I(particleIndex, newValue);
+		modifiableStorage()->setPoint3I(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Color element at the given index (if this is a point property).
 	void setColor(size_t particleIndex, const Color& newValue) {
-		_storage.detach();
-		_storage->setColor(particleIndex, newValue);
+		modifiableStorage()->setColor(particleIndex, newValue);
 	}
 
 	/// Sets the value of a SymmetricTensor2 element for the given particle.
 	void setSymmetricTensor2(size_t particleIndex, const SymmetricTensor2& newValue) {
-		_storage.detach();
-		_storage->setSymmetricTensor2(particleIndex, newValue);
+		modifiableStorage()->setSymmetricTensor2(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Quaternion element for the given particle.
 	void setQuaternion(size_t particleIndex, const Quaternion& newValue) {
-		_storage.detach();
-		_storage->setQuaternion(particleIndex, newValue);
+		modifiableStorage()->setQuaternion(particleIndex, newValue);
 	}
 
 	//////////////////////////////// from RefTarget //////////////////////////////
@@ -513,12 +474,6 @@ protected:
 
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
-
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
-	/// The internal storage object that holds the elements.
-	QExplicitlySharedDataPointer<ParticleProperty> _storage;
 
 private:
 

@@ -38,16 +38,6 @@ class ModificationListItem : public RefMaker
 {
 public:
 
-	enum Status {
-		None,
-		Info,
-		Warning,
-		Error,
-		Pending
-	};
-
-public:
-
 	/// Constructor.
 	ModificationListItem(RefTarget* object, bool isSubObject = false, const QString& title = QString());
 
@@ -67,7 +57,7 @@ public:
 	void setSubObject(bool isSub) { _isSubObject = isSub; }
 
 	/// Returns the status of the object represented by the list item.
-	Status status() const;
+	PipelineStatus status() const;
 
 	/// Returns the title text if this is a section header item.
 	const QString title() const { return _title; }

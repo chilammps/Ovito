@@ -67,7 +67,7 @@ protected:
 ******************************************************************************/
 ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 {
-	// Update actions whenever a new dataset has been loaded.
+	// Actions need to be updated whenever a new dataset is loaded.
 	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &ActionManager::onDataSetChanged);
 	connect(&mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ActionManager::onAnimationSettingsReplaced);
 

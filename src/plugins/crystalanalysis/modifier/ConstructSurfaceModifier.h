@@ -98,13 +98,13 @@ private:
 
 		/// Constructor.
 		ConstructSurfaceEngine(const TimeInterval& validityInterval, ParticleProperty* positions, ParticleProperty* selection, const SimulationCell& simCell, FloatType radius, int smoothingLevel) :
-			ComputeEngine(validityInterval), _positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false) {}
+			ComputeEngine(validityInterval), _positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false), _mesh(new HalfEdgeMesh()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void perform() override;
 
 		/// Returns the generated mesh.
-		HalfEdgeMesh& mesh() { return _mesh; }
+		HalfEdgeMesh* mesh() { return _mesh.data(); }
 
 		/// Returns the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
@@ -130,7 +130,7 @@ private:
 		int _smoothingLevel;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;
-		HalfEdgeMesh _mesh;
+		QExplicitlySharedDataPointer<HalfEdgeMesh> _mesh;
 		SimulationCell _simCell;
 		double _solidVolume;
 		double _surfaceArea;

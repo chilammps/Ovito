@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/utilities/concurrent/TaskManager.h>
+#include <core/dataset/DataSetContainer.h>
+#include <core/scene/pipeline/PipelineFlowState.h>
 #include "AsynchronousDisplayObject.h"
 
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
@@ -30,8 +32,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AsynchronousDisplayObject, DisplayObje
 /******************************************************************************
 * Constructs the display object.
 ******************************************************************************/
-AsynchronousDisplayObject::AsynchronousDisplayObject(DataSet* dataset) : DisplayObject(dataset),
-		_cacheValidity(TimeInterval::empty())
+AsynchronousDisplayObject::AsynchronousDisplayObject(DataSet* dataset) : DisplayObject(dataset)
 {
 	connect(&_engineWatcher, &FutureWatcher::finished, this, &AsynchronousDisplayObject::computeEngineFinished);
 }
@@ -70,58 +71,25 @@ void AsynchronousDisplayObject::stopRunningEngine()
 ******************************************************************************/
 void AsynchronousDisplayObject::prepare(TimePoint time, DataObject* dataObject, PipelineFlowState& flowState)
 {
-	if(input().status().type() != PipelineStatus::Pending) {
-		if(!_cacheValidity.contains(time)) {
-			if(!_runningEngine || !_runningEngine->validityInterval().contains(time)) {
+	// Create a compute engine which prepares the data for rendering.
+	std::shared_ptr<AsynchronousTask> engine = createEngine(time, dataObject, flowState);
+	if(engine) {
 
-				// Stop running engine first.
-				stopRunningEngine();
+		// Stop any running engine first.
+		stopRunningEngine();
 
-				try {
-					// Create the compute engine for this modifier.
-					_runningEngine = createEngine(time, input().stateValidity());
-				}
-				catch(const PipelineStatus& status) {
-					return status;
-				}
-				// Start compute engine.
-				dataset()->container()->taskManager().runTaskAsync(_runningEngine);
-				_engineWatcher.setFutureInterface(_runningEngine);
-			}
-		}
+		// Set status.
+		setStatus(PipelineStatus(PipelineStatus::Pending, tr("Data is being prepared for rendering...")));
+
+		// Start new compute engine.
+		_runningEngine = engine;
+		dataset()->container()->taskManager().runTaskAsync(_runningEngine);
+		_engineWatcher.setFutureInterface(_runningEngine);
 	}
 
-	if(!_runningEngine || !_runningEngine->validityInterval().contains(time)) {
-		if(!_cacheValidity.contains(time)) {
-			if(input().status().type() != PipelineStatus::Pending)
-				throw Exception(tr("The modifier results have not been computed yet."));
-			else
-				return PipelineStatus(PipelineStatus::Warning, tr("Waiting for input data to become ready..."));
-		}
-		else {
-			if(_computationStatus.type() == PipelineStatus::Error)
-				return _computationStatus;
-
-			validityInterval.intersect(_cacheValidity);
-			return applyComputationResults(time, validityInterval);
-		}
-	}
-	else {
-		if(_cacheValidity.contains(time)) {
-			validityInterval.intersect(_cacheValidity);
-			applyComputationResults(time, validityInterval);
-		}
-		else {
-			// Try to apply old results even though they are outdated.
-			validityInterval.intersect(time);
-			try {
-				applyComputationResults(time, validityInterval);
-			}
-			catch(const Exception&) { /* Ignore problems. */ }
-		}
-
-		return PipelineStatus(PipelineStatus::Pending, tr("Results are being computed..."));
-	}
+	// Mark the pipeline output as pending as long as we are preparing the data for display.
+	if(_runningEngine && flowState.status().type() != PipelineStatus::Pending && flowState.status().type() != PipelineStatus::Error)
+		flowState.setStatus(status());
 }
 
 /******************************************************************************
@@ -131,6 +99,7 @@ void AsynchronousDisplayObject::computeEngineFinished()
 {
 	OVITO_ASSERT(_runningEngine);
 
+	PipelineStatus newStatus;
 	if(!_runningEngine->isCanceled()) {
 		try {
 			// Throw exception if compute engine aborted with an error.
@@ -139,18 +108,19 @@ void AsynchronousDisplayObject::computeEngineFinished()
 			// Store results of compute engine for later use.
 			transferComputationResults(_runningEngine.get());
 
-			// Notify dependents that the background operation has succeeded and data is ready.
-			_computationStatus = PipelineStatus::Success;
+			// Notify dependents that the background operation has succeeded and the data is ready.
+			newStatus = PipelineStatus::Success;
 		}
 		catch(const Exception& ex) {
 			// Transfer error message into status.
-			_computationStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
+			newStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
 		}
-		_cacheValidity = _runningEngine->validityInterval();
 	}
 	else {
-		_computationStatus = PipelineStatus(PipelineStatus::Error, tr("Computation has been canceled by the user."));
-		_cacheValidity.setEmpty();
+		newStatus = PipelineStatus(PipelineStatus::Error, tr("Operation has been canceled by the user."));
+
+		// Let derived display object know that compute task has been canceled.
+		transferComputationResults(nullptr);
 	}
 
 	// Reset everything.
@@ -158,7 +128,7 @@ void AsynchronousDisplayObject::computeEngineFinished()
 	_runningEngine.reset();
 
 	// Set the new status.
-	setStatus(_computationStatus);
+	setStatus(newStatus);
 
 	// Notify dependents that new data is available.
 	notifyDependents(ReferenceEvent::PendingStateChanged);

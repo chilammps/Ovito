@@ -25,6 +25,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
+#include <core/scene/pipeline/PipelineStatus.h>
 
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
@@ -126,6 +127,11 @@ public:
 		bool hasChanged = (_oldState != std::tuple<Types...>(args...));
 		_oldState = std::tuple<Types...>(args...);
 		return hasChanged;
+	}
+
+	/// Compares the stored state with the given state.
+	bool hasChanged(const Types&... args) const {
+		return (_oldState != std::tuple<Types...>(args...));
 	}
 
 private:

@@ -467,7 +467,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 
 			// Create bonds storage.
 			setBonds(new BondsStorage());
-			bonds()->bonds().reserve(nbonds);
+			bonds()->reserve(nbonds);
 			setProgressRange(nbonds);
 			for(int i = 0; i < nbonds; i++) {
 				if(!reportProgress(i)) return;
@@ -490,8 +490,8 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(CompressedTextReader& s
 						shift[dim] -= (int8_t)floor(delta[dim] + FloatType(0.5));
 				}
 
-				bonds()->addBond(atomIndex1, atomIndex2,  shift);
-				bonds()->addBond(atomIndex2, atomIndex1, -shift);
+				bonds()->push_back({  shift, atomIndex1, atomIndex2 });
+				bonds()->push_back({ -shift, atomIndex2, atomIndex1 });
 			}
 		}
 		else if(keyword.isEmpty() == false) {

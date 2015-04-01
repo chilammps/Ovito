@@ -25,28 +25,14 @@
 namespace Ovito { namespace Particles {
 
 /******************************************************************************
-* Default constructor.
-******************************************************************************/
-BondsStorage::BondsStorage()
-{
-}
-
-/******************************************************************************
-* Copy constructor.
-******************************************************************************/
-BondsStorage::BondsStorage(const BondsStorage& other) : _bonds(other._bonds)
-{
-}
-
-/******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
 void BondsStorage::saveToStream(SaveStream& stream, bool onlyMetadata) const
 {
 	stream.beginChunk(0x01);
 	if(!onlyMetadata) {
-		stream.writeSizeT(_bonds.size());
-		stream.write(_bonds.data(), _bonds.size() * sizeof(Bond));
+		stream.writeSizeT(size());
+		stream.write(data(), size() * sizeof(Bond));
 	}
 	else {
 		stream.writeSizeT(0);
@@ -62,8 +48,8 @@ void BondsStorage::loadFromStream(LoadStream& stream)
 	stream.expectChunk(0x01);
 	size_t bondCount;
 	stream.readSizeT(bondCount);
-	_bonds.resize(bondCount);
-	stream.read(_bonds.data(), _bonds.size() * sizeof(Bond));
+	resize(bondCount);
+	stream.read(data(), size() * sizeof(Bond));
 	stream.closeChunk();
 }
 

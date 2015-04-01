@@ -4,6 +4,7 @@ User interface improvements:
 - Let the user configure the default colors and radii assigned to different atom types.
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
+- Extend spinner widget with "Animation" dialog, which can be opened for animatable parameters.
  
 Work-flow improvements:
 

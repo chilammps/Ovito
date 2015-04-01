@@ -76,17 +76,17 @@ dict ParticlePropertyObject__array_interface__(const ParticlePropertyObject& p)
 dict BondsObject__array_interface__(const BondsObject& p)
 {
 	dict ai;
-	ai["shape"] = boost::python::make_tuple(p.bonds().size(), 2);
+	ai["shape"] = boost::python::make_tuple(p.storage()->size(), 2);
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 	ai["typestr"] = str("<i") + str(sizeof(int));
 #else
 	ai["typestr"] = str(">i") + str(sizeof(int));
 #endif
 	const unsigned int* data = nullptr;
-	if(!p.bonds().empty())
-		data = &p.bonds().front().index1;
+	if(!p.storage()->empty())
+		data = &p.storage()->front().index1;
 	ai["data"] = boost::python::make_tuple((std::intptr_t)data, true);
-	ai["strides"] = boost::python::make_tuple(sizeof(BondsStorage::Bond), sizeof(int));
+	ai["strides"] = boost::python::make_tuple(sizeof(Bond), sizeof(int));
 	ai["version"] = 3;
 	return ai;
 }
@@ -495,13 +495,12 @@ BOOST_PYTHON_MODULE(Particles)
 			".. literalinclude:: ../example_snippets/surface_mesh.py"
 		)
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
-		.def("clearMesh", &SurfaceMesh::clearMesh)
 		.def("export_vtk", static_cast<void (*)(SurfaceMesh&,const QString&,SimulationCellObject*)>(
 				[](SurfaceMesh& mesh, const QString& filename, SimulationCellObject* simCellObj) {
 			if(!simCellObj)
 				throw Exception("A simulation cell is required to generate non-periodic mesh for export.");
 			TriMesh output;
-			if(!SurfaceMeshDisplay::buildSurfaceMesh(mesh.mesh(), simCellObj->data(), output))
+			if(!SurfaceMeshDisplay::buildSurfaceMesh(*mesh.storage(), simCellObj->data(), output))
 				throw Exception("Failed to generate non-periodic mesh for export. Simulation cell might be too small.");
 			QFile file(filename);
 			CompressedTextWriter writer(file);
@@ -516,7 +515,7 @@ BOOST_PYTHON_MODULE(Particles)
 			if(!simCellObj)
 				throw Exception("A simulation cell is required to generate cap mesh for export.");
 			TriMesh output;
-			SurfaceMeshDisplay::buildCapMesh(mesh.mesh(), simCellObj->data(), mesh.isCompletelySolid(), output);
+			SurfaceMeshDisplay::buildCapMesh(*mesh.storage(), simCellObj->data(), mesh.isCompletelySolid(), output);
 			QFile file(filename);
 			CompressedTextWriter writer(file);
 			output.saveToVTK(writer);

@@ -30,7 +30,7 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPAC
 /**
  * Stores a polygonal mesh using a half-edge data structure.
  */
-class OVITO_CORE_EXPORT HalfEdgeMesh
+class OVITO_CORE_EXPORT HalfEdgeMesh : public QSharedData
 {
 public:
 
@@ -212,7 +212,7 @@ public:
 	HalfEdgeMesh() {}
 
 	/// Copy constructor.
-	HalfEdgeMesh(const HalfEdgeMesh& other) {
+	HalfEdgeMesh(const HalfEdgeMesh& other) : QSharedData(other) {
 		*this = other;
 	}
 

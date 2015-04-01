@@ -63,6 +63,7 @@ SET(SourceFiles
 	scene/SceneRoot.cpp
 	scene/SelectionSet.cpp
 	scene/objects/DisplayObject.cpp
+	scene/objects/AsynchronousDisplayObject.cpp
 	scene/objects/DataObject.cpp
 	scene/objects/CompoundObject.cpp
 	scene/objects/geometry/TriMeshObject.cpp

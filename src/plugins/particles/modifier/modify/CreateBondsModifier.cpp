@@ -208,7 +208,7 @@ void CreateBondsModifier::BondsEngine::perform()
 	if(!_particleTypes) {
 		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
 			for(CutoffNeighborFinder::Query neighborQuery(neighborFinder, particleIndex); !neighborQuery.atEnd(); neighborQuery.next()) {
-				_bonds->addBond(particleIndex, neighborQuery.current(), neighborQuery.unwrappedPbcShift());
+				_bonds->push_back({ neighborQuery.unwrappedPbcShift(), (unsigned int)particleIndex, (unsigned int)neighborQuery.current() });
 			}
 			// Update progress indicator.
 			if((particleIndex % 4096) == 0) {
@@ -225,7 +225,7 @@ void CreateBondsModifier::BondsEngine::perform()
 				int type2 = _particleTypes->getInt(neighborQuery.current());
 				if(type1 >= 0 && type1 < (int)_pairCutoffs.size() && type2 >= 0 && type2 < (int)_pairCutoffs[type1].size()) {
 					if(neighborQuery.distanceSquared() <= _pairCutoffs[type1][type2])
-						_bonds->addBond(particleIndex, neighborQuery.current(), neighborQuery.unwrappedPbcShift());
+						_bonds->push_back({ neighborQuery.unwrappedPbcShift(), (unsigned int)particleIndex, (unsigned int)neighborQuery.current() });
 				}
 			}
 			// Update progress indicator.
@@ -256,17 +256,15 @@ PipelineStatus CreateBondsModifier::applyComputationResults(TimePoint time, Time
 	if(!_bonds)
 		throw Exception(tr("No computation results available."));
 
-	size_t bondsCount = _bonds->bonds().size();
-
 	// Create the output data object.
-	OORef<BondsObject> bondsObj(new BondsObject(dataset()));
-	bondsObj->setStorage(_bonds.data());
+	OORef<BondsObject> bondsObj(new BondsObject(dataset(), _bonds.data()));
 	bondsObj->addDisplayObject(_bondsDisplay);
 
 	// Insert output object into the pipeline.
 	output().addObject(bondsObj);
 
 	// If the number of bonds is unusually high, we better turn off bonds display to prevent the program from freezing.
+	size_t bondsCount = _bonds->size();
 	if(bondsCount > 1000000) {
 		bondsDisplay()->setEnabled(false);
 		return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));

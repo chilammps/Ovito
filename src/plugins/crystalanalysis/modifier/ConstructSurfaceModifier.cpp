@@ -116,9 +116,8 @@ void ConstructSurfaceModifier::transferComputationResults(ComputeEngine* engine)
 {
 	ConstructSurfaceEngine* eng = static_cast<ConstructSurfaceEngine*>(engine);
 	if(surfaceMesh()) {
-		surfaceMesh()->mesh().swap(eng->mesh());
+		surfaceMesh()->setStorage(eng->mesh());
 		surfaceMesh()->setCompletelySolid(eng->isCompletelySolid());
-		surfaceMesh()->notifyDependents(ReferenceEvent::TargetChanged);
 	}
 	_solidVolume = eng->solidVolume();
 	_totalVolume = eng->totalVolume();
@@ -282,13 +281,13 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::perform()
 				int vertexIndex = vertex->point().index();
 				OVITO_ASSERT(vertexIndex >= 0 && vertexIndex < vertexMap.size());
 				if(vertexMap[vertexIndex] == nullptr)
-					vertexMap[vertexIndex] = facetVertices[2-v] = _mesh.createVertex(inputPositions[vertexIndex]);
+					vertexMap[vertexIndex] = facetVertices[2-v] = _mesh->createVertex(inputPositions[vertexIndex]);
 				else
 					facetVertices[2-v] = vertexMap[vertexIndex];
 			}
 
 			// Create a new triangle facet.
-			tet.meshFacets[f] = _mesh.createFace(facetVertices.begin(), facetVertices.end());
+			tet.meshFacets[f] = _mesh->createFace(facetVertices.begin(), facetVertices.end());
 		}
 
 		std::sort(vertexIndices.begin(), vertexIndices.end());
@@ -390,10 +389,10 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::perform()
 
 	setProgressText(tr("Constructing surface mesh (smoothing step)"));
 	setProgressRange(0);
-	SurfaceMesh::smoothMesh(_mesh, _simCell, _smoothingLevel);
+	SurfaceMesh::smoothMesh(*_mesh, _simCell, _smoothingLevel);
 
 	// Compute surface area.
-	for(const HalfEdgeMesh::Face* facet : _mesh.faces()) {
+	for(const HalfEdgeMesh::Face* facet : _mesh->faces()) {
 		Vector3 e1 = _simCell.wrapVector(facet->edges()->vertex1()->pos() - facet->edges()->vertex2()->pos());
 		Vector3 e2 = _simCell.wrapVector(facet->edges()->prevFaceEdge()->vertex1()->pos() - facet->edges()->vertex2()->pos());
 		_surfaceArea += e1.cross(e2).length();

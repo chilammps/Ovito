@@ -95,6 +95,7 @@ namespace Ovito {
 			class PipelineFlowState;
 			class PipelineObject;
 			class DisplayObject;
+			class AsynchronousDisplayObject;
 			OVITO_BEGIN_INLINE_NAMESPACE(StdObj)
 			OVITO_END_INLINE_NAMESPACE
 		OVITO_END_INLINE_NAMESPACE

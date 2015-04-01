@@ -29,19 +29,8 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsObject, DataObject);
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-BondsObject::BondsObject(DataSet* dataset, BondsStorage* storage) : DataObject(dataset),
-	_storage(storage ? storage : new BondsStorage())
+BondsObject::BondsObject(DataSet* dataset, BondsStorage* storage) : DataObjectWithSharedStorage(dataset, storage ? storage : new BondsStorage())
 {
-}
-
-/******************************************************************************
-* Replaces the internal storage object with the given one.
-******************************************************************************/
-void BondsObject::setStorage(BondsStorage* storage)
-{
-	OVITO_CHECK_POINTER(storage);
-	_storage = storage;
-	changed();
 }
 
 /******************************************************************************
@@ -49,10 +38,10 @@ void BondsObject::setStorage(BondsStorage* storage)
 ******************************************************************************/
 void BondsObject::saveToStream(ObjectSaveStream& stream)
 {
-	DataObject::saveToStream(stream);
+	DataObjectWithSharedStorage::saveToStream(stream);
 
 	stream.beginChunk(0x01);
-	_storage.constData()->saveToStream(stream, !saveWithScene());
+	storage()->saveToStream(stream, !saveWithScene());
 	stream.endChunk();
 }
 
@@ -61,25 +50,11 @@ void BondsObject::saveToStream(ObjectSaveStream& stream)
 ******************************************************************************/
 void BondsObject::loadFromStream(ObjectLoadStream& stream)
 {
-	DataObject::loadFromStream(stream);
+	DataObjectWithSharedStorage::loadFromStream(stream);
 
 	stream.expectChunk(0x01);
-	_storage->loadFromStream(stream);
+	modifiableStorage()->loadFromStream(stream);
 	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> BondsObject::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<BondsObject> clone = static_object_cast<BondsObject>(DataObject::clone(deepCopy, cloneHelper));
-
-	// Shallow copy storage.
-	clone->_storage = this->_storage;
-
-	return clone;
 }
 
 /******************************************************************************
@@ -96,10 +71,9 @@ void BondsObject::particlesDeleted(const boost::dynamic_bitset<>& deletedParticl
 	for(size_t i = 0; i < deletedParticlesMask.size(); i++)
 		*index++ = deletedParticlesMask.test(i) ? std::numeric_limits<size_t>::max() : newParticleCount++;
 
-	_storage.detach();
-	auto result = _storage->bonds().begin();
-	auto bond = _storage->bonds().begin();
-	auto last = _storage->bonds().end();
+	auto result = modifiableStorage()->begin();
+	auto bond = modifiableStorage()->begin();
+	auto last = modifiableStorage()->end();
 	for(; bond != last; ++bond) {
 		// Remove invalid bonds.
 		if(bond->index1 >= oldParticleCount || bond->index2 >= oldParticleCount)
@@ -115,7 +89,7 @@ void BondsObject::particlesDeleted(const boost::dynamic_bitset<>& deletedParticl
 		result->index2 = indexMap[bond->index2];
 		++result;
 	}
-	_storage->bonds().erase(result, last);
+	modifiableStorage()->erase(result, last);
 	changed();
 }
 

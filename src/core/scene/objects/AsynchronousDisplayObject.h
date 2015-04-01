@@ -61,24 +61,18 @@ private Q_SLOTS:
 protected:
 
 	/// Creates a computation engine that will prepare the data to be displayed.
-	virtual std::shared_ptr<ComputeEngine> createEngine(TimePoint time, TimeInterval validityInterval) = 0;
+	virtual std::shared_ptr<AsynchronousTask> createEngine(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState) = 0;
 
 	/// Unpacks the results of the computation engine and stores them in the display object.
-	virtual void transferComputationResults(AynchronousTask* engine) = 0;
+	virtual void transferComputationResults(AsynchronousTask* engine) = 0;
 
 private:
 
 	/// The currently running compute engine.
-	std::shared_ptr<AynchronousTask> _runningEngine;
+	std::shared_ptr<AsynchronousTask> _runningEngine;
 
 	/// The watcher that is used to monitor the currently running compute engine.
 	FutureWatcher _engineWatcher;
-
-	/// The validity interval of the cached computation results.
-	TimeInterval _cacheValidity;
-
-	/// The last status returned by the compute engine.
-	PipelineStatus _computationStatus;
 
 	/// The current status of the display object.
 	PipelineStatus _status;
