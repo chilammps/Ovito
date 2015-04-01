@@ -70,6 +70,8 @@ SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset
 
 	_surfaceTransparency = ControllerManager::instance().createFloatController(dataset);
 	_capTransparency = ControllerManager::instance().createFloatController(dataset);
+
+	connect(&_engineWatcher, &FutureWatcher::finished, this, &SurfaceMeshDisplay::computeEngineFinished);
 }
 
 /******************************************************************************
@@ -87,6 +89,89 @@ Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, Obj
 		_cachedBoundingBox = Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
 	}
 	return _cachedBoundingBox;
+}
+
+/******************************************************************************
+* Cancels any running background job.
+******************************************************************************/
+void SurfaceMeshDisplay::stopRunningEngine()
+{
+	if(!_runningEngine)
+		return;
+
+	try {
+		_engineWatcher.unsetFuture();
+		_runningEngine->cancel();
+		_runningEngine->waitForFinished();
+	} catch(...) {}
+	_runningEngine.reset();
+
+	//if(status().type() == PipelineStatus::Pending)
+	//	setStatus(PipelineStatus());
+}
+
+/******************************************************************************
+* Lets the display object prepare the data for rendering.
+******************************************************************************/
+void SurfaceMeshDisplay::prepare(TimePoint time, DataObject* dataObject, PipelineFlowState& flowState)
+{
+	// Stop running engine first.
+	stopRunningEngine();
+
+	// Get the simulation cell.
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
+
+	// Get the original surface mesh.
+	OORef<SurfaceMesh> surfaceMeshObj = dataObject->convertTo<SurfaceMesh>(time);
+
+	if(cellObject && surfaceMeshObj) {
+
+
+		// Start compute engine.
+		//dataset()->container()->taskManager().runTaskAsync(_runningEngine);
+	//	_engineWatcher.setFutureInterface(_runningEngine);
+
+	}
+}
+
+/******************************************************************************
+* Is called when the compute engine has finished.
+******************************************************************************/
+void SurfaceMeshDisplay::computeEngineFinished()
+{
+	OVITO_ASSERT(_runningEngine);
+
+	if(!_runningEngine->isCanceled()) {
+		try {
+			// Throw exception if compute engine aborted with an error.
+			_runningEngine->waitForFinished();
+
+			// Store results of compute engine for later use.
+			transferComputationResults(_runningEngine.get());
+
+			// Notify dependents that the background operation has succeeded and new data is available.
+			_computationStatus = PipelineStatus::Success;
+		}
+		catch(const Exception& ex) {
+			// Transfer exception message into evaluation status.
+			_computationStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
+		}
+		_cacheValidity = _runningEngine->validityInterval();
+	}
+	else {
+		_computationStatus = PipelineStatus(PipelineStatus::Error, tr("Computation has been canceled by the user."));
+		_cacheValidity.setEmpty();
+	}
+
+	// Reset everything.
+	_engineWatcher.unsetFuture();
+	_runningEngine.reset();
+
+	// Set the new modifier status.
+	setStatus(_computationStatus);
+
+	// Notify dependents that the evaluation request was satisfied or not satisfied.
+	notifyDependents(ReferenceEvent::PendingStateChanged);
 }
 
 /******************************************************************************
@@ -126,11 +211,11 @@ void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 
 	// Update buffer contents.
 	if(updateContents) {
-		OORef<SurfaceMesh> defectSurfaceObj = dataObject->convertTo<SurfaceMesh>(time);
-		if(defectSurfaceObj) {
+		OORef<SurfaceMesh> surfaceMeshObj = dataObject->convertTo<SurfaceMesh>(time);
+		if(surfaceMeshObj) {
 			TriMesh surfaceMesh;
 			TriMesh capMesh;
-			if(buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh)) {
+			if(buildSurfaceMesh(surfaceMeshObj->mesh(), cellObject->data(), surfaceMesh)) {
 				// Assign smoothing group to faces to interpolate normals.
 				if(_smoothShading) {
 					for(auto& face : surfaceMesh.faces())
@@ -138,7 +223,7 @@ void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 				}
 				_surfaceBuffer->setMesh(surfaceMesh, color_surface);
 				if(_showCap) {
-					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), defectSurfaceObj->isCompletelySolid(), capMesh);
+					buildCapMesh(surfaceMeshObj->mesh(), cellObject->data(), surfaceMeshObj->isCompletelySolid(), capMesh);
 					_capBuffer->setMesh(capMesh, color_cap);
 				}
 			}

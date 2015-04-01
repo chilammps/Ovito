@@ -30,6 +30,7 @@
 #include <core/rendering/MeshPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/animation/controller/Controller.h>
+#include <core/utilities/concurrent/Task.h>
 #include <plugins/particles/data/SimulationCell.h>
 
 namespace Ovito { namespace Particles {
@@ -46,6 +47,9 @@ public:
 
 	/// \brief Lets the display object render the data object.
 	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+
+	/// \brief Lets the display object prepare the data for rendering.
+	virtual void prepare(TimePoint time, DataObject* dataObject, PipelineFlowState& flowState) override;
 
 	/// \brief Computes the bounding box of the object.
 	virtual Box3 boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
@@ -95,6 +99,14 @@ public:
 	/// Generates the triangle mesh for the PBC cap.
 	static void buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output);
 
+	/// Interrupts a running computation engine if there is one.
+	void stopRunningEngine();
+
+private Q_SLOTS:
+
+	/// Is called when the compute engine has finished.
+	virtual void computeEngineFinished();
+
 protected:
 
 	/// Splits a triangle face at a periodic boundary.
@@ -138,6 +150,12 @@ protected:
 
 	/// The buffered geometry used to render the surface cap.
 	std::shared_ptr<MeshPrimitive> _capBuffer;
+
+	/// The currently running compute engine.
+	std::shared_ptr<AsynchronousTask> _runningEngine;
+
+	/// The watcher that is used to monitor the currently running compute engine.
+	FutureWatcher _engineWatcher;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

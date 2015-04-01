@@ -79,6 +79,15 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 						_displayObjects.push_back(displayObj);
 				}
 			}
+
+			// Let display objects prepare the data for rendering.
+			for(const auto& dataObj : _pipelineCache.objects()) {
+				for(DisplayObject* displayObj : dataObj->displayObjects()) {
+					if(displayObj && displayObj->isEnabled()) {
+						displayObj->prepare(time, dataObj, _pipelineCache);
+					}
+				}
+			}
 		}
 		else {
 			// Reset cache if this node doesn't have a data source.

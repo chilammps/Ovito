@@ -53,6 +53,13 @@ public:
 	/// system. The object has to be rendered in the local object coordinate system.
 	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) = 0;
 
+	/// \brief Lets the display object prepare the data for rendering.
+	///
+	/// \param time The animation time at which to render.
+	/// \param dataObject The data object that is going to be rendered.
+	/// \param flowState The pipeline evaluation results of the object node.
+	virtual void prepare(TimePoint time, DataObject* dataObject, PipelineFlowState& flowState) {}
+
 	/// \brief Computes the view-independent bounding box of the given data object.
 	/// \param time The animation time for which the bounding box should be computed.
 	/// \param dataObject The data object for which to compute the bounding box.
@@ -84,6 +91,9 @@ public:
 	/// \brief Enables or disables this display object.
 	/// \undoable
 	void setEnabled(bool enabled) { _isEnabled = enabled; }
+
+	/// \brief Returns a structure that describes the current status of the display object.
+	virtual PipelineStatus status() const { return PipelineStatus(); }
 
 private:
 
