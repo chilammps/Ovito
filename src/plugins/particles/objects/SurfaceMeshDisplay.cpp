@@ -38,7 +38,7 @@ OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 	IMPLEMENT_OVITO_OBJECT(Particles, SurfaceMeshDisplayEditor, PropertiesEditor);
 OVITO_END_INLINE_NAMESPACE
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMeshDisplay, DisplayObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMeshDisplay, AsynchronousDisplayObject);
 SET_OVITO_OBJECT_EDITOR(SurfaceMeshDisplay, SurfaceMeshDisplayEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _surfaceColor, "SurfaceColor", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE);
@@ -58,8 +58,8 @@ SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _capTransparency, PercentParameterU
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
-	_surfaceColor(1, 1, 1), _capColor(0.8, 0.8, 1.0), _showCap(true), _smoothShading(true)
+SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : AsynchronousDisplayObject(dataset),
+	_surfaceColor(1, 1, 1), _capColor(0.8, 0.8, 1.0), _showCap(true), _smoothShading(true), _trimeshUpdate(true)
 {
 	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceColor);
 	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_capColor);
@@ -73,20 +73,75 @@ SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset
 }
 
 /******************************************************************************
-* Computes the bounding box of the object.
+* Computes the bounding box of the displayed data.
 ******************************************************************************/
 Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
-	if(!cellObject)
+	// We'll use the entire simulation cell as bounding box for the mesh.
+	if(SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>())
+		return Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
+	else
 		return Box3();
+}
 
-	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(dataObject, cellObject->data()) || _cachedBoundingBox.isEmpty()) {
-		// Recompute bounding box.
-		_cachedBoundingBox = Box3(Point3(0,0,0), Point3(1,1,1)).transformed(cellObject->cellMatrix());
+/******************************************************************************
+* Creates a computation engine that will prepare the data to be displayed.
+******************************************************************************/
+std::shared_ptr<AsynchronousTask> SurfaceMeshDisplay::createEngine(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState)
+{
+	// Get the simulation cell.
+	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
+
+	// Get the surface mesh.
+	SurfaceMesh* surfaceMeshObj = dynamic_object_cast<SurfaceMesh>(dataObject);
+
+	// Check if input is available.
+	if(cellObject && surfaceMeshObj) {
+		// Check if the input has changed.
+		if(_preparationCacheHelper.updateState(dataObject, cellObject->data())) {
+			// Create compute engine.
+			return std::make_shared<PrepareSurfaceEngine>(surfaceMeshObj->storage(), cellObject->data(), surfaceMeshObj->isCompletelySolid());
+		}
 	}
-	return _cachedBoundingBox;
+	else {
+		_surfaceMesh.clear();
+		_capPolygonsMesh.clear();
+		_trimeshUpdate = true;
+	}
+
+	return std::shared_ptr<AsynchronousTask>();
+}
+
+/******************************************************************************
+* Computes the results and stores them in this object for later retrieval.
+******************************************************************************/
+void SurfaceMeshDisplay::PrepareSurfaceEngine::perform()
+{
+	setProgressText(tr("Preparing surface mesh for display"));
+
+	if(!buildSurfaceMesh(*_inputMesh, _simCell, _surfaceMesh, this))
+		throw Exception(tr("Failed to generate non-periodic version of surface mesh for display. Simulation cell might be too small."));
+
+	if(isCanceled())
+		return;
+
+	buildCapMesh(*_inputMesh, _simCell, _isCompletelySolid, _capPolygonsMesh, this);
+}
+
+/******************************************************************************
+* Unpacks the results of the computation engine and stores them in the display object.
+******************************************************************************/
+void SurfaceMeshDisplay::transferComputationResults(AsynchronousTask* engine)
+{
+	if(engine) {
+		_surfaceMesh = static_cast<PrepareSurfaceEngine*>(engine)->surfaceMesh();
+		_capPolygonsMesh = static_cast<PrepareSurfaceEngine*>(engine)->capPolygonsMesh();
+		_trimeshUpdate = true;
+	}
+	else {
+		// Reset cache when compute task has been canceled.
+		_preparationCacheHelper.updateState(nullptr, SimulationCell());
+	}
 }
 
 /******************************************************************************
@@ -94,14 +149,13 @@ Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, DataObject* dataObject, Obj
 ******************************************************************************/
 void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	// Get the simulation cell.
-	SimulationCellObject* cellObject = flowState.findObject<SimulationCellObject>();
-	if(!cellObject)
-		return;
-
-	// Do we have to re-create the geometry buffers from scratch?
-	bool recreateSurfaceBuffer = !_surfaceBuffer || !_surfaceBuffer->isValid(renderer);
-	bool recreateCapBuffer = _showCap && (!_capBuffer || !_capBuffer->isValid(renderer));
+	// Check if geometry preparation was successful.
+	// If not, reset triangle mesh.
+	if(status().type() == PipelineStatus::Error && _surfaceMesh.faceCount() != 0) {
+		_surfaceMesh.clear();
+		_capPolygonsMesh.clear();
+		_trimeshUpdate = true;
+	}
 
 	// Get the rendering colors for the surface and cap meshes.
 	FloatType transp_surface = 0;
@@ -112,46 +166,34 @@ void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 	ColorA color_surface(surfaceColor(), 1.0f - transp_surface);
 	ColorA color_cap(capColor(), 1.0f - transp_cap);
 
-	// Do we have to update contents of the geometry buffer?
-	bool updateContents = _geometryCacheHelper.updateState(
-			dataObject,
-			cellObject->data(), color_surface, color_cap, _smoothShading)
-					|| recreateSurfaceBuffer || recreateCapBuffer;
+	// Do we have to re-create the render primitives from scratch?
+	bool recreateSurfaceBuffer = !_surfaceBuffer || !_surfaceBuffer->isValid(renderer);
+	bool recreateCapBuffer = _showCap && (!_capBuffer || !_capBuffer->isValid(renderer));
 
-	// Re-create the geometry buffers if necessary.
+	// Do we have to update the render primitives?
+	bool updateContents = _geometryCacheHelper.updateState(color_surface, color_cap, _smoothShading)
+					|| recreateSurfaceBuffer || recreateCapBuffer || _trimeshUpdate;
+
+	// Re-create the render primitives if necessary.
 	if(recreateSurfaceBuffer)
 		_surfaceBuffer = renderer->createMeshPrimitive();
 	if(recreateCapBuffer && _showCap)
 		_capBuffer = renderer->createMeshPrimitive();
 
-	// Update buffer contents.
+	// Update render primitives.
 	if(updateContents) {
-		OORef<SurfaceMesh> defectSurfaceObj = dataObject->convertTo<SurfaceMesh>(time);
-		if(defectSurfaceObj) {
-			TriMesh surfaceMesh;
-			TriMesh capMesh;
-			if(buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh)) {
-				// Assign smoothing group to faces to interpolate normals.
-				if(_smoothShading) {
-					for(auto& face : surfaceMesh.faces())
-						face.setSmoothingGroups(1);
-				}
-				_surfaceBuffer->setMesh(surfaceMesh, color_surface);
-				if(_showCap) {
-					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), defectSurfaceObj->isCompletelySolid(), capMesh);
-					_capBuffer->setMesh(capMesh, color_cap);
-				}
-			}
-			else {
-				// Render empty meshes if they could not be generated.
-				_surfaceBuffer->setMesh(TriMesh(), color_surface);
-				if(_showCap) _capBuffer->setMesh(TriMesh(), color_cap);
-			}
-		}
-		else {
-			_surfaceBuffer->setMesh(TriMesh(), ColorA(1,1,1,1));
-			if(_showCap) _capBuffer->setMesh(TriMesh(), ColorA(1,1,1,1));
-		}
+
+		// Assign smoothing group to faces to interpolate normals.
+		const quint32 smoothingGroup = _smoothShading ? 1 : 0;
+		for(auto& face : _surfaceMesh.faces())
+			face.setSmoothingGroups(smoothingGroup);
+
+		_surfaceBuffer->setMesh(_surfaceMesh, color_surface);
+		if(_showCap)
+			_capBuffer->setMesh(_capPolygonsMesh, color_cap);
+
+		// Reset update flag.
+		_trimeshUpdate = false;
 	}
 
 	// Handle picking of triangles.
@@ -167,10 +209,14 @@ void SurfaceMeshDisplay::render(TimePoint time, DataObject* dataObject, const Pi
 /******************************************************************************
 * Generates the final triangle mesh, which will be rendered.
 ******************************************************************************/
-bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output)
+bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output, FutureInterfaceBase* progress)
 {
 	// Convert half-edge mesh to triangle mesh.
 	input.convertToTriMesh(output);
+
+	// Check for early abortion.
+	if(progress && progress->isCanceled())
+		return false;
 
 	// Convert vertex positions to reduced coordinates.
 	for(Point3& p : output.vertices())
@@ -179,6 +225,9 @@ bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 	// Wrap mesh at periodic boundaries.
 	for(size_t dim = 0; dim < 3; dim++) {
 		if(cell.pbcFlags()[dim] == false) continue;
+
+		if(progress && progress->isCanceled())
+			return false;
 
 		// Make sure all vertices are located inside the periodic box.
 		for(Point3& p : output.vertices()) {
@@ -202,6 +251,10 @@ bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 		output.setVertexCount(oldVertexCount + (int)newVertices.size());
 		std::copy(newVertices.cbegin(), newVertices.cend(), output.vertices().begin() + oldVertexCount);
 	}
+
+	// Check for early abortion.
+	if(progress && progress->isCanceled())
+		return false;
 
 	// Convert vertex positions back from reduced coordinates to absolute coordinates.
 	AffineTransformation cellMatrix = cell.matrix();
@@ -299,7 +352,7 @@ bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 /******************************************************************************
 * Generates the triangle mesh for the PBC caps.
 ******************************************************************************/
-void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output)
+void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output, FutureInterfaceBase* progress)
 {
 	// Convert vertex positions to reduced coordinates.
 	std::vector<Point3> reducedPos(input.vertexCount());
@@ -312,6 +365,9 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 	// Create caps for each periodic boundary.
 	for(size_t dim = 0; dim < 3; dim++) {
 		if(cell.pbcFlags()[dim] == false) continue;
+
+		if(progress && progress->isCanceled())
+			return;
 
 		// Make sure all vertices are located inside the periodic box.
 		for(Point3& p : reducedPos) {
@@ -428,6 +484,10 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 
 		tessellator.endPolygon();
 	}
+
+	// Check for early abortion.
+	if(progress && progress->isCanceled())
+		return;
 
 	// Convert vertex positions back from reduced coordinates to absolute coordinates.
 	AffineTransformation cellMatrix = cell.matrix();

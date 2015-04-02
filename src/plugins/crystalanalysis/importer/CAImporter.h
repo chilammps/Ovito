@@ -75,7 +75,7 @@ protected:
 
 		/// Constructor.
 		CrystalAnalysisFrameLoader(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool loadParticles)
-			: ParticleFrameLoader(container, frame, true), _loadParticles(loadParticles) {}
+			: ParticleFrameLoader(container, frame, true), _loadParticles(loadParticles), _defectSurface(new HalfEdgeMesh()) {}
 
 		/// Inserts the data loaded by perform() into the provided container object. This function is
 		/// called by the system from the main thread after the asynchronous loading task has finished.
@@ -126,7 +126,7 @@ protected:
 		};
 
 		/// The triangle mesh of the defect surface.
-		HalfEdgeMesh _defectSurface;
+		QExplicitlySharedDataPointer<HalfEdgeMesh> _defectSurface;
 
 		/// The structure pattern catalog.
 		QVector<PatternInfo> _patterns;

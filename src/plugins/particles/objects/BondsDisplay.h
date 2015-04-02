@@ -129,7 +129,7 @@ protected:
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<BondsObject>,				// The bonds data object + revision number
 		WeakVersionedOORef<ParticlePropertyObject>,		// Particle position property + revision number
-		WeakVersionedOORef<SimulationCellObject>,				// Simulation cell + revision number
+		WeakVersionedOORef<SimulationCellObject>,		// Simulation cell + revision number
 		FloatType										// Bond width
 	> _boundingBoxCacheHelper;
 

@@ -23,7 +23,7 @@
 #define __OVITO_SURFACE_MESH_DISPLAY_H
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/DisplayObject.h>
+#include <core/scene/objects/AsynchronousDisplayObject.h>
 #include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/utilities/mesh/TriMesh.h>
 #include <core/utilities/mesh/HalfEdgeMesh.h>
@@ -37,7 +37,7 @@ namespace Ovito { namespace Particles {
 /**
  * \brief A display object for the SurfaceMesh data object class.
  */
-class OVITO_PARTICLES_EXPORT SurfaceMeshDisplay : public DisplayObject
+class OVITO_PARTICLES_EXPORT SurfaceMeshDisplay : public AsynchronousDisplayObject
 {
 public:
 
@@ -90,10 +90,42 @@ public:
 	void setCapTransparency(FloatType transparency) { if(_capTransparency) _capTransparency->setCurrentFloatValue(transparency); }
 
 	/// Generates the final triangle mesh, which will be rendered.
-	static bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output);
+	static bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCell& cell, TriMesh& output, FutureInterfaceBase* progress = nullptr);
 
 	/// Generates the triangle mesh for the PBC cap.
-	static void buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output);
+	static void buildCapMesh(const HalfEdgeMesh& input, const SimulationCell& cell, bool isCompletelySolid, TriMesh& output, FutureInterfaceBase* progress = nullptr);
+
+protected:
+
+	/// Creates a computation engine that will prepare the data to be displayed.
+	virtual std::shared_ptr<AsynchronousTask> createEngine(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState) override;
+
+	/// Unpacks the results of the computation engine and stores them in the display object.
+	virtual void transferComputationResults(AsynchronousTask* engine) override;
+
+	/// Computation engine that builds the render mesh.
+	class PrepareSurfaceEngine : public AsynchronousTask
+	{
+	public:
+
+		/// Constructor.
+		PrepareSurfaceEngine(HalfEdgeMesh* mesh, const SimulationCell& simCell, bool isCompletelySolid) :
+			_inputMesh(mesh), _simCell(simCell), _isCompletelySolid(isCompletelySolid) {}
+
+		/// Computes the results and stores them in this object for later retrieval.
+		virtual void perform() override;
+
+		TriMesh& surfaceMesh() { return _surfaceMesh; }
+		TriMesh& capPolygonsMesh() { return _capPolygonsMesh; }
+
+	private:
+
+		QExplicitlySharedDataPointer<HalfEdgeMesh> _inputMesh;
+		SimulationCell _simCell;
+		bool _isCompletelySolid;
+		TriMesh _surfaceMesh;
+		TriMesh _capPolygonsMesh;
+	};
 
 protected:
 
@@ -139,25 +171,29 @@ protected:
 	/// The buffered geometry used to render the surface cap.
 	std::shared_ptr<MeshPrimitive> _capBuffer;
 
+	/// The non-periodic triangle mesh generated from the surface mesh for rendering.
+	TriMesh _surfaceMesh;
+
+	/// The cap polygons generated from the surface mesh for rendering.
+	TriMesh _capPolygonsMesh;
+
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<DataObject>,		// Source object + revision number
-		SimulationCell,						// Simulation cell geometry
-		ColorA,									// Surface color
-		ColorA,									// Cap color
-		bool									// Smooth shading
+		ColorA,								// Surface color
+		ColorA,								// Cap color
+		bool								// Smooth shading
 		> _geometryCacheHelper;
 
-	/// The cached bounding box.
-	Box3 _cachedBoundingBox;
-
-	/// This helper structure is used to detect changes in the input
-	/// that require recalculating the bounding box.
+	/// This helper structure is used to detect any changes in the input data
+	/// that require recomputing the cached triangle mesh for rendering.
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<DataObject>,		// Source object + revision number
 		SimulationCell						// Simulation cell geometry
-		> _boundingBoxCacheHelper;
+		> _preparationCacheHelper;
+
+	/// Indicates that the triangle mesh representation of the surface has recently been updated.
+	bool _trimeshUpdate;
 
 private:
 

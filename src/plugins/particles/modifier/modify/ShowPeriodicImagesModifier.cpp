@@ -170,14 +170,14 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 
 		// Duplicate bonds and adjust particle indices and PBC shift vectors as needed.
 		// Some bonds may no longer cross periodic boundaries.
-		size_t oldBondCount = newBondsObj->bonds().size();
-		newBondsObj->modifiableBonds().resize(oldBondCount * numCopies);
-		auto outBond = newBondsObj->modifiableBonds().begin();
+		size_t oldBondCount = newBondsObj->storage()->size();
+		newBondsObj->modifiableStorage()->resize(oldBondCount * numCopies);
+		auto outBond = newBondsObj->modifiableStorage()->begin();
 		Point3I image;
 		for(image[0] = newImages.minc.x(); image[0] <= newImages.maxc.x(); image[0]++) {
 			for(image[1] = newImages.minc.y(); image[1] <= newImages.maxc.y(); image[1]++) {
 				for(image[2] = newImages.minc.z(); image[2] <= newImages.maxc.z(); image[2]++) {
-					auto inBond = originalOutputBonds->bonds().begin();
+					auto inBond = originalOutputBonds->storage()->cbegin();
 					for(size_t bindex = 0; bindex < oldBondCount; bindex++, ++inBond, ++outBond) {
 						Point3I newImage;
 						Vector_3<int8_t> newShift;

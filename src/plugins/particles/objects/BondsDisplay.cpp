@@ -92,7 +92,7 @@ Box3 BondsDisplay::boundingBox(TimePoint time, DataObject* dataObject, ObjectNod
 			const Point3* positions = positionProperty->constDataPoint3();
 			const AffineTransformation cell = simulationCell ? simulationCell->cellMatrix() : AffineTransformation::Zero();
 
-			for(const BondsStorage::Bond& bond : bondsObj->bonds()) {
+			for(const Bond& bond : *bondsObj->storage()) {
 				if(bond.index1 >= particleCount || bond.index2 >= particleCount)
 					continue;
 
@@ -142,7 +142,7 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 
 			// Create bond geometry buffer.
 			_buffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, shadingMode(), renderingQuality());
-			_buffer->startSetElements((int)bondsObj->bonds().size());
+			_buffer->startSetElements((int)bondsObj->storage()->size());
 
 			// Obtain particle colors since they determine the bond colors.
 			std::vector<Color> particleColors(positionProperty->size());
@@ -163,7 +163,7 @@ void BondsDisplay::render(TimePoint time, DataObject* dataObject, const Pipeline
 			const AffineTransformation cell = simulationCell ? simulationCell->cellMatrix() : AffineTransformation::Zero();
 
 			int elementIndex = 0;
-			for(const BondsStorage::Bond& bond : bondsObj->bonds()) {
+			for(const Bond& bond : *bondsObj->storage()) {
 				if(bond.index1 < particleCount && bond.index2 < particleCount) {
 					Vector3 vec = positions[bond.index2] - positions[bond.index1];
 					for(size_t k = 0; k < 3; k++)

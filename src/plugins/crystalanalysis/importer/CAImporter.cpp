@@ -263,14 +263,14 @@ void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& str
 		throw Exception(tr("Failed to parse file. Invalid number of defect mesh vertices in line %1.").arg(stream.lineNumber()));
 	setProgressText(tr("Reading defect surface"));
 	setProgressRange(numDefectMeshVertices);
-	_defectSurface.reserveVertices(numDefectMeshVertices);
+	_defectSurface->reserveVertices(numDefectMeshVertices);
 	for(int index = 0; index < numDefectMeshVertices; index++) {
 		if((index % 4096) == 0)
 			setProgressValue(index);
 		Point3 p;
 		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &p.x(), &p.y(), &p.z()) != 3)
 			throw Exception(tr("Failed to parse file. Invalid point in line %1.").arg(stream.lineNumber()));
-		_defectSurface.createVertex(p);
+		_defectSurface->createVertex(p);
 	}
 
 	// Read defect mesh facets.
@@ -278,14 +278,14 @@ void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& str
 	if(sscanf(stream.readLine(), "DEFECT_MESH_FACETS %i", &numDefectMeshFacets) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of defect mesh facets in line %1.").arg(stream.lineNumber()));
 	setProgressRange(numDefectMeshFacets * 2);
-	_defectSurface.reserveFaces(numDefectMeshFacets);
+	_defectSurface->reserveFaces(numDefectMeshFacets);
 	for(int index = 0; index < numDefectMeshFacets; index++) {
 		if((index % 4096) == 0)
 			setProgressValue(index);
 		int v[3];
 		if(sscanf(stream.readLine(), "%i %i %i", &v[0], &v[1], &v[2]) != 3)
 			throw Exception(tr("Failed to parse file. Invalid triangle facet in line %1.").arg(stream.lineNumber()));
-		_defectSurface.createFace({ _defectSurface.vertex(v[0]), _defectSurface.vertex(v[1]), _defectSurface.vertex(v[2]) });
+		_defectSurface->createFace({ _defectSurface->vertex(v[0]), _defectSurface->vertex(v[1]), _defectSurface->vertex(v[2]) });
 	}
 
 	// Read facet adjacency information.
@@ -295,11 +295,11 @@ void CAImporter::CrystalAnalysisFrameLoader::parseFile(CompressedTextReader& str
 		int v[3];
 		if(sscanf(stream.readLine(), "%i %i %i", &v[0], &v[1], &v[2]) != 3)
 			throw Exception(tr("Failed to parse file. Invalid triangle adjacency info in line %1.").arg(stream.lineNumber()));
-		HalfEdgeMesh::Edge* edge = _defectSurface.face(index)->edges();
+		HalfEdgeMesh::Edge* edge = _defectSurface->face(index)->edges();
 		for(int i = 0; i < 3; i++, edge = edge->nextFaceEdge()) {
 			OVITO_CHECK_POINTER(edge);
 			if(edge->oppositeEdge() != nullptr) continue;
-			HalfEdgeMesh::Face* oppositeFace = _defectSurface.face(v[i]);
+			HalfEdgeMesh::Face* oppositeFace = _defectSurface->face(v[i]);
 			HalfEdgeMesh::Edge* oppositeEdge = oppositeFace->edges();
 			do {
 				OVITO_CHECK_POINTER(oppositeEdge);
@@ -365,8 +365,7 @@ void CAImporter::CrystalAnalysisFrameLoader::handOver(CompoundObject* container)
 	if(!defectSurfaceObj) {
 		defectSurfaceObj = new SurfaceMesh(container->dataset());
 	}
-	defectSurfaceObj->mesh().swap(_defectSurface);
-	defectSurfaceObj->notifyDependents(ReferenceEvent::TargetChanged);
+	defectSurfaceObj->setStorage(_defectSurface.data());
 
 	// Insert pattern catalog.
 	OORef<PatternCatalog> patternCatalog = oldObjects.findObject<PatternCatalog>();

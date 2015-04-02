@@ -25,6 +25,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
+#include <core/scene/pipeline/PipelineStatus.h>
 
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(ObjectSystem) OVITO_BEGIN_INLINE_NAMESPACE(Scene)
 
@@ -52,6 +53,13 @@ public:
 	/// The world transformation matrix is already set up when this method is called by the
 	/// system. The object has to be rendered in the local object coordinate system.
 	virtual void render(TimePoint time, DataObject* dataObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) = 0;
+
+	/// \brief Lets the display object prepare the data for rendering.
+	///
+	/// \param time The animation time at which to render.
+	/// \param dataObject The data object that is going to be rendered.
+	/// \param flowState The pipeline evaluation results of the object node.
+	virtual void prepare(TimePoint time, DataObject* dataObject, PipelineFlowState& flowState) {}
 
 	/// \brief Computes the view-independent bounding box of the given data object.
 	/// \param time The animation time for which the bounding box should be computed.
@@ -85,6 +93,9 @@ public:
 	/// \undoable
 	void setEnabled(bool enabled) { _isEnabled = enabled; }
 
+	/// \brief Returns a structure that describes the current status of the display object.
+	virtual PipelineStatus status() const { return PipelineStatus(); }
+
 private:
 
 	/// Flag that indicates whether the modifier is enabled.
@@ -116,6 +127,11 @@ public:
 		bool hasChanged = (_oldState != std::tuple<Types...>(args...));
 		_oldState = std::tuple<Types...>(args...);
 		return hasChanged;
+	}
+
+	/// Compares the stored state with the given state.
+	bool hasChanged(const Types&... args) const {
+		return (_oldState != std::tuple<Types...>(args...));
 	}
 
 private:

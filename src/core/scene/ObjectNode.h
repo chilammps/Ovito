@@ -111,14 +111,18 @@ private:
 	/// The cached results from the last data pipeline evaluation.
 	PipelineFlowState _pipelineCache;
 
+	/// The cached results from the display preparation stage.
+	PipelineFlowState _displayCache;
+
 	/// The list of display objects that are responsible for displaying
 	/// the node's data in the viewports.
 	VectorReferenceField<DisplayObject> _displayObjects;
 
 	/// This method invalidates the data pipeline cache of the object node.
 	void invalidatePipelineCache() {
-		// Reset data cache.
+		// Reset data caches.
 		_pipelineCache.clear();
+		_displayCache.clear();
 		// Also mark the cached bounding box of this scene node as invalid.
 		invalidateBoundingBox();
 	}

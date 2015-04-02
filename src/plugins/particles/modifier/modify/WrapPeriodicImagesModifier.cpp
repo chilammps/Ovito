@@ -66,7 +66,7 @@ PipelineStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 			}
 
 			// Wrap bonds by adjusting their shift vectors.
-			for(BondsStorage::Bond& bond : bondsObj->modifiableBonds()) {
+			for(Bond& bond : *bondsObj->modifiableStorage()) {
 				const Point3& p1 = posProperty->getPoint3(bond.index1);
 				const Point3& p2 = posProperty->getPoint3(bond.index2);
 				for(size_t dim = 0; dim < 3; dim++) {

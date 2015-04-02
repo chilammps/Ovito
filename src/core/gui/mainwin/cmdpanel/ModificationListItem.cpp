@@ -76,24 +76,20 @@ bool ModificationListItem::referenceEvent(RefTarget* source, ReferenceEvent* eve
 /******************************************************************************
 * Returns the status of the object represented by the list item.
 ******************************************************************************/
-ModificationListItem::Status ModificationListItem::status() const
+PipelineStatus ModificationListItem::status() const
 {
-	PipelineStatus status;
-	Modifier* modifier = dynamic_object_cast<Modifier>(object());
-	if(modifier)
-		status = modifier->status();
-	else {
-		if(DataObject* dataObj = dynamic_object_cast<DataObject>(object()))
-			status = dataObj->status();
+	if(Modifier* modifier = dynamic_object_cast<Modifier>(object())) {
+		return modifier->status();
 	}
-	if(status.type() == PipelineStatus::Warning)
-		return Warning;
-	else if(status.type() == PipelineStatus::Error)
-		return Error;
-	else if(status.type() == PipelineStatus::Pending)
-		return Pending;
-
-	return None;
+	else if(DataObject* dataObj = dynamic_object_cast<DataObject>(object())) {
+		return dataObj->status();
+	}
+	else if(DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(object())) {
+		return displayObj->status();
+	}
+	else {
+		return PipelineStatus();
+	}
 }
 
 OVITO_END_INLINE_NAMESPACE

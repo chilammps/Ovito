@@ -23,7 +23,7 @@
 #define __OVITO_SURFACE_MESH_H
 
 #include <plugins/particles/Particles.h>
-#include <core/scene/objects/DataObject.h>
+#include <core/scene/objects/DataObjectWithSharedStorage.h>
 #include <core/utilities/mesh/HalfEdgeMesh.h>
 #include <plugins/particles/data/SimulationCell.h>
 
@@ -32,7 +32,7 @@ namespace Ovito { namespace Particles {
 /**
  * \brief A closed triangle mesh representing a surface.
  */
-class OVITO_PARTICLES_EXPORT SurfaceMesh : public DataObject
+class OVITO_PARTICLES_EXPORT SurfaceMesh : public DataObjectWithSharedStorage<HalfEdgeMesh>
 {
 public:
 
@@ -48,31 +48,16 @@ public:
 	/// Return false because this object cannot be edited.
 	virtual bool isSubObjectEditable() const override { return false; }
 
-	/// Returns a const-reference to the mesh encapsulated by this data object.
-	const HalfEdgeMesh& mesh() const { return _mesh; }
-
-	/// Returns a reference to the mesh encapsulated by this data object.
-	/// The reference can be used to modify the mesh. However, each time the mesh has been modified,
-	/// notifyDependents(ReferenceEvent::TargetChanged) must be called to increment
-	/// the data object's revision number.
-	HalfEdgeMesh& mesh() { return _mesh; }
-
 	/// Indicates whether the entire simulation cell is part of the solid region.
 	bool isCompletelySolid() const { return _isCompletelySolid; }
 
 	/// Sets whether the entire simulation cell is part of the solid region.
 	void setCompletelySolid(bool flag) { _isCompletelySolid = flag; }
 
-	/// \brief Clears the triangle mesh by deleting all vertices and faces.
-	void clearMesh() {
-		mesh().clear();
-		notifyDependents(ReferenceEvent::TargetChanged);
-	}
-
 	/// Fairs the triangle mesh stored in this object.
 	void smoothMesh(const SimulationCell& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f) {
-		smoothMesh(mesh(), cell, numIterations, k_PB, lambda);
-		notifyDependents(ReferenceEvent::TargetChanged);
+		smoothMesh(*modifiableStorage(), cell, numIterations, k_PB, lambda);
+		changed();
 	}
 
 	/// Fairs a triangle mesh.
@@ -80,22 +65,18 @@ public:
 
 protected:
 
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
 	/// Performs one iteration of the smoothing algorithm.
 	static void smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCell& cell);
 
 private:
 
-	/// The internal triangle mesh.
-	HalfEdgeMesh _mesh;
-
 	/// Indicates that the entire simulation cell is part of the solid region.
-	bool _isCompletelySolid;
+	PropertyField<bool> _isCompletelySolid;
 
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_isCompletelySolid);
 };
 
 }	// End of namespace

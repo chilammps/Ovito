@@ -172,8 +172,9 @@ void ParticleFrameLoader::handOver(CompoundObject* container)
 	// Transfer bonds.
 	if(bonds()) {
 		OORef<BondsObject> bondsObj = container->findDataObject<BondsObject>();
+		QExplicitlySharedDataPointer<BondsStorage> bondsPtr(_bonds.release());
 		if(!bondsObj) {
-			bondsObj = new BondsObject(container->dataset(), QSharedDataPointer<BondsStorage>(_bonds.release()));
+			bondsObj = new BondsObject(container->dataset(), bondsPtr.data());
 
 			// Create a display object for the bonds.
 			OORef<BondsDisplay> bondsDisplay = new BondsDisplay(container->dataset());
@@ -183,7 +184,7 @@ void ParticleFrameLoader::handOver(CompoundObject* container)
 			container->addDataObject(bondsObj);
 		}
 		else {
-			bondsObj->setStorage(QSharedDataPointer<BondsStorage>(_bonds.release()));
+			bondsObj->setStorage(bondsPtr.data());
 		}
 		activeObjects.insert(bondsObj);
 	}
