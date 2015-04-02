@@ -138,10 +138,16 @@
 	<file>glsl/particles/geometry/sphere/sphere.vs</file>
 	<file>glsl/particles/geometry/sphere/sphere.gs</file>
 	<file>glsl/particles/geometry/sphere/sphere_tristrip.vs</file>
+	<file>glsl/particles/geometry/sphere/ellipsoid.fs</file>
+	<file>glsl/particles/geometry/sphere/ellipsoid.vs</file>
+	<file>glsl/particles/geometry/sphere/ellipsoid.gs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere.fs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere.vs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere.gs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere_tristrip.vs</file>
+	<file>glsl/particles/geometry/sphere/picking/ellipsoid.fs</file>
+	<file>glsl/particles/geometry/sphere/picking/ellipsoid.vs</file>
+	<file>glsl/particles/geometry/sphere/picking/ellipsoid.gs</file>
 	<file>glsl/particles/geometry/cube/cube.fs</file>
 	<file>glsl/particles/geometry/cube/cube.vs</file>
 	<file>glsl/particles/geometry/cube/cube.gs</file>

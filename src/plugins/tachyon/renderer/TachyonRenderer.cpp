@@ -313,10 +313,10 @@ void TachyonRenderer::renderLines(const DefaultLinePrimitive& lineBuffer)
 ******************************************************************************/
 void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBuffer)
 {
-	auto p = particleBuffer.positions().begin();
-	auto p_end = particleBuffer.positions().end();
-	auto c = particleBuffer.colors().begin();
-	auto r = particleBuffer.radii().begin();
+	auto p = particleBuffer.positions().cbegin();
+	auto p_end = particleBuffer.positions().cend();
+	auto c = particleBuffer.colors().cbegin();
+	auto r = particleBuffer.radii().cbegin();
 
 	const AffineTransformation tm = modelTM();
 
@@ -340,11 +340,50 @@ void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBu
 		// Rendering noncubic box particles.
 		auto shape = particleBuffer.shapes().begin();
 		auto shape_end = particleBuffer.shapes().end();
-		for(; p != p_end && shape != shape_end; ++p, ++c, ++shape) {
+		for(; p != p_end && shape != shape_end; ++p, ++c, ++shape, ++r) {
 			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
 			Point3 tp = tm * (*p);
-			rt_box(_rtscene, tex, rt_vector(tp.x() - shape->x(), tp.y() - shape->y(), -tp.z() - shape->z()),
-					rt_vector(tp.x() + shape->x(), tp.y() + shape->y(), -tp.z() + shape->z()));
+			if(*shape != Vector3::Zero())
+				rt_box(_rtscene, tex, rt_vector(tp.x() - shape->x(), tp.y() - shape->y(), -tp.z() - shape->z()),
+						rt_vector(tp.x() + shape->x(), tp.y() + shape->y(), -tp.z() + shape->z()));
+			else
+				rt_box(_rtscene, tex, rt_vector(tp.x() - *r, tp.y() - *r, -tp.z() - *r), rt_vector(tp.x() + *r, tp.y() + *r, -tp.z() + *r));
+		}
+	}
+	else if(particleBuffer.particleShape() == ParticlePrimitive::EllipsoidShape) {
+		const Matrix3 linear_tm = tm.linear();
+		// Rendering ellipsoid particles.
+		auto shape = particleBuffer.shapes().cbegin();
+		auto shape_end = particleBuffer.shapes().cend();
+		auto orientation = particleBuffer.orientations().cbegin();
+		auto orientation_end = particleBuffer.orientations().cend();
+		for(; p != p_end && shape != shape_end; ++p, ++c, ++shape, ++r) {
+			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
+			Point3 tp = tm * (*p);
+			Quaternion quat(0,0,0,1);
+			if(orientation != orientation_end) {
+				quat = *orientation++;
+				// Normalize quaternion.
+				FloatType c = sqrt(quat.dot(quat));
+				if(c == 0)
+					quat.setIdentity();
+				else
+					quat /= c;
+			}
+			if(shape->x() != 0 && shape->y() != 0 && shape->z() != 0) {
+				Matrix3 qmat(FloatType(1)/(shape->x()*shape->x()), 0, 0,
+						     0, FloatType(1)/(shape->y()*shape->y()), 0,
+						     0, 0, FloatType(1)/(shape->z()*shape->z()));
+				Matrix3 rot = Matrix3(1,0,0, 0,1,0, 0,0,-1) * linear_tm * Matrix3::rotation(quat);
+				Matrix3 quadric = rot * qmat * rot.transposed();
+				rt_quadric(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()),
+						quadric(0,0), quadric(0,1), quadric(0,2), 0.0,
+						quadric(1,1), quadric(1,2), 0.0,
+						quadric(2,2), 0.0, -1.0);
+			}
+			else {
+				rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
+			}
 		}
 	}
 }

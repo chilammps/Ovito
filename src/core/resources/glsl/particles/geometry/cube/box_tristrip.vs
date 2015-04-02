@@ -33,6 +33,8 @@ uniform vec3 normals[14];
 	in vec3 position;
 	in vec4 color;
 	in vec3 shape;
+	in vec4 orientation;
+	in float particle_radius;
 	
 	// Outputs to fragment shader
 	flat out vec4 particle_color_fs;
@@ -42,6 +44,7 @@ uniform vec3 normals[14];
 	
 	// The particle data:
 	attribute vec3 shape;
+	attribute float particle_radius;
 	attribute float vertexID;
 
 	// Outputs to fragment shader
@@ -51,6 +54,26 @@ uniform vec3 normals[14];
 
 void main()
 {
+	mat3 rot;
+	if(orientation != vec4(0)) {
+		rot = mat3(
+			1.0 - 2.0*(orientation.y*orientation.y + orientation.z*orientation.z),
+			2.0*(orientation.x*orientation.y + orientation.w*orientation.z),
+			2.0*(orientation.x*orientation.z - orientation.w*orientation.y),
+			
+			2.0*(orientation.x*orientation.y - orientation.w*orientation.z),
+			1.0 - 2.0*(orientation.x*orientation.x + orientation.z*orientation.z),
+			2.0*(orientation.y*orientation.z + orientation.w*orientation.x),
+			
+			2.0*(orientation.x*orientation.z + orientation.w*orientation.y),
+			2.0*(orientation.y*orientation.z - orientation.w*orientation.x),
+			1.0 - 2.0*(orientation.x*orientation.x + orientation.y*orientation.y)
+		);
+	}
+	else {
+		rot = mat3(1.0);
+	}
+	
 #if __VERSION__ >= 130
 
 	// Forward color to fragment shader.
@@ -58,7 +81,12 @@ void main()
 
 	// Transform and project vertex.
 	int cubeCorner = gl_VertexID % 14;
-	gl_Position = modelviewprojection_matrix * vec4(position + cubeVerts[cubeCorner] * shape, 1);
+	vec3 delta;
+	if(shape != vec3(0,0,0))
+		delta = cubeVerts[cubeCorner] * shape;
+	else
+		delta = cubeVerts[cubeCorner] * particle_radius;
+	gl_Position = modelviewprojection_matrix * vec4(position + rot * delta, 1);
 
 	// Determine face normal.
 	surface_normal_fs = normal_matrix * normals[cubeCorner];
@@ -70,7 +98,12 @@ void main()
 
 	// Transform and project vertex.
 	int cubeCorner = int(mod(vertexID+0.5, 14.0));
-	ec_pos = (modelview_matrix * vec4(gl_Vertex.xyz + cubeVerts[cubeCorner] * shape, 1)).xyz;
+	vec3 delta;
+	if(shape != vec3(0,0,0))
+		delta = cubeVerts[cubeCorner] * shape;
+	else
+		delta = cubeVerts[cubeCorner] * particle_radius;
+	ec_pos = (modelview_matrix * vec4(gl_Vertex.xyz + rot * delta, 1)).xyz;
 	gl_Position = projection_matrix * vec4(ec_pos,1);
 
 #endif

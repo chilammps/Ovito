@@ -144,9 +144,9 @@ void OpenGLMeshPrimitive::setMesh(const TriMesh& mesh, const ColorA& meshColor)
 			const auto& v1 = mesh.vertex(face->vertex(0));
 			const auto& v2 = mesh.vertex(face->vertex(1));
 			const auto& v3 = mesh.vertex(face->vertex(2));
-			tc->x() = (v1.x() + v2.x() + v3.x()) / 3;
-			tc->y() = (v1.y() + v2.y() + v3.y()) / 3;
-			tc->z() = (v1.z() + v2.z() + v3.z()) / 3;
+			tc->x() = (v1.x() + v2.x() + v3.x()) / FloatType(3);
+			tc->y() = (v1.y() + v2.y() + v3.y()) / FloatType(3);
+			tc->z() = (v1.z() + v2.z() + v3.z()) / FloatType(3);
 		}
 	}
 	else _triangleCoordinates.clear();

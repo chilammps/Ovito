@@ -817,7 +817,7 @@ void Viewport::renderOrientationIndicator()
 	renderer->setProjParams(projParams);
 	renderer->setWorldTransform(AffineTransformation::Identity());
 
-    static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2f, 0.2f, 1) };
+    static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.4f, 0.4f, 1) };
 	static const QString labels[3] = { QStringLiteral("x"), QStringLiteral("y"), QStringLiteral("z") };
 
 	// Create line buffer.

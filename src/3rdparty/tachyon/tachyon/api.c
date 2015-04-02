@@ -1258,6 +1258,26 @@ void rt_quadsphere(SceneHandle scene, void * tex, apivector ctr, flt rad) {
   add_unbounded_object((scenedef *) scene, (object *)q);
 }
 
+void rt_quadric(SceneHandle scene, void * tex, apivector ctr, flt a, flt b, flt c, flt d, flt e, flt f, flt g, flt h, flt i, flt j) {
+  quadric * q;
+  q=(quadric *) newquadric();
+  q->tex=tex;
+  q->ctr=ctr;
+
+  q->mat.a=a;
+  q->mat.b=b;
+  q->mat.c=c;
+  q->mat.d=d;
+  q->mat.e=e;
+  q->mat.f=f;
+  q->mat.g=g;
+  q->mat.h=h;
+  q->mat.i=i;
+  q->mat.j=j;
+
+  add_unbounded_object((scenedef *) scene, (object *)q);
+}
+
 
 void rt_clip_fv(SceneHandle voidscene, int numplanes, const float *planes) {
   list * lst;

@@ -19,9 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// Inputs from calling program:
-uniform mat4 modelview_matrix;
-
 #if __VERSION__ >= 130
 
 // The particle data:

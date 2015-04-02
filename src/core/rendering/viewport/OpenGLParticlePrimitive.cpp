@@ -56,7 +56,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 				_renderingTechnique = IMPOSTER_QUADS;
 		}
 		else {
-			_renderingTechnique = CUBE_GEOMETRY;
+			_renderingTechnique = BOX_GEOMETRY;
 		}
 	}
 
@@ -189,7 +189,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 			}
 		}
 	}
-	else if(_renderingTechnique == CUBE_GEOMETRY) {
+	else if(_renderingTechnique == BOX_GEOMETRY) {
 		if(shadingMode == NormalShading) {
 			if(_usingGeometryShader) {
 				if(shape == SphericalShape && renderingQuality == HighQuality) {
@@ -222,6 +222,16 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 							":/core/glsl/particles/geometry/cube/picking/cube.fs",
 							":/core/glsl/particles/geometry/cube/picking/box.gs");
 				}
+				else if(shape == EllipsoidShape) {
+					_shader = renderer->loadShaderProgram("particle_geomshader_ellipsoid",
+							":/core/glsl/particles/geometry/sphere/ellipsoid.vs",
+							":/core/glsl/particles/geometry/sphere/ellipsoid.fs",
+							":/core/glsl/particles/geometry/sphere/ellipsoid.gs");
+					_pickingShader = renderer->loadShaderProgram("particle_geomshader_ellipsoid_picking",
+							":/core/glsl/particles/geometry/sphere/picking/ellipsoid.vs",
+							":/core/glsl/particles/geometry/sphere/picking/ellipsoid.fs",
+							":/core/glsl/particles/geometry/sphere/picking/ellipsoid.gs");
+				}
 			}
 			else {
 				if(shape == SphericalShape && renderingQuality == HighQuality) {
@@ -240,7 +250,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 							":/core/glsl/particles/geometry/cube/picking/cube_tristrip.vs",
 							":/core/glsl/particles/geometry/cube/picking/cube.fs");
 				}
-				else if(shape == BoxShape) {
+				else if(shape == BoxShape || shape == EllipsoidShape) {
 					_shader = renderer->loadShaderProgram("particle_tristrip_box",
 							":/core/glsl/particles/geometry/cube/box_tristrip.vs",
 							":/core/glsl/particles/geometry/cube/cube.fs");
@@ -279,7 +289,7 @@ void OpenGLParticlePrimitive::setSize(int particleCount)
 		else
 			verticesPerParticle = 6;
 	}
-	else if(_renderingTechnique == CUBE_GEOMETRY) {
+	else if(_renderingTechnique == BOX_GEOMETRY) {
 		if(_usingGeometryShader)
 			verticesPerParticle = 1;
 		else
@@ -301,16 +311,21 @@ void OpenGLParticlePrimitive::setSize(int particleCount)
 	_positionsBuffers.resize(numChunks);
 	_radiiBuffers.resize(numChunks);
 	_colorsBuffers.resize(numChunks);
-	if(particleShape() == BoxShape)
+	if(particleShape() == BoxShape || particleShape() == EllipsoidShape) {
 		_shapeBuffers.resize(numChunks);
+		_orientationBuffers.resize(numChunks);
+	}
 
 	for(int i = 0; i < numChunks; i++) {
 		int size = std::min(_chunkSize, particleCount - i * _chunkSize);
 		_positionsBuffers[i].create(QOpenGLBuffer::StaticDraw, size, verticesPerParticle);
 		_radiiBuffers[i].create(QOpenGLBuffer::StaticDraw, size, verticesPerParticle);
 		_colorsBuffers[i].create(QOpenGLBuffer::StaticDraw, size, verticesPerParticle);
-		if(particleShape() == BoxShape)
+		if(particleShape() == BoxShape || particleShape() == EllipsoidShape) {
 			_shapeBuffers[i].create(QOpenGLBuffer::StaticDraw, size, verticesPerParticle);
+			_orientationBuffers[i].create(QOpenGLBuffer::StaticDraw, size, verticesPerParticle);
+			_orientationBuffers[i].fillConstant(Quaternion(0,0,0,0));
+		}
 	}
 }
 
@@ -409,13 +424,19 @@ void OpenGLParticlePrimitive::setParticleShapes(const Vector3* shapes)
 			shapes += buffer.elementCount();
 		}
 	}
-	else {
-		std::vector<FloatType> radii(particleCount());
-		for(FloatType& r : radii) {
-			r = (shapes->x() + shapes->y() + shapes->z()) / 3.0;
-			shapes++;
+}
+
+/******************************************************************************
+* Sets the orientations of aspherical particles.
+******************************************************************************/
+void OpenGLParticlePrimitive::setParticleOrientations(const Quaternion* orientations)
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	if(!_orientationBuffers.empty()) {
+		for(auto& buffer : _orientationBuffers) {
+			buffer.fill(orientations);
+			orientations += buffer.elementCount();
 		}
-		setParticleRadii(radii.data());
 	}
 }
 
@@ -458,8 +479,8 @@ void OpenGLParticlePrimitive::render(SceneRenderer* renderer)
 		renderPointSprites(vpRenderer);
 	else if(_renderingTechnique == IMPOSTER_QUADS)
 		renderImposters(vpRenderer);
-	else if(_renderingTechnique == CUBE_GEOMETRY)
-		renderCubes(vpRenderer);
+	else if(_renderingTechnique == BOX_GEOMETRY)
+		renderBoxes(vpRenderer);
 }
 
 /******************************************************************************
@@ -572,7 +593,7 @@ void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer
 /******************************************************************************
 * Renders a cube for each particle using triangle strips.
 ******************************************************************************/
-void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::renderBoxes(ViewportSceneRenderer* renderer)
 {
 	int verticesPerElement = _positionsBuffers.front().verticesPerElement();
 	OVITO_ASSERT(!_usingGeometryShader || verticesPerElement == 1);
@@ -659,12 +680,11 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 		int chunkSize = _positionsBuffers[chunkIndex].elementCount();
 
 		_positionsBuffers[chunkIndex].bindPositions(renderer, shader);
-		if(particleShape() == BoxShape) {
+		if(particleShape() == BoxShape || particleShape() == EllipsoidShape) {
 			_shapeBuffers[chunkIndex].bind(renderer, shader, "shape", GL_FLOAT, 0, 3);
+			_orientationBuffers[chunkIndex].bind(renderer, shader, "orientation", GL_FLOAT, 0, 4);
 		}
-		else {
-			_radiiBuffers[chunkIndex].bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
-		}
+		_radiiBuffers[chunkIndex].bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
 		if(!renderer->isPicking()) {
 			_colorsBuffers[chunkIndex].bindColors(renderer, shader, 4);
 		}
@@ -726,12 +746,11 @@ void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 		_positionsBuffers[chunkIndex].detachPositions(renderer, shader);
 		if(!renderer->isPicking())
 			_colorsBuffers[chunkIndex].detachColors(renderer, shader);
-		if(particleShape() == BoxShape) {
+		if(particleShape() == BoxShape || particleShape() == EllipsoidShape) {
 			_shapeBuffers[chunkIndex].detach(renderer, shader, "shape");
+			_orientationBuffers[chunkIndex].detach(renderer, shader, "orientation");
 		}
-		else {
-			_radiiBuffers[chunkIndex].detach(renderer, shader, "particle_radius");
-		}
+		_radiiBuffers[chunkIndex].detach(renderer, shader, "particle_radius");
 	}
 
 	if(!renderer->isPicking())

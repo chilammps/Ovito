@@ -69,7 +69,7 @@ def _get_SimulationCell_pbc(self):
     """ A tuple of length 3 with the periodic boundary flags (bool). """
     return (self.pbc_x, self.pbc_y, self.pbc_z)
 def _set_SimulationCell_pbc(self, flags):
-    assert(len(flags) == 3) # Expect tuple of three Boolean flags
+    assert(len(flags) == 3) # Expected tuple with three Boolean flags.
     self.pbc_x = flags[0]
     self.pbc_y = flags[1]
     self.pbc_z = flags[2]

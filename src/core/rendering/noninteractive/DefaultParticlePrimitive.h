@@ -85,6 +85,12 @@ public:
 		std::copy(shapes, shapes + _shapesBuffer.size(), _shapesBuffer.begin());
 	}
 
+	/// \brief Sets the orientation of aspherical particles.
+	virtual void setParticleOrientations(const Quaternion* orientations) override {
+		_orientationsBuffer.resize(particleCount());
+		std::copy(orientations, orientations + _orientationsBuffer.size(), _orientationsBuffer.begin());
+	}
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
@@ -103,6 +109,9 @@ public:
 	/// Returns a reference to the internal buffer that stores the shapes of aspherical particles.
 	const std::vector<Vector3>& shapes() const { return _shapesBuffer; }
 
+	/// Returns a reference to the internal buffer that stores the orientations of aspherical particles.
+	const std::vector<Quaternion>& orientations() const { return _orientationsBuffer; }
+
 private:
 
 	/// The internal buffer that stores the particle positions.
@@ -116,6 +125,9 @@ private:
 
 	/// The internal buffer that stores the shapes of aspherical particles.
 	std::vector<Vector3> _shapesBuffer;
+
+	/// The internal buffer that stores the orientations of aspherical particles.
+	std::vector<Quaternion> _orientationsBuffer;
 };
 
 OVITO_END_INLINE_NAMESPACE

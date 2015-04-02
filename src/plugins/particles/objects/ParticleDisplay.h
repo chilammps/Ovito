@@ -140,7 +140,8 @@ protected:
 	/// This helper structure is used to detect any changes in the particle shapes
 	/// that require updating the particle shape buffer.
 	SceneObjectCacheHelper<
-		WeakVersionedOORef<ParticlePropertyObject>		// Shape property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>,		// Shape property + revision number
+		WeakVersionedOORef<ParticlePropertyObject>		// Orientation property + revision number
 		> _shapesCacheHelper;
 
 	/// This helper structure is used to detect any changes in the particle colors

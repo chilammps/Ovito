@@ -67,6 +67,9 @@ public:
 	/// \brief Sets the aspherical shapes of the particles.
 	virtual void setParticleShapes(const Vector3* shapes) override;
 
+	/// \brief Sets the orientation of aspherical particles.
+	virtual void setParticleOrientations(const Quaternion* orientations) override;
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
@@ -96,8 +99,8 @@ protected:
 	/// Renders the particles using OpenGL point sprites.
 	void renderPointSprites(ViewportSceneRenderer* renderer);
 
-	/// Renders a cube for each particle using triangle strips.
-	void renderCubes(ViewportSceneRenderer* renderer);
+	/// Renders a box for each particle using triangle strips.
+	void renderBoxes(ViewportSceneRenderer* renderer);
 
 	/// Renders the particles using quads.
 	void renderImposters(ViewportSceneRenderer* renderer);
@@ -111,7 +114,7 @@ private:
 	enum RenderingTechnique {
 		POINT_SPRITES,	///< Use OpenGL point sprites to render imposter quads with a texture map.
 		IMPOSTER_QUADS,	///< Render explicit quad geometry made of two triangles.
-		CUBE_GEOMETRY	///< Render a cube for each particle (possibly using a raytracing fragment shader to make it look spherical).
+		BOX_GEOMETRY	///< Render a box for each particle (possibly using a raytracing fragment shader to make it look spherical).
 	};
 
 	/// The maximum size (in bytes) of a single VBO buffer.
@@ -134,6 +137,9 @@ private:
 
 	/// The internal OpenGL vertex buffer that stores the shape of aspherical particles.
 	std::vector<OpenGLBuffer<Vector3>> _shapeBuffers;
+
+	/// The internal OpenGL vertex buffer that stores the orientation of aspherical particles.
+	std::vector<OpenGLBuffer<Quaternion>> _orientationBuffers;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;

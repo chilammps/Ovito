@@ -739,6 +739,11 @@ void rt_box(SceneHandle, void *tex, apivector mincoord, apivector maxcoord);
  */
 void rt_quadsphere(SceneHandle, void *tex, apivector center, flt rad);
 
+/**
+ * Define a quadric.
+ */
+void rt_quadric(SceneHandle, void *tex, apivector center, flt a, flt b, flt c, flt d, flt e, flt f, flt g, flt h, flt i, flt j);
+
 
 /*
  * Include now-deprecated Tachyon APIs, unless the user has told us not to

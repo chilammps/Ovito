@@ -28,10 +28,13 @@ uniform int pickingBaseID;
 // The particle data:
 in vec3 position;
 in vec3 shape;
+in vec4 orientation;
+in float particle_radius;
 
 // Output to geometry shader.
 out vec4 particle_color_gs;
 out vec3 particle_shape_gs;
+out vec4 particle_orientation_gs;
 
 #endif
 
@@ -42,12 +45,16 @@ void main()
 	int objectID = pickingBaseID + gl_VertexID;
 	particle_color_gs = vec4(
 		float(objectID & 0xFF) / 255.0, 
-		float((objectID >> 8) & 0xFF) / 255.0, 
-		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);	
+		float((objectID >> 8) & 0xFF) / 255.0,
+		float((objectID >> 16) & 0xFF) / 255.0,
+		float((objectID >> 24) & 0xFF) / 255.0);
 		
 	// Pass shape to geometry shader.
-	particle_shape_gs = shape;
+	if(shape != vec3(0))
+		particle_shape_gs = shape;
+	else
+		particle_shape_gs = vec3(particle_radius, particle_radius, particle_radius);
+	particle_orientation_gs = orientation;
 
 	// Pass original particle position to geometry shader.
 	gl_Position = vec4(position, 1);

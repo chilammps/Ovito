@@ -30,80 +30,101 @@ uniform mat4 modelviewprojection_matrix;
 // Inputs from vertex shader
 in vec4 particle_color_gs[1];
 in vec3 particle_shape_gs[1];
+in vec4 particle_orientation_gs[1];
 
 // Outputs to fragment shader
 flat out vec4 particle_color_fs;
 
 void main()
 {
+	mat3 rot;
+	if(particle_orientation_gs[0] != vec4(0)) {
+		rot = mat3(
+			1.0 - 2.0*(particle_orientation_gs[0].y*particle_orientation_gs[0].y + particle_orientation_gs[0].z*particle_orientation_gs[0].z),
+			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].y + particle_orientation_gs[0].w*particle_orientation_gs[0].z),
+			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].z - particle_orientation_gs[0].w*particle_orientation_gs[0].y),
+			
+			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].y - particle_orientation_gs[0].w*particle_orientation_gs[0].z),
+			1.0 - 2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].x + particle_orientation_gs[0].z*particle_orientation_gs[0].z),
+			2.0*(particle_orientation_gs[0].y*particle_orientation_gs[0].z + particle_orientation_gs[0].w*particle_orientation_gs[0].x),
+			
+			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].z + particle_orientation_gs[0].w*particle_orientation_gs[0].y),
+			2.0*(particle_orientation_gs[0].y*particle_orientation_gs[0].z - particle_orientation_gs[0].w*particle_orientation_gs[0].x),
+			1.0 - 2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].x + particle_orientation_gs[0].y*particle_orientation_gs[0].y)
+		);
+	}
+	else {
+		rot = mat3(1.0);
+	}
+	
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
 	gl_Position = modelviewprojection_matrix *
-		(gl_in[0].gl_Position + vec4(-particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z, 0));
+		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 #endif
 }

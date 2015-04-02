@@ -26,7 +26,6 @@ layout(triangle_strip, max_vertices=14) out;
 uniform mat4 projection_matrix;
 uniform mat4 modelview_matrix;
 uniform mat4 modelviewprojection_matrix;
-uniform mat3 normal_matrix;
 
 // Inputs from vertex shader
 in vec4 particle_color_gs[1];
@@ -35,110 +34,134 @@ in vec4 particle_orientation_gs[1];
 
 // Outputs to fragment shader
 flat out vec4 particle_color_fs;
-flat out vec3 surface_normal_fs;
+flat out mat3 particle_quadric_fs;
+flat out vec3 particle_view_pos_fs;
 
 void main()
 {
 	mat3 rot;
 	if(particle_orientation_gs[0] != vec4(0)) {
+		// Normalize quaternion.
+		vec4 quat = normalize(particle_orientation_gs[0]);
 		rot = mat3(
-			1.0 - 2.0*(particle_orientation_gs[0].y*particle_orientation_gs[0].y + particle_orientation_gs[0].z*particle_orientation_gs[0].z),
-			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].y + particle_orientation_gs[0].w*particle_orientation_gs[0].z),
-			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].z - particle_orientation_gs[0].w*particle_orientation_gs[0].y),
-			
-			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].y - particle_orientation_gs[0].w*particle_orientation_gs[0].z),
-			1.0 - 2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].x + particle_orientation_gs[0].z*particle_orientation_gs[0].z),
-			2.0*(particle_orientation_gs[0].y*particle_orientation_gs[0].z + particle_orientation_gs[0].w*particle_orientation_gs[0].x),
-			
-			2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].z + particle_orientation_gs[0].w*particle_orientation_gs[0].y),
-			2.0*(particle_orientation_gs[0].y*particle_orientation_gs[0].z - particle_orientation_gs[0].w*particle_orientation_gs[0].x),
-			1.0 - 2.0*(particle_orientation_gs[0].x*particle_orientation_gs[0].x + particle_orientation_gs[0].y*particle_orientation_gs[0].y)
+			1.0 - 2.0*(quat.y*quat.y + quat.z*quat.z),
+			2.0*(quat.x*quat.y + quat.w*quat.z),
+			2.0*(quat.x*quat.z - quat.w*quat.y),			
+			2.0*(quat.x*quat.y - quat.w*quat.z),
+			1.0 - 2.0*(quat.x*quat.x + quat.z*quat.z),
+			2.0*(quat.y*quat.z + quat.w*quat.x),			
+			2.0*(quat.x*quat.z + quat.w*quat.y),
+			2.0*(quat.y*quat.z - quat.w*quat.x),
+			1.0 - 2.0*(quat.x*quat.x + quat.y*quat.y)
 		);
 	}
 	else {
 		rot = mat3(1.0);
 	}
+	
+	vec3 particle_view_pos = (modelview_matrix * gl_in[0].gl_Position).xyz;
+	
+	mat3 qmat = mat3(1.0/(particle_shape_gs[0].x*particle_shape_gs[0].x), 0, 0,
+			  0, 1.0/(particle_shape_gs[0].y*particle_shape_gs[0].y), 0,
+			  0, 0, 1.0/(particle_shape_gs[0].z*particle_shape_gs[0].z));
+
+	mat3 view_rot = mat3(modelview_matrix) * rot;
+    mat3 quadric = view_rot * qmat * transpose(view_rot);
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[0];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[0];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[0];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[0];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * -normal_matrix[2];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * -normal_matrix[1];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * -normal_matrix[1];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[2];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[2];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[1];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * normal_matrix[1];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * -normal_matrix[2];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, -particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * -normal_matrix[0];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();
 
 	particle_color_fs = particle_color_gs[0];
-	surface_normal_fs = rot * -normal_matrix[0];
+	particle_quadric_fs = quadric;
+	particle_view_pos_fs = particle_view_pos;
 	gl_Position = modelviewprojection_matrix *
 		(gl_in[0].gl_Position + vec4(rot * vec3(-particle_shape_gs[0].x, -particle_shape_gs[0].y, particle_shape_gs[0].z), 0));
 	EmitVertex();

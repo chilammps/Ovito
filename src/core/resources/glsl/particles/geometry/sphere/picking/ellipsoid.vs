@@ -19,14 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// Inputs from calling program:
-uniform mat4 modelview_matrix;
+uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
 // The particle data:
 in vec3 position;
-in vec4 color;
 in vec3 shape;
 in vec4 orientation;
 in float particle_radius;
@@ -41,8 +39,15 @@ out vec4 particle_orientation_gs;
 void main()
 {
 #if __VERSION__ >= 130
+	// Compute color from object ID.
+	int objectID = pickingBaseID + gl_VertexID;
+	particle_color_gs = vec4(
+		float(objectID & 0xFF) / 255.0, 
+		float((objectID >> 8) & 0xFF) / 255.0, 
+		float((objectID >> 16) & 0xFF) / 255.0, 
+		float((objectID >> 24) & 0xFF) / 255.0);
+
 	// Forward information to geometry shader.
-	particle_color_gs = color;
 	if(shape != vec3(0))
 		particle_shape_gs = shape;
 	else
