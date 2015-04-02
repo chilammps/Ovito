@@ -202,9 +202,9 @@ QString BondPickInfo::infoString(ObjectNode* objectNode, quint32 subobjectId)
 {
 	QString str;
 	BondsObject* bondsObj = pipelineState().findObject<BondsObject>();
-	if(bondsObj && bondsObj->bonds().size() > subobjectId) {
+	if(bondsObj && bondsObj->storage()->size() > subobjectId) {
 		str = tr("Bond");
-		const BondsStorage::Bond& bond = bondsObj->bonds()[subobjectId];
+		const Bond& bond = (*bondsObj->storage())[subobjectId];
 
 		// Bond length
 		ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(pipelineState(), ParticleProperty::PositionProperty);

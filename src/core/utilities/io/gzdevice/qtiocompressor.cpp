@@ -56,7 +56,7 @@ typedef uInt ZlibSize;
 class QtIOCompressorPrivate {
 
     QtIOCompressor *q_ptr;
-    Q_DECLARE_PUBLIC(QtIOCompressor)
+    Q_DECLARE_PUBLIC(QtIOCompressor);
 
 public:
 
@@ -514,7 +514,7 @@ qint64 QtIOCompressor::bytesAvailable() const
     if ((openMode() & ReadOnly) == false)
         return 0;
 
-    int numBytes = 0;
+    qint64 numBytes = 0;
 
     switch (d->state) {
         case QtIOCompressorPrivate::NotReadFirstByte:
