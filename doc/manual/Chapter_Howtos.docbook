@@ -15,6 +15,7 @@
   <xi:include href="howtos/transparent_particles.docbook"/>
   <xi:include href="howtos/marker_particles.docbook"/>
   <xi:include href="howtos/scale_bar.docbook"/>
+  <xi:include href="howtos/aspherical_particles.docbook"/>
   
   <!-- Camera animation -->
   <!-- Parameter animation -->

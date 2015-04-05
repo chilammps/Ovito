@@ -94,7 +94,7 @@ Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProper
 	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
 	OVITO_ASSERT(radiusProperty == nullptr || radiusProperty->type() == ParticleProperty::RadiusProperty);
 	OVITO_ASSERT(shapeProperty == nullptr || shapeProperty->type() == ParticleProperty::AsphericalShapeProperty);
-	if(shadingMode() != ParticlePrimitive::NormalShading || particleShape() != ParticlePrimitive::SquareShape)
+	if(shadingMode() != ParticlePrimitive::NormalShading)
 		shapeProperty = nullptr;
 
 	Box3 bbox;
@@ -293,7 +293,7 @@ ColorA ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObje
 }
 
 /******************************************************************************
-* Returns the actual rendering quality used to render the given particles.
+* Returns the actual rendering quality used to render the particles.
 ******************************************************************************/
 ParticlePrimitive::RenderingQuality ParticleDisplay::effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const
 {
@@ -310,6 +310,20 @@ ParticlePrimitive::RenderingQuality ParticleDisplay::effectiveRenderingQuality(S
 	}
 	return renderQuality;
 }
+
+/******************************************************************************
+* Returns the actual particle shape used to render the particles.
+******************************************************************************/
+ParticlePrimitive::ParticleShape ParticleDisplay::effectiveParticleShape(ParticlePropertyObject* shapeProperty) const
+{
+	ParticlePrimitive::ParticleShape effectiveParticleShape = particleShape();
+	if(effectiveParticleShape == ParticlePrimitive::SquareShape && shapeProperty != nullptr)
+		effectiveParticleShape = ParticlePrimitive::BoxShape;
+	else if(effectiveParticleShape == ParticlePrimitive::SphericalShape && shapeProperty != nullptr)
+		effectiveParticleShape = ParticlePrimitive::EllipsoidShape;
+	return effectiveParticleShape;
+}
+
 
 /******************************************************************************
 * Lets the display object render the data object.
@@ -340,12 +354,8 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 	ParticlePrimitive::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
 
 	// Determine effective particle shape.
-	ParticlePrimitive::ParticleShape effectiveParticleShape = particleShape();
-	if(effectiveParticleShape == ParticlePrimitive::SquareShape && shapeProperty != nullptr)
-		effectiveParticleShape = ParticlePrimitive::BoxShape;
-	else if(effectiveParticleShape == ParticlePrimitive::SphericalShape && shapeProperty != nullptr)
-		effectiveParticleShape = ParticlePrimitive::EllipsoidShape;
-	else {
+	ParticlePrimitive::ParticleShape particleShape = effectiveParticleShape(shapeProperty);
+	if(particleShape != ParticlePrimitive::BoxShape && particleShape != ParticlePrimitive::EllipsoidShape) {
 		shapeProperty = nullptr;
 		orientationProperty = nullptr;
 	}
@@ -354,7 +364,7 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 	if(!recreateBuffer) {
 		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
 		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderQuality));
-		recreateBuffer |= !(_particleBuffer->setParticleShape(effectiveParticleShape));
+		recreateBuffer |= !(_particleBuffer->setParticleShape(particleShape));
 		recreateBuffer |= ((transparencyProperty != nullptr) != _particleBuffer->translucentParticles());
 	}
 
@@ -387,7 +397,7 @@ void ParticleDisplay::render(TimePoint time, DataObject* dataObject, const Pipel
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, effectiveParticleShape, transparencyProperty != nullptr);
+		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, particleShape, transparencyProperty != nullptr);
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -539,25 +549,16 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	layout->setSpacing(4);
 	layout->setColumnStretch(1, 1);
 
-	// Shading mode.
+	// Shading.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
 	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ParticlePrimitive::NormalShading));
 	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ParticlePrimitive::FlatShading));
-	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
+	layout->addWidget(new QLabel(tr("Shading:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
-
-	// Rendering quality.
-	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
-	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticlePrimitive::LowQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticlePrimitive::MediumQuality));
-	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticlePrimitive::HighQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticlePrimitive::AutoQuality));
-	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
-	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 
 	// Shape.
 	VariantComboBoxParameterUI* particleShapeUI = new VariantComboBoxParameterUI(this, "particleShape");
-	particleShapeUI->comboBox()->addItem(tr("Spherical"), qVariantFromValue(ParticlePrimitive::SphericalShape));
+	particleShapeUI->comboBox()->addItem(tr("Round"), qVariantFromValue(ParticlePrimitive::SphericalShape));
 	particleShapeUI->comboBox()->addItem(tr("Square"), qVariantFromValue(ParticlePrimitive::SquareShape));
 	layout->addWidget(new QLabel(tr("Shape:")), 2, 0);
 	layout->addWidget(particleShapeUI->comboBox(), 2, 1);
@@ -567,6 +568,24 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	layout->addWidget(radiusUI->label(), 3, 0);
 	layout->addLayout(radiusUI->createFieldLayout(), 3, 1);
 	radiusUI->setMinValue(0);
+
+	// Create a second rollout.
+	rollout = createRollout(tr("Advanced settings"), rolloutParams.after(rollout), "display_objects.particles.html");
+
+    // Create the rollout contents.
+	layout = new QGridLayout(rollout);
+	layout->setContentsMargins(4,4,4,4);
+	layout->setSpacing(4);
+	layout->setColumnStretch(1, 1);
+
+	// Rendering quality.
+	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticlePrimitive::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticlePrimitive::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticlePrimitive::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticlePrimitive::AutoQuality));
+	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
+	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 }
 
 OVITO_END_INLINE_NAMESPACE

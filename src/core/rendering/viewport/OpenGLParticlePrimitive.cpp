@@ -63,7 +63,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 	// Load the right OpenGL shaders.
 	if(_renderingTechnique == POINT_SPRITES) {
 		if(shadingMode == FlatShading) {
-			if(shape == SphericalShape) {
+			if(shape == SphericalShape || shape == EllipsoidShape) {
 				_shader = renderer->loadShaderProgram("particle_pointsprite_spherical_flat",
 						":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
 						":/core/glsl/particles/pointsprites/sphere/flat_shading.fs");
@@ -71,7 +71,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 						":/core/glsl/particles/pointsprites/sphere/picking/without_depth.vs",
 						":/core/glsl/particles/pointsprites/sphere/picking/flat_shading.fs");
 			}
-			else if(shape == SquareShape) {
+			else if(shape == SquareShape || shape == BoxShape) {
 				_shader = renderer->loadShaderProgram("particle_pointsprite_square_flat",
 						":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
 						":/core/glsl/particles/pointsprites/square/flat_shading.fs");
@@ -103,7 +103,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 	}
 	else if(_renderingTechnique == IMPOSTER_QUADS) {
 		if(shadingMode == FlatShading) {
-			if(shape == SphericalShape) {
+			if(shape == SphericalShape || shape == EllipsoidShape) {
 				if(_usingGeometryShader) {
 					_shader = renderer->loadShaderProgram("particle_geomshader_imposter_spherical_flat",
 							":/core/glsl/particles/imposter/sphere/without_depth.vs",
@@ -123,7 +123,7 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 							":/core/glsl/particles/imposter/sphere/picking/flat_shading.fs");
 				}
 			}
-			else if(shape == SquareShape) {
+			else if(shape == SquareShape || shape == BoxShape) {
 				if(_usingGeometryShader) {
 					_shader = renderer->loadShaderProgram("particle_geomshader_imposter_square_flat",
 							":/core/glsl/particles/imposter/sphere/without_depth.vs",
@@ -214,23 +214,23 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 				}
 				else if(shape == BoxShape) {
 					_shader = renderer->loadShaderProgram("particle_geomshader_box",
-							":/core/glsl/particles/geometry/cube/box.vs",
+							":/core/glsl/particles/geometry/box/box.vs",
 							":/core/glsl/particles/geometry/cube/cube.fs",
-							":/core/glsl/particles/geometry/cube/box.gs");
+							":/core/glsl/particles/geometry/box/box.gs");
 					_pickingShader = renderer->loadShaderProgram("particle_geomshader_box_picking",
-							":/core/glsl/particles/geometry/cube/picking/box.vs",
+							":/core/glsl/particles/geometry/box/picking/box.vs",
 							":/core/glsl/particles/geometry/cube/picking/cube.fs",
-							":/core/glsl/particles/geometry/cube/picking/box.gs");
+							":/core/glsl/particles/geometry/box/picking/box.gs");
 				}
 				else if(shape == EllipsoidShape) {
 					_shader = renderer->loadShaderProgram("particle_geomshader_ellipsoid",
-							":/core/glsl/particles/geometry/sphere/ellipsoid.vs",
-							":/core/glsl/particles/geometry/sphere/ellipsoid.fs",
-							":/core/glsl/particles/geometry/sphere/ellipsoid.gs");
+							":/core/glsl/particles/geometry/ellipsoid/ellipsoid.vs",
+							":/core/glsl/particles/geometry/ellipsoid/ellipsoid.fs",
+							":/core/glsl/particles/geometry/ellipsoid/ellipsoid.gs");
 					_pickingShader = renderer->loadShaderProgram("particle_geomshader_ellipsoid_picking",
-							":/core/glsl/particles/geometry/sphere/picking/ellipsoid.vs",
-							":/core/glsl/particles/geometry/sphere/picking/ellipsoid.fs",
-							":/core/glsl/particles/geometry/sphere/picking/ellipsoid.gs");
+							":/core/glsl/particles/geometry/ellipsoid/picking/ellipsoid.vs",
+							":/core/glsl/particles/geometry/ellipsoid/picking/ellipsoid.fs",
+							":/core/glsl/particles/geometry/ellipsoid/picking/ellipsoid.gs");
 				}
 			}
 			else {
@@ -250,13 +250,21 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 							":/core/glsl/particles/geometry/cube/picking/cube_tristrip.vs",
 							":/core/glsl/particles/geometry/cube/picking/cube.fs");
 				}
-				else if(shape == BoxShape || shape == EllipsoidShape) {
+				else if(shape == BoxShape) {
 					_shader = renderer->loadShaderProgram("particle_tristrip_box",
-							":/core/glsl/particles/geometry/cube/box_tristrip.vs",
+							":/core/glsl/particles/geometry/box/box_tristrip.vs",
 							":/core/glsl/particles/geometry/cube/cube.fs");
 					_pickingShader = renderer->loadShaderProgram("particle_tristrip_box_picking",
-							":/core/glsl/particles/geometry/cube/picking/box_tristrip.vs",
+							":/core/glsl/particles/geometry/box/picking/box_tristrip.vs",
 							":/core/glsl/particles/geometry/cube/picking/cube.fs");
+				}
+				else if(shape == EllipsoidShape) {
+					_shader = renderer->loadShaderProgram("particle_tristrip_ellipsoid",
+							":/core/glsl/particles/geometry/ellipsoid/ellipsoid_tristrip.vs",
+							":/core/glsl/particles/geometry/ellipsoid/ellipsoid.fs");
+					_pickingShader = renderer->loadShaderProgram("particle_tristrip_ellipsoid_picking",
+							":/core/glsl/particles/geometry/ellipsoid/picking/ellipsoid_tristrip.vs",
+							":/core/glsl/particles/geometry/ellipsoid/picking/ellipsoid.fs");
 				}
 			}
 		}

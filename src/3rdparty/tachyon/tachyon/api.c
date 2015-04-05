@@ -1258,11 +1258,12 @@ void rt_quadsphere(SceneHandle scene, void * tex, apivector ctr, flt rad) {
   add_unbounded_object((scenedef *) scene, (object *)q);
 }
 
-void rt_quadric(SceneHandle scene, void * tex, apivector ctr, flt a, flt b, flt c, flt d, flt e, flt f, flt g, flt h, flt i, flt j) {
+void rt_quadric(SceneHandle scene, void * tex, apivector ctr, flt a, flt b, flt c, flt d, flt e, flt f, flt g, flt h, flt i, flt j, flt bbox) {
   quadric * q;
   q=(quadric *) newquadric();
   q->tex=tex;
   q->ctr=ctr;
+  q->bbox = bbox;
 
   q->mat.a=a;
   q->mat.b=b;
@@ -1275,7 +1276,10 @@ void rt_quadric(SceneHandle scene, void * tex, apivector ctr, flt a, flt b, flt 
   q->mat.i=i;
   q->mat.j=j;
 
-  add_unbounded_object((scenedef *) scene, (object *)q);
+  if(bbox <= 0.0)
+	  add_unbounded_object((scenedef *) scene, (object *)q);
+  else
+	  add_bounded_object((scenedef *) scene, (object *)q);
 }
 
 

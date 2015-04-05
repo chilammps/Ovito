@@ -353,11 +353,11 @@ BOOST_PYTHON_MODULE(Particles)
 			"Controls the visual appearance of particles.")
 		.add_property("radius", &ParticleDisplay::defaultParticleRadius, &ParticleDisplay::setDefaultParticleRadius,
 				"The default display radius of particles. "
-				"Note that this setting only takes effect if no per-particle or per-type radii are defined."
+				"This setting only takes effect if no per-particle or per-type radii are defined."
 				"\n\n"
 				":Default: 1.2\n")
-		.add_property("defaultParticleColor", &ParticleDisplay::defaultParticleColor)
-		.add_property("selectionParticleColor", &ParticleDisplay::selectionParticleColor)
+		.add_property("default_color", &ParticleDisplay::defaultParticleColor)
+		.add_property("selection_color", &ParticleDisplay::selectionParticleColor)
 		.add_property("shading", &ParticleDisplay::shadingMode, &ParticleDisplay::setShadingMode,
 				"The shading mode used to render particles.\n"
 				"Possible values:"
@@ -365,12 +365,12 @@ BOOST_PYTHON_MODULE(Particles)
 				"   * ``ParticleDisplay.Shading.Normal`` (default) \n"
 				"   * ``ParticleDisplay.Shading.Flat``\n"
 				"\n")
-		.add_property("renderingQuality", &ParticleDisplay::renderingQuality, &ParticleDisplay::setRenderingQuality)
+		.add_property("rendering_quality", &ParticleDisplay::renderingQuality, &ParticleDisplay::setRenderingQuality)
 		.add_property("shape", &ParticleDisplay::particleShape, &ParticleDisplay::setParticleShape,
-				"The visual shape of particles.\n"
+				"The display shape of particles.\n"
 				"Possible values:"
 				"\n\n"
-				"   * ``ParticleDisplay.Shape.Spherical`` (default) \n"
+				"   * ``ParticleDisplay.Shape.Round`` (default) \n"
 				"   * ``ParticleDisplay.Shape.Square``\n"
 				"\n")
 	;

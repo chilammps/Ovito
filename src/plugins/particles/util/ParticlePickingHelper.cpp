@@ -94,6 +94,7 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 	// Fetch properties of selected particle needed to compute the bounding box.
 	ParticlePropertyObject* posProperty = nullptr;
 	ParticlePropertyObject* radiusProperty = nullptr;
+	ParticlePropertyObject* shapeProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
 	for(DataObject* dataObj : flowState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
@@ -102,6 +103,8 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 			posProperty = property;
 		else if(property->type() == ParticleProperty::RadiusProperty && property->size() >= particleIndex)
 			radiusProperty = property;
+		else if(property->type() == ParticleProperty::AsphericalShapeProperty && property->size() >= particleIndex)
+			shapeProperty = property;
 		else if(property->type() == ParticleProperty::ParticleTypeProperty && property->size() >= particleIndex)
 			typeProperty = dynamic_object_cast<ParticleTypeProperty>(property);
 	}
@@ -122,6 +125,12 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 
 	// Determine radius of selected particle.
 	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, typeProperty);
+	if(shapeProperty) {
+		radius = std::max(radius, shapeProperty->getVector3(particleIndex).x());
+		radius = std::max(radius, shapeProperty->getVector3(particleIndex).y());
+		radius = std::max(radius, shapeProperty->getVector3(particleIndex).z());
+	}
+
 	if(radius <= 0)
 		return Box3();
 
@@ -163,6 +172,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	ParticlePropertyObject* colorProperty = nullptr;
 	ParticlePropertyObject* selectionProperty = nullptr;
 	ParticlePropertyObject* transparencyProperty = nullptr;
+	ParticlePropertyObject* shapeProperty = nullptr;
+	ParticlePropertyObject* orientationProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
 	for(DataObject* dataObj : flowState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(dataObj);
@@ -179,6 +190,10 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 			selectionProperty = property;
 		else if(property->type() == ParticleProperty::TransparencyProperty && property->size() >= particleIndex)
 			transparencyProperty = property;
+		else if(property->type() == ParticleProperty::AsphericalShapeProperty && property->size() >= particleIndex)
+			shapeProperty = property;
+		else if(property->type() == ParticleProperty::OrientationProperty && property->size() >= particleIndex)
+			orientationProperty = property;
 	}
 	if(!posProperty)
 		return;
@@ -197,8 +212,6 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 
 	// Determine radius of selected particle.
 	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, typeProperty);
-	if(radius <= 0)
-		return;
 
 	// Determine the display color of selected particle.
 	ColorA color = particleDisplay->particleColor(particleIndex, colorProperty, typeProperty, selectionProperty, transparencyProperty);
@@ -207,37 +220,57 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	// Determine rendering quality used to render the particles.
 	ParticlePrimitive::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
 
+	// Determine effective particle shape.
+	ParticlePrimitive::ParticleShape particleShape = particleDisplay->effectiveParticleShape(shapeProperty);
+	if(particleShape != ParticlePrimitive::BoxShape && particleShape != ParticlePrimitive::EllipsoidShape) {
+		shapeProperty = nullptr;
+		orientationProperty = nullptr;
+	}
+
 	TimeInterval iv;
 	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
 
 	if(!_particleBuffer || !_particleBuffer->isValid(renderer)
 			|| !_particleBuffer->setShadingMode(particleDisplay->shadingMode())
-			|| !_particleBuffer->setRenderingQuality(renderQuality)) {
+			|| !_particleBuffer->setRenderingQuality(renderQuality)
+			|| !_particleBuffer->setParticleShape(particleShape)) {
 		_particleBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
-				particleDisplay->particleShape(),
+				particleShape,
 				false);
 		_particleBuffer->setSize(1);
 	}
 	_particleBuffer->setParticleColor(color * 0.5f + highlightColor * 0.5f);
 	_particleBuffer->setParticlePositions(&pos);
 	_particleBuffer->setParticleRadius(radius);
+	if(shapeProperty)
+		_particleBuffer->setParticleShapes(shapeProperty->constDataVector3() + particleIndex);
+	if(orientationProperty)
+		_particleBuffer->setParticleOrientations(orientationProperty->constDataQuaternion() + particleIndex);
 
 	// Prepare marker geometry buffer.
 	if(!_highlightBuffer || !_highlightBuffer->isValid(renderer)
 			|| !_highlightBuffer->setShadingMode(particleDisplay->shadingMode())
-			|| !_highlightBuffer->setRenderingQuality(renderQuality)) {
+			|| !_highlightBuffer->setRenderingQuality(renderQuality)
+			|| !_highlightBuffer->setParticleShape(particleShape)) {
 		_highlightBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
-				particleDisplay->particleShape(),
+				particleShape,
 				false);
 		_highlightBuffer->setSize(1);
 		_highlightBuffer->setParticleColor(highlightColor);
 	}
 	_highlightBuffer->setParticlePositions(&pos);
 	_highlightBuffer->setParticleRadius(radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
+	if(shapeProperty) {
+		Vector3 shape = shapeProperty->getVector3(particleIndex);
+		shape += Vector3(vp->nonScalingSize(nodeTM * pos) * 1e-1f);
+		_highlightBuffer->setParticleShapes(&shape);
+	}
+	if(orientationProperty)
+		_highlightBuffer->setParticleOrientations(orientationProperty->constDataQuaternion() + particleIndex);
 
 	renderer->setWorldTransform(nodeTM);
 	GLint oldDepthFunc;

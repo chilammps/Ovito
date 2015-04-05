@@ -17,12 +17,12 @@
        </imageobject></mediaobject></screenshot>
     </figure> 
     Particles can be made semi-transparent by setting the <literal>Transparency</literal> particle property.
-    A <literal>Transparency</literal> value of 0 lets the particle appear fully opaque, while any intermediate value between
-    0 and 1 lets the particle appear more or less translucent.
+    A <literal>Transparency</literal> value of 0 lets a particle appear fully opaque, while any value between
+    0 and 1 lets it appear translucent.
   </para>
   
   <para>
-    The easiest method of setting the <literal>Transparency</literal> property is using the 
+    The easiest method of setting the <literal>Transparency</literal> property is by using the 
     <link linkend="particles.modifiers.compute_property">Compute property</link> modifier.
     In the example, a simple math formula was used to set the <literal>Transparency</literal> property
     of particles depending on their position:
@@ -34,7 +34,7 @@
   </para>
   
   <para>
-    Note that you can make only selected particles transparent by checking the <emphasis>Compute only for selected particles</emphasis> option in the
+    Note that you can make only the currently selected particles transparent by checking the <emphasis>Compute only for selected particles</emphasis> option in the
     <link linkend="particles.modifiers.compute_property">Compute property</link> modifier.    
   </para>
 

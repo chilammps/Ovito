@@ -16,7 +16,7 @@
        <imagedata fileref="images/display_objects/particles_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
     
-    This <link linkend="display_objects">display object</link> is responsible for rendering particles and its parameters control the visual appearance
+    This <link linkend="display_objects">display object</link> is responsible for rendering particles, and its parameters control the visual appearance
     of particles. You can open this parameter panel
     by selecting the <emphasis>Particles</emphasis> entry in the <link linkend="usage.modification_pipeline.pipeline_listbox">pipeline editor</link>.  
   </para>
@@ -26,10 +26,27 @@
 
     <variablelist>
       <varlistentry>
-        <term>Shading mode</term>
+        <term>Shading</term>
         <listitem>
-          <para>Switches between a three-dimensional particles shape (<emphasis>normal shading</emphasis>) and a two-dimensional
+          <para>Switches between a three-dimensional particle representation (<emphasis>normal shading</emphasis>) and a two-dimensional
           representation (<emphasis>flat shading</emphasis>).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Shape</term>
+        <listitem>
+          <para>The visual shape of particles.
+          OVITO currently supports spherical and ellipsoidal particles (<emphasis>round</emphasis>) and 
+          cubic and box-shaped particles (<emphasis>square</emphasis>). 
+          When flat shading is selected, they will be rendered as discs and squares, respectively.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Default particle radius</term>
+        <listitem>
+          <para>Sets the display size of particles that have an otherwise unspecified size. 
+          This size is only used for particles that don't have a <literal>Radius</literal> property, 
+          and which are not of a particle type that has a certain size.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -62,21 +79,7 @@
           </para>
         </listitem>
       </varlistentry>
-      <varlistentry>
-        <term>Shape</term>
-        <listitem>
-          <para>Selects the shape of particles. OVITO currently supports spherical and cubic particles. When flat shading mode is selected,
-          they will be rendered as discs and squares, respectively.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term>Default particle radius</term>
-        <listitem>
-          <para>Sets the particle size. This size parameter is only used if particles don't have a <literal>Radius</literal> property, and if no specific size
-          has been set for individual particle types.</para>
-        </listitem>
-      </varlistentry>
-	</variablelist>
+  	</variablelist>
     </simplesect>
     
 </section>

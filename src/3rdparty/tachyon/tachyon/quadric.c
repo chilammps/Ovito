@@ -18,7 +18,19 @@
 #include "util.h"
 
 int quadric_bbox(void * obj, vector * min, vector * max) {
-  return 0;
+  quadric * q = (quadric *) obj;
+
+  if(q->bbox > 0.0) {
+	  min->x = q->ctr.x - q->bbox;
+	  min->y = q->ctr.y - q->bbox;
+	  min->z = q->ctr.z - q->bbox;
+	  max->x = q->ctr.x + q->bbox;
+	  max->y = q->ctr.y + q->bbox;
+	  max->z = q->ctr.z + q->bbox;
+
+	  return 1;
+  }
+  else return 0;
 }
 
 static object_methods quadric_methods = {

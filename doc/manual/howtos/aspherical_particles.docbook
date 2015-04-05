@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="howto.aspherical_particles" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Visualizing ellipsoid and box particles</title>
+
+  <para>
+     <figure>
+      <title>Ellipsoid particles</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/ellipsoid_particles_example1.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
+     <figure>
+      <title>Box particles</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/box_particles_example1.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
+    OVITO can visualize particles with ellipsoid and box shapes as shown in the figures on the right.
+  </para>
+  
+  <para>
+    While the size of standard spherical and cubic particles is controlled by the <literal>Radius</literal> particle property,
+    the shape of ellipsoid and box particles is determined by their <literal>Aspherical Shape</literal> property.
+    This vector property consists of three components <literal>X</literal>, <literal>Y</literal>, and <literal>Z</literal>
+    that specify the size (radius) of a particle along the three principal axes. OVITO automatically renders particles
+    as ellipsoids when this particle property is defined and if the <emphasis>Shape</emphasis> parameter of the 
+    <link linkend="display_objects.particles">Particle display</link> settings is set to <emphasis>Round</emphasis>.
+    Similiarly, particles are rendered as non-cubic boxes when the <literal>Aspherical Shape</literal> property is present and
+    if the display <emphasis>Shape</emphasis> is set to <emphasis>Square</emphasis>.
+  </para>
+
+  <para>
+    Particles for which all three components of the <literal>Aspherical Shape</literal> property are zero, are rendered
+    as standard spheres (or cubes). Their size is then controlled by the <literal>Radius</literal> property, as if the <literal>Aspherical Shape</literal>
+    property were not present.
+  </para>
+
+  <para>
+    The orientation of aspherical and box-like particles is controlled by the <literal>Orientation</literal> particle property,
+    which has four components <literal>X</literal>, <literal>Y</literal>, <literal>Z</literal>, and <literal>W</literal> that form
+    a quaternion. If the <literal>Orientation</literal> property is not defined, or if all quaternion components are zero, 
+    no rotation is applied to aspherical particles and they remain aligned with the coordinate axes.
+  </para>
+
+  <para>
+    Both the <literal>Aspherical Shape</literal> and the <literal>Orientation</literal> properties are typically
+    read from simulation files. LAMMPS can output this information to dump files using the following LAMMPS script commands:
+    <screen>   compute orient all property/atom quati quatj quatk quatw
+   compute shape all property/atom shapex shapey shapez
+   dump 1 all custom 100 ellipsoid.dump id type x y z &amp;
+        c_orient[1] c_orient[2] c_orient[3] c_orient[4] &amp;
+        c_shape[1] c_shape[2] c_shape[3]</screen>
+    The <literal>quati</literal>, <literal>quatj</literal>, <literal>quatj</literal>, and <literal>quatw</literal>
+    atom properties of LAMMPS need to be mapped to the <literal>Orientation.X</literal>, <literal>Orientation.Y</literal>,
+    <literal>Orientation.Z</literal>, and <literal>Orientation.W</literal> properties of OVITO when importing
+    the dump file. Similarily, the <literal>shapex</literal>, <literal>shapey</literal>, and <literal>shapez</literal> properties
+    need to be mapped to <literal>Aspherical Shape.X</literal>, <literal>Aspherical Shape.Y</literal>, and <literal>Aspherical Shape.Z</literal>
+    in OVITO. Since these properties are output as <literal>c_orient*</literal> and <literal>c_shape*</literal> by the
+    dump command above, OVITO cannot set up this mapping automatically. You have to do it manually by using the
+    <guibutton>Edit column mapping</guibutton> button in the file import panel after loading the dump file. 
+  </para>
+
+</section>

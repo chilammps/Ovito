@@ -82,6 +82,9 @@ public:
 	/// \brief Returns the display shape of particles.
 	ParticlePrimitive::ParticleShape particleShape() const { return _particleShape; }
 
+	/// \brief Returns the actual particle shape used to render the particles.
+	ParticlePrimitive::ParticleShape effectiveParticleShape(ParticlePropertyObject* shapeProperty) const;
+
 	/// \brief Sets the display shape of particles.
 	void setParticleShape(ParticlePrimitive::ParticleShape shape) { _particleShape = shape; }
 

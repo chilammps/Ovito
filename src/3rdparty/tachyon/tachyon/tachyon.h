@@ -742,7 +742,7 @@ void rt_quadsphere(SceneHandle, void *tex, apivector center, flt rad);
 /**
  * Define a quadric.
  */
-void rt_quadric(SceneHandle, void *tex, apivector center, flt a, flt b, flt c, flt d, flt e, flt f, flt g, flt h, flt i, flt j);
+void rt_quadric(SceneHandle, void *tex, apivector center, flt a, flt b, flt c, flt d, flt e, flt f, flt g, flt h, flt i, flt j, flt bbox);
 
 
 /*

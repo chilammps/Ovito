@@ -14,6 +14,7 @@ typedef struct {
 typedef struct {
   RT_OBJECT_HEAD
   vector ctr;      /**< center of quadric object            */
+  flt bbox;        /**< Size of user-defined bounding box   */
   quadmatrix mat;  /**< quadric function coefficient matrix */
 } quadric; 
 

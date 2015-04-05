@@ -31,6 +31,10 @@ uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen 
 	flat in mat3 particle_quadric_fs;
 	flat in vec3 particle_view_pos_fs;
 	out vec4 FragColor;
+#else
+	#define particle_color_fs gl_Color
+	#define particle_view_pos_fs gl_TexCoord[1].xyz
+	#define FragColor gl_FragColor
 #endif
 
 const float ambient = 0.4;
@@ -55,6 +59,7 @@ void main()
 		ray_dir = vec3(0.0, 0.0, -1.0);
 	}
 	
+#if __VERSION__ >= 130	
 	float a = particle_quadric_fs[0][0];
 	float b = particle_quadric_fs[1][0];
 	float c = particle_quadric_fs[2][0];
@@ -63,6 +68,16 @@ void main()
 	float f = particle_quadric_fs[2][1];
 	float g = 0.0;
 	float h = particle_quadric_fs[2][2];
+#else
+	float a = gl_TexCoord[2].x;
+	float b = gl_TexCoord[2].y;
+	float c = gl_TexCoord[2].z;
+	float d = 0.0;
+	float e = gl_TexCoord[2].w;
+	float f = gl_TexCoord[3].x;
+	float g = 0.0;
+	float h = gl_TexCoord[3].y;
+#endif
 	float i = 0.0;
 	float j = -1.0;
 

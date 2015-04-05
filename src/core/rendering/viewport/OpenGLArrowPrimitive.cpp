@@ -102,7 +102,7 @@ OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, Arro
 	}
 
 	OVITO_ASSERT(_shader != nullptr);
-	//OVITO_ASSERT(_pickingShader != nullptr);
+	OVITO_ASSERT(_pickingShader != nullptr);
 }
 
 /******************************************************************************

@@ -153,7 +153,8 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 	;
 
 	enum_<ParticlePrimitive::ParticleShape>("ParticleShape")
-		.value("Spherical", ParticlePrimitive::SphericalShape)
+		.value("Spherical", ParticlePrimitive::SphericalShape)	// Deprecated since v2.4.5
+		.value("Round", ParticlePrimitive::SphericalShape)
 		.value("Square", ParticlePrimitive::SquareShape)
 	;
 

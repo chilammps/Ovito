@@ -43,6 +43,16 @@ extern "C" {
 
 namespace Ovito { namespace Tachyon {
 
+// Helper function that converts an OVITO vector to a Tachyon vector.
+inline apivector tvec(const Vector3& v) {
+	return rt_vector(v.x(), v.y(), -v.z());
+}
+
+// Helper function that converts an OVITO point to a Tachyon vector.
+inline apivector tvec(const Point3& p) {
+	return rt_vector(p.x(), p.y(), -p.z());
+}
+
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingEnabled, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE);
@@ -132,7 +142,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		p0 = Point3::Origin() + projParams().inverseViewMatrix.translation();
 		direction = (projParams().inverseViewMatrix * direction).normalized();
 		up = (projParams().inverseViewMatrix * up).normalized();
-		rt_camera_position(_rtscene, rt_vector(p0.x(), p0.y(), -p0.z()), rt_vector(direction.x(), direction.y(), -direction.z()), rt_vector(up.x(), up.y(), -up.z()));
+		rt_camera_position(_rtscene, tvec(p0), tvec(direction), tvec(up));
 		rt_camera_zoom(_rtscene, 0.5 / tan(projParams().fieldOfView * 0.5));
 	}
 	else {
@@ -148,7 +158,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		up = (projParams().inverseViewMatrix * up).normalized();
 		p0 += direction * projParams().znear;
 
-		rt_camera_position(_rtscene, rt_vector(p0.x(), p0.y(), -p0.z()), rt_vector(direction.x(), direction.y(), -direction.z()), rt_vector(up.x(), up.y(), -up.z()));
+		rt_camera_position(_rtscene, tvec(p0), tvec(direction), tvec(up));
 		rt_camera_zoom(_rtscene, 0.5 / projParams().fieldOfView);
 	}
 
@@ -162,7 +172,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		lightTex.diffuse = 1.0;
 		void* lightTexPtr = rt_texture(_rtscene, &lightTex);
 		Vector3 lightDir = projParams().inverseViewMatrix * Vector3(0.2f,-0.2f,-1.0f);
-		rt_directional_light(_rtscene, lightTexPtr, rt_vector(lightDir.x(), lightDir.y(), -lightDir.z()));
+		rt_directional_light(_rtscene, lightTexPtr, tvec(lightDir));
 	}
 
 	if(ambientOcclusionEnabled() || (directLightSourceEnabled() && shadowsEnabled())) {
@@ -325,7 +335,7 @@ void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBu
 		for(; p != p_end; ++p, ++c, ++r) {
 			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
 			Point3 tp = tm * (*p);
-			rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
+			rt_sphere(_rtscene, tex, tvec(tp), *r);
 		}
 	}
 	else if(particleBuffer.particleShape() == ParticlePrimitive::SquareShape) {
@@ -333,21 +343,59 @@ void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBu
 		for(; p != p_end; ++p, ++c, ++r) {
 			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
 			Point3 tp = tm * (*p);
-			rt_box(_rtscene, tex, rt_vector(tp.x() - *r, tp.y() - *r, -tp.z() - *r), rt_vector(tp.x() + *r, tp.y() + *r, -tp.z() + *r));
+			rt_box(_rtscene, tex, tvec(tp - Vector3(*r)), tvec(tp + Vector3(*r)));
 		}
 	}
 	else if(particleBuffer.particleShape() == ParticlePrimitive::BoxShape) {
 		// Rendering noncubic box particles.
 		auto shape = particleBuffer.shapes().begin();
 		auto shape_end = particleBuffer.shapes().end();
+		auto orientation = particleBuffer.orientations().cbegin();
+		auto orientation_end = particleBuffer.orientations().cend();
 		for(; p != p_end && shape != shape_end; ++p, ++c, ++shape, ++r) {
 			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), c->a());
 			Point3 tp = tm * (*p);
-			if(*shape != Vector3::Zero())
-				rt_box(_rtscene, tex, rt_vector(tp.x() - shape->x(), tp.y() - shape->y(), -tp.z() - shape->z()),
-						rt_vector(tp.x() + shape->x(), tp.y() + shape->y(), -tp.z() + shape->z()));
+			Quaternion quat(0,0,0,1);
+			if(orientation != orientation_end) {
+				quat = *orientation++;
+				// Normalize quaternion.
+				FloatType c = sqrt(quat.dot(quat));
+				if(c == 0)
+					quat.setIdentity();
+				else
+					quat /= c;
+			}
+			if(*shape != Vector3::Zero()) {
+				if(quat == Quaternion(0,0,0,1)) {
+					rt_box(_rtscene, tex, tvec(tp - *shape), tvec(tp + *shape));
+				}
+				else {
+					apivector corners[8] = {
+							tvec(tp + quat * Vector3(-shape->x(), -shape->y(), -shape->z())),
+							tvec(tp + quat * Vector3( shape->x(), -shape->y(), -shape->z())),
+							tvec(tp + quat * Vector3( shape->x(),  shape->y(), -shape->z())),
+							tvec(tp + quat * Vector3(-shape->x(),  shape->y(), -shape->z())),
+							tvec(tp + quat * Vector3(-shape->x(), -shape->y(),  shape->z())),
+							tvec(tp + quat * Vector3( shape->x(), -shape->y(),  shape->z())),
+							tvec(tp + quat * Vector3( shape->x(),  shape->y(),  shape->z())),
+							tvec(tp + quat * Vector3(-shape->x(),  shape->y(),  shape->z()))
+					};
+					rt_tri(_rtscene, tex, corners[0], corners[1], corners[2]);
+					rt_tri(_rtscene, tex, corners[0], corners[2], corners[3]);
+					rt_tri(_rtscene, tex, corners[4], corners[6], corners[5]);
+					rt_tri(_rtscene, tex, corners[4], corners[7], corners[6]);
+					rt_tri(_rtscene, tex, corners[0], corners[4], corners[5]);
+					rt_tri(_rtscene, tex, corners[0], corners[5], corners[1]);
+					rt_tri(_rtscene, tex, corners[1], corners[5], corners[6]);
+					rt_tri(_rtscene, tex, corners[1], corners[6], corners[2]);
+					rt_tri(_rtscene, tex, corners[2], corners[6], corners[7]);
+					rt_tri(_rtscene, tex, corners[2], corners[7], corners[3]);
+					rt_tri(_rtscene, tex, corners[3], corners[7], corners[4]);
+					rt_tri(_rtscene, tex, corners[3], corners[4], corners[0]);
+				}
+			}
 			else
-				rt_box(_rtscene, tex, rt_vector(tp.x() - *r, tp.y() - *r, -tp.z() - *r), rt_vector(tp.x() + *r, tp.y() + *r, -tp.z() + *r));
+				rt_box(_rtscene, tex, tvec(tp - Vector3(*r)), tvec(tp + Vector3(*r)));
 		}
 	}
 	else if(particleBuffer.particleShape() == ParticlePrimitive::EllipsoidShape) {
@@ -376,13 +424,13 @@ void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBu
 						     0, 0, FloatType(1)/(shape->z()*shape->z()));
 				Matrix3 rot = Matrix3(1,0,0, 0,1,0, 0,0,-1) * linear_tm * Matrix3::rotation(quat);
 				Matrix3 quadric = rot * qmat * rot.transposed();
-				rt_quadric(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()),
+				rt_quadric(_rtscene, tex, tvec(tp),
 						quadric(0,0), quadric(0,1), quadric(0,2), 0.0,
 						quadric(1,1), quadric(1,2), 0.0,
-						quadric(2,2), 0.0, -1.0);
+						quadric(2,2), 0.0, -1.0, std::max(shape->x(), std::max(shape->y(), shape->z())));
 			}
 			else {
-				rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
+				rt_sphere(_rtscene, tex, tvec(tp), *r);
 			}
 		}
 	}
@@ -399,18 +447,9 @@ void TachyonRenderer::renderArrows(const DefaultArrowPrimitive& arrowBuffer)
 			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
 			Point3 tp = tm * element.pos;
 			Vector3 ta = tm * element.dir;
-			rt_fcylinder(_rtscene, tex,
-						   rt_vector(tp.x(), tp.y(), -tp.z()),
-						   rt_vector(ta.x(), ta.y(), -ta.z()),
-						   element.width);
-
-			rt_ring(_rtscene, tex,
-					rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
-					rt_vector(ta.x(), ta.y(), -ta.z()), 0, element.width);
-
-			rt_ring(_rtscene, tex,
-					rt_vector(tp.x(), tp.y(), -tp.z()),
-					rt_vector(-ta.x(), -ta.y(), ta.z()), 0, element.width);
+			rt_fcylinder(_rtscene, tex, tvec(tp), tvec(ta), element.width);
+			rt_ring(_rtscene, tex, tvec(tp+ta), tvec(ta), 0, element.width);
+			rt_ring(_rtscene, tex, tvec(tp), tvec(-ta), 0, element.width);
 		}
 	}
 
@@ -428,23 +467,10 @@ void TachyonRenderer::renderArrows(const DefaultArrowPrimitive& arrowBuffer)
 				Vector3 ta = tm * (element.dir * ((length - arrowHeadLength) / length));
 				Vector3 tb = tm * (element.dir * (arrowHeadLength / length));
 
-				rt_fcylinder(_rtscene, tex,
-							   rt_vector(tp.x(), tp.y(), -tp.z()),
-							   rt_vector(ta.x(), ta.y(), -ta.z()),
-							   element.width);
-
-				rt_ring(_rtscene, tex,
-						rt_vector(tp.x(), tp.y(), -tp.z()),
-						rt_vector(-ta.x(), -ta.y(), ta.z()), 0, element.width);
-
-				rt_ring(_rtscene, tex,
-						rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
-						rt_vector(-ta.x(), -ta.y(), ta.z()), element.width, arrowHeadRadius);
-
-				rt_cone(_rtscene, tex,
-							   rt_vector(tp.x()+ta.x()+tb.x(), tp.y()+ta.y()+tb.y(), -tp.z()-ta.z()-tb.z()),
-							   rt_vector(-tb.x(), -tb.y(), tb.z()),
-							   arrowHeadRadius);
+				rt_fcylinder(_rtscene, tex, tvec(tp), tvec(ta), element.width);
+				rt_ring(_rtscene, tex, tvec(tp), tvec(-ta), 0, element.width);
+				rt_ring(_rtscene, tex, tvec(tp+ta), tvec(-ta), element.width, arrowHeadRadius);
+				rt_cone(_rtscene, tex, tvec(tp+ta+tb), tvec(-tb), arrowHeadRadius);
 			}
 			else {
 				FloatType r = arrowHeadRadius * length / arrowHeadLength;
@@ -452,14 +478,8 @@ void TachyonRenderer::renderArrows(const DefaultArrowPrimitive& arrowBuffer)
 				Point3 tp = tm * element.pos;
 				Vector3 ta = tm * element.dir;
 
-				rt_ring(_rtscene, tex,
-						rt_vector(tp.x(), tp.y(), -tp.z()),
-						rt_vector(-ta.x(), -ta.y(), ta.z()), 0, r);
-
-				rt_cone(_rtscene, tex,
-							   rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
-							   rt_vector(-ta.x(), -ta.y(), ta.z()),
-							   r);
+				rt_ring(_rtscene, tex, tvec(tp), tvec(-ta), 0, r);
+				rt_cone(_rtscene, tex, tvec(tp+ta), tvec(-ta), r);
 			}
 		}
 	}
@@ -512,7 +532,7 @@ void TachyonRenderer::renderMesh(const DefaultMeshPrimitive& meshBuffer)
 		const Point3& p0 = mesh.vertex(face->vertex(0));
 		Vector3 d1 = mesh.vertex(face->vertex(1)) - p0;
 		Vector3 d2 = mesh.vertex(face->vertex(2)) - p0;
-		*faceNormal = normalTM * d1.cross(d2);
+		*faceNormal = normalTM * d2.cross(d1);
 		if(*faceNormal != Vector_3<float>::Zero()) {
 			faceNormal->normalize();
 			allMask |= face->smoothingGroups();
@@ -584,12 +604,12 @@ void TachyonRenderer::renderMesh(const DefaultMeshPrimitive& meshBuffer)
 			tex = getTachyonTexture(1.0f, 1.0f, 1.0f, defaultVertexColor.a());
 
 		rt_vcstri(_rtscene, tex,
-				rt_vector(rv0->pos.x(), rv0->pos.y(), -rv0->pos.z()),
-				rt_vector(rv1->pos.x(), rv1->pos.y(), -rv1->pos.z()),
-				rt_vector(rv2->pos.x(), rv2->pos.y(), -rv2->pos.z()),
-				rt_vector(-rv0->normal.x(), -rv0->normal.y(), rv0->normal.z()),
-				rt_vector(-rv1->normal.x(), -rv1->normal.y(), rv1->normal.z()),
-				rt_vector(-rv2->normal.x(), -rv2->normal.y(), rv2->normal.z()),
+				tvec(rv0->pos),
+				tvec(rv1->pos),
+				tvec(rv2->pos),
+				tvec(rv0->normal),
+				tvec(rv1->normal),
+				tvec(rv2->normal),
 				rt_color(rv0->color.r(), rv0->color.g(), rv0->color.b()),
 				rt_color(rv1->color.r(), rv1->color.g(), rv1->color.b()),
 				rt_color(rv2->color.r(), rv2->color.g(), rv2->color.b()));
