@@ -7,7 +7,7 @@
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Visualizing ellipsoid and box particles</title>
+  <title>Visualize ellipsoid and box particles</title>
 
   <para>
      <figure>
@@ -22,7 +22,7 @@
             <imagedata fileref="images/howtos/box_particles_example1.png" format="png" />
        </imageobject></mediaobject></screenshot>
     </figure> 
-    OVITO can visualize particles with ellipsoid and box shapes as shown in the figures on the right.
+    OVITO can visualize particles with ellipsoid and box shapes as shown in the pictures on the right.
   </para>
   
   <para>

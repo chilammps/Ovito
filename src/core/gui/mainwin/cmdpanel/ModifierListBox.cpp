@@ -178,6 +178,26 @@ void ModifierListBox::updateAvailableModifiers()
 		categoryItem->setTextAlignment(Qt::AlignCenter);
 		model->appendRow(categoryItem);
 	}
+	else {
+		// Load custom modifier presets.
+		QSettings settings;
+		settings.beginGroup("core/modifier/presets/");
+		QStringList keys = settings.childKeys();
+		if(!keys.empty()) {
+			QStandardItem* categoryItem = new QStandardItem(tr("Custom modifier presets"));
+			categoryItem->setFont(_categoryFont);
+			categoryItem->setBackground(_categoryBackgroundBrush);
+			categoryItem->setForeground(_categoryForegroundBrush);
+			categoryItem->setFlags(Qt::ItemIsEnabled);
+			categoryItem->setTextAlignment(Qt::AlignCenter);
+			model->appendRow(categoryItem);
+			for(const QString& name : keys) {
+				QStandardItem* modifierItem = new QStandardItem("   " + name);
+				modifierItem->setData(qVariantFromValue(name), Qt::UserRole);
+				model->appendRow(modifierItem);
+			}
+		}
+	}
 
     setMaxVisibleItems(count());
 }

@@ -5,18 +5,16 @@ User interface improvements:
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
 - Extend spinner widget with "Animation" dialog, which can be opened for animatable parameters.
-- Pointing the mouse cursor on a bond should show bond info in status bar.
  
 Work-flow improvements:
 
-- Copy/Paste function for modifiers.
-- "User-defined" modifiers, i.e. saving/loading often-needed sequences of modifiers (requested by Tobias Brink)
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 - Add support for low-dimensional systems.
 
 New visualization features:
 
-- More particle representations (e.g. open circles/rectangles)
+- Visualize particle trajectories.
+- More particle representations (e.g. open circles/rectangles).
 - Test OpenGL rendering support for more than 12 million particles.
 
 Unresolved OpenGL problems:

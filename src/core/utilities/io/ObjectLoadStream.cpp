@@ -108,7 +108,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 	setFilePosition(beginOfObjTable);
 	expectChunk(0x300);
 	for(ObjectEntry& entry : _objects) {
-		entry.object = NULL;
+		entry.object = nullptr;
 		quint32 id;
 		*this >> id;
 		entry.pluginClass = &_classes[id];
@@ -134,10 +134,16 @@ OORef<OvitoObject> ObjectLoadStream::loadObjectInternal()
 		ObjectEntry& entry = _objects[id - 1];
 		if(entry.object != nullptr) return entry.object;
 		else {
+			if(entry.pluginClass->descriptor != &DataSet::OOType && entry.pluginClass->descriptor->isDerivedFrom(RefTarget::OOType)) {
+				OVITO_ASSERT(_dataset != nullptr);
+			}
+
 			// Create an instance of the object class.
 			entry.object = entry.pluginClass->descriptor->createInstance(_dataset);
-			if(entry.pluginClass->descriptor == &DataSet::OOType)
-				_dataset = static_object_cast<DataSet>(entry.object.get());
+			if(entry.pluginClass->descriptor == &DataSet::OOType) {
+				OVITO_ASSERT(_dataset == nullptr);
+				setDataSet(static_object_cast<DataSet>(entry.object.get()));
+			}
 			else {
 				OVITO_ASSERT(!entry.pluginClass->descriptor->isDerivedFrom(RefTarget::OOType) || _dataset != nullptr);
 			}
@@ -160,6 +166,7 @@ void ObjectLoadStream::close()
 		for(int i = 0; i < _objectsToLoad.size(); i++) {
 			quint32 index = _objectsToLoad[i];
 			_currentObject = &_objects[index];
+			OVITO_CHECK_POINTER(_currentObject);
 			OVITO_CHECK_OBJECT_POINTER(_currentObject->object);
 
 			// Seek to object data.
@@ -183,8 +190,10 @@ void ObjectLoadStream::close()
 				}
 				catch(...) {
 					// Clean up.
-					OVITO_CHECK_OBJECT_POINTER(_currentObject->object);
-					_currentObject->object->setParent(nullptr);
+					if(_currentObject && _currentObject->object) {
+						OVITO_CHECK_OBJECT_POINTER(_currentObject->object);
+						_currentObject->object->setParent(nullptr);
+					}
 					throw;
 				}
 			}
@@ -194,8 +203,10 @@ void ObjectLoadStream::close()
 		}
 
 		// Now that all references are in place call post-processing function on each loaded object.
-		for(const ObjectEntry& entry : _objects)
-			entry.object->loadFromStreamComplete();
+		for(const ObjectEntry& entry : _objects) {
+			if(entry.object)
+				entry.object->loadFromStreamComplete();
+		}
 	}
 	LoadStream::close();
 }

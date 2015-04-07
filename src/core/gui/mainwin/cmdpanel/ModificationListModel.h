@@ -92,6 +92,9 @@ public:
 	/// Returns the container of the dataset being edited.
 	DataSetContainer& datasetContainer() { return _datasetContainer; }
 
+    /// Inserts the given modifiers into the modification pipeline of the selected scene nodes.
+	void applyModifiers(const QVector<OORef<Modifier>>& modifiers);
+
 Q_SIGNALS:
 
 	/// This signal is emitted if a new list item has been selected, or if the currently
@@ -99,9 +102,6 @@ Q_SIGNALS:
 	void selectedItemChanged();
 
 public Q_SLOTS:
-
-    /// Inserts the given modifier into the modification pipeline of the selected scene nodes.
-	void applyModifier(Modifier* modifier);
 
 	/// Rebuilds the complete list immediately.
 	void refreshList();

@@ -266,32 +266,38 @@ PipelineObject* ModificationListModel::hiddenPipelineObject()
 * Inserts the given modifier into the modification pipeline of the
 * selected scene nodes.
 ******************************************************************************/
-void ModificationListModel::applyModifier(Modifier* modifier)
+void ModificationListModel::applyModifiers(const QVector<OORef<Modifier>>& modifiers)
 {
-	// Get the selected stack entry. The new modifier is inserted just behind it.
+	if(modifiers.empty())
+		return;
+
+	// Get the selected stack entry. The new modifier is inserted right behind it.
 	ModificationListItem* currentItem = selectedItem();
 
 	// On the next list update, the new modifier should be selected.
-	_nextToSelectObject = modifier;
+	_nextToSelectObject = modifiers.front();
 
 	if(currentItem) {
 		if(dynamic_object_cast<Modifier>(currentItem->object())) {
 			for(ModifierApplication* modApp : currentItem->modifierApplications()) {
 				PipelineObject* pipelineObj = modApp->pipelineObject();
 				OVITO_CHECK_OBJECT_POINTER(pipelineObj);
-				pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().indexOf(modApp) + 1);
+				for(Modifier* modifier : modifiers)
+					modApp = pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().indexOf(modApp) + 1);
 			}
 			return;
 		}
 		else if(dynamic_object_cast<PipelineObject>(currentItem->object())) {
 			PipelineObject* pipelineObj = static_object_cast<PipelineObject>(currentItem->object());
 			OVITO_CHECK_OBJECT_POINTER(pipelineObj);
-			pipelineObj->insertModifier(modifier, 0);
+			for(int index = modifiers.size() - 1; index >= 0; index--)
+				pipelineObj->insertModifier(modifiers[index], 0);
 			return;
 		}
 		else if(dynamic_object_cast<DataObject>(currentItem->object())) {
 			if(PipelineObject* pipelineObj = hiddenPipelineObject()) {
-				pipelineObj->insertModifier(modifier, 0);
+				for(int index = modifiers.size() - 1; index >= 0; index--)
+					pipelineObj->insertModifier(modifiers[index], 0);
 				return;
 			}
 		}
@@ -299,7 +305,8 @@ void ModificationListModel::applyModifier(Modifier* modifier)
 
 	// Apply modifier to each selected node.
 	for(ObjectNode* objNode : selectedNodes()) {
-		objNode->applyModifier(modifier);
+		for(Modifier* modifier : modifiers)
+			objNode->applyModifier(modifier);
 	}
 }
 

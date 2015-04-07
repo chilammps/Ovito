@@ -91,6 +91,8 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 #define ACTION_MODIFIER_MOVE_DOWN			"ModifierMoveDown"
 /// This action toggles the enabled/disable state of the currently selected modifier.
 #define ACTION_MODIFIER_TOGGLE_STATE		"ModifierToggleEnabledState"
+/// This action opens the dialog box for creating a custom modifier preset.
+#define ACTION_MODIFIER_CREATE_PRESET		"ModifierCreatePreset"
 
 /// This action jumps to the start of the animation
 #define ACTION_GOTO_START_OF_ANIMATION		"AnimationGotoStart"

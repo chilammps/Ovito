@@ -89,6 +89,11 @@ public:
 		return static_object_cast<T>(ptr);
 	}
 
+	/// Sets the dataset to which objects loaded from the stream should be added to.
+	void setDataSet(DataSet* dataset) {
+		_dataset = dataset;
+	}
+
 private:
 
 	/// Loads an object with runtime type information from the stream.

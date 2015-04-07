@@ -85,6 +85,9 @@ protected Q_SLOTS:
 	/// Is called by the system when fetching the news web page from the server is completed.
 	void onWebRequestFinished(QNetworkReply* reply);
 
+	/// Handles the ACTION_MODIFIER_CREATE_PRESET command.
+	void onCreateCustomModifier();
+
 private:
 
 	/// Updates the state of the actions that can be invoked on the currently selected item.

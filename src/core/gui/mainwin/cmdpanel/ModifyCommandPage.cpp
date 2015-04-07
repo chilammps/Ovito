@@ -106,6 +106,11 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	connect(toggleModifierStateAction, &QAction::triggered, this, &ModifyCommandPage::onModifierToggleState);
 
 	editToolbar->addSeparator();
+	QAction* createCustomModifierAction = _actionManager->createCommandAction(ACTION_MODIFIER_CREATE_PRESET, tr("Save Modifier Preset"), ":/core/actions/modify/modifier_save_preset.png");
+	connect(createCustomModifierAction, &QAction::triggered, this, &ModifyCommandPage::onCreateCustomModifier);
+	editToolbar->addAction(createCustomModifierAction);
+
+	editToolbar->addSeparator();
 	QAction* helpAction = new QAction(QIcon(":/core/mainwin/command_panel/help.png"), tr("Open Online Help"), this);
 	connect(helpAction, &QAction::triggered, [mainWindow] {
 		mainWindow->openHelpTopic("usage.modification_pipeline.html");
@@ -170,12 +175,14 @@ void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
 	QAction* moveModifierUpAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_UP);
 	QAction* moveModifierDownAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_DOWN);
 	QAction* toggleModifierStateAction = _actionManager->getAction(ACTION_MODIFIER_TOGGLE_STATE);
+	QAction* createCustomModifierAction = _actionManager->getAction(ACTION_MODIFIER_CREATE_PRESET);
 
 	_modifierSelector->setEnabled(currentItem != nullptr);
 
 	Modifier* modifier = currentItem ? dynamic_object_cast<Modifier>(currentItem->object()) : nullptr;
 	if(modifier) {
 		deleteModifierAction->setEnabled(true);
+		createCustomModifierAction->setEnabled(true);
 		if(currentItem->modifierApplications().size() == 1) {
 			ModifierApplication* modApp = currentItem->modifierApplications()[0];
 			PipelineObject* pipelineObj = modApp->pipelineObject();
@@ -204,6 +211,7 @@ void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
 		moveModifierDownAction->setEnabled(false);
 		toggleModifierStateAction->setChecked(false);
 		toggleModifierStateAction->setEnabled(false);
+		createCustomModifierAction->setEnabled(false);
 	}
 }
 
@@ -222,10 +230,41 @@ void ModifyCommandPage::onModifierAdd(int index)
 				// Load user-defined default parameters.
 				modifier->loadUserDefaults();
 				// Apply it.
-				_modificationListModel->applyModifier(modifier);
+				_modificationListModel->applyModifiers({modifier});
 			});
 			_modificationListModel->requestUpdate();
 		}
+		else {
+			QString presetName = _modifierSelector->itemData(index).toString();
+			if(!presetName.isEmpty()) {
+				UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Apply modifier set"), [presetName, this]() {
+					// Deserialize modifier set from settings store.
+					QVector<OORef<Modifier>> modifierSet;
+					try {
+						UndoSuspender noUndo(_datasetContainer.currentSet()->undoStack());
+						QSettings settings;
+						settings.beginGroup("core/modifier/presets/");
+						QByteArray buffer = settings.value(presetName).toByteArray();
+						QDataStream dstream(buffer);
+						ObjectLoadStream stream(dstream);
+						stream.setDataSet(_datasetContainer.currentSet());
+						for(int chunkId = stream.expectChunkRange(0,1); chunkId == 1; chunkId = stream.expectChunkRange(0,1)) {
+							modifierSet.push_front(stream.loadObject<Modifier>());
+							stream.closeChunk();
+						}
+						stream.closeChunk();
+						stream.close();
+					}
+					catch(Exception& ex) {
+						ex.prependGeneralMessage(tr("Failed to load stored modifier set."));
+						throw;
+					}
+					_modificationListModel->applyModifiers(modifierSet);
+				});
+				_modificationListModel->requestUpdate();
+			}
+		}
+
 		_modifierSelector->setCurrentIndex(0);
 	}
 }
@@ -460,6 +499,150 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 #endif
 	reply->deleteLater();
 }
+
+/******************************************************************************
+* Handles the ACTION_MODIFIER_CREATE_PRESET command.
+******************************************************************************/
+void ModifyCommandPage::onCreateCustomModifier()
+{
+	QDialog dlg(window());
+	dlg.setWindowTitle(tr("Save Modifier Preset"));
+	QVBoxLayout* mainLayout = new QVBoxLayout(&dlg);
+
+	QVBoxLayout* layout = new QVBoxLayout();
+	layout->setContentsMargins(0,0,0,0);
+	layout->setSpacing(12);
+
+	QLabel* label = new QLabel(tr(
+			"This dialog allows you to save one or more modifiers and their parameters from the current modification pipeline as a preset for future use. "
+			"Tick those modifiers in the list below that you want to include in the saved modifier set. "
+			"Enter a name for the new preset, then click 'Save'. "
+			"The preset will appear in the list of available modifiers."));
+	label->setWordWrap(true);
+	layout->addWidget(label);
+
+	QListWidget* modifierListWidget = new QListWidget(&dlg);
+	modifierListWidget->setUniformItemSizes(true);
+	Modifier* selectedModifier = nullptr;
+	QVector<Modifier*> modifierList;
+	for(int index = 0; index < _modificationListModel->rowCount(); index++) {
+		ModificationListItem* item = _modificationListModel->item(index);
+		Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
+		if(modifier) {
+			QListWidgetItem* listItem = new QListWidgetItem(modifier->objectTitle(), modifierListWidget);
+			listItem->setFlags(Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren));
+			if(_modificationListModel->selectedItem() == item) {
+				selectedModifier = modifier;
+				listItem->setCheckState(Qt::Checked);
+			}
+			else listItem->setCheckState(Qt::Unchecked);
+			modifierList.push_back(modifier);
+		}
+	}
+	modifierListWidget->setMaximumHeight(modifierListWidget->sizeHintForRow(0) * qBound(3, modifierListWidget->count(), 10) + 2 * modifierListWidget->frameWidth());
+	layout->addWidget(modifierListWidget);
+
+	QGridLayout* sublayout = new QGridLayout();
+	sublayout->setContentsMargins(0,0,0,0);
+	sublayout->setVerticalSpacing(2);
+	sublayout->setHorizontalSpacing(10);
+	QComboBox* nameBox = new QComboBox(&dlg);
+	nameBox->setEditable(true);
+	nameBox->setMinimumWidth(180);
+	sublayout->addWidget(new QLabel(tr("Preset name:")), 0, 0);
+	sublayout->addWidget(nameBox, 1, 0);
+	sublayout->setColumnStretch(0, 1);
+	QToolButton* deletePresetButton = new QToolButton();
+	sublayout->addWidget(deletePresetButton, 1, 1);
+	QAction* deletePresetAction = new QAction(QIcon(":/core/actions/edit/edit_delete.png"), tr("Delete selected preset"), &dlg);
+	deletePresetAction->setEnabled(false);
+	deletePresetButton->setDefaultAction(deletePresetAction);
+	layout->addLayout(sublayout);
+
+	connect(nameBox, &QComboBox::currentTextChanged, [nameBox, deletePresetAction](const QString& text) {
+		deletePresetAction->setEnabled(nameBox->findText(text.trimmed()) != -1);
+	});
+
+	QSettings settings;
+	settings.beginGroup("core/modifier/presets/");
+	nameBox->addItems(settings.childKeys());
+
+	connect(deletePresetAction, &QAction::triggered, [nameBox]() {
+		QString presetName = nameBox->currentText().trimmed();
+		int index = nameBox->findText(presetName);
+		if(index != -1) {
+			if(QMessageBox::question(nameBox, tr("Delete modifier preset"), tr("Do you really want to delete the existing modifier preset with the name '%1'?. This operation cannot be be undone.").arg(presetName), QMessageBox::Yes | QMessageBox::Cancel) != QMessageBox::Yes)
+				return;
+			QSettings settings;
+			settings.beginGroup("core/modifier/presets/");
+			settings.remove(presetName);
+			nameBox->removeItem(index);
+			nameBox->clearEditText();
+		}
+	});
+
+	if(selectedModifier)
+		nameBox->setCurrentText(tr("Custom %1").arg(selectedModifier->objectTitle()));
+	else
+		nameBox->setCurrentText(tr("Custom modifier 1"));
+
+	layout->setStretch(1, 1);
+	mainLayout->addLayout(layout);
+	mainLayout->setStretch(0, 1);
+
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
+	connect(buttonBox, &QDialogButtonBox::accepted, [&dlg, nameBox, modifierListWidget]() {
+		QString name = nameBox->currentText().trimmed();
+		if(name.isEmpty()) {
+			QMessageBox::critical(&dlg, tr("Save modifier preset"), tr("Please enter a name for the modifier set to be saved."));
+			return;
+		}
+		if(nameBox->findText(name) != -1) {
+			if(QMessageBox::question(&dlg, tr("Save modifier preset"), tr("A modifier preset with the name '%1' already exists. Do you want to replace it?").arg(name), QMessageBox::Yes | QMessageBox::Cancel) != QMessageBox::Yes)
+				return;
+		}
+		int selCount = 0;
+		for(int i = 0; i < modifierListWidget->count(); i++)
+			if(modifierListWidget->item(i)->checkState() == Qt::Checked)
+				selCount++;
+		if(!selCount) {
+			QMessageBox::critical(&dlg, tr("Save modifier preset"), tr("Please check at least one modifier to be included in the saved set."));
+			return;
+		}
+		dlg.accept();
+	});
+	connect(buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+	mainLayout->addWidget(buttonBox);
+	if(dlg.exec() == QDialog::Accepted) {
+		try {
+			// Serialize the selected modifiers to a byte array.
+			QByteArray buffer;
+			QDataStream dstream(&buffer, QIODevice::WriteOnly);
+			ObjectSaveStream stream(dstream);
+			for(int i = 0; i < modifierListWidget->count(); i++) {
+				if(modifierListWidget->item(i)->checkState() == Qt::Checked) {
+					stream.beginChunk(0x01);
+					stream.saveObject(modifierList[i]);
+					stream.endChunk();
+				}
+			}
+			// Append EOF marker:
+			stream.beginChunk(0x00);
+			stream.endChunk();
+			stream.close();
+
+			// Save serialized modifier set in settings store.
+			QSettings settings;
+			settings.beginGroup("core/modifier/presets/");
+			settings.setValue(nameBox->currentText().trimmed(), buffer);
+			settings.endGroup();
+		}
+		catch(const Exception& ex) {
+			ex.showError();
+		}
+	}
+}
+
 
 OVITO_END_INLINE_NAMESPACE
 OVITO_END_INLINE_NAMESPACE
