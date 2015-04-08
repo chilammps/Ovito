@@ -53,6 +53,12 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(
 	}
 	_tabWidget->setCurrentIndex(0);
 
+	// Add a label that displays the location of the application settings store on the computer.
+	QLabel* configLocationLabel = new QLabel();
+	configLocationLabel->setText(tr("<p style=\"font-size: small; color: #686868;\">Program settings are stored in %1</p>").arg(QSettings().fileName()));
+	configLocationLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+	layout1->addWidget(configLocationLabel);
+
 	// Ok and Cancel buttons
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 	connect(buttonBox, &QDialogButtonBox::accepted, this, &ApplicationSettingsDialog::onOk);

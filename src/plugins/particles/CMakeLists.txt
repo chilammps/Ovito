@@ -31,6 +31,9 @@ SET(SourceFiles
 	objects/BondsDisplay.cpp
 	objects/SurfaceMesh.cpp
 	objects/SurfaceMeshDisplay.cpp
+	objects/TrajectoryObject.cpp
+	objects/TrajectoryDisplay.cpp
+	objects/TrajectoryGeneratorObject.cpp
 	data/ParticleProperty.cpp
 	data/BondsStorage.cpp
 	modifier/ParticleModifier.cpp
@@ -98,6 +101,7 @@ SET(SourceFiles
 	util/ParticlePropertyParameterUI.cpp
 	util/ParticleExpressionEvaluator.cpp
 	util/ParticleSelectionSet.cpp
+	util/CreateTrajectoryApplet.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
