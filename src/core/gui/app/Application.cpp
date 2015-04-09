@@ -76,9 +76,19 @@ bool Application::initialize(int& argc, char** argv)
 
 	// Set the application name provided by the active branding class.
 	QCoreApplication::setApplicationName(tr("Ovito"));
-	QCoreApplication::setOrganizationName(tr("Alexander Stukowski"));
 	QCoreApplication::setOrganizationDomain("ovito.org");
 	QCoreApplication::setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
+#ifdef Q_OS_WIN
+	QCoreApplication::setOrganizationName(tr("Alexander Stukowski"));
+#else
+	QCoreApplication::setOrganizationName(tr("Ovito"));
+
+	// Migrate settings file from old "Alexander Stukowski" directory to new default location.
+	QSettings oldSettings("Alexander Stukowski", "Ovito");
+	QSettings newSettings;
+	if(QFile::exists(oldSettings.fileName()) && !QFile::exists(newSettings.fileName()))
+		QFile::copy(oldSettings.fileName(), newSettings.fileName());
+#endif
 
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");

@@ -403,5 +403,21 @@ QOpenGLContext* MainWindow::getOpenGLContext()
 	return _glcontext;
 }
 
+/******************************************************************************
+* Returns the page of the command panel that is currently visible.
+******************************************************************************/
+MainWindow::CommandPanelPage MainWindow::currentCommandPanelPage() const
+{
+	return _commandPanel->currentPage();
+}
+
+/******************************************************************************
+* Sets the page of the command panel that is currently visible.
+******************************************************************************/
+void MainWindow::setCurrentCommandPanelPage(CommandPanelPage page)
+{
+	_commandPanel->setCurrentPage(page);
+}
+
 OVITO_END_INLINE_NAMESPACE
 }	// End of namespace

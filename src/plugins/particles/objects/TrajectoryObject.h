@@ -38,7 +38,7 @@ public:
 	Q_INVOKABLE TrajectoryObject(DataSet* dataset);
 
 	/// \brief Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Trajectory"); }
+	virtual QString objectTitle() override { return tr("Particle trajectories"); }
 
 protected:
 

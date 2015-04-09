@@ -40,6 +40,16 @@ class OVITO_CORE_EXPORT MainWindow : public QMainWindow
 	
 public:
 
+	/// The pages of the command panel.
+	enum CommandPanelPage {
+		MODIFY_PAGE		= 0,
+		RENDER_PAGE		= 1,
+		OVERLAY_PAGE	= 2,
+		UTILITIES_PAGE	= 3
+	};
+
+public:
+
 	/// Constructor of the main window class.
 	MainWindow();
 
@@ -86,6 +96,12 @@ public:
 	/// If sharing of OpenGL contexts between viewports is disabled, then this function returns the GL context
 	/// of the first viewport in this window.
 	QOpenGLContext* getOpenGLContext();
+
+	/// Returns the page of the command panel that is currently visible.
+	CommandPanelPage currentCommandPanelPage() const;
+
+	/// Sets the page of the command panel that is currently visible.
+	void setCurrentCommandPanelPage(CommandPanelPage page);
 
 protected:
 

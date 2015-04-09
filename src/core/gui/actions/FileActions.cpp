@@ -127,18 +127,18 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Vendor: " << QString((const char*)glGetString(GL_VENDOR)) << endl;
 			stream << "Renderer: " << QString((const char*)glGetString(GL_RENDERER)) << endl;
 			stream << "Version string: " << QString((const char*)glGetString(GL_VERSION)) << endl;
-			stream << "Shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)) << endl;
-			stream << "Shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms() << endl;
-			stream << "Vertex shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex) << endl;
-			stream << "Fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment) << endl;
-			stream << "Geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry) << endl;
 			stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
 			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
-			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
-			stream << "Using point sprites: " << renderer->usePointSprites() << endl;
-			stream << "Using geometry shaders: " << renderer->useGeometryShaders() << endl;
-			stream << "Context sharing: " << ViewportWindow::contextSharingEnabled() << endl;
+			stream << "Shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)) << endl;
+			stream << "Shader programs supported: " << (QOpenGLShaderProgram::hasOpenGLShaderPrograms() ? "yes" : "no") << endl;
+			stream << "Vertex shaders supported: " << (QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex) ? "yes" : "no") << endl;
+			stream << "Fragment shaders supported: " << (QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment) ? "yes" : "no") << endl;
+			stream << "Geometry shaders supported: " << (QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry) ? "yes" : "no") << endl;
+			stream << "Using deprecated functions: " << (format.testOption(QSurfaceFormat::DeprecatedFunctions) ? "yes" : "no") << endl;
+			stream << "Using point sprites: " << (renderer->usePointSprites() ? "yes" : "no") << endl;
+			stream << "Using geometry shaders: " << (renderer->useGeometryShaders() ? "yes" : "no") << endl;
+			stream << "Context sharing enabled: " << (ViewportWindow::contextSharingEnabled() ? "yes" : "no") << endl;
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}

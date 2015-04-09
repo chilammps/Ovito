@@ -60,7 +60,7 @@ private:
 	SpinnerWidget* _customRangeEndSpinner;
 	SpinnerWidget* _everyNthFrameSpinner;
 
-	Q_CLASSINFO("DisplayName", "Create particle trajectory");
+	Q_CLASSINFO("DisplayName", "Create trajectory lines");
 
 	Q_OBJECT
 	OVITO_OBJECT

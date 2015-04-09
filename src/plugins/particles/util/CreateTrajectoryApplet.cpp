@@ -45,7 +45,7 @@ void CreateTrajectoryApplet::openUtility(MainWindow* mainWindow, RolloutContaine
 
 	// Create a rollout.
 	_panel = new QWidget();
-	container->addRollout(_panel, tr("Create particle trajectory"), rolloutParams);
+	container->addRollout(_panel, tr("Create trajectory lines"), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(_panel);
@@ -59,13 +59,13 @@ void CreateTrajectoryApplet::openUtility(MainWindow* mainWindow, RolloutContaine
 
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-		layout2->setSpacing(4);
+		layout2->setSpacing(2);
 		layout2->setColumnStretch(1, 1);
 		layout2->setColumnMinimumWidth(0, 15);
 
 		layout2->addWidget(new QLabel(tr("Generate trajectories for:")), 0, 0, 1, 2);
 
-		_selectedParticlesButton = new QRadioButton(tr("Current selection"));
+		_selectedParticlesButton = new QRadioButton(tr("Selected particles"));
 		_selectedParticlesButton->setChecked(true);
 		layout2->addWidget(_selectedParticlesButton, 1, 1);
 
@@ -83,14 +83,14 @@ void CreateTrajectoryApplet::openUtility(MainWindow* mainWindow, RolloutContaine
 		layout2->setSpacing(2);
 		QGridLayout* layout2c = new QGridLayout();
 		layout2c->setContentsMargins(0,0,0,0);
-		layout2c->setSpacing(4);
+		layout2c->setSpacing(2);
 		layout2->addLayout(layout2c);
 
-		_animationIntervalButton = new QRadioButton(tr("Complete range"));
+		_animationIntervalButton = new QRadioButton(tr("Complete trajectory"));
 		_animationIntervalButton->setChecked(true);
 		layout2c->addWidget(_animationIntervalButton, 0, 0, 1, 5);
 
-		_customIntervalButton = new QRadioButton(tr("Interval:"));
+		_customIntervalButton = new QRadioButton(tr("Frame interval:"));
 		layout2c->addWidget(_customIntervalButton, 1, 0, 1, 5);
 
 		QLineEdit* customRangeStartEdit = new QLineEdit();
@@ -140,7 +140,7 @@ void CreateTrajectoryApplet::openUtility(MainWindow* mainWindow, RolloutContaine
 		layout2a->addLayout(fieldlayout, 0, 1);
 	}
 
-	QPushButton* createTrajectoryButton = new QPushButton(tr("Create trajectory"));
+	QPushButton* createTrajectoryButton = new QPushButton(tr("Create trajectory lines"));
 	layout->addWidget(createTrajectoryButton);
 	connect(createTrajectoryButton, &QPushButton::clicked, this, &CreateTrajectoryApplet::onCreateTrajectory);
 }
@@ -161,7 +161,7 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 	DataSet* dataset = _mainWindow->datasetContainer().currentSet();
 	if(!dataset) return;
 
-	UndoableTransaction::handleExceptions(dataset->undoStack(), tr("Create trajectory"), [this, dataset]() {
+	UndoableTransaction::handleExceptions(dataset->undoStack(), tr("Create trajectory lines"), [this, dataset]() {
 		AnimationSuspender noAnim(dataset->animationSettings());
 		TimePoint time = dataset->animationSettings()->time();
 
@@ -178,7 +178,7 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 		}
 
 		if(!posProperty)
-			throw Exception(tr("Currently no particle data object is selected from which a trajectory can be generated."));
+			throw Exception(tr("Currently no particle data object is selected from which trajectory lines can be generated."));
 
 		// Determine number of input particles.
 		size_t particleCount = 0;
@@ -186,12 +186,12 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 			if(selectionProperty)
 				particleCount = std::count_if(selectionProperty->constDataInt(), selectionProperty->constDataInt() + selectionProperty->size(), [](int s) { return s != 0; });
 			if(!particleCount)
-				throw Exception(tr("Currently no particles are selected. Trajectory was not created."));
+				throw Exception(tr("Currently no particles are selected. No trajectory lines were created."));
 		}
 		else {
 			particleCount = posProperty->size();
 			if(!particleCount)
-				throw Exception(tr("Input contains no particles. Trajectory was not created."));
+				throw Exception(tr("Input contains no particles. No trajectory lines were created."));
 		}
 
 		// Create trajectory object.
@@ -213,6 +213,9 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 
 		// Select new scene node.
 		dataset->selection()->setNode(node);
+
+		// Switch to the modify tab to show the newly created trajectory object.
+		_mainWindow->setCurrentCommandPanelPage(MainWindow::MODIFY_PAGE);
 	});
 }
 

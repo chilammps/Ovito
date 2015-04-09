@@ -92,7 +92,7 @@ void TrajectoryGeneratorObjectEditor::createUI(const RolloutInsertionParameters&
 
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-		layout2->setSpacing(4);
+		layout2->setSpacing(2);
 		layout2->setColumnStretch(1, 1);
 		layout2->setColumnMinimumWidth(0, 15);
 
@@ -119,7 +119,7 @@ void TrajectoryGeneratorObjectEditor::createUI(const RolloutInsertionParameters&
 		layout2->addWidget(allParticlesButton, 3, 1);
 
 		QRadioButton* selectedParticlesButton = onlySelectedParticlesUI->buttonTrue();
-		selectedParticlesButton->setText(tr("Current selection"));
+		selectedParticlesButton->setText(tr("Selected particles"));
 		layout2->addWidget(selectedParticlesButton, 4, 1);
 	}
 
@@ -133,17 +133,17 @@ void TrajectoryGeneratorObjectEditor::createUI(const RolloutInsertionParameters&
 		layout2->setSpacing(2);
 		QGridLayout* layout2c = new QGridLayout();
 		layout2c->setContentsMargins(0,0,0,0);
-		layout2c->setSpacing(4);
+		layout2c->setSpacing(2);
 		layout2->addLayout(layout2c);
 
 		BooleanRadioButtonParameterUI* useCustomIntervalUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(TrajectoryGeneratorObject::_useCustomInterval));
 
 		QRadioButton* animationIntervalButton = useCustomIntervalUI->buttonFalse();
-		animationIntervalButton->setText(tr("Complete range"));
+		animationIntervalButton->setText(tr("Complete trajectory"));
 		layout2c->addWidget(animationIntervalButton, 0, 0, 1, 5);
 
 		QRadioButton* customIntervalButton = useCustomIntervalUI->buttonTrue();
-		customIntervalButton->setText(tr("Interval:"));
+		customIntervalButton->setText(tr("Frame interval:"));
 		layout2c->addWidget(customIntervalButton, 1, 0, 1, 5);
 
 		IntegerParameterUI* customRangeStartUI = new IntegerParameterUI(this, PROPERTY_FIELD(TrajectoryGeneratorObject::_customIntervalStart));
@@ -169,7 +169,7 @@ void TrajectoryGeneratorObjectEditor::createUI(const RolloutInsertionParameters&
 		layout2a->setColumnStretch(2, 1);
 	}
 
-	QPushButton* createTrajectoryButton = new QPushButton(tr("Regenerate trajectories"));
+	QPushButton* createTrajectoryButton = new QPushButton(tr("Regenerate trajectory lines"));
 	layout->addWidget(createTrajectoryButton);
 	connect(createTrajectoryButton, &QPushButton::clicked, this, &TrajectoryGeneratorObjectEditor::onRegenerateTrajectory);
 }

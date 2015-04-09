@@ -23,6 +23,7 @@
 #define __OVITO_COMMAND_PANEL_H
 
 #include <core/Core.h>
+#include <core/gui/mainwin/MainWindow.h>
 
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
@@ -35,27 +36,19 @@ class OVITO_CORE_EXPORT CommandPanel : public QWidget
 
 public:
 
-	/// The set of pages of the command panel.
-	enum Page {
-		MODIFY_PAGE		= 0,
-		RENDER_PAGE		= 1,
-		OVERLAY_PAGE	= 2,
-		UTILITIES_PAGE	= 3
-	};
-
 	/// \brief Creates the command panel.
 	CommandPanel(MainWindow* mainWindow, QWidget* parent);
 
 	/// \brief Activate one of the command pages.
 	/// \param newPage The identifier of the page to activate.
-	void setCurrentPage(Page newPage) {
+	void setCurrentPage(MainWindow::CommandPanelPage newPage) {
 		OVITO_ASSERT(newPage < _tabWidget->count());
 		_tabWidget->setCurrentIndex((int)newPage);
 	}
 
 	/// \brief Returns the active command page.
 	/// \return The identifier of the page that is currently active.
-	Page currentPage() const { return (Page)_tabWidget->currentIndex(); }
+	MainWindow::CommandPanelPage currentPage() const { return (MainWindow::CommandPanelPage)_tabWidget->currentIndex(); }
 
 	/// \brief Returns the modification page contained in the command panel.
 	ModifyCommandPage* modifyPage() const { return _modifyPage; }

@@ -50,7 +50,7 @@ CommandPanel::CommandPanel(MainWindow* mainWindow, QWidget* parent) : QWidget(pa
 	_tabWidget->setTabToolTip(1, tr("Render"));
 	_tabWidget->setTabToolTip(2, tr("Overlays"));
 	_tabWidget->setTabToolTip(3, tr("Utilities"));
-	setCurrentPage(MODIFY_PAGE);
+	setCurrentPage(MainWindow::MODIFY_PAGE);
 }
 
 OVITO_END_INLINE_NAMESPACE

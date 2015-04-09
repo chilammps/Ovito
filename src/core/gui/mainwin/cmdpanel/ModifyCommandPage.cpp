@@ -557,6 +557,7 @@ void ModifyCommandPage::onCreateCustomModifier()
 	QAction* deletePresetAction = new QAction(QIcon(":/core/actions/edit/edit_delete.png"), tr("Delete selected preset"), &dlg);
 	deletePresetAction->setEnabled(false);
 	deletePresetButton->setDefaultAction(deletePresetAction);
+	sublayout->addWidget(new QLabel(tr("<p style=\"color: #686868; margin-right: 8;\"><span style=\"font-size: small;\">Use this button to delete an existing preset that you no longer need.</span> ") + QChar(0x2191) + QStringLiteral("</p>")), 2, 0, 1, 2, Qt::AlignRight);
 	layout->addLayout(sublayout);
 
 	connect(nameBox, &QComboBox::currentTextChanged, [nameBox, deletePresetAction](const QString& text) {
@@ -590,6 +591,7 @@ void ModifyCommandPage::onCreateCustomModifier()
 	mainLayout->addLayout(layout);
 	mainLayout->setStretch(0, 1);
 
+	mainLayout->addSpacing(12);
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
 	connect(buttonBox, &QDialogButtonBox::accepted, [&dlg, nameBox, modifierListWidget]() {
 		QString name = nameBox->currentText().trimmed();

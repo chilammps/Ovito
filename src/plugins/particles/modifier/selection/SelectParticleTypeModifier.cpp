@@ -74,6 +74,18 @@ PipelineStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeI
 }
 
 /******************************************************************************
+* Loads the user-defined default values of this object's parameter fields from the
+* application's settings store.
+******************************************************************************/
+void SelectParticleTypeModifier::loadUserDefaults()
+{
+	ParticleModifier::loadUserDefaults();
+
+	// Reset selected input particle property set by the constructor so that initializeModifier() will automatically select a good first choice.
+	setSourceProperty(ParticlePropertyReference());
+}
+
+/******************************************************************************
 * This method is called by the system when the modifier has been inserted
 * into a pipeline.
 ******************************************************************************/

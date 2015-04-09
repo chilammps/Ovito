@@ -41,6 +41,10 @@ public:
 		INIT_PROPERTY_FIELD(SelectParticleTypeModifier::_selectedParticleTypes);
 	}
 
+	/// Loads the user-defined default values of this object's parameter fields from the
+	/// application's settings store.
+	virtual void loadUserDefaults() override;
+
 	/// Returns the particle type property that is used as source for the selection.
 	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 

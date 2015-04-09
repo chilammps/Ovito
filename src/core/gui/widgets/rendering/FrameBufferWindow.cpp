@@ -59,6 +59,7 @@ FrameBufferWindow::FrameBufferWindow(QWidget* parent) :
 	QToolBar* toolBar = addToolBar(tr("Frame Buffer"));
 	toolBar->addAction(QIcon(":/core/framebuffer/save_picture.png"), tr("Save to file"), this, SLOT(saveImage()));
 	toolBar->addAction(QIcon(":/core/framebuffer/copy_picture_to_clipboard.png"), tr("Copy to clipboard"), this, SLOT(copyImageToClipboard()));
+	toolBar->addSeparator();
 	toolBar->addAction(QIcon(":/core/framebuffer/auto_crop.png"), tr("Auto-crop image"), this, SLOT(autoCrop()));
 
 	// Disable context menu in toolbar.
