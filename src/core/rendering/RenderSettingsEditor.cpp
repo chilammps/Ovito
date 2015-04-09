@@ -29,6 +29,8 @@
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/widgets/general/HtmlListWidget.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/RenderSettingsEditor.h>
 #include <core/rendering/SceneRenderer.h>
@@ -189,11 +191,11 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		generateAlphaUI->buttonFalse()->setText(tr("Color:"));
 		generateAlphaUI->buttonTrue()->setText(tr("Transparent"));
 
-		// Create 'Change renderer' button.
-		QPushButton* changeRendererButton = new QPushButton(tr("Change renderer..."), groupBox);
-		connect(changeRendererButton, &QPushButton::clicked, this, &RenderSettingsEditor::onChangeRenderer);
+		// Create 'Switch renderer' button.
+		QPushButton* switchRendererButton = new QPushButton(tr("Switch renderer..."), groupBox);
+		connect(switchRendererButton, &QPushButton::clicked, this, &RenderSettingsEditor::onSwitchRenderer);
 		layout2->setRowMinimumHeight(3, 8);
-		layout2->addWidget(changeRendererButton, 4, 0, 1, 3);
+		layout2->addWidget(switchRendererButton, 4, 0, 1, 3);
 	}
 
 	// Open a sub-editor for the renderer.
@@ -235,27 +237,63 @@ void RenderSettingsEditor::onSizePresetActivated(int index)
 /******************************************************************************
 * Lets the user choose a different plug-in rendering engine.
 ******************************************************************************/
-void RenderSettingsEditor::onChangeRenderer()
+void RenderSettingsEditor::onSwitchRenderer()
 {
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(!settings) return;
 
-	QStringList itemList;
 	QVector<OvitoObjectType*> rendererClasses = PluginManager::instance().listClasses(SceneRenderer::OOType);
-	Q_FOREACH(OvitoObjectType* clazz, rendererClasses)
-		itemList << clazz->displayName();
 
-	int currentIndex = 0;
-	if(settings->renderer())
-		currentIndex = itemList.indexOf(settings->renderer()->getOOType().displayName());
+	QDialog dlg(container());
+	dlg.setWindowTitle(tr("Switch renderer"));
+	QGridLayout* layout = new QGridLayout(&dlg);
 
-	bool ok;
-	QString selectedClass = QInputDialog::getItem(NULL, tr("Choose renderer"), tr("Select the new rendering engine:"), itemList, currentIndex, false, &ok);
-	if(!ok) return;
+	QLabel* label = new QLabel(tr("Select a rendering engine, which is used to generate static images or movies."));
+	label->setWordWrap(true);
+	layout->addWidget(label, 0, 0, 1, 2);
 
-	int newIndex = itemList.indexOf(selectedClass);
-	if(newIndex != currentIndex && newIndex >= 0) {
-		undoableTransaction(tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
+	QListWidget* rendererListWidget = new HtmlListWidget(&dlg);
+	for(OvitoObjectType* clazz : rendererClasses) {
+		QString description;
+		if(clazz->name() == QStringLiteral("StandardSceneRenderer"))
+			description = tr("This is a hardware-accelerated rendering engine, which produces output that is nearly identical "
+					"to the display in OVITO's interactive viewports. The OpenGL renderer is fast and has a small memory footprint.");
+		else if(clazz->name() == QStringLiteral("TachyonRenderer"))
+			description = tr("This is a software-based raytracing engine, which can offer better shading and shadows. "
+					"The Tachyon renderer is slower and requires more memory. "
+					"It may not be able to render very large datasets depending on your computer.");
+		QString text = QStringLiteral("<p style=\"font-weight: bold;\">") + clazz->displayName() + QStringLiteral("</p>");
+		if(description.isEmpty() == false)
+			text += QStringLiteral("<p style=\"font-size: small;\">") + description + QStringLiteral("</p>");
+		QListWidgetItem* item = new QListWidgetItem(text, rendererListWidget);
+		if(settings->renderer() && &settings->renderer()->getOOType() == clazz)
+			rendererListWidget->setCurrentItem(item);
+	}
+	layout->addWidget(rendererListWidget, 1, 0, 1, 2);
+	layout->setRowStretch(1, 1);
+	layout->setColumnStretch(1, 1);
+
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Help);
+	connect(buttonBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+	connect(buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+	connect(buttonBox, &QDialogButtonBox::helpRequested, [this]() {
+		mainWindow()->openHelpTopic("usage.rendering.html");
+	});
+	connect(rendererListWidget, &QListWidget::itemDoubleClicked, &dlg, &QDialog::accept);
+	layout->addWidget(buttonBox, 2, 1, Qt::AlignRight);
+
+	//QPushButton* makeDefaultButton = new QPushButton(tr("Set as default"));
+	//layout->addWidget(makeDefaultButton, 2, 0, Qt::AlignLeft);
+
+	if(dlg.exec() != QDialog::Accepted)
+		return;
+
+	QList<QListWidgetItem*> selItems = rendererListWidget->selectedItems();
+	if(selItems.empty()) return;
+
+	int newIndex = rendererListWidget->row(selItems.front());
+	if(!settings->renderer() || &settings->renderer()->getOOType() != rendererClasses[newIndex]) {
+		undoableTransaction(tr("Switch renderer"), [settings, newIndex, &rendererClasses]() {
 			OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClasses[newIndex]->createInstance(settings->dataset()));
 			renderer->loadUserDefaults();
 			settings->setRenderer(renderer);

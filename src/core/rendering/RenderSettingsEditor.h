@@ -53,7 +53,7 @@ private Q_SLOTS:
 	void onSizePresetActivated(int index);
 	
 	/// Lets the user choose a different plug-in rendering engine.
-	void onChangeRenderer();
+	void onSwitchRenderer();
 
 private:
 

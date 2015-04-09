@@ -84,9 +84,9 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Change renderer</term>
+        <term>Switch renderer</term>
         <listitem>
-          <para>Use this to select a different rendering engine. OVITO offers
+          <para>Use this to select a different rendering engine. OVITO provides
           two rendering back-ends, which differ in terms of quality and rendering speed.
           By default the hardware-accelerated <link linkend="rendering.opengl_renderer">OpenGL renderer</link> is active, which is the same rendering engine used in the 
           interactive viewports. The <link linkend="rendering.tachyon_renderer">Tachyon renderer</link>, in contrast, is a software-based raytracing engine that 

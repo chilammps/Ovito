@@ -107,6 +107,7 @@ SET(SourceFiles
 	gui/widgets/general/ColorPickerWidget.cpp
 	gui/widgets/general/ElidedTextLabel.cpp
 	gui/widgets/general/AutocompleteLineEdit.cpp
+	gui/widgets/general/HtmlListWidget.cpp
 	gui/widgets/animation/AnimationTimeSpinner.cpp
 	gui/widgets/animation/AnimationFramesToolButton.cpp
 	gui/widgets/animation/AnimationTimeSlider.cpp
