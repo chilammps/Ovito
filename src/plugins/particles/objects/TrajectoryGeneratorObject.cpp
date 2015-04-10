@@ -31,6 +31,8 @@
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/widgets/general/ElidedTextLabel.h>
 #include <core/viewport/ViewportConfiguration.h>
+#include <plugins/particles/objects/ParticlePropertyObject.h>
+#include <plugins/particles/objects/SimulationCellObject.h>
 #include "TrajectoryGeneratorObject.h"
 
 namespace Ovito { namespace Particles {
@@ -47,12 +49,14 @@ DEFINE_PROPERTY_FIELD(TrajectoryGeneratorObject, _useCustomInterval, "UseCustomI
 DEFINE_PROPERTY_FIELD(TrajectoryGeneratorObject, _customIntervalStart, "CustomIntervalStart");
 DEFINE_PROPERTY_FIELD(TrajectoryGeneratorObject, _customIntervalEnd, "CustomIntervalEnd");
 DEFINE_PROPERTY_FIELD(TrajectoryGeneratorObject, _everyNthFrame, "EveryNthFrame");
+DEFINE_PROPERTY_FIELD(TrajectoryGeneratorObject, _unwrapTrajectories, "UnwrapTrajectories");
 SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _source, "Source");
 SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _onlySelectedParticles, "Only selected particles");
 SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _useCustomInterval, "Custom time interval");
 SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _customIntervalStart, "Custom interval start");
 SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _customIntervalEnd, "Custom interval end");
 SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _everyNthFrame, "Every Nth frame");
+SET_PROPERTY_FIELD_LABEL(TrajectoryGeneratorObject, _unwrapTrajectories, "Unwrap trajectories");
 SET_PROPERTY_FIELD_UNITS(TrajectoryGeneratorObject, _customIntervalStart, TimeParameterUnit);
 SET_PROPERTY_FIELD_UNITS(TrajectoryGeneratorObject, _customIntervalEnd, TimeParameterUnit);
 
@@ -63,7 +67,7 @@ TrajectoryGeneratorObject::TrajectoryGeneratorObject(DataSet* dataset) : Traject
 		_onlySelectedParticles(true), _useCustomInterval(false),
 		_customIntervalStart(dataset->animationSettings()->animationInterval().start()),
 		_customIntervalEnd(dataset->animationSettings()->animationInterval().end()),
-		_everyNthFrame(1)
+		_everyNthFrame(1), _unwrapTrajectories(true)
 {
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_source);
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_onlySelectedParticles);
@@ -71,6 +75,7 @@ TrajectoryGeneratorObject::TrajectoryGeneratorObject(DataSet* dataset) : Traject
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_customIntervalStart);
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_customIntervalEnd);
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_everyNthFrame);
+	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_unwrapTrajectories);
 }
 
 /******************************************************************************
@@ -93,7 +98,132 @@ bool TrajectoryGeneratorObject::generateTrajectories(QProgressDialog* progressDi
 		progressDialog = localProgressDialog.get();
 	}
 
-	return (!progressDialog || !progressDialog->wasCanceled());
+	TimePoint currentTime = dataset()->animationSettings()->time();
+
+	// Get input particles.
+	if(!source())
+		throw Exception(tr("No input particle data object is selected from which trajectory lines can be generated."));
+
+	if(!source()->waitUntilReady(currentTime, tr("Waiting for input particles to become ready."), progressDialog))
+		return false;
+
+	const PipelineFlowState& state = source()->evalPipeline(currentTime);
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
+	ParticlePropertyObject* selectionProperty = ParticlePropertyObject::findInState(state, ParticleProperty::SelectionProperty);
+	ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+
+	if(!posProperty)
+		throw Exception(tr("The input object contains no particles."));
+
+	// Determine set of input particles.
+	std::vector<int> selectedIndices;
+	std::set<int> selectedIdentifiers;
+	int particleCount = 0;
+	if(onlySelectedParticles()) {
+		if(selectionProperty) {
+			if(identifierProperty && identifierProperty->size() == selectionProperty->size()) {
+				const int* s = selectionProperty->constDataInt();
+				for(int id : identifierProperty->constIntRange())
+					if(*s++) selectedIdentifiers.insert(id);
+				particleCount = selectedIdentifiers.size();
+			}
+			else {
+				const int* s = selectionProperty->constDataInt();
+				for(int index = 0; index < selectionProperty->size(); index++)
+					if(*s++) selectedIndices.push_back(index);
+				particleCount = selectedIndices.size();
+			}
+		}
+	}
+	else {
+		if(identifierProperty) {
+			for(int id : identifierProperty->constIntRange())
+				selectedIdentifiers.insert(id);
+			particleCount = selectedIdentifiers.size();
+		}
+		else {
+			selectedIndices.resize(posProperty->size());
+			std::iota(selectedIndices.begin(), selectedIndices.end(), 0);
+			particleCount = selectedIndices.size();
+		}
+	}
+
+	// Iterate over the simulation frames.
+	TimeInterval interval = useCustomInterval() ? customInterval() : dataset()->animationSettings()->animationInterval();
+	QVector<TimePoint> sampleTimes;
+	for(TimePoint time = interval.start(); time <= interval.end(); time += everyNthFrame() * dataset()->animationSettings()->ticksPerFrame()) {
+		sampleTimes.push_back(time);
+	}
+	if(progressDialog) {
+		progressDialog->setMaximum(sampleTimes.size());
+		progressDialog->setValue(0);
+	}
+
+	QVector<Point3> points;
+	points.reserve(particleCount * sampleTimes.size());
+	for(TimePoint time : sampleTimes) {
+		if(!source()->waitUntilReady(time, tr("Waiting for input particles to become ready."), progressDialog))
+			return false;
+		const PipelineFlowState& state = source()->evalPipeline(time);
+		ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
+		if(!posProperty)
+			throw Exception(tr("Input particle set is empty at frame %1.").arg(dataset()->animationSettings()->timeToFrame(time)));
+
+		if(!selectedIdentifiers.empty()) {
+			ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+			if(!identifierProperty || identifierProperty->size() != posProperty->size())
+				throw Exception(tr("Input particles do not possess identifiers at frame %1.").arg(dataset()->animationSettings()->timeToFrame(time)));
+
+			// Create a mapping from IDs to indices.
+			std::map<int,int> idmap;
+			int index = 0;
+			for(int id : identifierProperty->constIntRange())
+				idmap.insert(std::make_pair(id, index++));
+
+			for(int id : selectedIdentifiers) {
+				auto entry = idmap.find(id);
+				if(entry == idmap.end())
+					throw Exception(tr("Input particle with ID=%1 does not exist at frame %2.").arg(id).arg(dataset()->animationSettings()->timeToFrame(time)));
+				points.push_back(posProperty->getPoint3(entry->second));
+			}
+		}
+		else {
+			for(int index : selectedIndices) {
+				if(index >= posProperty->size())
+					throw Exception(tr("Input particle at index %1 does not exist at frame %2.").arg(index+1).arg(dataset()->animationSettings()->timeToFrame(time)));
+				points.push_back(posProperty->getPoint3(index));
+			}
+		}
+
+		// Unwrap trajectory points at periodic boundaries of the simulation cell.
+		if(unwrapTrajectories() && points.size() > particleCount) {
+			if(SimulationCellObject* simCellObj = state.findObject<SimulationCellObject>()) {
+				SimulationCell cell = simCellObj->data();
+				if(cell.pbcFlags() != std::array<bool,3>{false, false, false}) {
+					auto previousPos = points.cbegin() + (points.size() - 2 * particleCount);
+					auto currentPos = points.begin() + (points.size() - particleCount);
+					for(int i = 0; i < particleCount; i++, ++previousPos, ++currentPos) {
+						Vector3 delta = cell.wrapVector(*currentPos - *previousPos);
+						*currentPos = *previousPos + delta;
+					}
+					OVITO_ASSERT(currentPos == points.end());
+				}
+			}
+		}
+
+		if(progressDialog) {
+			progressDialog->setValue(progressDialog->value() + 1);
+			if(progressDialog->wasCanceled()) return false;
+		}
+	}
+
+	setTrajectories(particleCount, points, sampleTimes);
+
+	// Jump back to current animation time.
+	if(!source()->waitUntilReady(currentTime, tr("Waiting for input particles to become ready."), progressDialog))
+		return false;
+
+	return true;
 }
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)
@@ -104,7 +234,7 @@ OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 void TrajectoryGeneratorObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Generate trajectory"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Generate trajectory"), rolloutParams, "howto.visualize_particle_trajectories.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -147,6 +277,19 @@ void TrajectoryGeneratorObjectEditor::createUI(const RolloutInsertionParameters&
 		QRadioButton* selectedParticlesButton = onlySelectedParticlesUI->buttonTrue();
 		selectedParticlesButton->setText(tr("Selected particles"));
 		layout2->addWidget(selectedParticlesButton, 4, 1);
+	}
+
+	// Periodic boundaries
+	{
+		QGroupBox* groupBox = new QGroupBox(tr("Periodic boundary conditions"));
+		layout->addWidget(groupBox);
+
+		QGridLayout* layout2 = new QGridLayout(groupBox);
+		layout2->setContentsMargins(4,4,4,4);
+		layout2->setSpacing(2);
+
+		BooleanParameterUI* unwrapTrajectoriesUI = new BooleanParameterUI(this, PROPERTY_FIELD(TrajectoryGeneratorObject::_unwrapTrajectories));
+		layout2->addWidget(unwrapTrajectoriesUI->checkBox(), 0, 0);
 	}
 
 	// Time range

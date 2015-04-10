@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2014) Alexander Stukowski
+//  Copyright (2015) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -68,6 +68,12 @@ public:
 	/// Sets the display color for trajectory lines.
 	void setLineColor(const Color& color) { _lineColor = color; }
 
+	/// Returns the whether the trajectory lines are rendered only up to the current animation time.
+	bool showUpToCurrentTime() const { return _showUpToCurrentTime; }
+
+	/// Sets the whether the trajectory lines are rendered only up to the current animation time.
+	void setShowUpToCurrentTime(bool enable) { _showUpToCurrentTime = enable; }
+
 public:
 
     Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
@@ -80,18 +86,25 @@ protected:
 	/// Controls the color of the trajectory lines.
 	PropertyField<Color, QColor> _lineColor;
 
+	/// Controls the whether the trajectory lines are rendered only up to the current animation time.
+	PropertyField<bool> _showUpToCurrentTime;
+
 	/// Controls the shading mode for lines.
 	PropertyField<ArrowPrimitive::ShadingMode, int> _shadingMode;
 
 	/// The buffered geometry used to render the trajectory lines.
-	std::shared_ptr<ArrowPrimitive> _buffer;
+	std::shared_ptr<ArrowPrimitive> _segmentBuffer;
+
+	/// The buffered geometry used to render the trajectory line corners.
+	std::shared_ptr<ParticlePrimitive> _cornerBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffers.
 	SceneObjectCacheHelper<
 		WeakVersionedOORef<TrajectoryObject>,			// The trajectory data object + revision number
 		FloatType,										// Line width
-		Color											// Line color
+		Color,											// Line color,
+		TimePoint										// End time
 	> _geometryCacheHelper;
 
 	/// The bounding box that includes all trajectories.
@@ -112,6 +125,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_lineWidth);
 	DECLARE_PROPERTY_FIELD(_lineColor);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
+	DECLARE_PROPERTY_FIELD(_showUpToCurrentTime);
 };
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)

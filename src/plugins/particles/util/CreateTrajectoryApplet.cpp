@@ -45,7 +45,7 @@ void CreateTrajectoryApplet::openUtility(MainWindow* mainWindow, RolloutContaine
 
 	// Create a rollout.
 	_panel = new QWidget();
-	container->addRollout(_panel, tr("Create trajectory lines"), rolloutParams);
+	container->addRollout(_panel, tr("Create trajectory lines"), rolloutParams, "howto.visualize_particle_trajectories.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(_panel);
@@ -71,6 +71,20 @@ void CreateTrajectoryApplet::openUtility(MainWindow* mainWindow, RolloutContaine
 
 		_allParticlesButton = new QRadioButton(tr("All particles"));
 		layout2->addWidget(_allParticlesButton, 2, 1);
+	}
+
+	// Periodic boundaries
+	{
+		QGroupBox* groupBox = new QGroupBox(tr("Peripodic boundary conditions"));
+		layout->addWidget(groupBox);
+
+		QGridLayout* layout2 = new QGridLayout(groupBox);
+		layout2->setContentsMargins(4,4,4,4);
+		layout2->setSpacing(2);
+
+		_unwrapTrajectoryButton = new QCheckBox(tr("Unwrap trajectory"));
+		_unwrapTrajectoryButton->setChecked(true);
+		layout2->addWidget(_unwrapTrajectoryButton, 0, 0);
 	}
 
 	// Time range
@@ -209,6 +223,7 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 			trajObj->setCustomIntervalStart(_customRangeStartSpinner->intValue());
 			trajObj->setCustomIntervalEnd(_customRangeEndSpinner->intValue());
 			trajObj->setEveryNthFrame(_everyNthFrameSpinner->intValue());
+			trajObj->setUnwrapTrajectories(_unwrapTrajectoryButton->isChecked());
 
 			// Make sure we are having an actual trajectory.
 			TimeInterval interval = trajObj->useCustomInterval() ?

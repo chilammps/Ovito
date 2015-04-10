@@ -40,6 +40,18 @@ public:
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Particle trajectories"); }
 
+	/// Returns the trajectory points.
+	const QVector<Point3>& points() const { return _points; }
+
+	/// Returns the number of independent trajectories stored in this data object.
+	int trajectoryCount() const { return _trajectoryCount; }
+
+	/// Returns the points in time where the trajectories have been sampled.
+	const QVector<TimePoint>& sampleTimes() const { return _sampleTimes; }
+
+	/// Replaces the stored trajectories with new data.
+	void setTrajectories(int trajectoryCount, const QVector<Point3>& points, const QVector<TimePoint>& sampleTimes);
+
 protected:
 
 	/// Saves the class' contents to the given stream.
@@ -57,7 +69,7 @@ private:
 	QVector<Point3> _points;
 
 	/// The number of independent trajectories stored.
-	int _numTrajectories;
+	int _trajectoryCount;
 
 	/// The points in time where the trajectories have been sampled.
 	QVector<TimePoint> _sampleTimes;

@@ -77,6 +77,12 @@ public:
 	/// Sets the sampling frequency for creating trajectories.
 	void setEveryNthFrame(int n) { _everyNthFrame = n; }
 
+	/// Returns whether trajectories are unwrapped when crossing periodic boundaries.
+	bool unwrapTrajectories() const { return _unwrapTrajectories; }
+
+	/// Sets whether trajectories should be unwrapped when crossing periodic boundaries.
+	void setUnwrapTrajectories(bool unwrap) { _unwrapTrajectories = unwrap; }
+
 	/// Updates the stored trajectories from the source particle object.
 	bool generateTrajectories(QProgressDialog* progressDialog = nullptr);
 
@@ -100,6 +106,9 @@ private:
 	/// The sampling frequency for creating trajectories.
 	PropertyField<int> _everyNthFrame;
 
+	/// Controls whether trajectories are unwrapped when crossing periodic boundaries.
+	PropertyField<bool> _unwrapTrajectories;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
@@ -109,6 +118,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_customIntervalStart);
 	DECLARE_PROPERTY_FIELD(_customIntervalEnd);
 	DECLARE_PROPERTY_FIELD(_everyNthFrame);
+	DECLARE_PROPERTY_FIELD(_unwrapTrajectories);
 };
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)

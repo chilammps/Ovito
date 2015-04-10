@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="howto.visualize_particle_trajectories" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Show trajectories of particles</title>
+
+  <para>
+     <figure>
+      <title>Lennard-Jones particles flowing around obstacles. The paths of red marker particles are visualized using trajectory lines.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/flow_trajectory_example.gif" format="gif" width="300" height="180" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
+     <figure id="fig.create_trajectory_applet">
+      <title>The <emphasis>Create trajectory lines</emphasis> utility.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/create_trajectory_applet.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
+     <figure id="fig.trajectory_display_panel">
+      <title>The trajectory display settings.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/trajectory_display_panel.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure>
+    OVITO can visualize the trajectory lines of individual particles as shown in the example movie on the right.
+    A trajectory object is created using the <emphasis>Create trajectory lines</emphasis> utility as described in the following.
+  </para>
+
+  <simplesect>
+  <title>Procedure</title>
+
+  <para>
+    The user interface of the utility (<xref linkend="fig.create_trajectory_applet" />) lets you select the set of particles for which to create trajectory lines (all or selected ones)
+    and the time span over which the trajectory lines should be generated. The <emphasis>Unwrap trajectories</emphasis> option is useful when particles cross
+    the boundaries of a periodic simulation cell.
+  </para>
+
+  <para>
+    Once you have made all settings, press the <guibutton>Create trajectory lines</guibutton> button. OVITO will now load each simulation frame one after another, 
+    sample the particle positions, and generate the trajectory lines. 
+    They are stored in a <emphasis>Particle trajectories</emphasis> object by OVITO, which is a new object added to the scene.
+    The new trajectories object is automatically selected in the modification panel.
+  </para>
+
+  <para>
+    You can switch back and forth between the <emphasis>Trajectories</emphasis> and the <emphasis>Particles</emphasis> object using the scene object selector box 
+    (marked by a red circle in <xref linkend="fig.trajectory_display_panel" />). Alternatively, you can simpy click on a particle or on a trajectory line in the
+    viewports to select the corresponding object.
+  </para>
+  
+  <para>
+    The trajectory object is linked to the particles object it was created from. You may use the <guibutton>Regenerate trajectory lines</guibutton> button
+    to update the trajectories if necessary, e.g., if the input simulation data has changed.
+  </para>
+  
+  <para>
+    Procedure summary: You first use the <emphasis>Create trajectory lines</emphasis> utility to create a new trajectory object from the currently loaded simulation
+    frame sequence. You may then adjust the display settings for the newly created trajectory object as shown in <xref linkend="fig.trajectory_display_panel" />. 
+    Finally, you can switch back to the <emphasis>Particles</emphasis> object to continue working with the particles data, apply modifiers etc. 
+    The trajectory object is not affected by any changes made to the particles data unless you press the <guibutton>Regenerate trajectory lines</guibutton> button
+    of the trajectory object.
+  </para>
+  
+  </simplesect>
+
+  <simplesect>
+  <title>Notes</title>
+  
+  <para>
+    You can create several trajectory objects by invoking the <emphasis>Create trajectory lines</emphasis> utility multiple times. This allows you,
+    for example, to assign different colors to the trajectories of different particle subsets.
+  </para>
+
+  <para>
+    You can delete the selected trajectory object from the scene again by choosing <menuchoice><guimenu>Edit</guimenu><guimenuitem>Delete</guimenuitem></menuchoice> from the menu. 
+  </para>
+  
+  <para>
+    Trajectories are always generated from the output of the particle modification pipeline. Thus, they reflect the effect of any modifiers applied to the particle data.
+    This also means that you have to be careful when deleting particles using modifiers. The creation of trajectory lines will fail if
+    a particle, for which a trajectory is to be generated, gets deleted during the course of the simulation sequence. To avoid this, 
+    it may be necessary to temporarily deactivate certain modifiers before generating the trajectory lines. Afterwards, they can be safely switched on again. 
+  </para>
+  
+  </simplesect>
+
+
+</section>

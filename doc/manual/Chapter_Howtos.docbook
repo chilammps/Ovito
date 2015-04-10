@@ -10,12 +10,13 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>How-to guides</title>
 
-  <para>The subsections of this chapter contain mini-tutorials covering various advanced features of OVITO.</para>
+  <para>This chapter contains several mini-tutorials covering various advanced features of OVITO.</para>
 
   <xi:include href="howtos/transparent_particles.docbook"/>
   <xi:include href="howtos/marker_particles.docbook"/>
   <xi:include href="howtos/scale_bar.docbook"/>
   <xi:include href="howtos/aspherical_particles.docbook"/>
+  <xi:include href="howtos/visualize_particle_trajectories.docbook"/>  
   
   <!-- Camera animation -->
   <!-- Parameter animation -->

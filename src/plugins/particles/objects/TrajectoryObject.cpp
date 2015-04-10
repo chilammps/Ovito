@@ -30,7 +30,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, TrajectoryObject, DataObject);
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-TrajectoryObject::TrajectoryObject(DataSet* dataset) : DataObject(dataset), _numTrajectories(0)
+TrajectoryObject::TrajectoryObject(DataSet* dataset) : DataObject(dataset), _trajectoryCount(0)
 {
 	addDisplayObject(new TrajectoryDisplay(dataset));
 }
@@ -43,7 +43,7 @@ void TrajectoryObject::saveToStream(ObjectSaveStream& stream)
 	DataObject::saveToStream(stream);
 
 	stream.beginChunk(0x01);
-	stream << _numTrajectories;
+	stream << _trajectoryCount;
 	stream << _sampleTimes;
 	stream << _points;
 	stream.endChunk();
@@ -57,7 +57,7 @@ void TrajectoryObject::loadFromStream(ObjectLoadStream& stream)
 	DataObject::loadFromStream(stream);
 
 	stream.expectChunk(0x01);
-	stream >> _numTrajectories;
+	stream >> _trajectoryCount;
 	stream >> _sampleTimes;
 	stream >> _points;
 	stream.closeChunk();
@@ -73,10 +73,49 @@ OORef<RefTarget> TrajectoryObject::clone(bool deepCopy, CloneHelper& cloneHelper
 
 	// Shallow copy the internal data.
 	clone->_points = this->_points;
-	clone->_numTrajectories = this->_numTrajectories;
+	clone->_trajectoryCount = this->_trajectoryCount;
 	clone->_sampleTimes = this->_sampleTimes;
 
 	return clone;
+}
+
+/******************************************************************************
+* Replaces the stored trajectories with new data.
+******************************************************************************/
+void TrajectoryObject::setTrajectories(int trajectoryCount, const QVector<Point3>& points, const QVector<TimePoint>& sampleTimes)
+{
+	OVITO_ASSERT(trajectoryCount >= 0);
+	OVITO_ASSERT(points.size() == trajectoryCount * sampleTimes.size());
+
+	class ReplaceTrajectoryOperation : public UndoableOperation {
+	public:
+		ReplaceTrajectoryOperation(TrajectoryObject* obj) :
+			_obj(obj), _points(obj->points()), _trajectoryCount(obj->trajectoryCount()), _sampleTimes(obj->sampleTimes()) {}
+		virtual void undo() override {
+			auto points = _obj->points();
+			auto trajectoryCount = _obj->trajectoryCount();
+			auto sampleTimes = _obj->sampleTimes();
+			_obj->setTrajectories(_trajectoryCount, _points, _sampleTimes);
+			_points = std::move(points);
+			_trajectoryCount = trajectoryCount;
+			_sampleTimes = std::move(sampleTimes);
+		}
+	private:
+		OORef<TrajectoryObject> _obj;
+		QVector<Point3> _points;
+		int _trajectoryCount;
+		QVector<TimePoint> _sampleTimes;
+	};
+
+	// Make a backup of the old trajectories so they may be restored.
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new ReplaceTrajectoryOperation(this));
+
+	_trajectoryCount = trajectoryCount;
+	_points = points;
+	_sampleTimes = sampleTimes;
+
+	notifyDependents(ReferenceEvent::TargetChanged);
 }
 
 }	// End of namespace

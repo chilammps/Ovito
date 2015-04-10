@@ -56,6 +56,7 @@ private:
 	QRadioButton* _selectedParticlesButton;
 	QRadioButton* _animationIntervalButton;
 	QRadioButton* _customIntervalButton;
+	QCheckBox* _unwrapTrajectoryButton;
 	SpinnerWidget* _customRangeStartSpinner;
 	SpinnerWidget* _customRangeEndSpinner;
 	SpinnerWidget* _everyNthFrameSpinner;
