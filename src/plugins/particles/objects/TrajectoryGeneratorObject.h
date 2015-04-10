@@ -56,6 +56,9 @@ public:
 	/// Controls whether the created trajectories span the entire animation interval or a sub-interval.
 	void setUseCustomInterval(bool customInterval) { _useCustomInterval = customInterval; }
 
+	/// Returns the the custom time interval.
+	TimeInterval customInterval() const { return TimeInterval(_customIntervalStart, _customIntervalEnd); }
+
 	/// Returns the start of the custom time interval.
 	TimePoint customIntervalStart() const { return _customIntervalStart; }
 
@@ -73,6 +76,9 @@ public:
 
 	/// Sets the sampling frequency for creating trajectories.
 	void setEveryNthFrame(int n) { _everyNthFrame = n; }
+
+	/// Updates the stored trajectories from the source particle object.
+	bool generateTrajectories(QProgressDialog* progressDialog = nullptr);
 
 private:
 

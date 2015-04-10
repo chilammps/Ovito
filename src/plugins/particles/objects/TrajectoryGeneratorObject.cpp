@@ -22,12 +22,15 @@
 #include <plugins/particles/Particles.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/ObjectNode.h>
+#include <core/gui/app/Application.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/StringParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/widgets/general/ElidedTextLabel.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include "TrajectoryGeneratorObject.h"
 
 namespace Ovito { namespace Particles {
@@ -68,6 +71,29 @@ TrajectoryGeneratorObject::TrajectoryGeneratorObject(DataSet* dataset) : Traject
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_customIntervalStart);
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_customIntervalEnd);
 	INIT_PROPERTY_FIELD(TrajectoryGeneratorObject::_everyNthFrame);
+}
+
+/******************************************************************************
+* Updates the stored trajectories from the source particle object.
+******************************************************************************/
+bool TrajectoryGeneratorObject::generateTrajectories(QProgressDialog* progressDialog)
+{
+	// Suspend viewports while loading simulation frames.
+	ViewportSuspender noVPUpdates(this);
+
+	// Show progress dialog.
+	std::unique_ptr<QProgressDialog> localProgressDialog;
+	if(!progressDialog && Application::instance().guiMode()) {
+		localProgressDialog.reset(new QProgressDialog(dataset()->mainWindow()));
+		localProgressDialog->setWindowModality(Qt::WindowModal);
+		localProgressDialog->setAutoClose(false);
+		localProgressDialog->setAutoReset(false);
+		localProgressDialog->setMinimumDuration(0);
+		localProgressDialog->setValue(0);
+		progressDialog = localProgressDialog.get();
+	}
+
+	return (!progressDialog || !progressDialog->wasCanceled());
 }
 
 OVITO_BEGIN_INLINE_NAMESPACE(Internal)
@@ -183,6 +209,7 @@ void TrajectoryGeneratorObjectEditor::onRegenerateTrajectory()
 	if(!trajObj) return;
 
 	undoableTransaction(tr("Generate trajectory"), [trajObj]() {
+		trajObj->generateTrajectories();
 	});
 }
 

@@ -161,7 +161,8 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 	DataSet* dataset = _mainWindow->datasetContainer().currentSet();
 	if(!dataset) return;
 
-	UndoableTransaction::handleExceptions(dataset->undoStack(), tr("Create trajectory lines"), [this, dataset]() {
+	try {
+		UndoableTransaction transaction(dataset->undoStack(), tr("Create trajectory lines"));
 		AnimationSuspender noAnim(dataset->animationSettings());
 		TimePoint time = dataset->animationSettings()->time();
 
@@ -194,29 +195,52 @@ void CreateTrajectoryApplet::onCreateTrajectory()
 				throw Exception(tr("Input contains no particles. No trajectory lines were created."));
 		}
 
-		// Create trajectory object.
-		OORef<TrajectoryGeneratorObject> trajObj = new TrajectoryGeneratorObject(dataset);
-		OVITO_CHECK_OBJECT_POINTER(inputNode);
-		trajObj->setSource(inputNode);
-		trajObj->setOnlySelectedParticles(_selectedParticlesButton->isChecked());
-		trajObj->setUseCustomInterval(_customIntervalButton->isChecked());
-		trajObj->setCustomIntervalStart(_customRangeStartSpinner->intValue());
-		trajObj->setCustomIntervalEnd(_customRangeEndSpinner->intValue());
-		trajObj->setEveryNthFrame(_everyNthFrameSpinner->intValue());
+		OORef<ObjectNode> node;
+		{
+			// Do not create undo records for the following actions.
+			UndoSuspender noUndo(dataset);
 
-		// Create scene node.
-		OORef<ObjectNode> node = new ObjectNode(dataset);
-		TimeInterval validityInterval;
-		node->transformationController()->setTransformationValue(time, inputNode->getWorldTransform(time, validityInterval), true);
-		node->setDataProvider(trajObj);
+			// Create trajectory object.
+			OORef<TrajectoryGeneratorObject> trajObj = new TrajectoryGeneratorObject(dataset);
+			OVITO_CHECK_OBJECT_POINTER(inputNode);
+			trajObj->setSource(inputNode);
+			trajObj->setOnlySelectedParticles(_selectedParticlesButton->isChecked());
+			trajObj->setUseCustomInterval(_customIntervalButton->isChecked());
+			trajObj->setCustomIntervalStart(_customRangeStartSpinner->intValue());
+			trajObj->setCustomIntervalEnd(_customRangeEndSpinner->intValue());
+			trajObj->setEveryNthFrame(_everyNthFrameSpinner->intValue());
+
+			// Make sure we are having an actual trajectory.
+			TimeInterval interval = trajObj->useCustomInterval() ?
+					trajObj->customInterval() : dataset->animationSettings()->animationInterval();
+			if(interval.duration() <= 0)
+				throw Exception(tr("Current sequence consists only of a single frame. No trajectory lines were created."));
+
+			// Generate trajectories.
+			if(!trajObj->generateTrajectories())
+				return;
+
+			// Create scene node.
+			node = new ObjectNode(dataset);
+			TimeInterval validityInterval;
+			node->transformationController()->setTransformationValue(time, inputNode->getWorldTransform(time, validityInterval), true);
+			node->setDataProvider(trajObj);
+		}
+		// Insert node into scene.
 		dataset->sceneRoot()->addChild(node);
 
 		// Select new scene node.
 		dataset->selection()->setNode(node);
 
+		// Commit actions.
+		transaction.commit();
+
 		// Switch to the modify tab to show the newly created trajectory object.
 		_mainWindow->setCurrentCommandPanelPage(MainWindow::MODIFY_PAGE);
-	});
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 OVITO_END_INLINE_NAMESPACE
