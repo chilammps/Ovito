@@ -74,21 +74,30 @@ bool Application::initialize(int& argc, char** argv)
 	// Install custom Qt error message handler to catch fatal errors in debug mode.
 	defaultQtMessageHandler = qInstallMessageHandler(qtMessageOutput);
 
+#ifdef Q_OS_LINUX
+	// Migrate settings file from old "Alexander Stukowski" directory to new default location.
+	{
+		QString oldConfigFile = QDir::homePath() + QStringLiteral("/.config/Alexander Stukowski/Ovito.conf");
+		QString newConfigFile = QDir::homePath() + QStringLiteral("/.config/Ovito/Ovito.conf");
+		if(QFile::exists(oldConfigFile) && !QFile::exists(newConfigFile)) {
+			QDir configPath(newConfigFile + QStringLiteral("/.."));
+			if(!configPath.mkpath("."))
+				qDebug() << "Warning: Migrating the configuration file from" << oldConfigFile << "to" << newConfigFile << "failed. The new configuration directory could not be created.";
+			if(!QFile::copy(oldConfigFile, newConfigFile))
+				qDebug() << "Warning: Migrating the configuration file from" << oldConfigFile << "to" << newConfigFile << "failed. The file copy operation failed.";
+		}
+	}
+#endif
+
 	// Set the application name provided by the active branding class.
 	QCoreApplication::setApplicationName(tr("Ovito"));
-	QCoreApplication::setOrganizationDomain("ovito.org");
-	QCoreApplication::setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
 #ifdef Q_OS_WIN
 	QCoreApplication::setOrganizationName(tr("Alexander Stukowski"));
 #else
 	QCoreApplication::setOrganizationName(tr("Ovito"));
-
-	// Migrate settings file from old "Alexander Stukowski" directory to new default location.
-	QSettings oldSettings("Alexander Stukowski", "Ovito");
-	QSettings newSettings;
-	if(QFile::exists(oldSettings.fileName()) && !QFile::exists(newSettings.fileName()))
-		QFile::copy(oldSettings.fileName(), newSettings.fileName());
 #endif
+	QCoreApplication::setOrganizationDomain("ovito.org");
+	QCoreApplication::setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
 
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");
