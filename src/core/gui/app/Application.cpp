@@ -82,9 +82,9 @@ bool Application::initialize(int& argc, char** argv)
 		if(QFile::exists(oldConfigFile) && !QFile::exists(newConfigFile)) {
 			QDir configPath(newConfigFile + QStringLiteral("/.."));
 			if(!configPath.mkpath("."))
-				qDebug() << "Warning: Migrating the configuration file from" << oldConfigFile << "to" << newConfigFile << "failed. The new configuration directory could not be created.";
+				qDebug() << "Warning: Migrating the configuration file from" << oldConfigFile << "to" << newConfigFile << "failed. The destination directory could not be created.";
 			if(!QFile::copy(oldConfigFile, newConfigFile))
-				qDebug() << "Warning: Migrating the configuration file from" << oldConfigFile << "to" << newConfigFile << "failed. The file copy operation failed.";
+				qDebug() << "Warning: Migrating the configuration file from" << oldConfigFile << "to" << newConfigFile << "failed. The copy operation failed.";
 		}
 	}
 #endif

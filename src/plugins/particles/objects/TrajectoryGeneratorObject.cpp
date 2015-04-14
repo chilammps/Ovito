@@ -162,7 +162,7 @@ bool TrajectoryGeneratorObject::generateTrajectories(QProgressDialog* progressDi
 	QVector<Point3> points;
 	points.reserve(particleCount * sampleTimes.size());
 	for(TimePoint time : sampleTimes) {
-		if(!source()->waitUntilReady(time, tr("Waiting for input particles to become ready."), progressDialog))
+		if(!source()->waitUntilReady(time, tr("Loading frame %1.").arg(dataset()->animationSettings()->timeToFrame(time)), progressDialog))
 			return false;
 		const PipelineFlowState& state = source()->evalPipeline(time);
 		ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
@@ -220,7 +220,7 @@ bool TrajectoryGeneratorObject::generateTrajectories(QProgressDialog* progressDi
 	setTrajectories(particleCount, points, sampleTimes);
 
 	// Jump back to current animation time.
-	if(!source()->waitUntilReady(currentTime, tr("Waiting for input particles to become ready."), progressDialog))
+	if(!source()->waitUntilReady(currentTime, tr("Going back to original frame."), progressDialog))
 		return false;
 
 	return true;
