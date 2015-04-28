@@ -91,11 +91,11 @@ private:
 		/// Normal constructor.
 		NetCDFImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame, bool isNewFile,
 				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
-			: ParticleFrameLoader(container, frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping), _ncIsOpen(false), _ncid(-1) {}
+			: ParticleFrameLoader(container, frame, isNewFile), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
 
 		/// Constructor used when reading only the file header information.
 		NetCDFImportTask(DataSetContainer* container, const FileSourceImporter::Frame& frame)
-			: ParticleFrameLoader(container, frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false), _ncIsOpen(false), _ncid(-1) {}
+			: ParticleFrameLoader(container, frame, true), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
@@ -111,10 +111,11 @@ private:
 	private:
 
 		/// Is the NetCDF file open?
-		bool _ncIsOpen;
+		bool _ncIsOpen = false;
 
 		/// NetCDF ids.
-		int _ncid, _frame_dim, _atom_dim, _spatial_dim, _Voigt_dim;
+		int _ncid = -1;
+		int _frame_dim, _atom_dim, _spatial_dim, _Voigt_dim;
 		int _cell_spatial_dim, _cell_angular_dim;
 		int _cell_origin_var, _cell_lengths_var, _cell_angles_var;
 		int _shear_dx_var;

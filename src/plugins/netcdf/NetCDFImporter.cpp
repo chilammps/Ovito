@@ -315,368 +315,375 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 	// Open file.
 	QString filename = file.fileName();
 
-	openNetCDF(filename);
+	try {
+		openNetCDF(filename);
 
-	// Scan NetCDF and iterate supported column names.
-	InputColumnMapping columnMapping;
+		// Scan NetCDF and iterate supported column names.
+		InputColumnMapping columnMapping;
 
-	// Now iterate over all variables and see whether they start with either atom or frame dimensions.
-	int nVars;
-	NCERR( nc_inq_nvars(_ncid, &nVars) );
-	for (int varId = 0; varId < nVars; varId++) {
-		char name[NC_MAX_NAME+1];
-		nc_type type;
+		// Now iterate over all variables and see whether they start with either atom or frame dimensions.
+		int nVars;
+		NCERR( nc_inq_nvars(_ncid, &nVars) );
+		for (int varId = 0; varId < nVars; varId++) {
+			char name[NC_MAX_NAME+1];
+			nc_type type;
 
-		// Retrieve NetCDF meta-information.
-		int nDims, dimIds[NC_MAX_VAR_DIMS];
-		NCERR( nc_inq_var(_ncid, varId, name, &type, &nDims, dimIds, NULL) );
+			// Retrieve NetCDF meta-information.
+			int nDims, dimIds[NC_MAX_VAR_DIMS];
+			NCERR( nc_inq_var(_ncid, varId, name, &type, &nDims, dimIds, NULL) );
 
-		// Check if dimensions make sense and we can understand them.
-		if (dimIds[0] == _atom_dim || ( nDims > 1 && dimIds[0] == _frame_dim && dimIds[1] == _atom_dim )) {
-			// Do we support this data type?
-			if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG || type == NC_CHAR) {
-				columnMapping.push_back(mapVariableToColumn(name, qMetaTypeId<int>()));
-			}
-			else if (type == NC_FLOAT || type == NC_DOUBLE) {
-				columnMapping.push_back(mapVariableToColumn(name, qMetaTypeId<FloatType>()));
-			}
-			else {
-				qDebug() << "Skipping NetCDF variable " << name << " because type is not known.";
+			// Check if dimensions make sense and we can understand them.
+			if (dimIds[0] == _atom_dim || ( nDims > 1 && dimIds[0] == _frame_dim && dimIds[1] == _atom_dim )) {
+				// Do we support this data type?
+				if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG || type == NC_CHAR) {
+					columnMapping.push_back(mapVariableToColumn(name, qMetaTypeId<int>()));
+				}
+				else if (type == NC_FLOAT || type == NC_DOUBLE) {
+					columnMapping.push_back(mapVariableToColumn(name, qMetaTypeId<FloatType>()));
+				}
+				else {
+					qDebug() << "Skipping NetCDF variable " << name << " because type is not known.";
+				}
 			}
 		}
-	}
-
-	// Check if the only thing we need to do is read column information.
-	if (_parseFileHeaderOnly) {
-		_customColumnMapping = columnMapping;
-		closeNetCDF();
-		return;
-	}
-
-	// Set up column-to-property mapping.
-	if(_useCustomColumnMapping && !_customColumnMapping.empty())
-		columnMapping = _customColumnMapping;
-
-	// Get frame number.
-	size_t movieFrame = frame().lineNumber;
-
-	// Total number of particles.
-	size_t particleCount;
-	NCERR( nc_inq_dimlen(_ncid, _atom_dim, &particleCount) );
-
-	// Simulation cell. Note that cell_origin is an extension to the AMBER specification.
-	double o[3] = { 0.0, 0.0, 0.0 };
-	double l[3], a[3];
-	double d[3] = { 0.0, 0.0, 0.0 };
-	size_t startp[4] = { movieFrame, 0, 0, 0 };
-	size_t countp[4] = { 1, 3, 0, 0 };
-	if (_cell_origin_var != -1)
-		NCERR( nc_get_vara_double(_ncid, _cell_origin_var, startp, countp, o) );
-	NCERR( nc_get_vara_double(_ncid, _cell_lengths_var, startp, countp, l) );
-	NCERR( nc_get_vara_double(_ncid, _cell_angles_var, startp, countp, a) );
-	if (_shear_dx_var != -1)
-		NCERR( nc_get_vara_double(_ncid, _shear_dx_var, startp, countp, d) );
-
-    // Periodic boundary conditions. Non-periodic dimensions have length zero
-    // according to AMBER specification.
-    std::array<bool,3> pbc;
-    for (int i = 0; i < 3; i++) {
-        if (std::abs(l[i]) < 1e-12)  pbc[i] = false;
-        else pbc[i] = true;
-    }
-    simulationCell().setPbcFlags(pbc);
 	
-	// Express cell vectors va, vb and vc in the X,Y,Z-system
-	a[0] *= M_PI/180.0;
-	a[1] *= M_PI/180.0;
-	a[2] *= M_PI/180.0;
-	Vector3 va(l[0], 0, 0);
-	Vector3 vb(l[1]*cos(a[2]), l[1]*sin(a[2]), 0);
-	double cx = cos(a[1]);
-	double cy = (cos(a[0]) - cos(a[1])*cos(a[2]))/sin(a[2]);
-	double cz = sqrt(1. - cx*cx - cy*cy);
-	Vector3 vc(l[2]*cx+d[0], l[2]*cy+d[1], l[2]*cz);
-
-	// Set simulation cell.
-	simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
-
-	// Report to user.
-	setProgressRange(columnMapping.size());
-
-    // Now iterate over all variables and see if we have to reduce particleCount
-    // We use the only float properties for this because at least one must be present (coordinates)
-	for (const InputColumnInfo& column : columnMapping) {
-		int dataType = column.dataType;
-
-        if (dataType == qMetaTypeId<FloatType>()) {
-
-			QString columnName = column.columnName;
-            ParticleProperty::Type propertyType = column.property.type();
-
-            // Retrieve NetCDF meta-information.
-            nc_type type;
-            int varId, nDims, dimIds[NC_MAX_VAR_DIMS];
-            NCERR( nc_inq_varid(_ncid, columnName.toLocal8Bit().constData(), &varId) );
-            NCERR( nc_inq_var(_ncid, varId, NULL, &type, &nDims, dimIds, NULL) );
-
-            if (nDims > 0 && type == NC_FLOAT) {
-                // Detect dims
-                int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
-                detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
-
-                std::unique_ptr<FloatType[]> data(new FloatType[nativeComponentCount*particleCount]);
-
-#ifdef FLOATTYPE_FLOAT
-                NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-                while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_FLOAT)  particleCount--;
-#else
-                NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-                while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_DOUBLE)  particleCount--;
-#endif
-            }
-
-        }
-    }
-
-	// Now iterate over all variables and load the appropriate frame
-	for (const InputColumnInfo& column : columnMapping) {
-		if(isCanceled()) {
+		// Check if the only thing we need to do is read column information.
+		if (_parseFileHeaderOnly) {
+			_customColumnMapping = columnMapping;
 			closeNetCDF();
 			return;
 		}
-		incrementProgressValue();
+
+		// Set up column-to-property mapping.
+		if(_useCustomColumnMapping && !_customColumnMapping.empty())
+			columnMapping = _customColumnMapping;
+
+		// Get frame number.
+		size_t movieFrame = frame().lineNumber;
+
+		// Total number of particles.
+		size_t particleCount;
+		NCERR( nc_inq_dimlen(_ncid, _atom_dim, &particleCount) );
+
+		// Simulation cell. Note that cell_origin is an extension to the AMBER specification.
+		double o[3] = { 0.0, 0.0, 0.0 };
+		double l[3], a[3];
+		double d[3] = { 0.0, 0.0, 0.0 };
+		size_t startp[4] = { movieFrame, 0, 0, 0 };
+		size_t countp[4] = { 1, 3, 0, 0 };
+		if (_cell_origin_var != -1)
+			NCERR( nc_get_vara_double(_ncid, _cell_origin_var, startp, countp, o) );
+		NCERR( nc_get_vara_double(_ncid, _cell_lengths_var, startp, countp, l) );
+		NCERR( nc_get_vara_double(_ncid, _cell_angles_var, startp, countp, a) );
+		if (_shear_dx_var != -1)
+			NCERR( nc_get_vara_double(_ncid, _shear_dx_var, startp, countp, d) );
+
+		// Periodic boundary conditions. Non-periodic dimensions have length zero
+		// according to AMBER specification.
+		std::array<bool,3> pbc;
+		for (int i = 0; i < 3; i++) {
+			if (std::abs(l[i]) < 1e-12)  pbc[i] = false;
+			else pbc[i] = true;
+		}
+		simulationCell().setPbcFlags(pbc);
 		
-		ParticleProperty* property = nullptr;
+		// Express cell vectors va, vb and vc in the X,Y,Z-system
+		a[0] *= M_PI/180.0;
+		a[1] *= M_PI/180.0;
+		a[2] *= M_PI/180.0;
+		Vector3 va(l[0], 0, 0);
+		Vector3 vb(l[1]*cos(a[2]), l[1]*sin(a[2]), 0);
+		double cx = cos(a[1]);
+		double cy = (cos(a[0]) - cos(a[1])*cos(a[2]))/sin(a[2]);
+		double cz = sqrt(1. - cx*cx - cy*cy);
+		Vector3 vc(l[2]*cx+d[0], l[2]*cy+d[1], l[2]*cz);
 
-		int dataType = column.dataType;
-		QString columnName = column.columnName;
-		QString propertyName = column.property.name();
+		// Set simulation cell.
+		simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
 
-		if (dataType != QMetaType::Void) {
-			size_t dataTypeSize;
-			if (dataType == qMetaTypeId<int>())
-				dataTypeSize = sizeof(int);
-			else if (dataType == qMetaTypeId<FloatType>())
-				dataTypeSize = sizeof(FloatType);
-			else
-				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(columnName));
+		// Report to user.
+		setProgressRange(columnMapping.size());
 
-			// Retrieve NetCDF meta-information.
-			nc_type type;
-			int varId, nDims, dimIds[NC_MAX_VAR_DIMS];
-			NCERR( nc_inq_varid(_ncid, columnName.toLocal8Bit().constData(), &varId) );
-			NCERR( nc_inq_var(_ncid, varId, NULL, &type, &nDims, dimIds, NULL) );
+		// Now iterate over all variables and see if we have to reduce particleCount
+		// We use the only float properties for this because at least one must be present (coordinates)
+		for (const InputColumnInfo& column : columnMapping) {
+			int dataType = column.dataType;
 
-			// Construct pointers to NetCDF dimension indices.
-			countp[0] = 1;
-			countp[1] = 1;
-			countp[2] = 1;
+			if (dataType == qMetaTypeId<FloatType>()) {
 
-			int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
-			if (nDims > 0) {
-                detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
+				QString columnName = column.columnName;
+				ParticleProperty::Type propertyType = column.property.type();
 
-				// Skip all fields that don't have the expected format.
-				if (nDimsDetected != -1 && (nDimsDetected == nDims || type == NC_CHAR)) {
-					// Find property to load this information into.
-					ParticleProperty::Type propertyType = column.property.type();
+				// Retrieve NetCDF meta-information.
+				nc_type type;
+				int varId, nDims, dimIds[NC_MAX_VAR_DIMS];
+				NCERR( nc_inq_varid(_ncid, columnName.toLocal8Bit().constData(), &varId) );
+				NCERR( nc_inq_var(_ncid, varId, NULL, &type, &nDims, dimIds, NULL) );
 
-					if(propertyType != ParticleProperty::UserProperty) {
-						// Look for existing standard property.
-						for(const auto& p : particleProperties()) {
-							if(p->type() == propertyType) {
-								property = p.get();
-								break;
-							}
-						}
-						if(!property) {
-							// Create standard property.
-							property = new ParticleProperty(particleCount, propertyType, 0, true);
-							addParticleProperty(property);
-						}
-					}
-					else {
-						// Look for existing user-defined property with the same name.
-						for(int j = 0; j < (int)particleProperties().size(); j++) {
-							const auto& p = particleProperties()[j];
-							if(p->name() == propertyName) {
-								if(property->dataType() == dataType)
+				if (nDims > 0 && type == NC_FLOAT) {
+					// Detect dims
+					int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
+					detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
+
+					std::unique_ptr<FloatType[]> data(new FloatType[nativeComponentCount*particleCount]);
+
+	#ifdef FLOATTYPE_FLOAT
+					NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
+					while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_FLOAT)  particleCount--;
+	#else
+					NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
+					while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_DOUBLE)  particleCount--;
+	#endif
+				}
+
+			}
+		}
+
+		// Now iterate over all variables and load the appropriate frame
+		for (const InputColumnInfo& column : columnMapping) {
+			if(isCanceled()) {
+				closeNetCDF();
+				return;
+			}
+			incrementProgressValue();
+
+			ParticleProperty* property = nullptr;
+
+			int dataType = column.dataType;
+			QString columnName = column.columnName;
+			QString propertyName = column.property.name();
+
+			if (dataType != QMetaType::Void) {
+				size_t dataTypeSize;
+				if (dataType == qMetaTypeId<int>())
+					dataTypeSize = sizeof(int);
+				else if (dataType == qMetaTypeId<FloatType>())
+					dataTypeSize = sizeof(FloatType);
+				else
+					throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(columnName));
+
+				// Retrieve NetCDF meta-information.
+				nc_type type;
+				int varId, nDims, dimIds[NC_MAX_VAR_DIMS];
+				NCERR( nc_inq_varid(_ncid, columnName.toLocal8Bit().constData(), &varId) );
+				NCERR( nc_inq_var(_ncid, varId, NULL, &type, &nDims, dimIds, NULL) );
+
+				// Construct pointers to NetCDF dimension indices.
+				countp[0] = 1;
+				countp[1] = 1;
+				countp[2] = 1;
+
+				int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
+				if (nDims > 0) {
+					detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
+
+					// Skip all fields that don't have the expected format.
+					if (nDimsDetected != -1 && (nDimsDetected == nDims || type == NC_CHAR)) {
+						// Find property to load this information into.
+						ParticleProperty::Type propertyType = column.property.type();
+
+						if(propertyType != ParticleProperty::UserProperty) {
+							// Look for existing standard property.
+							for(const auto& p : particleProperties()) {
+								if(p->type() == propertyType) {
 									property = p.get();
-								else
-									removeParticleProperty(j);
-								break;
+									break;
+								}
 							}
-						}
-						if(!property) {
-							// Create a new user-defined property for the column.
-							property = new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, dataTypeSize * componentCount, propertyName, true);
-							addParticleProperty(property);
-						}
-					}
-
-					OVITO_ASSERT(property != nullptr);
-					property->setName(propertyName);
-
-					if (property->componentCount() != componentCount) {
-						qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because internal and NetCDF component counts do not match.";
-					}
-					else {
-						// Type mangling.
-						if (property->dataType() == qMetaTypeId<int>()) {
-							// This is integer data.
-
-							if (componentCount == 6 && nativeComponentCount == 9 && type != NC_CHAR) {
-								// Convert this property to Voigt notation.
-								std::unique_ptr<int[]> data(new int[9*particleCount]);
-								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName));
-								fullToVoigt(particleCount, data.get(), property->dataInt());
-							}
-							else {						
-                                // Create particles types if this is the particle type property.
-                                if (propertyType == ParticleProperty::ParticleTypeProperty) {
-                                    if (type == NC_CHAR) {
-                                        // We can only read this if there is an additional dimension
-                                        if (nDims == nDimsDetected+1) {
-											std::vector<int> dimids(nDims);
-											NCERR( nc_inq_vardimid(_ncid, varId, dimids.data()) );
-
-                                            size_t strLen;
-                                            NCERR( nc_inq_dimlen(_ncid, dimids[nDims-1], &strLen) );
-
-                                            startp[nDimsDetected] = 0;
-                                            countp[nDimsDetected] = strLen;
-                                            std::unique_ptr<char[]> particleNamesData(new char[strLen*particleCount]);
-                                                
-                                            // This is a string particle type, i.e. element names
-                                            NCERRI( nc_get_vara_text(_ncid, varId, startp, countp, particleNamesData.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-
-                                            // Collect all distinct particle names
-                                            QMap<QString, bool> discoveredParticleNames;
-											for (size_t i = 0; i < particleCount; i++) {
-                                                QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
-                                                name = name.trimmed();
-                                                discoveredParticleNames[name] = true;
-                                            }
-
-                                            // Assing a particle type id to each particle name
-                                            QMap<QString, bool>::const_iterator particleName = discoveredParticleNames.constBegin();
-                                            QMap<QString, int> particleNameToType;
-                                            int i = 0;
-                                            while (particleName != discoveredParticleNames.constEnd()) {
-                                                addParticleTypeId(i, particleName.key());
-                                                particleNameToType[particleName.key()] = i;
-                                                i++;
-                                                particleName++;
-                                            }
-
-                                            // Convert particle names to particle ids and set them accordingly
-                                            int *particleTypes = property->dataInt();
-											for (size_t i = 0; i < particleCount; i++) {
-                                                QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
-                                                name = name.trimmed();
-
-                                                *particleTypes = particleNameToType.value(name);
-                                                particleTypes++;
-                                            }
-                                        }
-                                    }
-                                    else {
-                                        // This is an integer particle type, i.e. atomic numbers or internal element numbers
-                                        NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
-
-                                        // Find maximum atom type.
-                                        int maxType = 0;
-										for (size_t i = 0; i < particleCount; i++)
-                                            maxType = std::max(property->getInt(i), maxType);
-                                        
-                                        // Count number of atoms for each type.
-                                        QVector<int> typeCount(maxType+1, 0);
-										for (size_t i = 0; i < particleCount; i++)
-                                            typeCount[property->getInt(i)]++;
-								
-                                        for (int i = 0; i <= maxType; i++) {
-                                            // Only define atom type if really present.
-                                            if (typeCount[i] > 0)
-                                                addParticleTypeId(i);
-                                        }
-                                    }
-                                }
-                                else {
-                                    if (type != NC_CHAR) {
-                                        NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
-                                    }
-                                }
-							}
-						}
-						else if (property->dataType() == qMetaTypeId<FloatType>()) {
-							// This is floating point data.
-
-							if (componentCount == 6 && nativeComponentCount == 9) {
-								// Convert this property to Voigt notation.
-								std::unique_ptr<FloatType[]> data(new FloatType[9*particleCount]);
-#ifdef FLOATTYPE_FLOAT
-								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-#else
-								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-#endif
-								fullToVoigt(particleCount, data.get(), property->dataFloat());
-							}
-							else {
-#ifdef FLOATTYPE_FLOAT
-								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
-#else
-								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
-#endif
-
-                                // If this is the particle coordinates, check if we need to update pbcs.
-                                if (propertyType == ParticleProperty::PositionProperty) {
-
-                                    FloatType *r = property->dataFloat();
-                                    // Do we have any non-periodic dimension?
-                                    if (!(pbc[0] && pbc[1] && pbc[2])) {
-
-                                        // Yes. Let's find the bounding box.
-                                        // FIXME! As implemented, this works for rectangular cells only.
-                                        FloatType minvals[3], maxvals[3];
-                                        std::copy(r, r+3, minvals);
-                                        std::copy(r, r+3, maxvals);
-										for (size_t i = 0; i < particleCount; i++) {
-                                            for (int k = 0; k < 3; k++) {
-                                                minvals[k] = std::min(minvals[k], r[3*i+k]);
-                                                maxvals[k] = std::max(maxvals[k], r[3*i+k]);
-                                            }
-                                        }
-
-                                        // Compute new cell length and origin.
-                                        for (int k = 0; k < 3; k++) {
-                                            if (!pbc[k]) {
-                                                l[k] = maxvals[k]-minvals[k];
-                                                o[k] = minvals[k];
-                                            }
-                                        }
-
-                                        // Set new cell.
-                                        Vector3 va(l[0], 0, 0);
-                                        Vector3 vb(l[1]*cos(a[2]), l[1]*sin(a[2]), 0);
-                                        Vector3 vc(l[2]*cx+d[0], l[2]*cy+d[1], l[2]*cz);
-
-                                        // Set simulation cell.
-                                        simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
-
-                                    }
-
-                                }
+							if(!property) {
+								// Create standard property.
+								property = new ParticleProperty(particleCount, propertyType, 0, true);
+								addParticleProperty(property);
 							}
 						}
 						else {
-							qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because it has an unrecognized data type.";
+							// Look for existing user-defined property with the same name.
+							for(int j = 0; j < (int)particleProperties().size(); j++) {
+								const auto& p = particleProperties()[j];
+								if(p->name() == propertyName) {
+									if(property->dataType() == dataType)
+										property = p.get();
+									else
+										removeParticleProperty(j);
+									break;
+								}
+							}
+							if(!property) {
+								// Create a new user-defined property for the column.
+								property = new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, dataTypeSize * componentCount, propertyName, true);
+								addParticleProperty(property);
+							}
+						}
+
+						OVITO_ASSERT(property != nullptr);
+						property->setName(propertyName);
+
+						if (property->componentCount() != componentCount) {
+							qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because internal and NetCDF component counts do not match.";
+						}
+						else {
+							// Type mangling.
+							if (property->dataType() == qMetaTypeId<int>()) {
+								// This is integer data.
+
+								if (componentCount == 6 && nativeComponentCount == 9 && type != NC_CHAR) {
+									// Convert this property to Voigt notation.
+									std::unique_ptr<int[]> data(new int[9*particleCount]);
+									NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName));
+									fullToVoigt(particleCount, data.get(), property->dataInt());
+								}
+								else {
+									// Create particles types if this is the particle type property.
+									if (propertyType == ParticleProperty::ParticleTypeProperty) {
+										if (type == NC_CHAR) {
+											// We can only read this if there is an additional dimension
+											if (nDims == nDimsDetected+1) {
+												std::vector<int> dimids(nDims);
+												NCERR( nc_inq_vardimid(_ncid, varId, dimids.data()) );
+
+												size_t strLen;
+												NCERR( nc_inq_dimlen(_ncid, dimids[nDims-1], &strLen) );
+
+												startp[nDimsDetected] = 0;
+												countp[nDimsDetected] = strLen;
+												std::unique_ptr<char[]> particleNamesData(new char[strLen*particleCount]);
+
+												// This is a string particle type, i.e. element names
+												NCERRI( nc_get_vara_text(_ncid, varId, startp, countp, particleNamesData.get()), tr("(While reading variable '%1'.)").arg(columnName) );
+
+												// Collect all distinct particle names
+												QMap<QString, bool> discoveredParticleNames;
+												for (size_t i = 0; i < particleCount; i++) {
+													QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
+													name = name.trimmed();
+													discoveredParticleNames[name] = true;
+												}
+
+												// Assing a particle type id to each particle name
+												QMap<QString, bool>::const_iterator particleName = discoveredParticleNames.constBegin();
+												QMap<QString, int> particleNameToType;
+												int i = 0;
+												while (particleName != discoveredParticleNames.constEnd()) {
+													addParticleTypeId(i, particleName.key());
+													particleNameToType[particleName.key()] = i;
+													i++;
+													particleName++;
+												}
+
+												// Convert particle names to particle ids and set them accordingly
+												int *particleTypes = property->dataInt();
+												for (size_t i = 0; i < particleCount; i++) {
+													QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
+													name = name.trimmed();
+
+													*particleTypes = particleNameToType.value(name);
+													particleTypes++;
+												}
+											}
+										}
+										else {
+											// This is an integer particle type, i.e. atomic numbers or internal element numbers
+											NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
+
+											// Find maximum atom type.
+											int maxType = 0;
+											for (size_t i = 0; i < particleCount; i++)
+												maxType = std::max(property->getInt(i), maxType);
+
+											// Count number of atoms for each type.
+											QVector<int> typeCount(maxType+1, 0);
+											for (size_t i = 0; i < particleCount; i++)
+												typeCount[property->getInt(i)]++;
+
+											for (int i = 0; i <= maxType; i++) {
+												// Only define atom type if really present.
+												if (typeCount[i] > 0)
+													addParticleTypeId(i);
+											}
+										}
+									}
+									else {
+										if (type != NC_CHAR) {
+											NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
+										}
+									}
+								}
+							}
+							else if (property->dataType() == qMetaTypeId<FloatType>()) {
+								// This is floating point data.
+
+								if (componentCount == 6 && nativeComponentCount == 9) {
+									// Convert this property to Voigt notation.
+									std::unique_ptr<FloatType[]> data(new FloatType[9*particleCount]);
+	#ifdef FLOATTYPE_FLOAT
+									NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
+	#else
+									NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
+	#endif
+									fullToVoigt(particleCount, data.get(), property->dataFloat());
+								}
+								else {
+	#ifdef FLOATTYPE_FLOAT
+									NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
+	#else
+									NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
+	#endif
+
+									// If this is the particle coordinates, check if we need to update pbcs.
+									if (propertyType == ParticleProperty::PositionProperty) {
+
+										FloatType *r = property->dataFloat();
+										// Do we have any non-periodic dimension?
+										if (!(pbc[0] && pbc[1] && pbc[2])) {
+
+											// Yes. Let's find the bounding box.
+											// FIXME! As implemented, this works for rectangular cells only.
+											FloatType minvals[3], maxvals[3];
+											std::copy(r, r+3, minvals);
+											std::copy(r, r+3, maxvals);
+											for (size_t i = 0; i < particleCount; i++) {
+												for (int k = 0; k < 3; k++) {
+													minvals[k] = std::min(minvals[k], r[3*i+k]);
+													maxvals[k] = std::max(maxvals[k], r[3*i+k]);
+												}
+											}
+
+											// Compute new cell length and origin.
+											for (int k = 0; k < 3; k++) {
+												if (!pbc[k]) {
+													l[k] = maxvals[k]-minvals[k];
+													o[k] = minvals[k];
+												}
+											}
+
+											// Set new cell.
+											Vector3 va(l[0], 0, 0);
+											Vector3 vb(l[1]*cos(a[2]), l[1]*sin(a[2]), 0);
+											Vector3 vc(l[2]*cx+d[0], l[2]*cy+d[1], l[2]*cz);
+
+											// Set simulation cell.
+											simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
+
+										}
+
+									}
+								}
+							}
+							else {
+								qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because it has an unrecognized data type.";
+							}
 						}
 					}
 				}
 			}
 		}
-	}
 
+		closeNetCDF();
+	}
+	catch(...) {
+		closeNetCDF();
+		throw;
+	}
 	setStatus(tr("%1 particles").arg(particleCount));
 }
 
