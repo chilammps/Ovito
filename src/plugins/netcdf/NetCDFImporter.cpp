@@ -427,13 +427,13 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 
 					std::unique_ptr<FloatType[]> data(new FloatType[nativeComponentCount*particleCount]);
 
-	#ifdef FLOATTYPE_FLOAT
+#ifdef FLOATTYPE_FLOAT
 					NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
 					while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_FLOAT)  particleCount--;
-	#else
+#else
 					NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
 					while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_DOUBLE)  particleCount--;
-	#endif
+#endif
 				}
 
 			}
@@ -615,19 +615,19 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 								if (componentCount == 6 && nativeComponentCount == 9) {
 									// Convert this property to Voigt notation.
 									std::unique_ptr<FloatType[]> data(new FloatType[9*particleCount]);
-	#ifdef FLOATTYPE_FLOAT
+#ifdef FLOATTYPE_FLOAT
 									NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-	#else
+#else
 									NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data.get()), tr("(While reading variable '%1'.)").arg(columnName) );
-	#endif
+#endif
 									fullToVoigt(particleCount, data.get(), property->dataFloat());
 								}
 								else {
-	#ifdef FLOATTYPE_FLOAT
+#ifdef FLOATTYPE_FLOAT
 									NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
-	#else
+#else
 									NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
-	#endif
+#endif
 
 									// If this is the particle coordinates, check if we need to update pbcs.
 									if (propertyType == ParticleProperty::PositionProperty) {
@@ -679,12 +679,12 @@ void NetCDFImporter::NetCDFImportTask::parseFile(CompressedTextReader& stream)
 		}
 
 		closeNetCDF();
+		setStatus(tr("%1 particles").arg(particleCount));
 	}
 	catch(...) {
 		closeNetCDF();
 		throw;
 	}
-	setStatus(tr("%1 particles").arg(particleCount));
 }
 
 /******************************************************************************
