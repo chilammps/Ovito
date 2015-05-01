@@ -14,7 +14,9 @@ IF(APPLE)
 	SET(qtconf_dest_dir "${MACOSX_BUNDLE_NAME}.app/Contents/Resources")
 	INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime PATTERN "*_debug.dylib" EXCLUDE)
 	INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/platforms" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime PATTERN "*_debug.dylib" EXCLUDE)
-	INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/accessible" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime PATTERN "*_debug.dylib" EXCLUDE)
+	IF(Qt5Core_VERSION VERSION_LESS "5.4")
+    	INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/accessible" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime PATTERN "*_debug.dylib" EXCLUDE)
+    ENDIF()
 
 	# Install a qt.conf file.
 	# This inserts some cmake code into the install script to write the file
@@ -42,8 +44,10 @@ IF(APPLE)
 		"${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}" 
 		"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/imageformats"
 		"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/platforms"
-		"${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/accessible"
 		"/opt/local/lib")
+	IF(Qt5Core_VERSION VERSION_LESS "5.4")
+		LIST(APPEND DIRS "${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/accessible")
+	ENDIF()
 	
 	# Now the work of copying dependencies into the bundle/package
 	# The quotes are escaped and variables to use at install time have their $ escaped

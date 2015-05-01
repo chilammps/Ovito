@@ -141,8 +141,8 @@ void VideoEncoder::openFile(const QString& filename, int width, int height, int 
 	_codecContext->bit_rate = 0;
 	_codecContext->width = width;
 	_codecContext->height = height;
-	_codecContext->time_base.den = fps;
-	_codecContext->time_base.num = 1;
+	_codecContext->time_base.den = _videoStream->time_base.den = fps;
+	_codecContext->time_base.num = _videoStream->time_base.num = 1;
 	_codecContext->gop_size = 12;	// Emit one intra frame every twelve frames at most.
 	if(qstrcmp(outputFormat->name, "gif") != 0)
 		_codecContext->pix_fmt = PIX_FMT_YUV420P;
