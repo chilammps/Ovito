@@ -134,10 +134,11 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	size_t vecComponentCount = property->componentCount();
 
     // Get bottom-left and top-right corner of the simulation cell.
-    AffineTransformation reciprocalCell = expectSimulationCell()->reciprocalCellMatrix();
+	SimulationCell cell = expectSimulationCell()->data();
+    AffineTransformation reciprocalCell = cell.inverseMatrix();
 
     // Get periodic boundary flag.
-	std::array<bool, 3> pbc = expectSimulationCell()->pbcFlags();
+	std::array<bool, 3> pbc = cell.pbcFlags();
 
     // Compute the surface normal vector.
     Vector3 normalX, normalY(1, 1, 1);
@@ -145,30 +146,32 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
         normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
     }
     else if (_binDirection == CELL_VECTOR_2) {
-        normalX = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+        normalX = expectSimulationCell()->edgeVector3().cross(expectSimulationCell()->edgeVector1());
     }
     else if (_binDirection == CELL_VECTOR_3) {
         normalX = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
     }
     else if (_binDirection == CELL_VECTORS_1_2) {
         normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
-        normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+        normalY = expectSimulationCell()->edgeVector3().cross(expectSimulationCell()->edgeVector1());
     }
     else if (_binDirection == CELL_VECTORS_2_3) {
-        normalX = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+        normalX = expectSimulationCell()->edgeVector3().cross(expectSimulationCell()->edgeVector1());
         normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
     }
     else if (_binDirection == CELL_VECTORS_1_3) {
         normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
         normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
     }
+	if(normalX == Vector3::Zero() || normalY == Vector3::Zero())
+		throw Exception(tr("Simulation cell is degenerate."));
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
-    FloatType cellVolume = expectSimulationCell()->volume();
-    _xAxisRangeStart = 0.0;
-    _xAxisRangeEnd = cellVolume / normalX.length();
-    _yAxisRangeStart = 0.0;
-    _yAxisRangeEnd = cellVolume / normalY.length();
+    FloatType cellVolume = cell.volume();
+    _xAxisRangeStart = (expectSimulationCell()->origin() - Point3::Origin()).dot(normalX.normalized());
+    _xAxisRangeEnd = _xAxisRangeStart + cellVolume / normalX.length();
+    _yAxisRangeStart = (expectSimulationCell()->origin() - Point3::Origin()).dot(normalY.normalized());
+    _yAxisRangeEnd = _yAxisRangeStart + cellVolume / normalY.length();
 
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -467,12 +470,12 @@ void BinAndReduceModifierEditor::plotData()
         QVector<double> ydata(binDataSize+2);
         double binSize = ( modifier->xAxisRangeEnd() - modifier->xAxisRangeStart() ) / binDataSize;
         for(int i = 0; i < binDataSize; i++) {
-            xdata[i+1] = binSize * ((double)i + 0.5);
+            xdata[i+1] = binSize * ((double)i + 0.5) + modifier->xAxisRangeStart();
             ydata[i+1] = modifier->binData()[i];
         }
-        xdata.front() = 0.0;
+        xdata.front() = modifier->xAxisRangeStart();
         ydata.front() = modifier->binData().front();
-        xdata.back() = binSize * binDataSize;
+        xdata.back() = modifier->xAxisRangeEnd();
         ydata.back() = modifier->binData().back();
         _averagesPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
         _averagesPlot->graph()->setData(xdata, ydata);
