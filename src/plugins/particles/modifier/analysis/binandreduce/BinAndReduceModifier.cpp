@@ -112,7 +112,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
     if (is1D()) binDataSizeY = 1;
     size_t binDataSize = binDataSizeX*binDataSizeY;
 	_binData.resize(binDataSize);
-	std::fill(_binData.begin(), _binData.end(), FloatType(0));
+	std::fill(_binData.begin(), _binData.end(), 0.0);
 
     // Return coordinate indices (0, 1 or 2).
     int binDirX = binDirectionX(_binDirection);
@@ -200,10 +200,10 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                             }
                             else {
                                 if (_reductionOperation == RED_MAX) {
-                                    _binData[binIndex] = std::max(_binData[binIndex], *v);
+                                    _binData[binIndex] = std::max(_binData[binIndex], (double)*v);
                                 }
                                 else if (_reductionOperation == RED_MIN) {
-                                    _binData[binIndex] = std::min(_binData[binIndex], *v);
+                                    _binData[binIndex] = std::min(_binData[binIndex], (double)*v);
                                 }
                             }
                         }
@@ -237,10 +237,10 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                         }
                         else {
                             if (_reductionOperation == RED_MAX) {
-                                _binData[binIndex] = std::max(_binData[binIndex], FloatType(*v));
+                                _binData[binIndex] = std::max(_binData[binIndex], (double)*v);
                             }
                             else if (_reductionOperation == RED_MIN) {
-                                _binData[binIndex] = std::min(_binData[binIndex], FloatType(*v));
+                                _binData[binIndex] = std::min(_binData[binIndex], (double)*v);
                             }
                         }
                     }
@@ -254,16 +254,16 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 
         if (_reductionOperation == RED_MEAN) {
             // Normalize.
-            std::vector<FloatType>::iterator a = _binData.begin();
+            auto a = _binData.begin();
             for (auto n: numberOfParticlesPerBin) {
                 if (n > 0) *a /= n;
-                a++;
+                ++a;
             }
         }
         else if (_reductionOperation == RED_SUM_VOL) {
             // Divide by bin volume.
-            FloatType binVolume = cellVolume / (binDataSizeX*binDataSizeY);
-            std::for_each(_binData.begin(), _binData.end(), [binVolume](FloatType &x) { x /= binVolume; });
+            double binVolume = cellVolume / (binDataSizeX*binDataSizeY);
+            std::for_each(_binData.begin(), _binData.end(), [binVolume](double &x) { x /= binVolume; });
         }
 	}
 
@@ -271,7 +271,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
     if (_firstDerivative) {
         FloatType binSpacingX = (_xAxisRangeEnd - _xAxisRangeStart) / binDataSizeX;
         if(binDataSizeX > 1 && _xAxisRangeEnd > _xAxisRangeStart) {
-			std::vector<FloatType> derivativeData(binDataSize);
+			std::vector<double> derivativeData(binDataSize);
 			for (int j = 0; j < binDataSizeY; j++) {
 				for (int i = 0; i < binDataSizeX; i++) {
 					int ndx = 2;
@@ -292,7 +292,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 			}
 			_binData = derivativeData;
         }
-        else std::fill(_binData.begin(), _binData.end(), FloatType(0));
+        else std::fill(_binData.begin(), _binData.end(), 0.0);
     }
 
 	if (!_fixPropertyAxisRange) {
@@ -322,7 +322,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	layout->setSpacing(4);
 
 	ParticlePropertyParameterUI* sourcePropertyUI = new ParticlePropertyParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_sourceProperty));
-	layout->addWidget(new QLabel(tr("Property:"), rollout));
+	layout->addWidget(new QLabel(tr("Particle property:"), rollout));
 	layout->addWidget(sourcePropertyUI->comboBox());
 
 	QGridLayout* gridlayout = new QGridLayout();
@@ -378,7 +378,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 
 	layout->addWidget(new QLabel(tr("Reduction:")));
 	layout->addWidget(_averagesPlot);
-	connect(this, &BinAndReduceModifierEditor::contentsReplaced, this, &BinAndReduceModifierEditor::plotAverages);
+	connect(this, &BinAndReduceModifierEditor::contentsReplaced, this, &BinAndReduceModifierEditor::plotData);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Save data"));
 	layout->addWidget(saveDataButton);
@@ -420,15 +420,15 @@ bool BinAndReduceModifierEditor::referenceEvent(RefTarget* source, ReferenceEven
 {
 	if(event->sender() == editObject()
 			&& event->type() == ReferenceEvent::ObjectStatusChanged) {
-			plotAverages();
+		plotData();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);
 }
 
 /******************************************************************************
-* Replots the averaged data computed by the modifier.
+* Plots the data computed by the modifier.
 ******************************************************************************/
-void BinAndReduceModifierEditor::plotAverages()
+void BinAndReduceModifierEditor::plotData()
 {
 	BinAndReduceModifier* modifier = static_object_cast<BinAndReduceModifier>(editObject());
 	if(!modifier)
@@ -444,7 +444,7 @@ void BinAndReduceModifierEditor::plotAverages()
         if (!_averagesGraph) {
             if (_averagesColorMap) {
                 _averagesPlot->removePlottable(_averagesColorMap);
-                _averagesColorMap = NULL;
+                _averagesColorMap = nullptr;
             }
             _averagesGraph = _averagesPlot->addGraph();
         }
@@ -463,13 +463,17 @@ void BinAndReduceModifierEditor::plotAverages()
         if(modifier->binData().empty())
             return;
 
-        QVector<double> xdata(binDataSize);
-        QVector<double> ydata(binDataSize);
+        QVector<double> xdata(binDataSize+2);
+        QVector<double> ydata(binDataSize+2);
         double binSize = ( modifier->xAxisRangeEnd() - modifier->xAxisRangeStart() ) / binDataSize;
-        for(int i = 0; i < xdata.size(); i++) {
-            xdata[i] = binSize * ((double)i + 0.5);
-            ydata[i] = modifier->binData()[i];
+        for(int i = 0; i < binDataSize; i++) {
+            xdata[i+1] = binSize * ((double)i + 0.5);
+            ydata[i+1] = modifier->binData()[i];
         }
+        xdata.front() = 0.0;
+        ydata.front() = modifier->binData().front();
+        xdata.back() = binSize * binDataSize;
+        ydata.back() = modifier->binData().back();
         _averagesPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
         _averagesPlot->graph()->setData(xdata, ydata);
 
@@ -485,7 +489,7 @@ void BinAndReduceModifierEditor::plotAverages()
         if (!_averagesColorMap) {
             if (_averagesGraph) {
                 _averagesPlot->removeGraph(_averagesGraph);
-                _averagesGraph = NULL;
+                _averagesGraph = nullptr;
             }
             _averagesColorMap = new QCPColorMap(_averagesPlot->xAxis, _averagesPlot->yAxis);
             _averagesPlot->addPlottable(_averagesColorMap);
@@ -523,7 +527,7 @@ void BinAndReduceModifierEditor::plotAverages()
         _rangeUpdate = true;
     }
     
-    _averagesPlot->replot();
+    _averagesPlot->replot(QCustomPlot::rpQueued);
 }
 
 /******************************************************************************

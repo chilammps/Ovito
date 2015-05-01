@@ -69,6 +69,7 @@ public:
 
 	/// Prepares the renderer for rendering and sets the data set to be rendered.
 	virtual bool startRender(DataSet* dataset, RenderSettings* settings) {
+		OVITO_ASSERT_MSG(_renderDataset == nullptr, "SceneRenderer::startRender()", "startRender() called again without calling endRender() first.");
 		_renderDataset = dataset;
 		_settings = settings;
 		return true;
@@ -86,7 +87,11 @@ public:
 	RenderSettings* renderSettings() const { OVITO_CHECK_POINTER(_settings); return _settings; }
 
 	/// Is called after rendering has finished.
-	virtual void endRender() { _renderDataset = nullptr; _settings = nullptr; }
+	virtual void endRender() {
+		OVITO_ASSERT_MSG(_renderDataset != nullptr, "SceneRenderer::endRender()", "endRender() called without matching call to startRender().");
+		_renderDataset = nullptr;
+		_settings = nullptr;
+	}
 
 	/// Returns the view projection parameters.
 	const ViewProjectionParameters& projParams() const { return _projParams; }

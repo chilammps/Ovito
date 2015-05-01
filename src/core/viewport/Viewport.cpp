@@ -560,7 +560,8 @@ void Viewport::processUpdateRequest()
 ******************************************************************************/
 void Viewport::render(QOpenGLContext* context)
 {
-	OVITO_ASSERT_MSG(!isRendering(), "Viewport::render", "Viewport is already rendering.");
+	OVITO_ASSERT_MSG(!isRendering(), "Viewport::render()", "Viewport is already rendering.");
+	OVITO_ASSERT_MSG(!dataset()->viewportConfig()->isRendering(), "Viewport::render()", "Some other viewport is already rendering.");
 
 	// Invalidate picking buffer every time the visible contents of the viewport change.
 	_pickingRenderer->reset();

@@ -31,6 +31,7 @@ Unresolved OpenGL problems:
 Unresolved bugs:
 
 - NearestNeighborFinder doesn't work properly for triclinic cells with small angles.
+- Bin & reduce may crash when particles are located outside the box.
 
 New analysis features:
 

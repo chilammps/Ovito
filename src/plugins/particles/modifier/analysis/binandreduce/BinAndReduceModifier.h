@@ -90,7 +90,7 @@ public:
 	void setNumberOfBinsY(int n) { _numberOfBinsY = n; }
 
 	/// Returns the stored average data.
-	const std::vector<FloatType>& binData() const { return _binData; }
+	const std::vector<double>& binData() const { return _binData; }
 
 	/// Returns the start value of the plotting x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
@@ -153,13 +153,13 @@ private:
 	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// Type of reduction operation
-	PropertyField<ReductionOperationType,int> _reductionOperation;
+	PropertyField<ReductionOperationType, int> _reductionOperation;
 
 	/// Compute first derivative.
 	PropertyField<bool> _firstDerivative;
 
 	/// Bin alignment
-	PropertyField<BinDirectionType,int> _binDirection;
+	PropertyField<BinDirectionType, int> _binDirection;
 
 	/// Controls the number of spatial bins.
 	PropertyField<int> _numberOfBinsX;
@@ -189,7 +189,8 @@ private:
 	FloatType _yAxisRangeEnd;
 
 	/// Stores the averaged data.
-	std::vector<FloatType> _binData;
+	/// Use double precision numbers to avoid precision loss when adding up a large number of values.
+	std::vector<double> _binData;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -230,8 +231,8 @@ protected:
 
 protected Q_SLOTS:
 
-	/// Replots the average data computed by the modifier.
-	void plotAverages();
+	/// Plots the data computed by the modifier.
+	void plotData();
 
     /// Enable/disable the editor for number of y-bins and the first derivative button.
     void updateWidgets();
