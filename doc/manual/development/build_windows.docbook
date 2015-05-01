@@ -16,7 +16,7 @@
     it with the MinGW compiler should still be possible too. 
   </para>
   <para>
-    More instructions how to build the required depenencies on Windows and OVITO itself
+    More instructions how to build the required dependencies on Windows and OVITO itself
     can be found in the file <filename>doc/develop/build_windows_howto.txt</filename> after downloading the source code.
     The required steps are quite involved, and the available instructions may be insufficient. 
     Please contact the author if you want to build OVITO on Windows and get stuck.

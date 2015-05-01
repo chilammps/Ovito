@@ -2,6 +2,17 @@
 Compiler: Microsoft Visual C++ 2013
 **************************************************************************
 
+Typical build directory layout:
+
+ovito/
+  32bit/                (Build directory for 32-bit dependencies)
+     ovito_release/     (Build directory for 32-bit OVITO version)
+  64bit/                (Build directory for 64-bit dependencies)
+     ovito_release/     (Build directory for 64-bit OVITO version)
+  source/               (OVITO's source code)
+
+Source code of third-party libraries is extracted into subdirectories of 'ovito/'.
+
 **************************************************************************
 zlib (http://www.zlib.net/)
 **************************************************************************
@@ -9,6 +20,13 @@ mkdir zlib
 cd zlib
 cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=../zlib_install -DCMAKE_BUILD_TYPE=Release ..\..\zlib-1.2.8
 nmake install
+
+**************************************************************************
+Qt
+**************************************************************************
+Install components (Qt 5.4.1) under C:\Qt\ : 
+   msvc2013 32-bit OpenGL
+   msvc2013 64-bit OpenGL
 
 **************************************************************************
 Python 3.x
@@ -116,20 +134,13 @@ cmake -G "NMake Makefiles" ^
    ../../netcdf-4.3.2
 
 nmake install
-
-**************************************************************************
-Qt
-**************************************************************************
-Install components (Qt 5.3.2): 
-   msvc2013 32-bit OpenGL
-   msvc2013 64-bit OpenGL
    
 **************************************************************************
 QScintilla2
 **************************************************************************
 mkdir qscintilla
 cd qscintilla
-qmake ..\..\QScintilla-gpl-2.8.4\Qt4Qt5\qscintilla.pro
+qmake ..\..\QScintilla-gpl-2.9\Qt4Qt5\qscintilla.pro
 nmake
 
 **************************************************************************
@@ -172,7 +183,7 @@ cmake -G "NMake Makefiles" ^
    -DCGAL_DIR=%cd:\=/%/../CGAL ^
    -Dnetcdf_DIR=%cd:\=/%/../netcdf_install/share/cmake ^
    -DBOOST_INCLUDEDIR=%cd:\=/%/../boost/include ^
-   -DQSCINTILLA_INCLUDE_DIR=%cd:\=/%/../../QScintilla-gpl-2.8.4\Qt4Qt5 ^
+   -DQSCINTILLA_INCLUDE_DIR=%cd:\=/%/../../QScintilla-gpl-2.9\Qt4Qt5 ^
    -DQSCINTILLA_LIBRARY=%cd:\=/%/../qscintilla/release/qscintilla2.lib ^
    -DPYTHON_LIBRARY=%cd:\=/%/../Python/libs/python34.lib ^
    -DPYTHON_INCLUDE_DIR=%cd:\=/%/../Python/include ^
