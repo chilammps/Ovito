@@ -124,7 +124,7 @@ public:
 	inline const property_type& value() const { return _value; }
 
 	/// Returns the internal value stored in this property field as a QVariant.
-	inline operator QVariant() const { return qVariantFromValue<qvariant_type>(static_cast<qvariant_type>(_value)); }
+	inline QVariant to_qvariant() const { return qVariantFromValue<qvariant_type>(static_cast<qvariant_type>(_value)); }
 
 	/// Saves the property's value to a stream.
 	inline void saveToStream(SaveStream& stream) const {

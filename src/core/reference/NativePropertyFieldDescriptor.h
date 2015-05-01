@@ -135,7 +135,7 @@ public:
 
 #define DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, Flags)			\
 	QVariant RefMakerClass::__read_propfield_##storageFieldName(RefMaker* obj) {							\
-		return QVariant::fromValue(static_cast<RefMakerClass*>(obj)->storageFieldName.value());				\
+		return static_cast<const RefMakerClass*>(obj)->storageFieldName.to_qvariant();						\
 	}																										\
 	void RefMakerClass::__write_propfield_##storageFieldName(RefMaker* obj, const QVariant& newValue) {		\
 		static_cast<RefMakerClass*>(obj)->storageFieldName = newValue;										\
