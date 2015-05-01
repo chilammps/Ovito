@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -45,11 +45,6 @@ public:
 
 	/// \brief Returns the selected importer type or NULL if auto-detection is requested.
 	const OvitoObjectType* selectedFileImporterType() const;
-
-private Q_SLOTS:
-
-	/// This is called when the user has pressed the OK button of the dialog box.
-	void onFileSelected(const QString& file);
 
 private:
 

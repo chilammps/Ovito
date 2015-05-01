@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -30,8 +30,6 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE
 ImportFileDialog::ImportFileDialog(const QVector<OvitoObjectType*>& importerTypes, DataSet* dataset, QWidget* parent, const QString& caption, const QString& directory) :
 	HistoryFileDialog("import", parent, caption, directory), _importerTypes(importerTypes)
 {
-	connect(this, &QFileDialog::fileSelected, this, &ImportFileDialog::onFileSelected);
-
 	// Build filter string.
 	for(OvitoObjectType* importerType : _importerTypes) {
 		OORef<FileImporter> imp = static_object_cast<FileImporter>(importerType->createInstance(dataset));
@@ -46,29 +44,7 @@ ImportFileDialog::ImportFileDialog(const QVector<OvitoObjectType*>& importerType
 	setAcceptMode(QFileDialog::AcceptOpen);
 	setFileMode(QFileDialog::ExistingFile);
 
-	QSettings settings;
-	settings.beginGroup("file/import");
-
-	// Select the last import filter that was used last time.
-	QString lastImportFilter = settings.value("last_import_filter").toString();
-	if(!lastImportFilter.isEmpty())
-		selectNameFilter(lastImportFilter);
-	else
-		selectNameFilter(_filterStrings.front());
-}
-
-/******************************************************************************
-* This is called when the user has pressed the OK button of the dialog.
-******************************************************************************/
-void ImportFileDialog::onFileSelected(const QString& file)
-{
-	if(file.isEmpty())
-		return;
-
-	// Remember selected import filter for the next time...
-	QSettings settings;
-	settings.beginGroup("file/import");
-	settings.setValue("last_import_filter", selectedNameFilter());
+	selectNameFilter(_filterStrings.front());
 }
 
 /******************************************************************************

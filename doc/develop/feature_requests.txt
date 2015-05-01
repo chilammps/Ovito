@@ -9,12 +9,10 @@ User interface improvements:
  
 Work-flow improvements:
 
-- The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 - Add support for low-dimensional systems.
 
 New visualization features:
 
-- Visualize particle trajectories.
 - More particle representations (e.g. open circles/rectangles).
 - Test OpenGL rendering support for more than 12 million particles.
 
