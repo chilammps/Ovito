@@ -5,6 +5,7 @@ User interface improvements:
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
 - Extend spinner widget with "Animation" dialog, which can be opened for animatable parameters.
+- Make the viewport menu easier to discover.
  
 Work-flow improvements:
 
@@ -61,7 +62,7 @@ Other:
 
 Documentation:
 
--
+- Explain the Create Camera function, which provides a means to fix the current view position.
 
 NirajGupta@my.unt.edu:
 

@@ -4,10 +4,10 @@ Install third-party libraries
 export MACOSX_DEPLOYMENT_TARGET=10.8
 sudo echo "macosx_deployment_target 10.8" >> /opt/local/etc/macports/macports.conf
 sudo port -s install netcdf python34 py34-sphinx py34-numpy py34-sip zlib boost +python34 +no_static cgal 
-sudo port install cmake docbook-xml docbook-xsl doxygen libxslt yasm
+sudo port install cmake docbook-xml docbook-xsl doxygen libxslt yasm	
 
 **************************************************************************
-Install Qt libraries, version 5.3.2
+Install Qt libraries, version 5.4.1
 **************************************************************************
 
 **************************************************************************
@@ -19,7 +19,7 @@ Build PyQt5
 	--no-designer-plugin \
 	--no-qml-plugin \
 	--assume-shared \
-	--qmake $HOME/Qt5.3.2/5.3/clang_64/bin/qmake \
+	--qmake $HOME/Qt/5.4/clang_64/bin/qmake \
 	--sip=/opt/local/bin/sip-3.4 \
 	--concatenate \
 	--enable QtCore \
@@ -30,7 +30,7 @@ Build PyQt5
 	--enable QtSvg \
 	--enable QtMacExtras
 make -j2
-make install
+sudo make install
 
 **************************************************************************
 Build static libav library:
@@ -56,7 +56,7 @@ export MACOSX_DEPLOYMENT_TARGET=10.8
 cmake -DOVITO_BUILD_DOCUMENTATION=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=../release_install \
-      -DCMAKE_PREFIX_PATH=$HOME/Qt5.3.2/5.3/clang_64/ \
+      -DCMAKE_PREFIX_PATH=$HOME/Qt/5.4/clang_64/ \
       -DPYTHON_INCLUDE_DIR=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/include/python3.4m \
       -DPYTHON_LIBRARY=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/libpython3.4.dylib \
       -DLIBAV_INCLUDE_DIR=$HOME/Documents/progs/libavstatic/include \

@@ -42,7 +42,7 @@ void PickingSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParame
 		throw Exception(tr("Viewport window is not exposed."));
 
 	// Get OpenGL context.
-	QOpenGLContext* context = vpWindow->glcontext();
+	QOpenGLContext* context = vpWindow->context();
 	if(!context || !context->isValid())
 		throw Exception(tr("Viewport OpenGL context has not been created."));
 
@@ -52,7 +52,11 @@ void PickingSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParame
 	_oldSurface = _oldContext ? _oldContext->surface() : nullptr;
 
 	// Make GL context current.
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 	if(!context->makeCurrent(vpWindow))
+#else
+	if(!context->makeCurrent(vpWindow->window()->windowHandle()))
+#endif
 		throw Exception(tr("Failed to make OpenGL context current."));
 
 	// Create OpenGL framebuffer.

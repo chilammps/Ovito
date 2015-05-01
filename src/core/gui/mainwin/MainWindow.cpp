@@ -396,7 +396,7 @@ QOpenGLContext* MainWindow::getOpenGLContext()
 		if(datasetContainer().currentSet()) {
 			const QVector<Viewport*>& viewports = datasetContainer().currentSet()->viewportConfig()->viewports();
 			if(!viewports.empty() && viewports.front()->viewportWindow())
-				_glcontext = viewports.front()->viewportWindow()->glcontext();
+				_glcontext = viewports.front()->viewportWindow()->context();
 		}
 	}
 

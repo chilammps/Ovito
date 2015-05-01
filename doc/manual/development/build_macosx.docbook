@@ -29,7 +29,7 @@
     Download and install <link xlink:href="http://www.riverbankcomputing.com/software/pyqt/download5">PyQt5</link>. 
     Adjust the path to Qt's <command>qmake</command> below as needed:
 <screen><command>/opt/local/bin/python3.4 configure.py \
-	--qmake $HOME/Qt5.3.2/5.3/clang_64/bin/qmake \
+	--qmake $HOME/Qt/5.4/clang_64/bin/qmake \
 	--confirm-license \
 	--no-designer-plugin \
 	--no-qml-plugin \
@@ -51,7 +51,7 @@ sudo make install
     Download and install <link xlink:href="http://www.riverbankcomputing.com/software/qscintilla/download">QScintilla2</link>. Adjust the path to <command>qmake</command> below as needed:
 <screen><command>
 cd QScintilla-gpl-2.8.4/Qt4Qt5/
-$HOME/Qt5.3.2/5.3/clang_64/bin/qmake qscintilla.pro
+$HOME/Qt/5.4/clang_64/bin/qmake qscintilla.pro
 make -j2
 install_name_tool -id $PWD/libqscintilla2.dylib libqscintilla2.dylib
 </command></screen>
@@ -95,7 +95,7 @@ cd build
 cmake -DOVITO_BUILD_DOCUMENTATION=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=../install \
-      -DCMAKE_PREFIX_PATH=$HOME/Qt5.3.2/5.3/clang_64/ \
+      -DCMAKE_PREFIX_PATH=$HOME/Qt/5.4/clang_64/ \
       -DPYTHON_INCLUDE_DIR=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/include/python3.4m \
       -DPYTHON_LIBRARY=/opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/libpython3.4.dylib \
       -DLIBAV_INCLUDE_DIR=$HOME/libavstatic/include \

@@ -28,6 +28,7 @@
 #include <core/plugins/PluginManager.h>
 #include <core/plugins/autostart/AutoStartObject.h>
 #include <core/utilities/io/FileManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 #ifdef Q_OS_MACX
 	#include <Carbon/Carbon.h>
@@ -76,6 +77,7 @@ bool Application::initialize(int& argc, char** argv)
 
 #ifdef Q_OS_LINUX
 	// Migrate settings file from old "Alexander Stukowski" directory to new default location.
+	// The storage location was changed after Ovito version 2.4.4.
 	{
 		QString oldConfigFile = QDir::homePath() + QStringLiteral("/.config/Alexander Stukowski/Ovito.conf");
 		QString newConfigFile = QDir::homePath() + QStringLiteral("/.config/Ovito/Ovito.conf");
@@ -101,6 +103,11 @@ bool Application::initialize(int& argc, char** argv)
 
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");
+
+#ifdef Q_OS_MACX
+	// On MacOS/Qt5.4.1, suppress console messages "qt.network.ssl: QSslSocket: cannot resolve ..."
+	qputenv("QT_LOGGING_RULES", "qt.network.ssl.warning=false");
+#endif
 
 	// Register our floating-point data type with the Qt type system.
 	qRegisterMetaType<FloatType>("FloatType");
@@ -192,6 +199,12 @@ bool Application::initialize(int& argc, char** argv)
 		Exception::setExceptionHandler(consoleExceptionHandler);
 
 	try {
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+		// Set the global default OpenGL surface format.
+		// This will let Qt use core profile contexts.
+		QSurfaceFormat::setDefaultFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+#endif
 
 		// Initialize global objects in the right order.
 		PluginManager::initialize();

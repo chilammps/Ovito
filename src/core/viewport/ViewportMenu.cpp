@@ -95,7 +95,7 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	addSeparator();
 	addAction(tr("Adjust View..."), this, SLOT(onAdjustView()))->setEnabled(_viewport->viewType() != Viewport::VIEW_SCENENODE);
 
-#ifdef Q_OS_MACX
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0) && defined(Q_OS_MACX)
 	connect(static_cast<QGuiApplication*>(QGuiApplication::instance()), &QGuiApplication::focusWindowChanged, this, &ViewportMenu::onWindowFocusChanged);
 #endif
 }

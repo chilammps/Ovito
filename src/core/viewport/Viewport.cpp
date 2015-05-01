@@ -105,8 +105,10 @@ Viewport::~Viewport()
 ******************************************************************************/
 void Viewport::showViewportMenu(const QPoint& pos)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 	if(_viewportWindow)
 		_viewportWindow->requestActivate();
+#endif
 
 	// Create the context menu for the viewport.
 	ViewportMenu contextMenu(this);
@@ -514,9 +516,13 @@ QWidget* Viewport::createWidget(QWidget* parent)
 {
 	OVITO_ASSERT(_widget == nullptr && _viewportWindow == nullptr);
 	if(!_widget) {
-		_viewportWindow = new ViewportWindow(this);
+		_viewportWindow = new ViewportWindow(this, parent);
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 		_widget = QWidget::createWindowContainer(_viewportWindow, parent);
 		_widget->setAttribute(Qt::WA_DeleteOnClose);
+#else
+		_widget = _viewportWindow;
+#endif
 	}
 	return _widget;
 }
@@ -763,10 +769,21 @@ void Viewport::renderViewportTitle()
 ******************************************************************************/
 bool Viewport::setMouseGrabEnabled(bool grab)
 {
-	if(_viewportWindow)
+	if(_viewportWindow) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 		return _viewportWindow->setMouseGrabEnabled(grab);
-	else
-		return false;
+#else
+		if(grab) {
+			_viewportWindow->grabMouse();
+			return true;
+		}
+		else {
+			_viewportWindow->releaseMouse();
+			return false;
+		}
+#endif
+	}
+	else return false;
 }
 
 /******************************************************************************

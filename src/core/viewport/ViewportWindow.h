@@ -27,14 +27,18 @@
 namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 
 /**
- * \brief An internal render window class used by Viewport.
+ * \brief The internal render window/widget used by the Viewport class.
  */
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 class ViewportWindow : public QWindow
+#else
+class ViewportWindow : public QOpenGLWidget
+#endif
 {
 public:
 
 	/// Constructor.
-	ViewportWindow(Viewport* owner);
+	ViewportWindow(Viewport* owner, QWidget* parentWidget);
 
     /// \brief Puts an update request event for this window on the event loop.
 	void renderLater();
@@ -46,8 +50,13 @@ public:
 	/// processes it and redraw the window contents.
 	void processUpdateRequest();
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 	/// Returns the window's OpenGL context used for rendering.
-	QOpenGLContext* glcontext() const { return _context; }
+	QOpenGLContext* context() const { return _context; }
+#else
+	/// Mimic isExposed() function of QWindow.
+	bool isExposed() const { return isVisible(); }
+#endif
 
 	/// Determines whether all viewport windows should share one GL context or not.
 	static bool contextSharingEnabled(bool forceDefaultSetting = false);
@@ -61,13 +70,42 @@ public:
 	/// Determines whether OpenGL geometry shader programs are supported by the hardware.
 	static bool geometryShadersSupported() { return _openglSupportsGeomShaders; }
 
+	/// Returns the vendor name of the OpenGL implementation in use.
+	static const QByteArray& openGLVendor() { return _openGLVendor; }
+
+	/// Returns the renderer name of the OpenGL implementation in use.
+	static const QByteArray& openGLRenderer() { return _openGLRenderer; }
+
+	/// Returns the version string of the OpenGL implementation in use.
+	static const QByteArray& openGLVersion() { return _openGLVersion; }
+
+	/// Returns the version of the OpenGL shading language supported by the system.
+	static const QByteArray& openGLSLVersion() { return _openGLSLVersion; }
+
+	/// Returns the current surface format used by the OpenGL implementation.
+	static const QSurfaceFormat& openglSurfaceFormat() { return _openglSurfaceFormat; }
+
 protected:
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 	/// Handles the expose events.
 	virtual void exposeEvent(QExposeEvent* event) override;
 
 	/// Handles the resize events.
 	virtual void resizeEvent(QResizeEvent* event) override;
+
+	/// Is called in periodic intervals.
+	virtual void timerEvent(QTimerEvent* event) override;
+
+	/// This internal method receives events to the viewport window.
+	virtual bool event(QEvent* event) override;
+#else
+	/// Is called whenever the widget needs to be painted.
+	virtual void paintGL() override;
+
+	/// Is called when the mouse cursor leaves the widget.
+	virtual void leaveEvent(QEvent* event) override;
+#endif
 
 	/// Handles double click events.
 	virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
@@ -84,25 +122,24 @@ protected:
 	/// Handles mouse wheel events.
 	virtual void wheelEvent(QWheelEvent* event) override;
 
-	/// This internal method receives events to the viewport window.
-	virtual bool event(QEvent* event) override;
-
-	/// Is called in periodic intervals.
-	virtual void timerEvent(QTimerEvent* event) override;
+	/// Determines the capabilities of the current OpenGL implementation.
+	static void determineOpenGLInfo();
 
 private:
 
 	/// The owning viewport of this window.
 	Viewport* _viewport;
 
-	/// A flag that indicates that an update has been requested.
+	/// A flag that indicates that a viewport update has been requested.
 	bool _updateRequested;
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 	/// A flag that indicates that an update request event has been put on the event queue.
 	bool _updatePending;
 
 	/// The OpenGL context used for rendering.
 	QOpenGLContext* _context;
+#endif
 
 	/// The parent window of this viewport window.
 	MainWindow* _mainWindow;
@@ -110,7 +147,19 @@ private:
 	/// The vendor of the OpenGL implementation in use.
 	static QByteArray _openGLVendor;
 
-	/// Indicates whether the OpenGL implementation supports geometry shader programs.
+	/// The renderer name of the OpenGL implementation in use.
+	static QByteArray _openGLRenderer;
+
+	/// The version string of the OpenGL implementation in use.
+	static QByteArray _openGLVersion;
+
+	/// The version of the OpenGL shading language supported by the system.
+	static QByteArray _openGLSLVersion;
+
+	/// The current surface format used by the OpenGL implementation.
+	static QSurfaceFormat _openglSurfaceFormat;
+
+	/// Indicates whether the current OpenGL implementation supports geometry shader programs.
 	static bool _openglSupportsGeomShaders;
 
 private:

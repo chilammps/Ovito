@@ -52,6 +52,9 @@ QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
 {
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 3, 0)
+	format.setSwapInterval(0);
+#endif
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
 	if(Application::instance().cmdLineParser().isSet(QStringLiteral("glversion"))) {

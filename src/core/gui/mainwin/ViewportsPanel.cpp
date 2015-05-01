@@ -164,14 +164,12 @@ void ViewportsPanel::layoutViewports()
 	Viewport* maximizedViewport = _viewportConfig->maximizedViewport();
 	OVITO_ASSERT(viewports.size() == findChildren<QWidget*>().size());
 
-	// Count the number of visible window.
+	// Count the number of visible windows.
 	int nvisible = 0;
 	for(Viewport* viewport : viewports) {
 		if(!viewport->widget()) continue;
-		if(maximizedViewport == NULL || maximizedViewport == viewport) {
+		if(maximizedViewport == nullptr || maximizedViewport == viewport)
 			nvisible++;
-			viewport->widget()->setVisible(true);
-		}
 		else
 			viewport->widget()->setVisible(false);
 	}
@@ -189,7 +187,9 @@ void ViewportsPanel::layoutViewports()
 	bool needsRepaint = false;
 	for(Viewport* viewport : viewports) {
 		QWidget* vpWidget = viewport->widget();
-		if(vpWidget->isHidden()) continue;
+		if(!vpWidget) continue;
+		if(maximizedViewport != nullptr && maximizedViewport != viewport)
+			continue;
 
 		int x = count%columns;
 		int y = count/columns;
@@ -203,6 +203,7 @@ void ViewportsPanel::layoutViewports()
 			vpWidget->setGeometry(rect);
 			needsRepaint = true;
 		}
+		vpWidget->setVisible(true);
 		count++;
 	}
 
