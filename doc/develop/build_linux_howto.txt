@@ -35,7 +35,7 @@ export CC=gcc-4.8
 export CXX=g++-4.8
 
 **************************************************************************
-Build Qt libraries (version 5.3.2):
+Build Qt libraries (version 5.4.1):
 
 Edit file qtbase/mkspecs/common/g++-base.conf and specify
 paths to latest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
@@ -56,6 +56,7 @@ export CXX=g++-4.8
 	-no-nis \
 	-no-cups \
 	-no-glib \
+	-no-xinput2 \
 	-fontconfig \
 	-skip qtconnectivity -skip qtmultimedia -skip qtwebkit -skip qtwebkit-examples -skip qtxmlpatterns -skip qtlocation \
 	-skip qtsensors -skip qtdeclarative -skip qtdoc -skip qtquick1 -skip qtquickcontrols \
@@ -70,7 +71,7 @@ QScintilla2
 **************************************************************************
 export CC=gcc-4.8
 export CXX=g++-4.8
-cd QScintilla-gpl-2.8.4/Qt4Qt5/
+cd QScintilla-gpl-2.9/Qt4Qt5/
 $HOME/progs/qt5/bin/qmake qscintilla.pro
 make
 
@@ -213,8 +214,8 @@ $HOME/progs/cmake-2.8.12.2/bin/cmake \
   -DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python3.4m \
   -DSPHINX_PROCESSOR_PATH=$HOME/progs/python/bin \
   -DCMAKE_PREFIX_PATH=$HOME/progs/qt5/ \
-  -DQSCINTILLA_INCLUDE_DIR=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/ \
-  -DQSCINTILLA_LIBRARY=$HOME/progs/QScintilla-gpl-2.8.4/Qt4Qt5/libqscintilla2.so.11 \
+  -DQSCINTILLA_INCLUDE_DIR=$HOME/progs/QScintilla-gpl-2.9/Qt4Qt5/ \
+  -DQSCINTILLA_LIBRARY=$HOME/progs/QScintilla-gpl-2.9/Qt4Qt5/libqscintilla2.so.12 \
   -DCGAL_DIR=$HOME/progs/CGAL-4.3 \
   -DLIBAV_INCLUDE_DIR=$HOME/progs/libav/include \
   -DLIBAV_LIBRARY_DIR=$HOME/progs/libav/lib \
