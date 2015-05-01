@@ -59,7 +59,7 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 				"\n\n"
 				":Default: 4.0\n")
 		.add_property("smoothing_level", &ConstructSurfaceModifier::smoothingLevel, &ConstructSurfaceModifier::setSmoothingLevel,
-				"The number of smoothing iterations applied to the computed surface mesh."
+				"The number of iterations of the smoothing algorithm applied to the computed surface mesh."
 				"\n\n"
 				":Default: 8\n")
 		.add_property("only_selected", &ConstructSurfaceModifier::onlySelectedParticles, &ConstructSurfaceModifier::setOnlySelectedParticles,
@@ -68,17 +68,17 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 				"\n\n"
 				":Default: ``False``\n")
 		.add_property("solid_volume", &ConstructSurfaceModifier::solidVolume,
-				"After the modifier has computed the surface, this field contains the volume of the solid region enclosed "
+				"After the modifier has computed the surface, this output field contains the volume of the solid region enclosed "
 				"by the surface."
 				"\n\n"
 				"Note that this value is only available after the modifier has computed its results. "
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 		.add_property("total_volume", &ConstructSurfaceModifier::totalVolume,
-				"This field reports the volume of the input simulation cell, which can be used "
+				"This output field reports the volume of the input simulation cell, which can be used "
 				"to calculate the solid volume fraction or porosity of a system (in conjunction with the "
 				":py:attr:`.solid_volume` computed by the modifier). ")
 		.add_property("surface_area", &ConstructSurfaceModifier::surfaceArea,
-				"After the modifier has computed the surface, this field contains the area of the surface."
+				"After the modifier has computed the surface, this output field contains the area of the surface."
 				"\n\n"
 				"Note that this value is only available after the modifier has computed its results. "
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")

@@ -6,6 +6,7 @@ User interface improvements:
 - Add support for keyboard shortcuts (requested by Fossati, Paul C).
 - Extend spinner widget with "Animation" dialog, which can be opened for animatable parameters.
 - Make the viewport menu easier to discover.
+- Add file export function to Construct Surface Mesh modifier, which allows to export the mesh to a VTK file (requested by konstantin.avchachov@helsinki.fi).
  
 Work-flow improvements:
 

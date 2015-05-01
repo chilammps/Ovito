@@ -88,7 +88,6 @@ public:
 
 	/// Is called after rendering has finished.
 	virtual void endRender() {
-		OVITO_ASSERT_MSG(_renderDataset != nullptr, "SceneRenderer::endRender()", "endRender() called without matching call to startRender().");
 		_renderDataset = nullptr;
 		_settings = nullptr;
 	}

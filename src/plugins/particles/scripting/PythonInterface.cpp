@@ -489,7 +489,7 @@ BOOST_PYTHON_MODULE(Particles)
 			"\n\n"
 			"The visual appearance of the surface mesh within Ovito is controlled by its attached :py:class:`~ovito.vis.SurfaceMeshDisplay` instance, which is "
 			"accessible through the :py:attr:`~DataObject.display` attribute of the :py:class:`DataObject` base class or through the :py:attr:`~ovito.modifiers.ConstructSurfaceModifier.mesh_display` attribute "
-			"of the :py:class:`~ovito.modifiers.ConstructSurfaceModifier` that created the surface mesh from the input particle data."
+			"of the :py:class:`~ovito.modifiers.ConstructSurfaceModifier` that created the surface mesh."
 			"\n\n"
 			"Example:\n\n"
 			".. literalinclude:: ../example_snippets/surface_mesh.py"

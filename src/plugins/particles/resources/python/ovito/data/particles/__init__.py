@@ -19,6 +19,7 @@ ovito.data.ParticleType = Particles.ParticleType
 # Register attribute keys by which data objects in a DataCollection can be accessed.
 Particles.SimulationCell._data_attribute_name = "cell"
 Particles.Bonds._data_attribute_name = "bonds"
+Particles.SurfaceMesh._data_attribute_name = "surface"
 
 def _ParticleProperty_data_attribute_name(self):
     if self.type != Particles.ParticleProperty.Type.User:
