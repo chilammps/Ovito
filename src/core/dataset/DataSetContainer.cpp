@@ -169,10 +169,10 @@ bool DataSetContainer::fileSaveAs(const QString& filename)
 	if(filename.isEmpty()) {
 
 		if(!mainWindow())
-			throw Exception(tr("Cannot save scene. No filename has been set."));
+			throw Exception(tr("Cannot save program state. No filename has been set."));
 
-		QFileDialog dialog(mainWindow(), tr("Save Scene As"));
-		dialog.setNameFilter(tr("Scene Files (*.ovito);;All Files (*)"));
+		QFileDialog dialog(mainWindow(), tr("Save Program State As"));
+		dialog.setNameFilter(tr("State Files (*.ovito);;All Files (*)"));
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
 		dialog.setFileMode(QFileDialog::AnyFile);
 		dialog.setConfirmOverwrite(true);
@@ -220,7 +220,7 @@ bool DataSetContainer::askForSaveChanges()
 
 	QMessageBox::StandardButton result = QMessageBox::question(mainWindow(), tr("Save changes"),
 		tr("The current scene has been modified. Do you want to save the changes?"),
-		QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
+		QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
 	if(result == QMessageBox::Cancel)
 		return false; // Operation canceled by user
 	else if(result == QMessageBox::No)
@@ -243,7 +243,7 @@ bool DataSetContainer::fileNew()
 }
 
 /******************************************************************************
-* Loads the given scene file.
+* Loads the given state file.
 ******************************************************************************/
 bool DataSetContainer::fileLoad(const QString& filename)
 {
@@ -252,7 +252,7 @@ bool DataSetContainer::fileLoad(const QString& filename)
 	{
 		QFile fileStream(filename);
 		if(!fileStream.open(QIODevice::ReadOnly))
-			throw Exception(tr("Failed to open file '%1' for reading.").arg(filename));
+			throw Exception(tr("Failed to open state file '%1' for reading.").arg(filename));
 
 		QDataStream dataStream(&fileStream);
 		ObjectLoadStream stream(dataStream);
@@ -261,8 +261,8 @@ bool DataSetContainer::fileLoad(const QString& filename)
 		// the precision used in this build.
 		if(stream.floatingPointPrecision() > sizeof(FloatType)) {
 			if(mainWindow()) {
-				QString msg = tr("The scene file has been written with a version of this application that uses %1-bit floating-point precision. "
-					   "The version of this application that you are using at this moment only supports %2-bit precision numbers. "
+				QString msg = tr("The state file has been written with a version of this program that uses %1-bit floating-point precision. "
+					   "The version of this program that you are currently using only supports %2-bit precision numbers. "
 					   "The precision of all numbers stored in the input file will be truncated during loading.").arg(stream.floatingPointPrecision()*8).arg(sizeof(FloatType)*8);
 				QMessageBox::warning(mainWindow(), tr("Floating-point precision mismatch"), msg);
 			}
@@ -321,7 +321,7 @@ static QAtomicInt _userInterrupt;
 ******************************************************************************/
 bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QString& message, QProgressDialog* progressDialog)
 {
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetContainer::waitUntilReady", "This function may only be called from the GUI thread.");
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetContainer::waitUntilReady()", "This function may only be called from the GUI thread.");
 
 	// Check if operation is already completed.
 	if(callback())

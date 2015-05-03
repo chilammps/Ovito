@@ -233,7 +233,6 @@ void MainWindow::createMainMenu()
 	// Build the file menu.
 	QMenu* fileMenu = menuBar->addMenu(tr("&File"));
 	fileMenu->setObjectName(QStringLiteral("FileMenu"));
-	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_NEW_WINDOW));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_IMPORT));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_REMOTE_IMPORT));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_EXPORT));
@@ -241,6 +240,8 @@ void MainWindow::createMainMenu()
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_OPEN));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_SAVE));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_SAVEAS));
+	fileMenu->addSeparator();
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_NEW_WINDOW));
 	fileMenu->addSeparator();
 	fileMenu->addAction(actionManager()->getAction(ACTION_QUIT));
 

@@ -54,6 +54,7 @@ Rollout* RolloutContainer::addRollout(QWidget* content, const QString& title, co
 		for(int i = 0; i < layout->count(); i++) {
 			if(layout->itemAt(i)->widget() == otherRollout) {
 				layout->insertWidget(i + 1, rollout);
+				break;
 			}
 		}
 	}
@@ -62,6 +63,7 @@ Rollout* RolloutContainer::addRollout(QWidget* content, const QString& title, co
 		for(int i = 0; i < layout->count(); i++) {
 			if(layout->itemAt(i)->widget() == otherRollout) {
 				layout->insertWidget(i, rollout);
+				break;
 			}
 		}
 	}
@@ -144,6 +146,39 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 
 	if(params._animateFirstOpening && !params._collapsed)
 		setCollapsed(false);
+}
+
+/******************************************************************************
+* Collapses or opens the rollout.
+******************************************************************************/
+void Rollout::setCollapsed(bool collapsed)
+{
+	_collapseAnimation.stop();
+	_collapseAnimation.setStartValue(_visiblePercentage);
+	_collapseAnimation.setEndValue(collapsed ? 0 : 100);
+
+	// When expanding rollout, adjust scroll position of container so that it becomes visible.
+	if(collapsed == false)
+		connect(&_collapseAnimation, &QVariantAnimation::valueChanged, this, &Rollout::ensureVisible);
+	else
+		disconnect(&_collapseAnimation, &QVariantAnimation::valueChanged, this, &Rollout::ensureVisible);
+
+	_collapseAnimation.start();
+}
+
+/******************************************************************************
+* Makes sure that the rollout is visible in the rollout container.
+******************************************************************************/
+void Rollout::ensureVisible()
+{
+	QWidget* p = parentWidget();
+	while(p != nullptr) {
+		if(RolloutContainer* container = qobject_cast<RolloutContainer*>(p)) {
+			container->ensureWidgetVisible(this, 0, 0);
+			break;
+		}
+		p = p->parentWidget();
+	}
 }
 
 /******************************************************************************

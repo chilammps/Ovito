@@ -37,7 +37,7 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE
 ******************************************************************************/
 ViewportsPanel::ViewportsPanel(MainWindow* parent) : QWidget(parent)
 {
-	// Activate the new viewport layout as soon as a new scene file is loaded.
+	// Activate the new viewport layout as soon as a new state file is loaded.
 	connect(&parent->datasetContainer(), &DataSetContainer::viewportConfigReplaced, this, &ViewportsPanel::onViewportConfigurationReplaced);
 	connect(&parent->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ViewportsPanel::onAnimationSettingsReplaced);
 

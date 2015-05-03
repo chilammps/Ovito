@@ -83,8 +83,8 @@
             <imagedata fileref="images/viewport_control_toolbar/viewport_menu_screenshot.png" format="png" scale="50" />
        </imageobject></mediaobject></screenshot>
      </figure> 
-     <menuchoice><guimenuitem>Adjust View</guimenuitem></menuchoice> opens a dialog box that lets you adjust the camera's location and orientation 
-     numerically.
+     <menuchoice><guimenuitem>Adjust View</guimenuitem></menuchoice> opens a <link linkend="viewports.adjust_view_dialog">dialog box</link> that lets you enter the view position and orientation 
+     of the virtual camera numerically.
    </para>
    <para>
      The <menuchoice><guimenuitem>Create Camera</guimenuitem></menuchoice> function creates a camera object in the three-dimensional

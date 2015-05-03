@@ -139,11 +139,11 @@ public:
 	}
 
 	/// \brief Returns whether the internal data is saved along with the scene.
-	/// \return \c true if the data is stored in the scene file; \c false if the data can be restored from an external file or recomputed.
+	/// \return \c true if the data is stored in the state file; \c false if the data can be restored from an external file or recomputed.
 	bool saveWithScene() const { return _saveWithScene; }
 
 	/// \brief Sets whether the per-particle data is saved along with the scene.
-	/// \param on \c true if the data should be stored in the scene file; \c false if the per-particle data can be restored from an external file.
+	/// \param on \c true if the data should be stored in the state file; \c false if the per-particle data can be restored from an external file.
 	/// \undoable
 	virtual void setSaveWithScene(bool on) { _saveWithScene = on; }
 
@@ -186,7 +186,7 @@ private:
 	unsigned int _revisionNumber;
 
 	/// Controls whether the internal data is saved along with the scene.
-	/// If false, only metadata will be saved in a scene file while the contents get restored
+	/// If false, only metadata will be saved in a state file while the contents get restored
 	/// from an external data source or get recomputed.
 	PropertyField<bool> _saveWithScene;
 

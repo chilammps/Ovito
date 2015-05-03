@@ -53,7 +53,8 @@ private Q_SLOTS:
 
 private:
 
-	QCheckBox* _camPerspective;
+	QRadioButton* _camPerspective;
+	QRadioButton* _camParallel;
 
 	SpinnerWidget* _camPosXSpinner;
 	SpinnerWidget* _camPosYSpinner;
@@ -63,7 +64,7 @@ private:
 	SpinnerWidget* _camDirYSpinner;
 	SpinnerWidget* _camDirZSpinner;
 
-	QLabel* _camFOVLabel;
+	SpinnerWidget* _camFOVAngleSpinner;
 	SpinnerWidget* _camFOVSpinner;
 
 	Viewport* _viewport;

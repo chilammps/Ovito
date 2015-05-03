@@ -46,10 +46,10 @@ DEFINE_PROPERTY_FIELD(FileSource, _playbackSpeedNumerator, "PlaybackSpeedNumerat
 DEFINE_PROPERTY_FIELD(FileSource, _playbackSpeedDenominator, "PlaybackSpeedDenominator");
 DEFINE_PROPERTY_FIELD(FileSource, _playbackStartTime, "PlaybackStartTime");
 SET_PROPERTY_FIELD_LABEL(FileSource, _importer, "File Importer");
-SET_PROPERTY_FIELD_LABEL(FileSource, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval");
+SET_PROPERTY_FIELD_LABEL(FileSource, _adjustAnimationIntervalEnabled, "Adjust animation length to time series");
 SET_PROPERTY_FIELD_LABEL(FileSource, _sourceUrl, "Source location");
-SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedNumerator, "Playback speed numerator");
-SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedDenominator, "Playback speed denominator");
+SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedNumerator, "Playback rate numerator");
+SET_PROPERTY_FIELD_LABEL(FileSource, _playbackSpeedDenominator, "Playback rate denominator");
 SET_PROPERTY_FIELD_LABEL(FileSource, _playbackStartTime, "Playback start time");
 
 /******************************************************************************
@@ -68,7 +68,7 @@ FileSource::FileSource(DataSet* dataset) : CompoundObject(dataset),
 
 	connect(&_frameLoaderWatcher, &FutureWatcher::finished, this, &FileSource::loadOperationFinished);
 
-	// Do not save a copy of the linked external data in scene file by default.
+	// Do not save a copy of the linked external data in state file by default.
 	setSaveWithScene(false);
 }
 
@@ -393,6 +393,8 @@ void FileSource::loadOperationFinished()
 			// Adopt the data loaded by the frame loader.
 			_activeFrameLoader->handOver(this);
 			newStatus = _activeFrameLoader->status();
+			if(frames().count() > 1)
+				newStatus.setText(tr("Loaded frame %1 of %2\n").arg(_loadedFrameIndex+1).arg(frames().count()) + newStatus.text());
 		}
 		catch(Exception& ex) {
 			// Transfer exception message to evaluation status.

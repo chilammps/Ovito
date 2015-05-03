@@ -27,7 +27,7 @@
     The modifier reads the reference configuration from a separate input file and considers the particle set currently loaded in OVITO as the defective state.
   </para>
   
-  <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
+  <para>Use the <emphasis>"Reference: External file"</emphasis> panel to pick the
     file containing the reference particle positions, which define the defect-free state of the crystal.
     Note that the number of particles in the reference file can differ from the number in the current configuration.
   </para>

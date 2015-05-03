@@ -33,7 +33,7 @@
   linkend="particles.modifiers.color_coding">Color coding modifier</link> to
   visualize the displacement magnitudes through a color scheme.</para>
 
-  <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
+  <para>Use the <emphasis>"Reference: External file"</emphasis> panel to pick the
   file containing the initial particle positions. Note
   that this reference file should contain the same set of particles as the
   input configuration seen by the modifier. That implies that you should

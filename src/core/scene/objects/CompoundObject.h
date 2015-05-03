@@ -70,7 +70,7 @@ public:
 	}
 
 	/// \brief Controls whether the imported data is saved along with the scene.
-	/// \param on \c true if data should be stored in the scene file; \c false if the data resides only in the external file.
+	/// \param on \c true if data should be stored in the state file; \c false if the data resides only in the external file.
 	/// \undoable
 	virtual void setSaveWithScene(bool on) override {
 		DataObject::setSaveWithScene(on);

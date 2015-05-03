@@ -582,7 +582,7 @@ OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 void XYZImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("XYZ file"), rolloutParams);
+	QWidget* rollout = createRollout(tr("XYZ"), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

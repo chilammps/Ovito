@@ -43,7 +43,7 @@ public:
 	const QString& displayName() const { return _displayName; }
 
 	/// Returns the name alias that has been set for this class.
-	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a state file.
 	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
 	const QString& nameAlias() const { return _nameAlias; }
 
@@ -159,7 +159,7 @@ protected:
 	void setDisplayName(const QString& name) { _displayName = name; }
 
 	/// Sets a name alias for this class.
-	/// It will be used as an alternative name when looking up the class for a serialized object in a scene file.
+	/// It will be used as an alternative name when looking up the class for a serialized object in a state file.
 	/// This allows to maintain backward compatibility when renaming classes in the C++ source code.
 	void setNameAlias(const QString& alias) { _nameAlias = alias; }
 

@@ -61,7 +61,7 @@
   
   <para>
     Procedure summary: You first use the <emphasis>Create trajectory lines</emphasis> utility to create a new trajectory object from the currently loaded simulation
-    frame sequence. You may then adjust the display settings for the newly created trajectory object as shown in <xref linkend="fig.trajectory_display_panel" />. 
+    time series. You may then adjust the display settings for the newly created trajectory object as shown in <xref linkend="fig.trajectory_display_panel" />. 
     Finally, you can switch back to the <emphasis>Particles</emphasis> object to continue working with the particles data, apply modifiers etc. 
     The trajectory object is not affected by any changes made to the particles data unless you press the <guibutton>Regenerate trajectory lines</guibutton> button
     of the trajectory object.

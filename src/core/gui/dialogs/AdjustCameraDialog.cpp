@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/utilities/units/UnitsManager.h>
 #include "AdjustCameraDialog.h"
 
@@ -33,7 +34,7 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui) OVITO_BEGIN_INLINE_NAMESPACE
 AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	QDialog(parent), _viewport(viewport)
 {
-	setWindowTitle(tr("Adjust Camera"));
+	setWindowTitle(tr("Adjust View"));
 	
 	_oldViewType = viewport->viewType();
 	_oldCameraTM = viewport->cameraTransformation();
@@ -41,20 +42,17 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 
 	QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-	QGridLayout* gridLayout = new QGridLayout();
+	QGroupBox* viewPosBox = new QGroupBox(tr("View position"));
+	mainLayout->addWidget(viewPosBox);
+
+	QGridLayout* gridLayout = new QGridLayout(viewPosBox);
 	gridLayout->setColumnStretch(1,1);
 	gridLayout->setColumnStretch(2,1);
 	gridLayout->setColumnStretch(3,1);
-
-	_camPerspective = new QCheckBox(tr("Perspective projection"));
-	connect(_camPerspective, &QCheckBox::clicked, this, &AdjustCameraDialog::onAdjustCamera);
-	connect(_camPerspective, &QCheckBox::clicked, this, &AdjustCameraDialog::updateGUI);
-	mainLayout->addWidget(_camPerspective);
+	gridLayout->addWidget(new QLabel(tr("XYZ:")), 0, 0);
 
 	QHBoxLayout* fieldLayout;
 	QLineEdit* textBox;
-
-	gridLayout->addWidget(new QLabel(tr("Camera position:")), 0, 0);
 
 	_camPosXSpinner = new SpinnerWidget();
 	_camPosYSpinner = new SpinnerWidget();
@@ -93,7 +91,14 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	gridLayout->addLayout(fieldLayout, 0, 3);
 	connect(_camPosZSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
-	gridLayout->addWidget(new QLabel(tr("Camera direction:")), 1, 0);
+	QGroupBox* viewDirBox = new QGroupBox(tr("View direction"));
+	mainLayout->addWidget(viewDirBox);
+
+	gridLayout = new QGridLayout(viewDirBox);
+	gridLayout->setColumnStretch(1,1);
+	gridLayout->setColumnStretch(2,1);
+	gridLayout->setColumnStretch(3,1);
+	gridLayout->addWidget(new QLabel(tr("XYZ:")), 0, 0);
 
 	_camDirXSpinner = new SpinnerWidget();
 	_camDirYSpinner = new SpinnerWidget();
@@ -109,7 +114,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	_camDirXSpinner->setTextBox(textBox);
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camDirXSpinner);
-	gridLayout->addLayout(fieldLayout, 1, 1);
+	gridLayout->addLayout(fieldLayout, 0, 1);
 	connect(_camDirXSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	fieldLayout = new QHBoxLayout();
@@ -119,7 +124,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	_camDirYSpinner->setTextBox(textBox);
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camDirYSpinner);
-	gridLayout->addLayout(fieldLayout, 1, 2);
+	gridLayout->addLayout(fieldLayout, 0, 2);
 	connect(_camDirYSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	fieldLayout = new QHBoxLayout();
@@ -129,13 +134,50 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	_camDirZSpinner->setTextBox(textBox);
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camDirZSpinner);
-	gridLayout->addLayout(fieldLayout, 1, 3);
+	gridLayout->addLayout(fieldLayout, 0, 3);
 	connect(_camDirZSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
-	_camFOVLabel = new QLabel(tr("Field of view:"));
-	gridLayout->addWidget(_camFOVLabel, 2, 0);
+	QGroupBox* projectionBox = new QGroupBox(tr("Projection type"));
+	mainLayout->addWidget(projectionBox);
+
+	gridLayout = new QGridLayout(projectionBox);
+	gridLayout->setColumnMinimumWidth(0, 30);
+	gridLayout->setColumnStretch(3, 1);
+
+	_camPerspective = new QRadioButton(tr("Perspective:"));
+	connect(_camPerspective, &QRadioButton::clicked, this, &AdjustCameraDialog::onAdjustCamera);
+	gridLayout->addWidget(_camPerspective, 0, 0, 1, 3);
+
+	gridLayout->addWidget(new QLabel(tr("View angle:")), 1, 1);
+	_camFOVAngleSpinner = new SpinnerWidget();
+	_camFOVAngleSpinner->setUnit(_viewport->dataset()->unitsManager().angleUnit());
+	_camFOVAngleSpinner->setMinValue(1e-4f);
+	_camFOVAngleSpinner->setMaxValue(FLOATTYPE_PI - 1e-2);
+	_camFOVAngleSpinner->setFloatValue(35.0*FLOATTYPE_PI/180.0);
+	_camFOVAngleSpinner->setEnabled(false);
+	connect(_camPerspective, &QRadioButton::toggled, _camFOVAngleSpinner, &SpinnerWidget::setEnabled);
+
+	fieldLayout = new QHBoxLayout();
+	fieldLayout->setContentsMargins(0,0,0,0);
+	fieldLayout->setSpacing(0);
+	textBox = new QLineEdit();
+	_camFOVAngleSpinner->setTextBox(textBox);
+	fieldLayout->addWidget(textBox);
+	fieldLayout->addWidget(_camFOVAngleSpinner);
+	gridLayout->addLayout(fieldLayout, 1, 2);
+	connect(_camFOVAngleSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
+
+	_camParallel = new QRadioButton(tr("Parallel:"));
+	connect(_camParallel, &QRadioButton::clicked, this, &AdjustCameraDialog::onAdjustCamera);
+	gridLayout->addWidget(_camParallel, 2, 0, 1, 3);
+
+	gridLayout->addWidget(new QLabel(tr("Field of view:")), 3, 1);
 	_camFOVSpinner = new SpinnerWidget();
+	_camFOVSpinner->setUnit(_viewport->dataset()->unitsManager().worldUnit());
 	_camFOVSpinner->setMinValue(1e-4f);
+	_camFOVSpinner->setFloatValue(200.0f);
+	_camFOVSpinner->setEnabled(false);
+	connect(_camParallel, &QRadioButton::toggled, _camFOVSpinner, &SpinnerWidget::setEnabled);
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -144,14 +186,15 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	_camFOVSpinner->setTextBox(textBox);
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camFOVSpinner);
-	gridLayout->addLayout(fieldLayout, 2, 1);
+	gridLayout->addLayout(fieldLayout, 3, 2);
 	connect(_camFOVSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
-	mainLayout->addLayout(gridLayout);
-
-	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Help, Qt::Horizontal, this);
 	connect(buttonBox, &QDialogButtonBox::accepted, this, &AdjustCameraDialog::accept);
 	connect(buttonBox, &QDialogButtonBox::rejected, this, &AdjustCameraDialog::onCancel);
+	connect(buttonBox, &QDialogButtonBox::helpRequested, [this]() {
+		_viewport->dataset()->mainWindow()->openHelpTopic("viewports.adjust_view_dialog.html");
+	});
 	mainLayout->addWidget(buttonBox);
 
 	updateGUI();
@@ -162,7 +205,6 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 ******************************************************************************/
 void AdjustCameraDialog::updateGUI()
 {
-	_camPerspective->setChecked(_viewport->isPerspectiveProjection());
 	Point3 cameraPos = _viewport->cameraPosition();
 	Vector3 cameraDir = _viewport->cameraDirection();
 	_camPosXSpinner->setFloatValue(cameraPos.x());
@@ -173,16 +215,13 @@ void AdjustCameraDialog::updateGUI()
 	_camDirZSpinner->setFloatValue(cameraDir.z());
 
 	if(_viewport->isPerspectiveProjection()) {
-		_camFOVSpinner->setUnit(_viewport->dataset()->unitsManager().angleUnit());
-		_camFOVLabel->setText(tr("View angle:"));
-		_camFOVSpinner->setMaxValue(FLOATTYPE_PI - 1e-2);
+		_camPerspective->setChecked(true);
+		_camFOVAngleSpinner->setFloatValue(_viewport->fieldOfView());
 	}
 	else {
-		_camFOVSpinner->setUnit(_viewport->dataset()->unitsManager().worldUnit());
-		_camFOVLabel->setText(tr("Field of view:"));
-		_camFOVSpinner->setMaxValue(FLOATTYPE_MAX);
+		_camParallel->setChecked(true);
+		_camFOVSpinner->setFloatValue(_viewport->fieldOfView());
 	}
-	_camFOVSpinner->setFloatValue(_viewport->fieldOfView());
 }
 
 /******************************************************************************
@@ -191,21 +230,16 @@ void AdjustCameraDialog::updateGUI()
 void AdjustCameraDialog::onAdjustCamera()
 {
 	if(_camPerspective->isChecked()) {
-		if(!_viewport->isPerspectiveProjection())
-			_camFOVSpinner->setFloatValue(35.0*FLOATTYPE_PI/180.0);
 		_viewport->setViewType(Viewport::VIEW_PERSPECTIVE);
+		_viewport->setFieldOfView(_camFOVAngleSpinner->floatValue());
 	}
 	else {
-		if(_viewport->isPerspectiveProjection()) {
-			_camFOVSpinner->setMaxValue(FLOATTYPE_MAX);
-			_camFOVSpinner->setFloatValue(200.0f);
-		}
 		_viewport->setViewType(Viewport::VIEW_ORTHO);
+		_viewport->setFieldOfView(_camFOVSpinner->floatValue());
 	}
 
 	_viewport->setCameraPosition(Point3(_camPosXSpinner->floatValue(), _camPosYSpinner->floatValue(), _camPosZSpinner->floatValue()));
 	_viewport->setCameraDirection(Vector3(_camDirXSpinner->floatValue(), _camDirYSpinner->floatValue(), _camDirZSpinner->floatValue()));
-	_viewport->setFieldOfView(_camFOVSpinner->floatValue());
 }
 
 /******************************************************************************

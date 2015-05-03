@@ -153,7 +153,7 @@ private:
 	/// Specifies the starting animation frame to which the first frame of the file sequence is mapped.
 	PropertyField<int> _playbackStartTime;
 
-	/// Stores the list of animation frames in the input file(s).
+	/// Stores the list of frames of the time series.
 	QVector<FileSourceImporter::Frame> _frames;
 
 	/// The index of the animation frame loaded last from the input file.

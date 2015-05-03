@@ -37,7 +37,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	_mainLayout = new QVBoxLayout(this);
 	QRadioButton* radioBtn;
 
-	QGroupBox* rangeGroupBox = new QGroupBox(tr("Export frame sequence"), this);
+	QGroupBox* rangeGroupBox = new QGroupBox(tr("Export time series"), this);
 	_mainLayout->addWidget(rangeGroupBox);
 
 	QGridLayout* rangeGroupLayout = new QGridLayout(rangeGroupBox);

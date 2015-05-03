@@ -60,7 +60,7 @@ Plugin* PluginManager::plugin(const QString& pluginId)
 	}
 
 	// In Ovito 2.1, the "Viz" plugin has been renamed to "Particles".
-	// To support loading of old scene files in newer versions of Ovito,
+	// To support loading of old state files in newer versions of Ovito,
 	// use "Viz" as an alias for the Particles plugin.
 	if(pluginId == QStringLiteral("Viz"))
 		return plugin(QStringLiteral("Particles"));

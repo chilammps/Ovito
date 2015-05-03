@@ -155,12 +155,7 @@ public Q_SLOTS:
 	void toggleCollapsed() { setCollapsed(!isCollapsed()); }
 
 	/// Collapses or opens the rollout.
-	void setCollapsed(bool collapsed) {
-		_collapseAnimation.stop();
-		_collapseAnimation.setStartValue(_visiblePercentage);
-		_collapseAnimation.setEndValue(collapsed ? 0 : 100);
-		_collapseAnimation.start();
-	}
+	void setCollapsed(bool collapsed);
 
 	/// Changes the title of the rollout.
 	void setTitle(const QString& title) {
@@ -169,6 +164,9 @@ public Q_SLOTS:
 
 	/// Is called when the user presses the help button.
 	void onHelpButton();
+
+	/// Makes sure that the rollout is visible in the rollout container.
+	void ensureVisible();
 
 protected:
 

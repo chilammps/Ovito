@@ -192,8 +192,8 @@ void ActionManager::on_FileOpen_triggered()
 		else
 			defaultPath = dataSet->filePath();
 
-		QString filename = QFileDialog::getOpenFileName(mainWindow(), tr("Load Scene"),
-				defaultPath, tr("Scene Files (*.ovito);;All Files (*)"));
+		QString filename = QFileDialog::getOpenFileName(mainWindow(), tr("Load Program State"),
+				defaultPath, tr("State Files (*.ovito);;All Files (*)"));
 		if(filename.isEmpty())
 			return;
 
@@ -256,7 +256,7 @@ void ActionManager::on_Settings_triggered()
 void ActionManager::on_FileImport_triggered()
 {
 	// Let the user select a file.
-	ImportFileDialog dialog(FileImporter::availableImporters(), _dataset, mainWindow(), tr("Import Data"));
+	ImportFileDialog dialog(FileImporter::availableImporters(), _dataset, mainWindow(), tr("Load File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -275,7 +275,7 @@ void ActionManager::on_FileImport_triggered()
 void ActionManager::on_FileRemoteImport_triggered()
 {
 	// Let the user enter the URL of the remote file.
-	ImportRemoteFileDialog dialog(FileImporter::availableImporters(), _dataset, mainWindow(), tr("Import Remote File"));
+	ImportRemoteFileDialog dialog(FileImporter::availableImporters(), _dataset, mainWindow(), tr("Load Remote File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 

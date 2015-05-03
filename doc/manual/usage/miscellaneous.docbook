@@ -12,14 +12,14 @@
   <simplesect xml:id="usage.saving_loading_scene">
   <title>Saving and restoring program state</title>
     <para>
-      The complete working state of the program, including the viewports, the modification pipeline, and display settings, can be saved to a <emphasis>scene file</emphasis>
-      by choosing <menuchoice><guimenu>File</guimenu><guimenuitem>Save State</guimenuitem></menuchoice> from the menu. This allows you to continue working at a later time 
-      and to preserve the current visualization setup for future use. For instance, you can use a scene file as a template to visualize a multiple simulations 
-      using the same camera setup and modifier sequence. After loading the scene file, simply replace the input of the existing modification pipeline with a different simulation file. 
+      The complete working state of the program, including the viewports, the modification pipeline, and display settings, can be saved to a <emphasis>state file</emphasis>
+      by choosing <menuchoice><guimenu>File</guimenu><guimenuitem>Save Program State</guimenuitem></menuchoice> from the menu. This allows you to continue working at a later time 
+      and to preserve the current visualization setup for future use. For instance, you can use a state file as a template to visualize a multiple simulations 
+      using the same camera setup and modifier sequence. 
     </para>
     <para>       
-      By default, OVITO does not store any particle data in the scene file to keep it small. It only saves a reference
-      to the original simulation file that has been imported, and the particle data is restored from that external file when you load the scene file.
+      By default, OVITO does not store any simulation data in the state file to keep it small. It only saves a reference
+      to the original data file that has been imported into OVITO, and the simulation data is restored from that external file when you load the state file.
     </para>
   </simplesect>
 

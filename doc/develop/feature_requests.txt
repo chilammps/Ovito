@@ -7,7 +7,7 @@ User interface improvements:
 - Extend spinner widget with "Animation" dialog, which can be opened for animatable parameters.
 - Make the viewport menu easier to discover.
 - Add file export function to Construct Surface Mesh modifier, which allows to export the mesh to a VTK file (requested by konstantin.avchachov@helsinki.fi).
- 
+
 Work-flow improvements:
 
 - Add support for low-dimensional systems.
@@ -54,10 +54,6 @@ Scripting features:
 
 - Scripting interface for viewport overlays.
 - Write access to particle properties from Python (requested by konstantin.avchachov@helsinki.fi)
-
-Other:
-
-- Update VideoEncoder class to avoid use of deprecated Libav functions.
 
 Documentation:
 

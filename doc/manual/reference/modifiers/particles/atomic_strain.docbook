@@ -47,7 +47,7 @@
   <inlineequation><mathphrase>D<superscript>2</superscript><subscript>min</subscript></mathphrase></inlineequation>
   by Falk &amp; Langer.</para>
 
-  <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
+  <para>Use the <emphasis>"Reference: External file"</emphasis> panel to pick the
   file containing the initial particle positions. Note
   that this reference file must contain the same set of particles as the
   current configuration received by the modifier from the upstream part of the modification pipeline. 

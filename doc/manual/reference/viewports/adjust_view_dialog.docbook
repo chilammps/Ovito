@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viewports.adjust_view_dialog"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Adjust view dialog</title>
+
+    <para>
+     <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/adjust_view_dialog/adjust_view_dialog.png" format="PNG" />
+     </imageobject></mediaobject></screenshot></informalfigure>
+     
+     This dialog box allows you to enter the position and orientation of a viewport's camera numerically.
+     It can be opened from the <link linkend="usage.viewports.menu">viewport menu</link>.
+   </para>
+    
+  <simplesect>
+    <title>Settings</title>
+
+    <variablelist>
+       <varlistentry>
+        <term>View position</term>
+        <listitem><para>
+           The coordinates of the virtual camera in space.
+		</para></listitem>
+      </varlistentry>
+
+       <varlistentry>
+        <term>View direction</term>
+        <listitem><para>
+           The direction vector of the virtual camera.
+		</para></listitem>
+      </varlistentry>
+
+       <varlistentry>
+        <term>Projection type</term>
+        <listitem><para>
+            When a perspective projection is used, the vertical field of view angle is specified in degrees. 
+            For a parallel projection, the vertical field of view is specified in units of length.
+		</para></listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>

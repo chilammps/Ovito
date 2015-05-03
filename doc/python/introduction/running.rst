@@ -39,7 +39,7 @@ to the terminal as if they were executed by a standard Python interpreter. Any c
 script's name are passed to the script via the ``sys.argv`` variable. Furthermore, it is possible to start OVITO's 
 interpreter in interactive scripting mode by running :program:`ovitos` without any arguments.
 
-The :command:`-o` command line option loads an OVITO scene file before executing the
+The :command:`-o` command line option loads an OVITO state file before executing the
 script. This allows you to preload and use an existing visualization setup that has 
 been manually prepared using the graphical version of OVITO and saved to a :file:`.ovito` file. This can save you programming
 work, because modifiers, parameters, and the camera setup get loaded from the OVITO file and 

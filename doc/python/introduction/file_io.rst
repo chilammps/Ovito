@@ -14,7 +14,7 @@ The primary way of loading an external data file is the :py:func:`~ovito.io.impo
    >>> from ovito.io import import_file
    >>> node = import_file("simulation.dump")
 
-This high-level function works like the `Open Local File` function in OVITO's graphical user interface. 
+This high-level function works like the `Load File` menu function in OVITO's graphical user interface. 
 It creates and returns an :py:class:`~ovito.ObjectNode`, whose :py:class:`~ovito.io.FileSource` is set up to point
 to the specified file, and which is reponsible for loading the actual data from the file. 
 Furthermore, the :py:func:`~ovito.io.import_file` function inserts the returned object node

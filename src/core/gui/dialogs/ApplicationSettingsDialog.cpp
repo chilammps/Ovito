@@ -32,7 +32,7 @@ IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsDialogPage, OvitoObject);
 ******************************************************************************/
 ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(parent)
 {
-	setWindowTitle(tr("Application Settings")); 
+	setWindowTitle(tr("Program Settings"));
 	
 	QVBoxLayout* layout1 = new QVBoxLayout(this);
 	

@@ -31,7 +31,7 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Gui)
 
 /// This action closes the main window and exits the application.
 #define ACTION_QUIT				"Quit"
-/// This action loads an empty scene file.
+/// This action loads an empty state file.
 #define ACTION_FILE_NEW			"FileNew"
 /// This action shows the file open dialog.
 #define ACTION_FILE_OPEN		"FileOpen"

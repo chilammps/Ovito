@@ -30,7 +30,7 @@ namespace Ovito { OVITO_BEGIN_INLINE_NAMESPACE(Util) OVITO_BEGIN_INLINE_NAMESPAC
 /**
  * \brief An output stream that can serialize an OvitoObject graph a file.
  *
- * This class is used to write OVITO scene files, which are on-disk representations of
+ * This class is used to write OVITO state files, which are on-disk representations of
  * OvitoObject graphs. The object graph can be read back from the file using ObjectLoadStream.
  *
  * \note All objects written to a stream must belong to the same DataSet.

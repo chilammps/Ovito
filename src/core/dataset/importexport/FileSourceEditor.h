@@ -83,11 +83,15 @@ private:
 	QLineEdit* _filenameLabel;
 	QLineEdit* _sourcePathLabel;
 	QLineEdit* _wildcardPatternTextbox;
+	QLabel* _fileSeriesLabel;
+	QLabel* _timeSeriesLabel;
 	StatusWidget* _statusLabel;
 	QComboBox* _framesListBox;
 
+#if 0
 	std::vector<OORef<PropertiesEditor>> _subEditors;
 	RolloutInsertionParameters _subEditorRolloutParams;
+#endif
 
 	Q_OBJECT
 	OVITO_OBJECT

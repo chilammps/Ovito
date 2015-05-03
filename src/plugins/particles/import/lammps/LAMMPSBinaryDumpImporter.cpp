@@ -466,7 +466,7 @@ OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 void LAMMPSBinaryDumpImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("LAMMPS binary dump file"), rolloutParams);
+	QWidget* rollout = createRollout(tr("LAMMPS binary dump"), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

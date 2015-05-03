@@ -77,7 +77,7 @@ bool Application::initialize(int& argc, char** argv)
 
 #ifdef Q_OS_LINUX
 	// Migrate settings file from old "Alexander Stukowski" directory to new default location.
-	// The storage location was changed after Ovito version 2.4.4.
+	// This is for backward compatibility with OVITO version 2.4.4 and earlier.
 	{
 		QString oldConfigFile = QDir::homePath() + QStringLiteral("/.config/Alexander Stukowski/Ovito.conf");
 		QString newConfigFile = QDir::homePath() + QStringLiteral("/.config/Ovito/Ovito.conf");
@@ -93,11 +93,7 @@ bool Application::initialize(int& argc, char** argv)
 
 	// Set the application name provided by the active branding class.
 	QCoreApplication::setApplicationName(tr("Ovito"));
-#ifdef Q_OS_WIN
-	QCoreApplication::setOrganizationName(tr("Alexander Stukowski"));
-#else
 	QCoreApplication::setOrganizationName(tr("Ovito"));
-#endif
 	QCoreApplication::setOrganizationDomain("ovito.org");
 	QCoreApplication::setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
 
@@ -246,7 +242,7 @@ bool Application::initialize(int& argc, char** argv)
 			return true;
 		}
 
-		// Load scene file specified at the command line.
+		// Load state file specified at the command line.
 		if(cmdLineParser().positionalArguments().empty() == false) {
 			QString startupFilename = cmdLineParser().positionalArguments().front();
 			if(startupFilename.endsWith(".ovito", Qt::CaseInsensitive))
