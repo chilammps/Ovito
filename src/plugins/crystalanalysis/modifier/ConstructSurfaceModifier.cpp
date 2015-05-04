@@ -145,6 +145,10 @@ PipelineStatus ConstructSurfaceModifier::applyComputationResults(TimePoint time,
 void ConstructSurfaceModifier::ConstructSurfaceEngine::perform()
 {
 	setProgressText(tr("Constructing surface mesh"));
+
+	if(_radius <= 0.0)
+		throw Exception(tr("Radius parameter must be positive."));
+
 	double alpha = _radius * _radius;
 
 	// Generate the list of input vertices.
@@ -161,7 +165,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::perform()
 		inputCount = selectedParticles.size();
 	}
 
-	FloatType ghostLayerSize = std::abs(_radius) * 3.0f;
+	FloatType ghostLayerSize = _radius * 3.0f;
 
 	// Check if combination of radius parameter and simulation cell size is valid.
 	for(size_t dim = 0; dim < 3; dim++) {
@@ -183,8 +187,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::perform()
 	// Generate Delaunay tessellation.
 	setProgressText(tr("Constructing surface mesh (Delaunay tessellation step)"));
 	DelaunayTessellation tessellation;
-	tessellation.generateTessellation(_simCell, inputPositions, inputCount, ghostLayerSize);
-	if(isCanceled())
+	if(!tessellation.generateTessellation(_simCell, inputPositions, inputCount, ghostLayerSize, this))
 		return;
 
 	setProgressRange(tessellation.number_of_tetrahedra());

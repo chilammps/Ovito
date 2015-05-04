@@ -25,6 +25,7 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include <plugins/particles/data/ParticleProperty.h>
+#include <core/utilities/concurrent/FutureInterface.h>
 
 #ifdef __clang__
 	#ifndef CGAL_CFG_ARRAY_MEMBER_INITIALIZATION_BUG
@@ -132,7 +133,7 @@ public:
 public:
 
 	/// Generates the Delaunay tessellation.
-	void generateTessellation(const SimulationCell& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize);
+	bool generateTessellation(const SimulationCell& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize, FutureInterfaceBase* progress = nullptr);
 
 	/// Returns the tetrahedron cell on the opposite side of the given cell facet.
 	CellHandle mirrorCell(const CellHandle& cell, int facet) const {

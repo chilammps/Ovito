@@ -27,9 +27,10 @@ namespace Ovito { namespace Plugins { namespace CrystalAnalysis {
 /******************************************************************************
 * Generates the tessellation.
 ******************************************************************************/
-void DelaunayTessellation::generateTessellation(const SimulationCell& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize)
+bool DelaunayTessellation::generateTessellation(const SimulationCell& simCell, const Point3* positions, size_t numPoints, FloatType ghostLayerSize, FutureInterfaceBase* progress)
 {
-	std::vector<Point3WithIndex> cgalPoints;
+	if(progress) progress->setProgressRange(0);
+	std::vector<DT::Point> cgalPoints;
 
 	// Set up random number generator to generate random perturbations.
 	std::mt19937 rng;
@@ -48,7 +49,7 @@ void DelaunayTessellation::generateTessellation(const SimulationCell& simCell, c
 		coords[1] = (double)wp.y() + displacement(rng);
 		coords[2] = (double)wp.z() + displacement(rng);
 
-		cgalPoints.emplace_back(coords[0], coords[1], coords[2], i, false);
+		cgalPoints.push_back(Point3WithIndex(coords[0], coords[1], coords[2], i, false));
 	}
 
 	int vertexCount = numPoints;
@@ -73,11 +74,15 @@ void DelaunayTessellation::generateTessellation(const SimulationCell& simCell, c
 		}
 	}
 
-	// Create periodic images of input vertices.
+	// Create ghost images of input vertices.
 	for(int ix = -stencilCount[0]; ix <= +stencilCount[0]; ix++) {
 		for(int iy = -stencilCount[1]; iy <= +stencilCount[1]; iy++) {
 			for(int iz = -stencilCount[2]; iz <= +stencilCount[2]; iz++) {
 				if(ix == 0 && iy == 0 && iz == 0) continue;
+
+				if(progress && progress->isCanceled())
+					return false;
+
 				Vector3 shift = simCell.reducedToAbsolute(Vector3(ix,iy,iz));
 				Vector_3<double> shiftd = (Vector_3<double>)shift;
 				for(int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
@@ -90,20 +95,43 @@ void DelaunayTessellation::generateTessellation(const SimulationCell& simCell, c
 							break;
 						}
 					}
-					if(!isClipped)
-						cgalPoints.emplace_back(cgalPoints[vertexIndex].x() + shift.x(),
-								cgalPoints[vertexIndex].y() + shift.y(), cgalPoints[vertexIndex].z() + shift.z(), vertexIndex, true);
+					if(!isClipped) {
+						cgalPoints.push_back(Point3WithIndex(cgalPoints[vertexIndex].x() + shift.x(),
+								cgalPoints[vertexIndex].y() + shift.y(), cgalPoints[vertexIndex].z() + shift.z(), vertexIndex, true));
+					}
 				}
 			}
 		}
 	}
 
-	_dt.insert(cgalPoints.begin(), cgalPoints.end());
+	if(progress && progress->isCanceled())
+		return false;
+
+	CGAL::spatial_sort(cgalPoints.begin(), cgalPoints.end(), _dt.geom_traits());
+
+	if(progress) {
+		if(progress->isCanceled()) return false;
+		progress->setProgressRange(cgalPoints.size());
+		progress->setProgressValue(0);
+	}
+
+	DT::Vertex_handle hint;
+	for(auto p = cgalPoints.begin(); p != cgalPoints.end(); ++p) {
+		hint = _dt.insert(*p, hint);
+
+		if(progress && ((p - cgalPoints.begin()) % 4096) == 0) {
+			if(progress->isCanceled()) return false;
+			progress->incrementProgressValue(4096);
+		}
+	}
+	progress->setProgressValue(cgalPoints.size());
 
 	// Classify tessellation cells as ghost or local cells.
 	for(CellIterator cell = begin_cells(); cell != end_cells(); ++cell) {
 		cell->info().isGhost = isGhostCell(cell);
 	}
+
+	return true;
 }
 
 /******************************************************************************
