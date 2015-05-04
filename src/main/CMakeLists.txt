@@ -63,6 +63,11 @@ FOREACH(plugin ${OVITO_PLUGIN_LIST})
     ADD_DEPENDENCIES(${PROJECT_NAME} ${plugin})
 ENDFOREACH()
 
+# Install fonts required by 'minimal' platform plugin on Linux
+IF(UNIX AND NOT APPLE)
+    INSTALL(DIRECTORY "resources/fonts" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/")
+ENDIF()
+
 IF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
 	# Install copies of the Qt libraries.
 	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)

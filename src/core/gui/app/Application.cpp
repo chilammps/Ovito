@@ -147,8 +147,8 @@ bool Application::initialize(int& argc, char** argv)
 	
 	// Because they may collide with our own options, we should ignore script arguments though. 
 	QStringList filteredArguments;
-	for(int i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "--scriptarg") == 0) {
+	for(int i = 0; i < arguments.size(); i++) {
+		if(arguments[i] == QStringLiteral("--scriptarg")) {
 			i += 1;
 			continue;
 		}
@@ -178,10 +178,30 @@ bool Application::initialize(int& argc, char** argv)
 	}
 
 	// Create Qt application object.
-	if(headlessMode())
-		_app.reset(new QCoreApplication(argc, argv));
-	else
+	if(headlessMode()) {
+#if defined(Q_OS_LINUX)
+		// Determine font directory path.
+		std::string applicationPath = argv[0];
+		auto sepIndex = applicationPath.rfind('/');
+		if(sepIndex != std::string::npos)
+			applicationPath.resize(sepIndex + 1);
+		std::string fontPath = applicationPath + "../share/ovito/fonts";
+
+		// On Linux, use the 'minimal' QPA platform plugin instead of the standard XCB plugin when no X server is available.
+		// Still create a Qt GUI application object, because otherwise we cannot use (offscreen) font rendering functions.
+		qputenv("QT_QPA_PLATFORM", "minimal");
+		// Enable rudimentary font rendering support, which is implemented by the 'minimal' platform plugin:
+		qputenv("QT_DEBUG_BACKINGSTORE", "1");
+		qputenv("QT_QPA_FONTDIR", fontPath.c_str());
+
 		_app.reset(new QApplication(argc, argv));
+#else
+		_app.reset(new QCoreApplication(argc, argv));
+#endif
+	}
+	else {
+		_app.reset(new QApplication(argc, argv));
+	}
 
 	// Reactivate default "C" locale, which, in the meantime, might have been changed by QCoreApplication.
 	std::setlocale(LC_NUMERIC, "C");
