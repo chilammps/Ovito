@@ -23,7 +23,7 @@
     very flexible manner.
   </para> 
   <para>
-    Each modifier has certain parameters that control its operation. 
+    Each modifier type has a set of specific parameters that control its function.
     OVITO's data flow concept allows to work non-destructively with the simulation data. 
     That means, you can change modifier parameters at any time, and OVITO will immediately recalculate the effect of the modifier on the original simulation data and
     update the particle display. To accomplish this, OVITO keeps two copies of the data in memory: 
@@ -67,8 +67,8 @@
     <title>The input elements</title>
     <para>
       The "Input" section in the pipeline editor represents the data source of the modification pipeline, i.e. the external simulation file.
-      Selecting the filename entry opens a panel in the area below the pipeline editor that, among other things, allows replacing the input of the 
-      existing modification pipeline with a different file. 
+      Selecting the filename entry opens a <link linkend="scene_objects.file_source">parameters panel</link> in the area below the pipeline editor that, 
+      among other things, allows you to replace the input of the existing modification pipeline with a different file. 
     </para>
     <para>
       Depending on the contents of the loaded input file, the "Input" section lists additional sub-entries corresponding to various parts of the 

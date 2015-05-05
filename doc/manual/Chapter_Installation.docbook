@@ -9,24 +9,19 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Installation</title>
 
-    <para>Binary program packages for Linux, Windows, and Mac OS X platforms
+    <para>Binary program packages for Linux, Windows, and Mac OS X 
     can be downloaded from <link xlink:href="http://www.ovito.org/">http://www.ovito.org/</link>.
-    Installation of OVITO is very simple: Just extract the downloaded file archive (no admin privileges required).</para>
+    The installation of OVITO is very simple: Just extract the downloaded archive into a directory of your choice (no admin privileges required).</para>
     
-    <para>OVITO makes use of hardware-accelerated OpenGL rendering to display particles and other graphical elements.
-    Older computers or outdated OpenGL graphics drivers may not be compatible with OVITO. 
-    For best compatibility, it is highly recommended to install the most recent version of your hardware vendor's graphics driver.</para>
+    <para>OVITO uses hardware-accelerated OpenGL to render particles and other graphical elements.
+    Older computers or outdated OpenGL graphics drivers may not be compatible with OVITO. It is recommended to install the most recent 
+    version of your hardware vendor's graphics driver.</para>
 
     <simplesect xml:id="installation.runovito.linux">
       <title>Linux</title>
-      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.4.0-x86_64.tar.gz</command>. Replace
-      the filename with the one actually downloaded from the
-      website. This will create a new subdirectory containing the extracted
-      program package. Change into the new directory and start OVITO by running
-      <command>bin/ovito</command>.
-      </para>
-      <para>
-      Note that OVITO is designed to be run on the local computer and not on a remote machine.
+      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the <command>tar</command> command, e.g.: <command>tar xzf ovito-2.4.0-x86_64.tar.gz</command>. 
+      This will create a new subdirectory containing the program package. 
+      Change into the new directory and start OVITO by running the executable <command>./bin/ovito</command>.
       </para>
     </simplesect>
 
@@ -35,17 +30,19 @@
 
       <para>Extract the <filename>.zip</filename> archive to an
       empty directory of your choice. Then start the program by double-clicking
-      <command>ovito.exe</command>.</para>
+      <command>ovito.exe</command>. Windows might ask whether you really want to launch the program,
+      because OVITO was downloaded from the web, has no digital signature, and comes from an untrusted source. 
+      In some cases it might be necessary to right-click the .exe file and select <menuchoice><guimenuitem>Open</guimenuitem></menuchoice> from 
+      the context menu the first time you start OVITO.
+      </para>
     </simplesect>
 
     <simplesect xml:id="installation.runovito.macos">
       <title>Mac OS X</title>
 
-      <para>Extract the <filename>.zip</filename> archive in a location of your choice. 
-      Then start OVITO by double-clicking the extracted application. 
-      To run multiple instances of OVITO simultaneously, you can
-      invoke the command <command>open -n ./Ovito.app/</command> from the
-      terminal.</para>
+      <para>Extract the <filename>.zip</filename> archive in a location of your choice (e.g. into the <filename>Applications</filename> folder).
+      Then start OVITO by double-clicking the extracted application bundle.
+      </para>
     </simplesect>
 
 </chapter>

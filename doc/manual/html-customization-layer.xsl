@@ -49,6 +49,12 @@ set       toc
 
 <xsl:template name="gentext.nav.home">Table of Contents</xsl:template>
 
+<xsl:template match="figure[@role = 'inline']" mode="class.value">
+  <xsl:value-of select="'inlinefigure'"/>
+</xsl:template>
+<xsl:template match="informalfigure[@role = 'inline']" mode="class.value">
+  <xsl:value-of select="'inlinefigure'"/>
+</xsl:template>
 
 <xsl:template name="header.navigation">
   <xsl:param name="prev" select="/foo"/>

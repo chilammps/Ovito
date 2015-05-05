@@ -11,6 +11,7 @@
   
   <para>This page is intentionally left blank. Please use the "Next" button to go to the next sub-section.</para>
   
+  <xi:include href="reference/scene_objects/file_source.docbook"/>
   <xi:include href="reference/modifiers/modifiers.docbook"/>
   <xi:include href="reference/display_objects/display_objects.docbook"/>
   <section xml:id="viewports">

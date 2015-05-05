@@ -91,14 +91,14 @@ hr {
     padding: 10px;
 }
 
-.figure p.title, .informalfigure .informaltable td {
+.figure p.title, .inlinefigure p.title, .informalfigure .informaltable td, .inlinefigure .informaltable td {
     max-width: 8cm;
 	font-size: 80%;
 	font-weight: bold;
 }
 
-.informalfigure .informaltable td {
-    word-wrap:break-word;
+.informalfigure .informaltable .inlinefigure td {
+    word-wrap: break-word;
     width: 10px;
     padding: 1px 5px;
 }

@@ -38,7 +38,7 @@ IMPLEMENT_OVITO_OBJECT(Core, FileSourceEditor, PropertiesEditor);
 void FileSourceEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("External file"), rolloutParams);
+	QWidget* rollout = createRollout(tr("External file"), rolloutParams, "scene_objects.file_source.html");
 
 	// Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -89,7 +89,11 @@ void FileSourceEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 	gridlayout->addWidget(_wildcardPatternTextbox, 0, 1);
 	_fileSeriesLabel = new QLabel();
 	QFont smallFont = _fileSeriesLabel->font();
+#ifdef Q_OS_MAC
 	smallFont.setPointSize(std::max(6, smallFont.pointSize() - 3));
+#else
+	smallFont.setPointSize(std::max(6, smallFont.pointSize() - 2));
+#endif
 	_fileSeriesLabel->setFont(smallFont);
 	gridlayout->addWidget(_fileSeriesLabel, 1, 1);
 
@@ -111,7 +115,7 @@ void FileSourceEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 	sublayout->addWidget(_statusLabel);
 
 	// Create another rollout for time series control.
-	rollout = createRollout(tr("Animation"), rolloutParams.after(rollout).collapse());
+	rollout = createRollout(tr("Animation"), rolloutParams.after(rollout).collapse(), "scene_objects.file_source.html");
 
 	// Create the rollout contents.
 	layout = new QVBoxLayout(rollout);

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="scene_objects.file_source"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>External file source</title>
+
+  <para>
+      
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/scene_objects/file_source_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+    
+    This parameters panel shows you what data has been loaded by OVITO and allows
+    you to change the source of the data, e.g. by picking a new external input file.  
+                
+	The panel is automatically displayed when you first <link linkend="usage.import">import a data file</link>.
+	You can access it again later by selecting the <link linkend="usage.modification_pipeline.input">input data item</link> in the modification pipeline editor.
+  </para>
+
+   <simplesect>
+     <title>Toolbar</title>
+    
+     <para>
+    <informalfigure role="inline"><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/scene_objects/file_source_toolbar.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+     
+     </para>    
+
+   </simplesect>
+    
+</section>

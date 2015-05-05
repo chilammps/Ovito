@@ -10,67 +10,73 @@
   <title>Rendering images and movies</title>
 
   <para>
-    OVITO lets you work with simulation data interactively. However, to share your work with others,
-    you likely want to produce static images or videos of the simulation data for publication in articles or presentations. 
-    Rendering output images or movies is done from the 
-    <emphasis>Render</emphasis> tab <inlinemediaobject><imageobject><imagedata fileref="images/command_panel/tab_render.png" format="png" xml:base="../"/>
-	</imageobject></inlinemediaobject> of the command panel.
+	    <informalfigure>
+	    	<screenshot><mediaobject><imageobject>
+	        <imagedata fileref="images/rendering/render_tab.png" format="PNG" scale="40" />
+	        </imageobject></mediaobject></screenshot>
+	    </informalfigure>
+	OVITO lets you work with and analyze simulation data interactively. However, to share your work with others,
+    you likely want to produce static images or videos to be included in publications or presentations. 
+    Rendering and saving images or movies is done from the 
+    <emphasis>Render</emphasis> tab of the command panel, which is shown on the right.
   </para>
   
   <simplesect xml:id="usage.rendering.render_settings">
     <title>Render settings</title>     
       <para>
-      <informalfigure><informaltable frame="none">
+      In the <link linkend="core.render_settings">Render Settings</link> panel you control the generation 
+      of output images and movies, for example by setting the desired image resolution and background color.
+      Click the <guibutton>Render Active Viewport</guibutton> <inlinemediaobject><imageobject><imagedata fileref="images/rendering/render_active_viewport.png" format="png" xml:base="../"/>
+      </imageobject></inlinemediaobject> button to start the rendering process. OVITO will open a new window to display the generated image, which can be saved to disk or copied to the 
+      clipboard.
+    </para>
+    <para>
+      OVITO provides two different rendering engines. The first one is the hardware-accelerated <link linkend="rendering.opengl_renderer">OpenGL renderer</link>, which is also used in the 
+      interactive viewports for real-time display. Accordingly, this renderer is very fast and produces pictures that are more or less identical to
+      what you see in the interactive viewports. The second option is the <link linkend="rendering.tachyon_renderer">Tachyon renderer</link>, a software-based
+      raytracing engine. It supports real shadows and ambient occlusion shading, but it usually takes longer to compute an image with this renderer.
+      <informalfigure role="inline">
+      <informaltable frame="none">
         <tgroup cols="2">
           <tbody>
             <row valign="bottom">
-              <entry>OpenGL renderer output:</entry>
-              <entry>Tachyon renderer output:</entry>
+              <entry>OpenGL renderer:</entry>
+              <entry>Tachyon renderer:</entry>
             </row>
             <row valign="top">
-            <entry><mediaobject><imageobject><imagedata fileref="images/rendering/renderer_example_opengl.png" format="PNG" /></imageobject></mediaobject></entry>
-            <entry><mediaobject><imageobject><imagedata fileref="images/rendering/renderer_example_tachyon.png" format="PNG" /></imageobject></mediaobject></entry>
+              <entry><mediaobject><imageobject><imagedata fileref="images/rendering/renderer_example_opengl.png" format="PNG" /></imageobject></mediaobject></entry>
+              <entry><mediaobject><imageobject><imagedata fileref="images/rendering/renderer_example_tachyon.png" format="PNG" /></imageobject></mediaobject></entry>
             </row>
           </tbody>
         </tgroup>
-      </informaltable></informalfigure>
-      The <link linkend="core.render_settings">Render settings</link> panel lets you adjust parameters that control the generation 
-      of output images, for instance the image resolution and background color.
-      The <guibutton>Render Active Viewport</guibutton> <inlinemediaobject><imageobject><imagedata fileref="images/rendering/render_active_viewport.png" format="png" xml:base="../"/>
-      </imageobject></inlinemediaobject> button starts the rendering process and opens a new window showing the generated image. 
-    </para>
-    <para>
-      OVITO provides two different rendering engines. The first is the default, hardware-accelerated <link linkend="rendering.opengl_renderer">OpenGL renderer</link> that is also used in the 
-      interactive viewports for real-time display. Accordingly, this renderer is very fast and produces pictures that are identical to
-      what you see in the viewports. The second option is the <link linkend="rendering.tachyon_renderer">Tachyon renderer</link>, a software-based
-      raytracing engine. It supports shadows and ambient occlusion shading, but it usually takes longer to compute an image with this renderer.
+      </informaltable>
+      </informalfigure>
     </para>
   </simplesect>
 
   <simplesect xml:id="usage.rendering.animation">
     <title>Creating movies</title>     
     <para>
-      You can let OVITO render a movie of a simulation sequence. For this, select <guilabel>Complete animation</guilabel>
-      in the <link linkend="core.render_settings">Render Settings</link> panel and choose a name and encoding format for the output video file. 
-      OVITO's built-in video encoder supports common video formats such as AVI and MPEG. 
-      Alternatively, you can let OVITO produce a sequence of separate image files and combine them to a 
-      video file yourself using an external video editing tool.
+      If you have loaded a simulation sequence, you can let OVITO render an animated movie of it and save it as a video file. 
+      Select <guilabel>Complete animation</guilabel> in the <link linkend="core.render_settings">Render Settings</link> panel and set a name and encoding format for the 
+      output video file. OVITO's built-in video encoder supports common video formats such as AVI and MPEG. 
     </para>
     <para>
-      The playback speed (frames per second) of the output video file can be changed in the <link linkend="animation.animation_settings_dialog">Animation Settings</link> dialog, which can be opened 
+      The playback speed (frames per second) of the video to be generated can be changed in the <link linkend="animation.animation_settings_dialog">Animation Settings</link> dialog, which can be opened 
       from the animation toolbar.
+      Alternatively, you can produce a series of separate image files and combine them to a video later using an external video encoding tool.
     </para>
   </simplesect>
 
   <simplesect xml:id="usage.rendering.show_render_frame">
-    <title>Adjusting the visible viewport region</title>     
+    <title>Adjusting the visible viewport region</title>
     <para>
       <informalfigure><informaltable frame="none">
         <tgroup cols="2">
           <tbody>
             <row valign="bottom">
-              <entry>The gray frame indicates what area will be visible:</entry>
-              <entry>The final output image:</entry>
+              <entry>Interactive viewport:</entry>
+              <entry>Rendered image:</entry>
             </row>
             <row valign="top">
             <entry><mediaobject><imageobject><imagedata fileref="images/rendering/show_render_frame_example.png" format="PNG" scale="40" /></imageobject></mediaobject></entry>
@@ -79,9 +85,11 @@
           </tbody>
         </tgroup>
       </informaltable></informalfigure>
-      When rendering an image of a certain size the visible region might slightly differ from what you see in the interactive viewport because
-      of the different aspect ratio. To assist you in positioning the virtual camera, it is possible to activate the <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> option in the <link linkend="usage.viewports.menu">viewport menu</link>.
-      As shown in the screenshot on the right, in this mode a frame indicates the exact region that will be visible in the final rendered image.
+      The interative viewport in OVITO and the static output image being rendered may have different aspect ratios, depending on the rendering resolution you specified.
+      Thus, the visible region in the output image might slightly differ from what you see in the interactive viewport. 
+      To help you positioning the virtual camera and adjust the visible portion of the viewport, 
+      it is possible to activate the <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> mode for a viewport in the <link linkend="usage.viewports.menu">viewport menu</link>.
+      As shown in the screenshot on the right, now a semi-transparent frame in the interactive viewport indicates the region that will be visible in the final image.
      </para>
    </simplesect>
   

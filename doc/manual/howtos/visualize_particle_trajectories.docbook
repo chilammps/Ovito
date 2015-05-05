@@ -16,19 +16,7 @@
             <imagedata fileref="images/howtos/flow_trajectory_example.gif" format="gif" width="300" height="180" />
        </imageobject></mediaobject></screenshot>
     </figure> 
-     <figure id="fig.create_trajectory_applet">
-      <title>The <emphasis>Create trajectory lines</emphasis> utility.</title>
-      <screenshot><mediaobject><imageobject>
-            <imagedata fileref="images/howtos/create_trajectory_applet.png" format="png" />
-       </imageobject></mediaobject></screenshot>
-    </figure> 
-     <figure id="fig.trajectory_display_panel">
-      <title>The trajectory display settings.</title>
-      <screenshot><mediaobject><imageobject>
-            <imagedata fileref="images/howtos/trajectory_display_panel.png" format="png" />
-       </imageobject></mediaobject></screenshot>
-    </figure>
-    OVITO can visualize the trajectory lines of individual particles as shown in the example movie on the right.
+    OVITO can visualize trajectory lines of individual particles as shown in the example movie on the right.
     A trajectory object is created using the <emphasis>Create trajectory lines</emphasis> utility as described in the following.
   </para>
 
@@ -36,6 +24,12 @@
   <title>Procedure</title>
 
   <para>
+     <figure id="fig.create_trajectory_applet">
+      <title>The <emphasis>Create trajectory lines</emphasis> utility.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/create_trajectory_applet.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
     The user interface of the utility (<xref linkend="fig.create_trajectory_applet" />) lets you select the set of particles for which to create trajectory lines (all or selected ones)
     and the time span over which the trajectory lines should be generated. The <emphasis>Unwrap trajectories</emphasis> option is useful when particles cross
     the boundaries of a periodic simulation cell.
@@ -49,6 +43,12 @@
   </para>
 
   <para>
+     <figure id="fig.trajectory_display_panel">
+      <title>The trajectory display settings.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/howtos/trajectory_display_panel.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure>
     You can switch back and forth between the <emphasis>Trajectories</emphasis> and the <emphasis>Particles</emphasis> object using the scene object selector box 
     (marked by a red circle in <xref linkend="fig.trajectory_display_panel" />). Alternatively, you can simpy click on a particle or on a trajectory line in the
     viewports to select the corresponding object.
