@@ -567,13 +567,16 @@ void Viewport::render(QOpenGLContext* context)
 	_pickingRenderer->reset();
 
 	try {
+		QSize vpSize = this->size();
+		if(vpSize.isEmpty())
+			return;
+
 		_isRendering = true;
 		TimePoint time = dataset()->animationSettings()->time();
 		RenderSettings* renderSettings = dataset()->renderSettings();
 		OVITO_ASSERT(renderSettings != nullptr);
 		ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 
-		QSize vpSize = size();
 		glViewport(0, 0, vpSize.width(), vpSize.height());
 
 		// Set up the viewport renderer.

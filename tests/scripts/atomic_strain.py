@@ -8,7 +8,7 @@ from ovito.particles import *
 
 # Load a simulation file. This is a binary dump file without metdata. That's why we have to
 # explicitly specify the meaning of the five data fields in the file.
-node = importData("../files/shear.void.dump.bin",
+node = importData("../files/LAMMPS/shear.void.dump.bin",
 	columnMapping=["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"],
 	multiTimestepFile=True)
 

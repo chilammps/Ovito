@@ -4,7 +4,7 @@ from ovito.modifiers import *
 
 import numpy
 
-node = import_file("../../files/animation.dump.gz")
+node = import_file("../../files/LAMMPS/animation.dump.gz")
 modifier = ColorCodingModifier()
 
 print("Parameter defaults:")

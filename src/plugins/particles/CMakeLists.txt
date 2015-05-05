@@ -84,6 +84,7 @@ SET(SourceFiles
 	import/parcas/ParcasFileImporter.cpp
 	import/cfg/CFGImporter.cpp
 	import/pdb/PDBImporter.cpp
+	import/fhi_aims/FHIAimsImporter.cpp
 	export/ParticleExporter.cpp
 	export/ParticleExporterSettingsDialog.cpp
 	export/OutputColumnMapping.cpp

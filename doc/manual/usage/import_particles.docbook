@@ -15,7 +15,7 @@
     Compressed files with a <filename>.gz</filename> suffix can be opened directly.
   </para>
   <para>
-    After loading and displaying the data from the selected file, OVITO opens the file import settings panel 
+    After loading and displaying the data from the selected file, OVITO opens the <link linkend="scene_objects.file_source">file import panel</link> 
     as shown in the screenshot below. At the top of this settings panel you find a row of command buttons. The left-most
     button, for example, allows you to select a new input file and replace the currently loaded data.
     This is useful if you have already set up a sequence of <link linkend="usage.modification_pipeline">data modification or analysis

@@ -3,7 +3,7 @@ from ovito.io import *
 from ovito.modifiers import *
 import numpy as np
 
-node = import_file("../../files/lammps_dumpi-42-1100-510000.cfg")
+node = import_file("../../files/CFG/lammps_dumpi-42-1100-510000.cfg")
 
 modifier = ConstructSurfaceModifier()
 node.modifiers.append(modifier)

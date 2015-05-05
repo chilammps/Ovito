@@ -3,7 +3,7 @@ from ovito.io import *
 from ovito.modifiers import *
 import numpy
 
-node = import_file("../../files/sheared_aSi.nc")
+node = import_file("../../files/NetCDF/sheared_aSi.nc")
 
 modifier = HistogramModifier()
 node.modifiers.append(modifier)

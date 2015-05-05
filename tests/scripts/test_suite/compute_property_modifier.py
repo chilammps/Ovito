@@ -4,7 +4,7 @@ import ovito.modifiers
 
 import numpy
 
-node = ovito.io.import_file("../../files/shear.void.120.cfg")
+node = ovito.io.import_file("../../files/CFG/shear.void.120.cfg")
 modifier = ovito.modifiers.ComputePropertyModifier()
 assert(len(modifier.expressions) == 1)
 

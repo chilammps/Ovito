@@ -3,11 +3,11 @@ from ovito.io import *
 from ovito.modifiers import *
 import numpy as np
 
-node = import_file("../../files/sheared_aSi.nc")
+node = import_file("../../files/NetCDF/sheared_aSi.nc")
 
 modifier = WignerSeitzAnalysisModifier()
 node.modifiers.append(modifier)
-modifier.reference.load("../../files/sheared_aSi.nc")
+modifier.reference.load("../../files/NetCDF/sheared_aSi.nc")
 
 dataset.anim.current_frame = 4
 

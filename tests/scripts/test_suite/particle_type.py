@@ -1,7 +1,7 @@
 from ovito import *
 from ovito.io import *
 
-node = import_file("../../files/shear.void.120.cfg")
+node = import_file("../../files/CFG/shear.void.120.cfg")
 ptype_property = node.source.data.particle_type
 
 assert(len(ptype_property.type_list) == 3)

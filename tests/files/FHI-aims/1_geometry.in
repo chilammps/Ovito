@@ -1,0 +1,19 @@
+#  Hashes begin a comment
+#  Empty lines are to be ignored.
+
+
+#  fcc Al
+#  Equilibrium lattice parameter: 3.98 A (LDA)
+#
+  atom 0. 0. 0. Al
+  atom_frac 0.5 0.5 0.5 Al
+# 
+# atom gives cartesian coordinates
+# atom_frac gives direct (fractional) coordinates
+# both can be used simultaneously
+#
+# unit cell
+#
+lattice_vector  1.99 1.99 0.0
+lattice_vector  0.0  1.99 1.99
+lattice_vector  1.99 0.0  1.99

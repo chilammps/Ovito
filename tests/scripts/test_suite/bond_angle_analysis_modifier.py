@@ -4,7 +4,7 @@ from ovito.modifiers import BondAngleAnalysisModifier
 
 import numpy
 
-node = import_file("../../files/fcc_coherent_twin.0.cfg")
+node = import_file("../../files/CFG/fcc_coherent_twin.0.cfg")
 modifier = BondAngleAnalysisModifier()
 node.modifiers.append(modifier)
 

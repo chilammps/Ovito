@@ -1,0 +1,7 @@
+# "lattice_vector" is not necessary.
+# But if it is there, it should be there at least three times -- to specify all the three vectors.
+# atom_frac cannot be used unless the three "lattice_vectors" have been specified.
+# the location of this specification in the file does not matter -- it can even be at the end of the file.
+#
+atom     0.0   0.0   0.0  Au
+atom     0.0   0.0   3.0  Au

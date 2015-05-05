@@ -4,7 +4,7 @@ from ovito.vis import *
 import os
 import os.path
 
-import_file("../../files/animation.dump.gz", multiple_frames = True)
+import_file("../../files/LAMMPS/animation.dump.gz", multiple_frames = True)
 
 vp = ovito.dataset.viewports.active_vp
 

@@ -3,7 +3,7 @@ from ovito.io import *
 import os
 import os.path
 
-import_file("../../files/animation.dump.gz")
+import_file("../../files/LAMMPS/animation.dump.gz")
 
 if os.path.isfile("scene.ovito"): os.remove("scene.ovito")
 

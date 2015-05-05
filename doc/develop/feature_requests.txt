@@ -9,7 +9,6 @@ User interface improvements:
 - Add file export function to Construct Surface Mesh modifier, which allows to export the mesh to a VTK file (requested by konstantin.avchachov@helsinki.fi).
 - Add possibility to turn off loop playback of animation.
  
->>>>>>> Stashed changes
 Work-flow improvements:
 
 - Add support for low-dimensional systems.

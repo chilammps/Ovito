@@ -4,7 +4,7 @@ import ovito.modifiers
 
 import numpy
 
-node = ovito.io.import_file("../../files/shear.void.120.cfg")
+node = ovito.io.import_file("../../files/CFG/shear.void.120.cfg")
 node.modifiers.append(ovito.modifiers.CommonNeighborAnalysisModifier(adaptive_mode = True))
 modifier = ovito.modifiers.SelectParticleTypeModifier()
 print(modifier.types)

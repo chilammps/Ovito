@@ -3,7 +3,7 @@ from ovito.io import *
 from ovito.modifiers import *
 import numpy as np
 
-node = import_file("../../files/shear.void.120.cfg")
+node = import_file("../../files/CFG/shear.void.120.cfg")
 
 modifier = AffineTransformationModifier()
 node.modifiers.append(modifier)

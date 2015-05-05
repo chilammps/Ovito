@@ -32,8 +32,6 @@
       empty directory of your choice. Then start the program by double-clicking
       <command>ovito.exe</command>. Windows might ask whether you really want to launch the program,
       because OVITO was downloaded from the web, has no digital signature, and comes from an untrusted source. 
-      In some cases it might be necessary to right-click the .exe file and select <menuchoice><guimenuitem>Open</guimenuitem></menuchoice> from 
-      the context menu the first time you start OVITO.
       </para>
     </simplesect>
 
@@ -42,6 +40,9 @@
 
       <para>Extract the <filename>.zip</filename> archive in a location of your choice (e.g. into the <filename>Applications</filename> folder).
       Then start OVITO by double-clicking the extracted application bundle.
+      MacOS X might refuse to start OVITO, because it was not downloaded from the official App Store.
+      Then right-click the application and select <menuchoice><guimenuitem>Open</guimenuitem></menuchoice> from 
+      the context menu (only required the first time you start OVITO).
       </para>
     </simplesect>
 

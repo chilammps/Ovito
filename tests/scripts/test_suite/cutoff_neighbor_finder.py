@@ -1,7 +1,7 @@
 from ovito.io import *
 from ovito.data import *
 
-node = import_file("../../files/animation.dump.gz")
+node = import_file("../../files/LAMMPS/animation.dump.gz")
 
 num_particles = node.source.data.position.size
 

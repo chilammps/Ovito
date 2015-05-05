@@ -3,7 +3,7 @@ from ovito.io import *
 from ovito.modifiers import *
 import numpy as np
 
-node = import_file("../../files/shear.void.120.cfg")
+node = import_file("../../files/CFG/shear.void.120.cfg")
 
 # Apply smoe strain to the atoms.
 node.modifiers.append(AffineTransformationModifier(
@@ -14,7 +14,7 @@ node.modifiers.append(AffineTransformationModifier(
 # Calculate the atomic strain.
 modifier = AtomicStrainModifier()
 node.modifiers.append(modifier)
-modifier.reference.load("../../files/shear.void.120.cfg")
+modifier.reference.load("../../files/CFG/shear.void.120.cfg")
 
 print("Parameter defaults:")
 

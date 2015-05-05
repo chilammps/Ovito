@@ -16,7 +16,7 @@
        <imagedata fileref="images/scene_objects/file_source_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
     
-    This parameters panel shows you what data has been loaded by OVITO and allows
+    This panel shows what data was loaded by OVITO and allows
     you to change the source of the data, e.g. by picking a new external input file.  
                 
 	The panel is automatically displayed when you first <link linkend="usage.import">import a data file</link>.
@@ -27,10 +27,80 @@
      <title>Toolbar</title>
     
      <para>
-    <informalfigure role="inline"><screenshot><mediaobject><imageobject>
+      <informalfigure role="inline"><screenshot><mediaobject><imageobject>
        <imagedata fileref="images/scene_objects/file_source_toolbar.png" format="PNG" />
-    </imageobject></mediaobject></screenshot></informalfigure>
+      </imageobject></mediaobject></screenshot></informalfigure>
      
+     <variablelist>
+      <varlistentry>
+        <term>Pick new file</term>
+
+        <listitem>
+          <para>Allows you to select a different data file to replace the input data of the current
+          modification pipeline. All modifiers are retained, but the data they act on changes.
+          </para>
+          <para>Note that when you load a new simulation file using this function, OVITO does <emphasis>not</emphasis>
+          automatically recognize any consecutive file series it belongs to (unlike when you use the 
+          <link linkend="usage.import"><menuchoice><guimenuitem>Load File</guimenuitem></menuchoice></link> from the file menu).
+          Thus, to load a new time series, you will have to specify the file pattern for the time series explicitly 
+          after loading the first file from the series.        
+          </para>
+		  <para>
+		    By default, after loading the new file, OVITO automatically adjusts the visible region in the viewports
+		    to show the new simulation box. If you want to suppress the automatic zoom and keep the current view, 
+		    create a fixed viewport camera using the 
+		    <menuchoice><guimenuitem>Create Camera</guimenuitem></menuchoice> function from the <link linkend="usage.viewports.menu">viewport menu</link> first.
+		  </para>
+          </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Pick new remote file</term>
+        <listitem>
+          <para>
+            Same as above, but allows you to enter a new remote URL instead of picking a local file.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Reload data</term>
+        <listitem>
+          <para>
+          Reloads the data of the current animation frame from the external file. This is useful
+          if the external data file has changed, for example after re-running a simulation with different parameters.
+          </para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term>Update time series</term>
+        <listitem>
+          <para>
+             Searches the directory for new files that match the current file pattern. When working
+             with a file that contains multiple simulation frames, the file is re-scanned to rebuild the list of
+             frames.
+             This function is useful when a simulation is still running and produces additional output files.
+          </para>
+        </listitem>
+      </varlistentry>
+         
+      <varlistentry>
+        <term>Store data in state file</term>
+        <listitem>
+          <para>
+            OVITO allows you to save the current program state in a <emphasis>state file</emphasis> (<filename>.ovito</filename>). By default,
+            the input simulation data is <emphasis>not</emphasis> stored in that state file to save disk space.
+            Instead it is read again from the original simulation file when you load the state file.
+            Activating this function will embed a copy of the external simulation data in the state file, making
+            it easier to transfer the state file to a different computer. However, this currently works only
+            for the current animation frame. OVITO never embeds an entire time series in the state file.
+          </para>
+        </listitem>
+      </varlistentry>
+                  
+    </variablelist>
+         
      </para>    
 
    </simplesect>
