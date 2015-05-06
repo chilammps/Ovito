@@ -115,8 +115,8 @@ public:
 	}
 
 	/// Defines a new particle type with the given id.
-	inline int addParticleTypeName(const char* name, const char* name_end) {
-		size_t nameLen = name_end - name;
+	inline int addParticleTypeName(const char* name, const char* name_end = nullptr) {
+		size_t nameLen = (name_end ? (name_end - name) : qstrlen(name));
 		for(const auto& type : _particleTypes) {
 			if(type.name8bit.compare(0, type.name8bit.size(), name, nameLen) == 0)
 				return type.id;
@@ -126,9 +126,9 @@ public:
 		return id;
 	}
 
-	/// Defines a new particle type with the given id.
+	/// Defines a new particle type with the given id, color, and radius.
 	int addParticleTypeName(const char* name, const char* name_end, const Color& color, FloatType radius = 0) {
-		size_t nameLen = name_end - name;
+		size_t nameLen = (name_end ? (name_end - name) : qstrlen(name));
 		for(const auto& type : _particleTypes) {
 			if(type.name8bit.compare(0, type.name8bit.size(), name, nameLen) == 0)
 				return type.id;

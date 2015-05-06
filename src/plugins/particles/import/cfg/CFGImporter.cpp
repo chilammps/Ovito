@@ -254,8 +254,8 @@ void CFGImporter::CFGImportTask::parseFile(CompressedTextReader& stream)
 		}
 	}
 
-	// Since we created particle types on the go while reading the particle, the assigned particle type IDs
-	// depends on the storage order of particles in the file. We rather want a well-defined particle type ordering, that's
+	// Since we created particle types on the go while reading the particles, the assigned particle type IDs
+	// depend on the storage order of particles in the file. We rather want a well-defined particle type ordering, that's
 	// why we sort them now.
 	if(header.isExtendedFormat || columnParser.usingNamedParticleTypes())
 		sortParticleTypesByName();

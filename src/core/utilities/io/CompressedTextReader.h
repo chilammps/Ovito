@@ -62,6 +62,14 @@ public:
 	/// \throw Exception if an I/O error has occurred of if there is no more line to read.
 	const char* readLine(int maxSize = 0);
 
+	/// Reads the next line of text from the input file of trims leading whitespace.
+	/// \throw Exception if an I/O error has occurred of if there is no more line to read.
+	const char* readLineTrimLeft(int maxSize = 0) {
+		const char* s = readLine(maxSize);
+		while(*s != '\0' && (*s == ' ' || *s == '\t')) ++s;
+		return s;
+	}
+
 	/// Checks whether the end of file has been reached. Do not call readLine() when this returns \c true.
 	bool eof() const {
 		return _stream->atEnd();

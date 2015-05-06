@@ -36,48 +36,34 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, FHIAimsImporter, ParticleImporter
 ******************************************************************************/
 bool FHIAimsImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
-	// Regular expression for whitespace characters.
-	QRegularExpression ws_re(QStringLiteral("\\s+"));
-
 	// Open input file.
 	CompressedTextReader stream(input, sourceLocation.path());
 
-	// Skip comment line
-	stream.readLine();
+	// Look for 'atom' or 'atom_frac' keywords.
+	while(!stream.eof()) {
+		const char* line = stream.readLineTrimLeft(1024);
 
-	// Read global scaling factor
-	double scaling_factor;
-	stream.readLine();
-	if(stream.eof() || sscanf(stream.line(), "%lg", &scaling_factor) != 1 || scaling_factor <= 0)
-		return false;
+		if(boost::algorithm::starts_with(line, "atom")) {
+			if(boost::algorithm::starts_with(line, "atom_frac"))
+				line += 9;
+			else
+				line += 4;
 
-	// Read cell matrix
-	for(int i = 0; i < 3; i++) {
-		stream.readLine();
-		if(stream.lineString().split(ws_re, QString::SkipEmptyParts).size() != 3)
-			return false;
-		double x,y,z;
-		if(sscanf(stream.line(), "%lg %lg %lg", &x, &y, &z) != 3 || stream.eof())
-			return false;
-	}
+			// Trim anything from '#' onward.
+			std::string line2 = line;
+			size_t commentStart = line2.find_first_of('#');
+			if(commentStart != std::string::npos) line2.resize(commentStart);
 
-	// Parse number of atoms per type.
-	int nAtomTypes = 0;
-	for(int i = 0; i < 2; i++) {
-		stream.readLine();
-		QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
-		if(i == 0) nAtomTypes = tokens.size();
-		else if(nAtomTypes != tokens.size())
-			return false;
-		int n = 0;
-		Q_FOREACH(const QString& token, tokens) {
-			bool ok;
-			n += token.toInt(&ok);
-		}
-		if(n > 0)
+			// Make sure keyword is followed by three numbers and an atom type name, and nothing else.
+			FloatType x,y,z;
+			char atomTypeName[16];
+			char tail[2];
+			if(sscanf(line2.c_str(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " %15s %1s", &x, &y, &z, atomTypeName, tail) != 4)
+				return false;
+
 			return true;
+		}
 	}
-
 	return false;
 }
 
@@ -93,26 +79,21 @@ void FHIAimsImporter::FHIAimsImportTask::parseFile(CompressedTextReader& stream)
 	int lattVecCount = 0;
 	int totalAtomCount = 0;
 	while(!stream.eof()) {
-		std::string line = stream.readLine();
-
-		// Trim anything from '#' onward.
-		size_t commentStart = line.find_first_of('#');
-		if(commentStart != std::string::npos) line.resize(commentStart);
-
-		// Trim leading whitespace.
-		boost::algorithm::trim_left(line);
+		const char* line = stream.readLineTrimLeft();
 
 		if(boost::algorithm::starts_with(line, "lattice_vector")) {
 			if(lattVecCount >= 3)
-				throw Exception(tr("More than three lattice vectors (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
-			if(scanf(line.c_str(), "lattice_vector " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,lattVecCount), &cell(1,lattVecCount), &cell(2,lattVecCount)) != 3 || cell.column(lattVecCount) == Vector3::Zero())
-				throw Exception(tr("Invalid cell vector (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+				throw Exception(tr("FHI-aims file contains more than three lattice vectors (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+			if(sscanf(line, "lattice_vector " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,lattVecCount), &cell(1,lattVecCount), &cell(2,lattVecCount)) != 3 || cell.column(lattVecCount) == Vector3::Zero())
+				throw Exception(tr("Invalid cell vector in FHI-aims (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 			lattVecCount++;
 		}
 		else if(boost::algorithm::starts_with(line, "atom")) {
 			totalAtomCount++;
 		}
 	}
+	if(totalAtomCount == 0)
+		throw Exception(tr("Invalid FHI-aims file: No atoms found."));
 
 	// Create the particle properties.
 	ParticleProperty* posProperty = new ParticleProperty(totalAtomCount, ParticleProperty::PositionProperty, 0, false);
@@ -124,6 +105,50 @@ void FHIAimsImporter::FHIAimsImportTask::parseFile(CompressedTextReader& stream)
 	stream.seek(0);
 
 	// Second pass: read atom coordinates and types.
+	for(int i = 0; i < totalAtomCount; i++) {
+		while(true) {
+			const char* line = stream.readLineTrimLeft();
+
+			if(boost::algorithm::starts_with(line, "atom")) {
+				bool isFractional = boost::algorithm::starts_with(line, "atom_frac");
+				Point3& pos = posProperty->dataPoint3()[i];
+				char atomTypeName[16];
+				if(sscanf(line + (isFractional ? 9 : 4), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " %15s", &pos.x(), &pos.y(), &pos.z(), atomTypeName) != 4)
+					throw Exception(tr("Invalid atom specification (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+				if(isFractional) {
+					if(lattVecCount != 3)
+						throw Exception(tr("Invalid fractional atom coordinates (in line %1). Cell vectors have not been specified: %2").arg(stream.lineNumber()).arg(stream.lineString()));
+					pos = cell * pos;
+				}
+				typeProperty->setInt(i, addParticleTypeName(atomTypeName));
+				break;
+			}
+		}
+	}
+
+	// Since we created particle types on the go while reading the particles, the assigned particle type IDs
+	// depend on the storage order of particles in the file. We rather want a well-defined particle type ordering, that's
+	// why we sort them now.
+	sortParticleTypesByName();
+
+	// Set simulation cell.
+	if(lattVecCount == 3) {
+		simulationCell().setMatrix(cell);
+		simulationCell().setPbcFlags(true, true, true);
+	}
+	else {
+		// If the input file does not contain simulation cell info,
+		// Use bounding box of particles as simulation cell.
+
+		Box3 boundingBox;
+		boundingBox.addPoints(posProperty->constDataPoint3(), posProperty->size());
+		simulationCell().setMatrix(AffineTransformation(
+				Vector3(boundingBox.sizeX(), 0, 0),
+				Vector3(0, boundingBox.sizeY(), 0),
+				Vector3(0, 0, boundingBox.sizeZ()),
+				boundingBox.minc - Point3::Origin()));
+		simulationCell().setPbcFlags(false, false, false);
+	}
 
 	setStatus(tr("%1 atoms").arg(totalAtomCount));
 }
