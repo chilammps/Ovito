@@ -89,6 +89,7 @@ SET(SourceFiles
 	export/ParticleExporterSettingsDialog.cpp
 	export/OutputColumnMapping.cpp
 	export/vasp/POSCARExporter.cpp
+	export/fhi_aims/FHIAimsExporter.cpp
 	export/lammps/LAMMPSDataExporter.cpp
 	export/lammps/LAMMPSDumpExporter.cpp
 	export/xyz/XYZExporter.cpp
