@@ -100,10 +100,8 @@ bool Application::initialize(int& argc, char** argv)
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");
 
-#ifdef Q_OS_MACX
-	// On MacOS/Qt5.4.1, suppress console messages "qt.network.ssl: QSslSocket: cannot resolve ..."
+	// Suppress console messages "qt.network.ssl: QSslSocket: cannot resolve ..."
 	qputenv("QT_LOGGING_RULES", "qt.network.ssl.warning=false");
-#endif
 
 	// Register our floating-point data type with the Qt type system.
 	qRegisterMetaType<FloatType>("FloatType");

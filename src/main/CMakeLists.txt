@@ -70,7 +70,7 @@ ENDIF()
 
 IF(UNIX AND NOT APPLE AND OVITO_MONOLITHIC_BUILD)
 	# Install copies of the Qt libraries.
-	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport)
+	FOREACH(component IN ITEMS Core Gui Widgets OpenGL Concurrent Network PrintSupport DBus)
 		GET_TARGET_PROPERTY(lib Qt5::${component} LOCATION)
 		GET_TARGET_PROPERTY(lib_soname Qt5::${component} IMPORTED_SONAME_RELEASE)
 		CONFIGURE_FILE("${lib}" "${OVITO_LIBRARY_DIRECTORY}" COPYONLY)		
