@@ -210,6 +210,10 @@ void ParticleFrameLoader::insertParticleTypes(ParticlePropertyObject* propertyOb
 	QSet<ParticleType*> activeTypes;
 	for(const auto& item : _particleTypes) {
 		OORef<ParticleType> ptype = typeProperty->particleType(item.id);
+		QString name = item.name;
+		if(name.isEmpty())
+			name = ParticleImporter::tr("Type %1").arg(item.id);
+
 		if(ptype == nullptr) {
 			ptype = new ParticleType(typeProperty->dataset());
 			ptype->setId(item.id);
@@ -217,19 +221,18 @@ void ParticleFrameLoader::insertParticleTypes(ParticlePropertyObject* propertyOb
 			// Assign initial standard color to new particle types.
 			if(item.color != Color(0,0,0))
 				ptype->setColor(item.color);
-			else if(item.name.isEmpty())
-				ptype->setColor(ParticleTypeProperty::getDefaultParticleColorFromId(ptype->id()));
 			else
-				ptype->setColor(ParticleTypeProperty::getDefaultParticleColorFromName(item.name, ptype->id()));
+				ptype->setColor(ParticleTypeProperty::getDefaultParticleColor(ParticleProperty::ParticleTypeProperty, name, ptype->id()));
+
+			if(item.radius == 0)
+				ptype->setRadius(ParticleTypeProperty::getDefaultParticleRadius(ParticleProperty::ParticleTypeProperty, name, ptype->id()));
 
 			typeProperty->insertParticleType(ptype);
 		}
 		activeTypes.insert(ptype);
 
-		if(!item.name.isEmpty())
-			ptype->setName(item.name);
-		else if(ptype->name().isEmpty())
-			ptype->setName(ParticleImporter::tr("Type %1").arg(item.id));
+		if(ptype->name().isEmpty())
+			ptype->setName(name);
 
 		if(item.color != Color(0,0,0))
 			ptype->setColor(item.color);

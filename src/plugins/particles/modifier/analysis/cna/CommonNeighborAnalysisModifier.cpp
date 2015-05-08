@@ -53,12 +53,11 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier(DataSet* dataset)
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode);
 
 	// Create the structure types.
-	createStructureType(OTHER, tr("Other"));
-	createStructureType(FCC, tr("FCC"));
-	createStructureType(HCP, tr("HCP"));
-	createStructureType(BCC, tr("BCC"));
-	createStructureType(ICO, tr("ICO"));
-	createStructureType(DIA, tr("DIA"));
+	createStructureType(OTHER, ParticleTypeProperty::PredefinedStructureType::OTHER);
+	createStructureType(FCC, ParticleTypeProperty::PredefinedStructureType::FCC);
+	createStructureType(HCP, ParticleTypeProperty::PredefinedStructureType::HCP);
+	createStructureType(BCC, ParticleTypeProperty::PredefinedStructureType::BCC);
+	createStructureType(ICO, ParticleTypeProperty::PredefinedStructureType::ICO);
 }
 
 /******************************************************************************
@@ -353,60 +352,6 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 
 	}
 
-	{ /////////// 16 neighbors ///////////
-
-	// Detect DIA atoms having 16 NN. Detection according to http://arxiv.org/pdf/1202.5005.pdf
-
-	// Number of neighbors to analyze.
-	int nn = 16;
-
-	// Early rejection of under-coordinated atoms:
-	if(numNeighbors < nn)
-		return OTHER;
-
-	// Compute scaling factor.
-	FloatType localScaling = 0;
-	for(int n = 0; n < 4; n++)
-		localScaling += sqrt(neighQuery.results()[n].distanceSq / (3.0/16.0));
-	for(int n = 4; n < 16; n++)
-		localScaling += sqrt(neighQuery.results()[n].distanceSq / (2.0/4.0));
-	FloatType localCutoff = localScaling / nn * 0.7681;
-	FloatType localCutoffSquared =  localCutoff * localCutoff;
-
-	// Compute common neighbor bit-flag array.
-	NeighborBondArray neighborArray;
-	for(int ni1 = 0; ni1 < nn; ni1++) {
-		neighborArray.setNeighborBond(ni1, ni1, false);
-		for(int ni2 = ni1+1; ni2 < nn; ni2++)
-			neighborArray.setNeighborBond(ni1, ni2, (neighQuery.results()[ni1].delta - neighQuery.results()[ni2].delta).squaredLength() <= localCutoffSquared);
-	}
-
-	int n543 = 0;
-	int n663 = 0;
-	for(int ni = 0; ni < nn; ni++) {
-
-		// Determine number of neighbors the two atoms have in common.
-		unsigned int commonNeighbors;
-		int numCommonNeighbors = findCommonNeighbors(neighborArray, ni, commonNeighbors, nn);
-		if(numCommonNeighbors != 5 && numCommonNeighbors != 6)
-			break;
-
-		// Determine the number of bonds among the common neighbors.
-		CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
-		int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, nn, neighborBonds);
-		if(numNeighborBonds != 4 && numNeighborBonds != 6)
-			break;
-
-		// Determine the number of bonds in the longest continuous chain.
-		int maxChainLength = calcMaxChainLength(neighborBonds, numNeighborBonds);
-		if(numCommonNeighbors == 5 && numNeighborBonds == 4 && maxChainLength == 3) n543++;
-		else if(numCommonNeighbors == 6 && numNeighborBonds == 6 && maxChainLength == 3) n663++;
-		else break;
-	}
-	if(n543 == 12 && n663 == 4) return DIA;
-
-	}
-
 	return OTHER;
 }
 
@@ -425,7 +370,7 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 		numNeighbors++;
 	}
 
-	if(numNeighbors != 12 && numNeighbors != 14 && numNeighbors != 16)
+	if(numNeighbors != 12 && numNeighbors != 14)
 		return OTHER;
 
 	// Compute bond bit-flag array.
@@ -492,31 +437,6 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 			else return OTHER;
 		}
 		if(n666 == 8 && n444 == 6) return BCC;
-	}
-	else if(numNeighbors == 16) { // Detect DIA atoms having 16 NN. Detection according to http://arxiv.org/pdf/1202.5005.pdf
-		int n543 = 0;
-		int n663 = 0;
-		for(int ni = 0; ni < numNeighbors; ni++) {
-
-			// Determine number of neighbors the two atoms have in common.
-			unsigned int commonNeighbors;
-			int numCommonNeighbors = findCommonNeighbors(neighborArray, ni, commonNeighbors, numNeighbors);
-			if(numCommonNeighbors != 5 && numCommonNeighbors != 6)
-				return OTHER;
-
-			// Determine the number of bonds among the common neighbors.
-			CNAPairBond neighborBonds[MAX_NEIGHBORS*MAX_NEIGHBORS];
-			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, numNeighbors, neighborBonds);
-			if(numNeighborBonds != 4 && numNeighborBonds != 6)
-				break;
-
-			// Determine the number of bonds in the longest continuous chain.
-			int maxChainLength = calcMaxChainLength(neighborBonds, numNeighborBonds);
-			if(numCommonNeighbors == 5 && numNeighborBonds == 4 && maxChainLength == 3) n543++;
-			else if(numCommonNeighbors == 6 && numNeighborBonds == 6 && maxChainLength == 3) n663++;
-			else return OTHER;
-		}
-		if(n543 == 12 && n663 == 4) return DIA;
 	}
 
 	return OTHER;

@@ -41,13 +41,13 @@ OVITO_END_INLINE_NAMESPACE
 IdentifyDiamondModifier::IdentifyDiamondModifier(DataSet* dataset) : StructureIdentificationModifier(dataset)
 {
 	// Create the structure types.
-	createStructureType(OTHER, tr("Other"));
-	createStructureType(CUBIC_DIAMOND, tr("Cubic diamond"), Color(19.0f/255.0f, 160.0f/255.0f, 254.0f/255.0f));
-	createStructureType(CUBIC_DIAMOND_FIRST_NEIGH, tr("Cubic diamond (1st neighbor)"), Color(0.0f/255.0f, 254.0f/255.0f, 245.0f/255.0f));
-	createStructureType(CUBIC_DIAMOND_SECOND_NEIGH, tr("Cubic diamond (2nd neighbor)"), Color(126.0f/255.0f, 254.0f/255.0f, 181.0f/255.0f));
-	createStructureType(HEX_DIAMOND, tr("Hexagonal diamond"), Color(254.0f/255.0f, 137.0f/255.0f, 0.0f/255.0f));
-	createStructureType(HEX_DIAMOND_FIRST_NEIGH, tr("Hexagonal diamond (1st neighbor)"), Color(254.0f/255.0f, 220.0f/255.0f, 0.0f/255.0f));
-	createStructureType(HEX_DIAMOND_SECOND_NEIGH, tr("Hexagonal diamond (2nd neighbor)"), Color(204.0f/255.0f, 229.0f/255.0f, 81.0f/255.0f));
+	createStructureType(OTHER, ParticleTypeProperty::PredefinedStructureType::OTHER);
+	createStructureType(CUBIC_DIAMOND, ParticleTypeProperty::PredefinedStructureType::CUBIC_DIAMOND);
+	createStructureType(CUBIC_DIAMOND_FIRST_NEIGH, ParticleTypeProperty::PredefinedStructureType::CUBIC_DIAMOND_FIRST_NEIGH);
+	createStructureType(CUBIC_DIAMOND_SECOND_NEIGH, ParticleTypeProperty::PredefinedStructureType::CUBIC_DIAMOND_SECOND_NEIGH);
+	createStructureType(HEX_DIAMOND, ParticleTypeProperty::PredefinedStructureType::HEX_DIAMOND);
+	createStructureType(HEX_DIAMOND_FIRST_NEIGH, ParticleTypeProperty::PredefinedStructureType::HEX_DIAMOND_FIRST_NEIGH);
+	createStructureType(HEX_DIAMOND_SECOND_NEIGH, ParticleTypeProperty::PredefinedStructureType::HEX_DIAMOND_SECOND_NEIGH);
 }
 
 /******************************************************************************

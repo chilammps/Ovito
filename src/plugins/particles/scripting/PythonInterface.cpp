@@ -297,9 +297,15 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("type_list", make_function(&ParticleTypeProperty::particleTypes, return_internal_reference<>()),
 				"A list of :py:class:`ParticleType` instances.")
 		.def("getDefaultParticleColorFromId", &ParticleTypeProperty::getDefaultParticleColorFromId)
-		.def("getDefaultParticleColorFromName", &ParticleTypeProperty::getDefaultParticleColorFromName)
+		.def("getDefaultParticleColor", &ParticleTypeProperty::getDefaultParticleColor)
+		.def("setDefaultParticleColor", &ParticleTypeProperty::setDefaultParticleColor)
+		.def("getDefaultParticleRadius", &ParticleTypeProperty::getDefaultParticleRadius)
+		.def("setDefaultParticleRadius", &ParticleTypeProperty::setDefaultParticleRadius)
 		.staticmethod("getDefaultParticleColorFromId")
-		.staticmethod("getDefaultParticleColorFromName")
+		.staticmethod("getDefaultParticleColor")
+		.staticmethod("getDefaultParticleRadius")
+		.staticmethod("setDefaultParticleColor")
+		.staticmethod("setDefaultParticleRadius")
 	;
 
 	ovito_class<SimulationCellObject, DataObject>(

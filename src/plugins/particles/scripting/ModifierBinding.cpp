@@ -505,7 +505,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"   * ``CommonNeighborAnalysisModifier.Type.HCP`` (2)\n"
 				"   * ``CommonNeighborAnalysisModifier.Type.BCC`` (3)\n"
 				"   * ``CommonNeighborAnalysisModifier.Type.ICO`` (4)\n"
-				"   * ``CommonNeighborAnalysisModifier.Type.DIA`` (5)\n"
 				"\n"
 				"For example, to count the number of FCC atoms in a system::"
 				"\n\n"
@@ -555,7 +554,6 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			.value("HCP", CommonNeighborAnalysisModifier::HCP)
 			.value("BCC", CommonNeighborAnalysisModifier::BCC)
 			.value("ICO", CommonNeighborAnalysisModifier::ICO)
-			.value("DIA", CommonNeighborAnalysisModifier::DIA)
 		;
 	}
 

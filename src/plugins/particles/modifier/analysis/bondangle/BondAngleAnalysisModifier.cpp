@@ -43,11 +43,11 @@ OVITO_END_INLINE_NAMESPACE
 BondAngleAnalysisModifier::BondAngleAnalysisModifier(DataSet* dataset) : StructureIdentificationModifier(dataset)
 {
 	// Create the structure types.
-	createStructureType(OTHER, tr("Other"));
-	createStructureType(FCC, tr("FCC"));
-	createStructureType(HCP, tr("HCP"));
-	createStructureType(BCC, tr("BCC"));
-	createStructureType(ICO, tr("ICO"));
+	createStructureType(OTHER, ParticleTypeProperty::PredefinedStructureType::OTHER);
+	createStructureType(FCC, ParticleTypeProperty::PredefinedStructureType::FCC);
+	createStructureType(HCP, ParticleTypeProperty::PredefinedStructureType::HCP);
+	createStructureType(BCC, ParticleTypeProperty::PredefinedStructureType::BCC);
+	createStructureType(ICO, ParticleTypeProperty::PredefinedStructureType::ICO);
 }
 
 /******************************************************************************

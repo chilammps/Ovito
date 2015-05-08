@@ -29,7 +29,7 @@
 namespace Ovito { namespace Particles {
 
 /**
- * \brief Represents a particle type and stores it properties such as name, color, and radius.
+ * \brief Stores the properties of a particle type, e.g. name, color, and radius.
  *
  * \ingroup particles_objects
  */

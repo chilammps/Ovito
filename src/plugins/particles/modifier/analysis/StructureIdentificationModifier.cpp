@@ -40,12 +40,12 @@ StructureIdentificationModifier::StructureIdentificationModifier(DataSet* datase
 /******************************************************************************
 * Create an instance of the ParticleType class to represent a structure type.
 ******************************************************************************/
-void StructureIdentificationModifier::createStructureType(int id, const QString& name, const Color& color)
+void StructureIdentificationModifier::createStructureType(int id, ParticleTypeProperty::PredefinedStructureType predefType)
 {
 	OORef<ParticleType> stype(new ParticleType(dataset()));
 	stype->setId(id);
-	stype->setName(name);
-	stype->setColor(color);
+	stype->setName(ParticleTypeProperty::getPredefinedStructureTypeName(predefType));
+	stype->setColor(ParticleTypeProperty::getDefaultParticleColor(ParticleProperty::StructureTypeProperty, stype->name(), id));
 	_structureTypes.push_back(stype);
 }
 
@@ -133,19 +133,6 @@ PipelineStatus StructureIdentificationModifier::applyComputationResults(TimePoin
 	}
 
 	return PipelineStatus::Success;
-}
-
-/******************************************************************************
-* Returns the default color for a structure type.
-******************************************************************************/
-Color StructureIdentificationModifier::getDefaultStructureColor(const QString& structureName)
-{
-	if(structureName == QStringLiteral("FCC")) return Color(0.4f, 1.0f, 0.4f);
-	else if(structureName == QStringLiteral("HCP")) return Color(1.0f, 0.4f, 0.4f);
-	else if(structureName == QStringLiteral("BCC")) return Color(0.4f, 0.4f, 1.0f);
-	else if(structureName == QStringLiteral("ICO")) return Color(0.95f, 0.8f, 0.2f);
-	else if(structureName == QStringLiteral("DIA")) return Color(0.2f, 0.95f, 0.8f);
-	else return Color(0.95f, 0.95f, 0.95f);
 }
 
 /******************************************************************************

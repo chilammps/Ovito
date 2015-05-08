@@ -37,9 +37,9 @@ public:
 
 #ifndef Q_CC_MSVC
 	/// The maximum number of neighbor atoms taken into account for the common neighbor analysis.
-	static constexpr int MAX_NEIGHBORS = 16;
+	static constexpr int MAX_NEIGHBORS = 14;
 #else
-	enum { MAX_NEIGHBORS = 16 };
+	enum { MAX_NEIGHBORS = 14 };
 #endif
 
 	/// The structure types recognized by the common neighbor analysis.
@@ -49,7 +49,6 @@ public:
 		HCP,					//< Hexagonal close-packed
 		BCC,					//< Body-centered cubic
 		ICO,					//< Icosahedral structure
-		DIA,					//< Cubic diamond structure
 
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};

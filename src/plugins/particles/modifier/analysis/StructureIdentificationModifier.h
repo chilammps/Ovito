@@ -76,11 +76,6 @@ public:
 	/// Returns an array that contains the number of matching particles for each structure type.
 	const QList<int>& structureCounts() const { return _structureCounts; }
 
-	//////////////////////////////////// Default settings ////////////////////////////////
-
-	/// Returns the default color for a structure type.
-	static Color getDefaultStructureColor(const QString& structureName);
-
 protected:
 
 	/// Saves the class' contents to the given stream.
@@ -90,12 +85,7 @@ protected:
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
 	/// Create an instance of the ParticleType class to represent a structure type.
-	void createStructureType(int id, const QString& name) {
-		createStructureType(id, name, getDefaultStructureColor(name));
-	}
-
-	/// Create an instance of the ParticleType class to represent a structure type.
-	void createStructureType(int id, const QString& name, const Color& color);
+	void createStructureType(int id, ParticleTypeProperty::PredefinedStructureType predefType);
 
 	/// Unpacks the results of the computation engine and stores them in the modifier.
 	virtual void transferComputationResults(ComputeEngine* engine) override;

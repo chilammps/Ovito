@@ -29,10 +29,34 @@
 namespace Ovito { namespace Particles {
 
 /**
- * \brief A particle property that stores the particle types.
+ * \brief This particle property stores the particle types.
  */
 class OVITO_PARTICLES_EXPORT ParticleTypeProperty : public ParticlePropertyObject
 {
+public:
+
+	enum PredefinedParticleType {
+		H,He,Li,C,N,O,Na,Mg,Al,Si,K,Ca,Ti,Fe,Co,Ni,Cu,Kr,Pd,Au,
+
+		NUMBER_OF_PREDEFINED_PARTICLE_TYPES
+	};
+
+	enum PredefinedStructureType {
+		OTHER = 0,					//< Unidentified structure
+		FCC,						//< Face-centered cubic
+		HCP,						//< Hexagonal close-packed
+		BCC,						//< Body-centered cubic
+		ICO,						//< Icosahedral structure
+		CUBIC_DIAMOND,				//< Cubic diamond structure
+		CUBIC_DIAMOND_FIRST_NEIGH,	//< First neighbor of a cubic diamond atom
+		CUBIC_DIAMOND_SECOND_NEIGH,	//< Second neighbor of a cubic diamond atom
+		HEX_DIAMOND,				//< Hexagonal diamond structure
+		HEX_DIAMOND_FIRST_NEIGH,	//< First neighbor of a hexagonal diamond atom
+		HEX_DIAMOND_SECOND_NEIGH,	//< Second neighbor of a hexagonal diamond atom
+
+		NUMBER_OF_PREDEFINED_STRUCTURE_TYPES
+	};
+
 public:
 
 	/// \brief Constructor.
@@ -99,11 +123,32 @@ public:
 
 	//////////////////////////////////// Default settings ////////////////////////////////
 
+	/// Returns the name string of a predefined particle type.
+	static const QString& getPredefinedParticleTypeName(PredefinedParticleType predefType) {
+		OVITO_ASSERT(predefType < NUMBER_OF_PREDEFINED_PARTICLE_TYPES);
+		return std::get<0>(_predefinedParticleTypes[predefType]);
+	}
+
+	/// Returns the name string of a predefined structure type.
+	static const QString& getPredefinedStructureTypeName(PredefinedStructureType predefType) {
+		OVITO_ASSERT(predefType < NUMBER_OF_PREDEFINED_STRUCTURE_TYPES);
+		return std::get<0>(_predefinedStructureTypes[predefType]);
+	}
+
 	/// Returns the default color for the particle type with the given ID.
-	static Color getDefaultParticleColorFromId(int particleTypeId);
+	static Color getDefaultParticleColorFromId(ParticleProperty::Type typeClass, int particleTypeId);
 
 	/// Returns the default color for a named particle type.
-	static Color getDefaultParticleColorFromName(const QString& particleTypeName, int particleTypeId);
+	static Color getDefaultParticleColor(ParticleProperty::Type typeClass, const QString& particleTypeName, int particleTypeId, bool userDefaults = true);
+
+	/// Changes the default color for a named particle type.
+	static void setDefaultParticleColor(ParticleProperty::Type typeClass, const QString& particleTypeName, const Color& color);
+
+	/// Returns the default radius for a named particle type.
+	static FloatType getDefaultParticleRadius(ParticleProperty::Type typeClass, const QString& particleTypeName, int particleTypeId, bool userDefaults = true);
+
+	/// Changes the default radius for a named particle type.
+	static void setDefaultParticleRadius(ParticleProperty::Type typeClass, const QString& particleTypeName, FloatType radius);
 
 protected:
 
@@ -111,6 +156,15 @@ protected:
 	VectorReferenceField<ParticleType> _particleTypes;
 
 private:
+
+	/// Data structure that holds the name, color, and radius of a particle type.
+	typedef std::tuple<QString,Color,FloatType> PredefinedTypeInfo;
+
+	/// Contains default names, colors, and radii for some predefined particle types.
+	static std::array<PredefinedTypeInfo, NUMBER_OF_PREDEFINED_PARTICLE_TYPES> _predefinedParticleTypes;
+
+	/// Contains default names, colors, and radii for the predefined structure types.
+	static std::array<PredefinedTypeInfo, NUMBER_OF_PREDEFINED_STRUCTURE_TYPES> _predefinedStructureTypes;
 
 	Q_OBJECT
 	OVITO_OBJECT
