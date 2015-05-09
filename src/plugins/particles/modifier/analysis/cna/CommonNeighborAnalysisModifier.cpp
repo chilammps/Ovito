@@ -491,7 +491,9 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	layout1->addSpacing(10);
 	layout1->addWidget(new QLabel(tr("Structure types:")));
 	layout1->addWidget(structureTypesPUI->tableWidget());
-	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
+	QLabel* label = new QLabel(tr("<p style=\"font-size: small;\">Double-click to change colors. Defaults can be set in the application settings.</p>"));
+	label->setWordWrap(true);
+	layout1->addWidget(label);
 }
 
 OVITO_END_INLINE_NAMESPACE

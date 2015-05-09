@@ -104,6 +104,7 @@ SET(SourceFiles
 	util/ParticleExpressionEvaluator.cpp
 	util/ParticleSelectionSet.cpp
 	util/CreateTrajectoryApplet.cpp
+	util/ParticleSettingsPage.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
