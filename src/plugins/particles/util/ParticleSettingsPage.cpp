@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/objects/ParticleTypeProperty.h>
 #include "ParticleSettingsPage.h"
 

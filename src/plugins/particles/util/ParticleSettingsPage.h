@@ -30,7 +30,7 @@ namespace Ovito { namespace Particles { OVITO_BEGIN_INLINE_NAMESPACE(Internal)
 /**
  * Page of the application settings dialog, which hosts particle-related options.
  */
-class OVITO_CORE_EXPORT ParticleSettingsPage : public ApplicationSettingsDialogPage
+class OVITO_PARTICLES_EXPORT ParticleSettingsPage : public ApplicationSettingsDialogPage
 {
 public:
 
