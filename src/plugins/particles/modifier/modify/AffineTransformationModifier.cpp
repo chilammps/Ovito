@@ -272,10 +272,10 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	layout->setHorizontalSpacing(0);
 	layout->setVerticalSpacing(2);
 	layout->setColumnStretch(0, 1);
-	layout->setColumnStretch(3, 1);
-	layout->setColumnStretch(6, 1);
-	layout->setColumnMinimumWidth(2, 4);
-	layout->setColumnMinimumWidth(5, 4);
+	layout->setColumnStretch(2, 1);
+	layout->setColumnStretch(4, 1);
+	layout->setColumnMinimumWidth(1, 4);
+	layout->setColumnMinimumWidth(3, 4);
 	topLayout->addLayout(layout);
 	AffineTransformationParameterUI* destinationCellUI;
 
@@ -284,8 +284,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 		for(size_t r = 0; r < 3; r++) {
 			destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_targetCell), r, v);
 			destinationCellUI->setEnabled(false);
-			layout->addWidget(destinationCellUI->textBox(), v*2+1, r*3+0);
-			layout->addWidget(destinationCellUI->spinner(), v*2+1, r*3+1);
+			layout->addLayout(destinationCellUI->createFieldLayout(), v*2+1, r*2);
 			connect(relativeModeUI->buttonFalse(), &QRadioButton::toggled, destinationCellUI, &AffineTransformationParameterUI::setEnabled);
 		}
 	}
@@ -294,8 +293,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	for(size_t r = 0; r < 3; r++) {
 		destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_targetCell), r, 3);
 		destinationCellUI->setEnabled(false);
-		layout->addWidget(destinationCellUI->textBox(), 7, r*3+0);
-		layout->addWidget(destinationCellUI->spinner(), 7, r*3+1);
+		layout->addLayout(destinationCellUI->createFieldLayout(), 7, r*2);
 		connect(relativeModeUI->buttonFalse(), &QRadioButton::toggled, destinationCellUI, &AffineTransformationParameterUI::setEnabled);
 	}
 
@@ -472,9 +470,10 @@ void AffineTransformationModifierEditor::onEnterRotation()
 	for(i = 0; i < 3; i++)
 		if(!r.row(i).isZero()) {
 			p1 = Plane3(r.row(i), -mod->transformation()(i, 3));
+			i++;
 			break;
 		}
-	for(i++; i < 3; i++)
+	for(; i < 3; i++)
 		if(!r.row(i).isZero()) {
 			p2 = Plane3(r.row(i), -mod->transformation()(i, 3));
 			break;
