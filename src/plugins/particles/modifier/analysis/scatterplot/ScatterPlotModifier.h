@@ -181,7 +181,7 @@ private:
 	/// Stores the scatter plot data for each particle type separately.
 	QVector<QVector<double>> _xData, _yData;
 
-	/// Map from particle id to color.
+	/// Map from particle type ID to color.
 	std::map<int, Color> _colorMap;
 
 	Q_OBJECT

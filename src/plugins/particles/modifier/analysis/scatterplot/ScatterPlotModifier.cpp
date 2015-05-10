@@ -143,16 +143,20 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	size_t yVecComponent = std::max(0, yAxisProperty().vectorComponent());
 	size_t yVecComponentCount = yProperty->componentCount();
 
-	ParticleTypeProperty *typeProperty = static_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty));
-	if (!typeProperty)
-		throw Exception(tr("The standard ParticleTypeProperty does not exist."));
-	_colorMap = typeProperty->colorMap();
+	int numParticleTypes = 0;
+	ParticleTypeProperty* typeProperty = static_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty));
+	if(typeProperty) {
+		_colorMap = typeProperty->colorMap();
 
-	int numIds = 0;
-	for(const ParticleType *type: typeProperty->particleTypes()) {
-		numIds = std::max(numIds, type->id());
+		for(const ParticleType *type : typeProperty->particleTypes()) {
+			numParticleTypes = std::max(numParticleTypes, type->id());
+		}
+		numParticleTypes++;
 	}
-	numIds++;
+	else {
+		_colorMap.clear();
+		numParticleTypes = 1;
+	}
 
 	ParticlePropertyObject* selProperty = nullptr;
 	FloatType selectionXAxisRangeStart = _selectionXAxisRangeStart;
@@ -185,8 +189,8 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 
 	_xData.clear();
 	_yData.clear();
-	_xData.resize(numIds);
-	_yData.resize(numIds);
+	_xData.resize(numParticleTypes);
+	_yData.resize(numParticleTypes);
 
 	if(xProperty->size() > 0) {
 		if(xProperty->dataType() == qMetaTypeId<FloatType>()) {
@@ -200,9 +204,16 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(xIntervalEnd != xIntervalStart) {
-				const int *particleTypeId = typeProperty->constDataInt();
-				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, particleTypeId++) {
-					_xData[*particleTypeId].append(*vx);
+				if(typeProperty) {
+					const int *particleTypeId = typeProperty->constDataInt();
+					for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, particleTypeId++) {
+						_xData[*particleTypeId].append(*vx);
+					}
+				}
+				else {
+					for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount) {
+						_xData[0].append(*vx);
+					}
 				}
 			}
 
@@ -229,9 +240,16 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(xIntervalEnd != xIntervalStart) {
-				const int *particleTypeId = typeProperty->constDataInt();
-				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, particleTypeId++) {
-					_xData[*particleTypeId].append(*vx);
+				if(typeProperty) {
+					const int *particleTypeId = typeProperty->constDataInt();
+					for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, particleTypeId++) {
+						_xData[*particleTypeId].append(*vx);
+					}
+				}
+				else {
+					for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount) {
+						_xData[0].append(*vx);
+					}
 				}
 			}
 
@@ -260,9 +278,16 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(yIntervalEnd != yIntervalStart) {
-				const int *particleTypeId = typeProperty->constDataInt();
-				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, particleTypeId++) {
-					_yData[*particleTypeId].append(*vy);
+				if(typeProperty) {
+					const int *particleTypeId = typeProperty->constDataInt();
+					for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, particleTypeId++) {
+						_yData[*particleTypeId].append(*vy);
+					}
+				}
+				else {
+					for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount) {
+						_yData[0].append(*vy);
+					}
 				}
 			}
 
@@ -291,9 +316,16 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 				}
 			}
 			if(yIntervalEnd != yIntervalStart) {
-				const int *particleTypeId = typeProperty->constDataInt();
-				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, particleTypeId++) {
-					_yData[*particleTypeId].append(*vy);
+				if(typeProperty) {
+					const int *particleTypeId = typeProperty->constDataInt();
+					for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, particleTypeId++) {
+						_yData[*particleTypeId].append(*vy);
+					}
+				}
+				else {
+					for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount) {
+						_yData[0].append(*vy);
+					}
 				}
 			}
 
