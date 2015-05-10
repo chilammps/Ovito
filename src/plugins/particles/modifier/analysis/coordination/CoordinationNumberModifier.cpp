@@ -258,7 +258,7 @@ void CoordinationNumberModifierEditor::plotRDF()
 		}
 	}
 
-	_rdfPlot->replot();
+	_rdfPlot->replot(QCustomPlot::rpQueued);
 }
 
 /******************************************************************************

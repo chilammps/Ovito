@@ -426,7 +426,7 @@ void HistogramModifierEditor::plotHistogram()
 		_selectionRangeEndMarker->setVisible(false);
 	}
 
-	_histogramPlot->replot();
+	_histogramPlot->replot(QCustomPlot::rpQueued);
 }
 
 /******************************************************************************

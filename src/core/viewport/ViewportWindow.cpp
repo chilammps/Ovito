@@ -217,12 +217,15 @@ void ViewportWindow::renderLater()
 ******************************************************************************/
 void ViewportWindow::processUpdateRequest()
 {
-	if(_updateRequested)
+	if(_updateRequested) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 		renderNow();
 #else
+		OVITO_ASSERT_MSG(!_viewport->isRendering(), "ViewportWindow::processUpdateRequest()", "Recursive viewport repaint detected.");
+		OVITO_ASSERT_MSG(!_viewport->dataset()->viewportConfig()->isRendering(), "ViewportWindow::processUpdateRequest()", "Recursive viewport repaint detected.");
 		repaint();
 #endif
+	}
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
@@ -268,6 +271,8 @@ void ViewportWindow::resizeEvent(QResizeEvent*)
 ******************************************************************************/
 void ViewportWindow::paintGL()
 {
+	OVITO_ASSERT_MSG(!_viewport->isRendering(), "ViewportWindow::paintGL()", "Recursive viewport repaint detected.");
+	OVITO_ASSERT_MSG(!_viewport->dataset()->viewportConfig()->isRendering(), "ViewportWindow::paintGL()", "Recursive viewport repaint detected.");
 	renderNow();
 }
 
@@ -284,7 +289,7 @@ void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
 			mode->mouseDoubleClickEvent(_viewport, event);
 		}
 		catch(const Exception& ex) {
-			qWarning() << "Uncaught exception in mouse event handler:";
+			qWarning() << "Uncaught exception in viewport mouse event handler:";
 			ex.logError();
 		}
 	}
@@ -309,7 +314,7 @@ void ViewportWindow::mousePressEvent(QMouseEvent* event)
 			mode->mousePressEvent(_viewport, event);
 		}
 		catch(const Exception& ex) {
-			qWarning() << "Uncaught exception in mouse event handler:";
+			qWarning() << "Uncaught exception in viewport mouse event handler:";
 			ex.logError();
 		}
 	}
@@ -326,7 +331,7 @@ void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
 			mode->mouseReleaseEvent(_viewport, event);
 		}
 		catch(const Exception& ex) {
-			qWarning() << "Uncaught exception in mouse event handler:";
+			qWarning() << "Uncaught exception in viewport mouse event handler:";
 			ex.logError();
 		}
 	}
@@ -355,7 +360,7 @@ void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
 			mode->mouseMoveEvent(_viewport, event);
 		}
 		catch(const Exception& ex) {
-			qWarning() << "Uncaught exception in mouse event handler:";
+			qWarning() << "Uncaught exception in viewport mouse event handler:";
 			ex.logError();
 		}
 	}
@@ -372,7 +377,7 @@ void ViewportWindow::wheelEvent(QWheelEvent* event)
 			mode->wheelEvent(_viewport, event);
 		}
 		catch(const Exception& ex) {
-			qWarning() << "Uncaught exception in mouse event handler:";
+			qWarning() << "Uncaught exception in viewport mouse event handler:";
 			ex.logError();
 		}
 	}
@@ -435,7 +440,7 @@ void ViewportWindow::renderNow()
 	QSurface* oldSurface = oldContext ? oldContext->surface() : nullptr;
 
 	if(!_context->makeCurrent(this)) {
-		qWarning() << "Failed to make OpenGL context current.";
+		qWarning() << "ViewportWindow::renderNow(): Failed to make OpenGL context current.";
 		return;
 	}
 #endif
@@ -499,7 +504,7 @@ void ViewportWindow::renderNow()
 	// Restore old GL context.
 	if(oldSurface && oldContext) {
 		if(!oldContext->makeCurrent(oldSurface))
-			qWarning() << "Failed to restore old OpenGL context.";
+			qWarning() << "ViewportWindow::renderNow(): Failed to restore old OpenGL context.";
 	}
 	else {
 		_context->doneCurrent();

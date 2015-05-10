@@ -33,6 +33,7 @@
         </listitem>
       </varlistentry>
 
+<!-- 
       <varlistentry>
         <term>Every Nth frame</term>
 
@@ -50,7 +51,7 @@
           This parameter lets you choose another base file number, i.e. an offset.</para>
         </listitem>
       </varlistentry>
-
+ -->
       <varlistentry>
         <term>Output image size</term>
 

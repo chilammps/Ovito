@@ -52,9 +52,22 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	int sampling = std::max(1, antialiasingLevel());
 
 	QOpenGLContext* glcontext;
-	// in GUI mode, use the OpenGL context managed by the main window to render to the offscreen buffer.
-	if(Application::instance().guiMode())
+	if(Application::instance().guiMode()) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
+		// in GUI mode, use the OpenGL context managed by the main window to render to the offscreen buffer.
 		glcontext = renderDataset()->mainWindow()->getOpenGLContext();
+#else
+		// Create a temporary OpenGL context for rendering to an offscreen buffer.
+		_offscreenContext.reset(new QOpenGLContext());
+		_offscreenContext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+		const QVector<Viewport*>& viewports = renderDataset()->viewportConfig()->viewports();
+		if(!viewports.empty() && viewports.front()->viewportWindow())
+			_offscreenContext->setShareContext(viewports.front()->viewportWindow()->context());
+		if(!_offscreenContext->create())
+			throw Exception(tr("Failed to create OpenGL context for rendering."));
+		glcontext = _offscreenContext.data();
+#endif
+	}
 	else {
 		// Create new OpenGL context for rendering in console mode.
 		OVITO_ASSERT(QOpenGLContext::currentContext() == nullptr);
@@ -102,7 +115,7 @@ void StandardSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 {
 	// Make GL context current.
 	QOpenGLContext* glcontext;
-	if(Application::instance().guiMode())
+	if(!_offscreenContext)
 		glcontext = renderDataset()->mainWindow()->getOpenGLContext();
 	else
 		glcontext = _offscreenContext.data();

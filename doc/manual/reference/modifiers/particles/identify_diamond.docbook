@@ -136,8 +136,9 @@
     cubic diamond. If they form a HCP structure, then the central atom is marked as an hexagonal diamond atom.
     </para>
     <para>
-    Please note that the described method has only recently been developed and is not published yet, i.e., it has not been written down in a citable form.
-    If you intend to use the method in your work, please contact the author of OVITO.
+    Please note that the described method was recently developed and is not officially published yet in citable form.
+    A manuscript that will contain technical details of the structure identification method is being prepared. 
+    Please contact the author of OVITO for more information.
     </para>
   </simplesect>
 

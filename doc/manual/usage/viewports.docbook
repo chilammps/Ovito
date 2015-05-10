@@ -72,7 +72,7 @@
   <simplesect xml:id="usage.viewports.menu">
   <title>Viewport menu</title>
    <para>
-     Each viewport in OVITO's main window has a caption in its upper left corner, e.g. <emphasis>Perspective</emphasis>, <emphasis>Top</emphasis>, etc.
+     Each of OVITO's viewports has a caption in its upper left corner, e.g. <emphasis>Perspective</emphasis>, <emphasis>Top</emphasis>, etc.
      Clicking on the caption opens the viewport context menu as shown in the screenshot. 
      The menu allows you to switch between the standard view types.
    </para>
@@ -94,13 +94,13 @@
      inadvertent or automatic changes, e.g. the automatic adjustment that is performed by OVITO when loading a new simulation dataset.
    </para>
    <para>
-     The <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> option activates a frame around the viewport to
-     indicate the visible area of the final output picture. The aspect ratio can be 
+     The <menuchoice><guimenuitem>Preview Mode</guimenuitem></menuchoice> option activates a frame, which
+     indicates the area that will be visible in the final output picture. The aspect ratio of the render frame can be 
      adjusted in the <link linkend="core.render_settings">Render Settings</link> panel by changing the width and height
      of the output image or movie. 
-     When the <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice>
-     option is activate for a viewport, everything (including the background and <link linkend="viewport_overlays">overlays</link>) will 
-     be rendered like in the final output image.
+     When the <menuchoice><guimenuitem>Preview Mode</guimenuitem></menuchoice>
+     is active for a viewport, everything (including the background and <link linkend="viewport_overlays">overlays</link>) will 
+     be rendered as in the final output image.
    </para>
   </simplesect>     
 

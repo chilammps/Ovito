@@ -22,7 +22,9 @@
   
   <para>
   In addition to assigning colors to particles, the modifier stores its results in the <literal>Structure Type</literal> particle property.
-  The coordination structure types are encoded as integer values:
+  This allows you to select particles of a certain structural type, e.g. by using the 
+  <link linkend="particles.modifiers.select_particle_type">Select Particle Type</link> modifier.
+  The structural type of each particle is encoded as an integer value:
   <itemizedlist>
   
     <listitem>
@@ -47,9 +49,16 @@
 
   </itemizedlist>
   </para>
+  
+  <para>
+    An alternative structure identification method is provided by the
+    <link linkend="particles.modifiers.common_neighbor_analysis">Common Neighbor Analysis</link> modifier. 
+    To identify diamond lattice structures, the <link linkend="particles.modifiers.identify_diamond_structure">
+    Identify Diamond Structure</link> analysis modifier can be used.
+  </para>
 
   <para>
-    Note that this modifier requires access to the complete set of particles to perform the analysis. It should therefore be placed at the 
+    Note that this modifier requires access to the complete set of input particles to perform the analysis. It should therefore be placed at the 
     beginning of the processing pipeline, preceding any modifiers that delete particles.
   </para>
   

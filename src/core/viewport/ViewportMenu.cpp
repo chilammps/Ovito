@@ -40,7 +40,7 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	QAction* action;
 
 	// Build menu.
-	action = addAction(tr("Render Preview"), this, SLOT(onRenderPreviewMode(bool)));
+	action = addAction(tr("Preview Mode"), this, SLOT(onRenderPreviewMode(bool)));
 	action->setCheckable(true);
 	action->setChecked(_viewport->renderPreviewMode());
 	action = addAction(tr("Show Grid"), this, SLOT(onShowGrid(bool)));

@@ -64,8 +64,8 @@ MainWindow::MainWindow() : _datasetContainer(this)
 	// Create the main toolbar.
 	createMainToolbar();
 
-	ViewportsPanel* viewportsPanel = new ViewportsPanel(this);
-	setCentralWidget(viewportsPanel);
+	_viewportsPanel = new ViewportsPanel(this);
+	setCentralWidget(_viewportsPanel);
 
 	// Create the animation panel below the viewports.
 	QWidget* animationPanel = new QWidget();

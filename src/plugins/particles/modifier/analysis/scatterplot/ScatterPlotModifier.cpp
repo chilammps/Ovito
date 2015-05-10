@@ -561,7 +561,7 @@ void ScatterPlotModifierEditor::plotScatterPlot()
 		_selectionYAxisRangeEndMarker->setVisible(false);
 	}
 
-	_scatterPlot->replot();
+	_scatterPlot->replot(QCustomPlot::rpQueued);
 }
 
 /******************************************************************************

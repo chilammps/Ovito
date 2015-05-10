@@ -606,7 +606,7 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         _correlationFunctionColorMap->setDataRange(QCPRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd()));
     }
     
-    _correlationFunctionPlot->replot();
+    _correlationFunctionPlot->replot(QCustomPlot::rpQueued);
 }
 
 /******************************************************************************

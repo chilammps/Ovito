@@ -307,6 +307,9 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 			progressDialog->setValue(0);
 		}
 
+		// Don't update viewports while rendering.
+		ViewportSuspender noVPUpdates(this);
+
 		// Initialize the renderer.
 		if(renderer->startRender(this, settings)) {
 

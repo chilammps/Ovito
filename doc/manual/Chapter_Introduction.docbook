@@ -19,21 +19,21 @@
   
   <para>
   The first publicly available version of OVITO was released in December 2009.
-  Today OVITO's user base comprises more than ten thousand researchers from the computational materials science field.
+  As of spring 2015, OVITO has more than 14,000 active users from the computational physics, materials science, and chemistry fields.
   To introduce the software package to the community, a <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">journal article about OVITO</link> was published in 2010.
   </para>
   
   <simplesect>
   <title>Program features</title>
 
-  <para>OVITO is a software for visualizing and analyzing data from atomistic simulations of particles, in particular molecular dynamics (MD) simulations of 
-  solid-state materials. Its main application area are large-scale simulations based on interaction potentials 
-  (10<superscript>3</superscript> - 10<superscript>8</superscript> particles). 
+  <para>OVITO is a software for visualizing and analyzing output data from particle-based simulations, notably molecular dynamics (MD) simulations of 
+  solid-state materials. Its main application area are large-scale simulations based on classical potentials 
+  (10<superscript>3</superscript> - 10<superscript>8</superscript> particles).
   Some noteworthy program features are: <itemizedlist>
 
       <listitem>
         <para><link linkend="usage.import">Import</link> and <link linkend="usage.export">export</link> of various file formats used by 
-        MD simulation codes including LAMMPS, XYZ, CFG, IMD, POSCAR, and PDB.</para>
+        MD simulation codes including LAMMPS, XYZ, CFG, IMD, POSCAR, NetCDF, PDB, and FHI-aims.</para>
       </listitem>
 
       <listitem>
@@ -53,7 +53,7 @@
       </listitem>
       
       <listitem>
-        <para><link linkend="usage.scripting">A powerful Python-based scripting interface</link></para>
+        <para><link linkend="usage.scripting">A powerful Python-based scripting interface to automate many tasks</link></para>
       </listitem>      
 
       <listitem>

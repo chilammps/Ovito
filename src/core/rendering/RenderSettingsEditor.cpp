@@ -98,6 +98,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		connect(customIntervalButton, &QRadioButton::toggled, customRangeStartUI, &IntegerParameterUI::setEnabled);
 		connect(customIntervalButton, &QRadioButton::toggled, customRangeEndUI, &IntegerParameterUI::setEnabled);
 
+#if 0
 		QGridLayout* layout2a = new QGridLayout();
 		layout2a->setContentsMargins(0,6,0,0);
 		layout2a->setSpacing(2);
@@ -112,6 +113,11 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2a->setColumnStretch(2, 1);
 		connect(currentFrameButton, &QRadioButton::toggled, everyNthFrameUI, &IntegerParameterUI::setDisabled);
 		connect(currentFrameButton, &QRadioButton::toggled, fileNumberBaseUI, &IntegerParameterUI::setDisabled);
+#endif
+
+		QPushButton* animSettingsBtn = new QPushButton(tr("Animation settings..."));
+		layout2->addWidget(animSettingsBtn);
+		connect(animSettingsBtn, &QPushButton::clicked, mainWindow()->actionManager()->getAction(ACTION_ANIMATION_SETTINGS), &QAction::trigger);
 	}
 
 	// Output size

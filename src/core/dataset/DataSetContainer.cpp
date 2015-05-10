@@ -76,6 +76,11 @@ void DataSetContainer::referenceReplaced(const PropertyFieldDescriptor& field, R
 			_viewportConfigReplacedConnection = connect(currentSet(), &DataSet::viewportConfigReplaced, this, &DataSetContainer::viewportConfigReplaced);
 			_animationSettingsReplacedConnection = connect(currentSet(), &DataSet::animationSettingsReplaced, this, &DataSetContainer::animationSettingsReplaced);
 			_renderSettingsReplacedConnection = connect(currentSet(), &DataSet::renderSettingsReplaced, this, &DataSetContainer::renderSettingsReplaced);
+		}
+
+		Q_EMIT dataSetChanged(currentSet());
+
+		if(currentSet()) {
 			Q_EMIT viewportConfigReplaced(currentSet()->viewportConfig());
 			Q_EMIT animationSettingsReplaced(currentSet()->animationSettings());
 			Q_EMIT renderSettingsReplaced(currentSet()->renderSettings());
@@ -90,7 +95,6 @@ void DataSetContainer::referenceReplaced(const PropertyFieldDescriptor& field, R
 			Q_EMIT renderSettingsReplaced(nullptr);
 		}
 
-		Q_EMIT dataSetChanged(currentSet());
 	}
 	RefMaker::referenceReplaced(field, oldTarget, newTarget);
 }
@@ -169,7 +173,7 @@ bool DataSetContainer::fileSaveAs(const QString& filename)
 	if(filename.isEmpty()) {
 
 		if(!mainWindow())
-			throw Exception(tr("Cannot save program state. No filename has been set."));
+			throw Exception(tr("Cannot save program state. No filename has been specified."));
 
 		QFileDialog dialog(mainWindow(), tr("Save Program State As"));
 		dialog.setNameFilter(tr("State Files (*.ovito);;All Files (*)"));
@@ -360,21 +364,39 @@ bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QS
 #ifdef Q_OS_UNIX
 		// Install POSIX signal handler to catch Ctrl+C key press in console mode.
 		auto oldSignalHandler = ::signal(SIGINT, [](int) { _userInterrupt.storeRelease(1); });
-		try {
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+		// Disable viewport repaints while processing events to
+		// avoid recursive calls to repaint().
+		if(Application::instance().guiMode())
+			mainWindow()->viewportsPanel()->setUpdatesEnabled(false);
+#endif
+		try {
 
-		// Poll callback function until it returns true.
-		while(!callback() && !_userInterrupt.loadAcquire()) {
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 20);
-		}
+			// Poll callback function until it returns true.
+			while(!callback() && !_userInterrupt.loadAcquire()) {
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 20);
+			}
 
 #ifdef Q_OS_UNIX
-		::signal(SIGINT, oldSignalHandler);
+			::signal(SIGINT, oldSignalHandler);
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+			// Resume repainting the viewports.
+			if(Application::instance().guiMode())
+				mainWindow()->viewportsPanel()->setUpdatesEnabled(true);
+#endif
 		}
 		catch(...) {
+#ifdef Q_OS_UNIX
 			::signal(SIGINT, oldSignalHandler);
-		}
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+			// Resume repainting the viewports.
+			if(Application::instance().guiMode())
+				mainWindow()->viewportsPanel()->setUpdatesEnabled(true);
+#endif
+		}
 		if(_userInterrupt.load()) {
 			taskManager().cancelAll();
 			return false;

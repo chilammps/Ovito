@@ -88,8 +88,8 @@
       The interative viewport in OVITO and the static output image being rendered may have different aspect ratios, depending on the rendering resolution you specified.
       Thus, the visible region in the output image might slightly differ from what you see in the interactive viewport. 
       To help you positioning the virtual camera and adjust the visible portion of the viewport, 
-      it is possible to activate the <menuchoice><guimenuitem>Render Preview</guimenuitem></menuchoice> mode for a viewport in the <link linkend="usage.viewports.menu">viewport menu</link>.
-      As shown in the screenshot on the right, now a semi-transparent frame in the interactive viewport indicates the region that will be visible in the final image.
+      it is possible to activate the <menuchoice><guimenuitem>Preview Mode</guimenuitem></menuchoice> for a viewport in the <link linkend="usage.viewports.menu">viewport menu</link>.
+      As shown in the screenshot on the right, now a semi-transparent frame in the interactive viewport indicates the region that will be visible in the final output image.
      </para>
    </simplesect>
   

@@ -15,17 +15,17 @@
        <imagedata fileref="images/viewport_overlays/viewport_overlay_command_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   Viewport overlays render two-dimensional graphics or text on top of the three-dimensional scene in a viewport 
-  or a rendered image. OVITO provides different overlay types (see table below), which you can add to a specific viewport.
+  or a rendered image. OVITO provides different overlay types (see table below), which you can add to a viewport.
   Viewport overlays are managed on the "Overlays" tab of OVITO's command panel as shown in the screenshot on the 
   right.
   </para>
-  <para>Note that overlays added to a viewport will only be visible in the interactive viewport display
-  if the <link linkend="usage.viewports.menu">Render Preview</link> option is enabled for that viewport.
-  OVITO activates the preview option automatically whenever you add a new overlay to a viewport.
-  Irrespective of that preview setting, the overlay graphics will always be included in the final image or movie.
+  <para>Note that overlays added to a viewport will only be visible in the interactive viewport window
+  if the <link linkend="usage.viewports.menu">Preview Mode</link> is enabled for the viewport.
+  OVITO activates this mode automatically whenever you add a new overlay to a viewport.
+  In any case the overlay graphics are always included in the final image or movie rendered from the viewport.
   </para>
   <para>
-  The following types of viewport overlays exist in OVITO: 
+  The following types of viewport overlays are available in OVITO: 
   
   <informaltable>
         <tgroup cols="2">
